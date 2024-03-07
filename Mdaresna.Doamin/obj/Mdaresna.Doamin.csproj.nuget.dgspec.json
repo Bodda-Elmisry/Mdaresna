@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "F:\\Work\\Mdaresna\\Mdaresna\\Mdaresna.csproj": {}
+    "F:\\Work\\Mdaresna\\Mdaresna.Doamin\\Mdaresna.Doamin.csproj": {}
   },
   "projects": {
-    "F:\\Work\\Mdaresna\\Mdaresna\\Mdaresna.csproj": {
+    "F:\\Work\\Mdaresna\\Mdaresna.Doamin\\Mdaresna.Doamin.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\Work\\Mdaresna\\Mdaresna\\Mdaresna.csproj",
-        "projectName": "Mdaresna",
-        "projectPath": "F:\\Work\\Mdaresna\\Mdaresna\\Mdaresna.csproj",
+        "projectUniqueName": "F:\\Work\\Mdaresna\\Mdaresna.Doamin\\Mdaresna.Doamin.csproj",
+        "projectName": "Mdaresna.Doamin",
+        "projectPath": "F:\\Work\\Mdaresna\\Mdaresna.Doamin\\Mdaresna.Doamin.csproj",
         "packagesPath": "C:\\Users\\BODDA\\.nuget\\packages\\",
-        "outputPath": "F:\\Work\\Mdaresna\\Mdaresna\\obj\\",
+        "outputPath": "F:\\Work\\Mdaresna\\Mdaresna.Doamin\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -48,12 +48,6 @@
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
-          "dependencies": {
-            "Swashbuckle.AspNetCore": {
-              "target": "Package",
-              "version": "[6.4.0, )"
-            }
-          },
           "imports": [
             "net461",
             "net462",
@@ -66,9 +60,6 @@
           "assetTargetFallback": true,
           "warn": true,
           "frameworkReferences": {
-            "Microsoft.AspNetCore.App": {
-              "privateAssets": "none"
-            },
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
