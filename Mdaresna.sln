@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mdaresna.Doamin", "Mdaresna
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mdaresna.Repository", "Mdaresna.Repository\Mdaresna.Repository.csproj", "{896B95E8-ABB9-44D5-A4C5-AEA6CDBAFA85}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mdaresna.Infrastructure", "Mdaresna.Infrastructure\Mdaresna.Infrastructure.csproj", "{5FE80E77-50A4-4BF8-8A90-72ED4863BEAE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{896B95E8-ABB9-44D5-A4C5-AEA6CDBAFA85}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{896B95E8-ABB9-44D5-A4C5-AEA6CDBAFA85}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{896B95E8-ABB9-44D5-A4C5-AEA6CDBAFA85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FE80E77-50A4-4BF8-8A90-72ED4863BEAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FE80E77-50A4-4BF8-8A90-72ED4863BEAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FE80E77-50A4-4BF8-8A90-72ED4863BEAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FE80E77-50A4-4BF8-8A90-72ED4863BEAE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
