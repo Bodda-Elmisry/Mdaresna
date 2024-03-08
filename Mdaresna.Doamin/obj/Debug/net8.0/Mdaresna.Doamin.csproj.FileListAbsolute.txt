@@ -10,3 +10,15 @@ F:\Work\Mdaresna\Mdaresna.Doamin\obj\Debug\net8.0\Mdaresna.Doamin.dll
 F:\Work\Mdaresna\Mdaresna.Doamin\obj\Debug\net8.0\refint\Mdaresna.Doamin.dll
 F:\Work\Mdaresna\Mdaresna.Doamin\obj\Debug\net8.0\Mdaresna.Doamin.pdb
 F:\Work\Mdaresna\Mdaresna.Doamin\obj\Debug\net8.0\ref\Mdaresna.Doamin.dll
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Doamin\bin\Debug\net8.0\Mdaresna.Doamin.deps.json
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Doamin\bin\Debug\net8.0\Mdaresna.Doamin.dll
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Doamin\bin\Debug\net8.0\Mdaresna.Doamin.pdb
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Doamin\obj\Debug\net8.0\Mdaresna.Doamin.GeneratedMSBuildEditorConfig.editorconfig
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Doamin\obj\Debug\net8.0\Mdaresna.Doamin.AssemblyInfoInputs.cache
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Doamin\obj\Debug\net8.0\Mdaresna.Doamin.AssemblyInfo.cs
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Doamin\obj\Debug\net8.0\Mdaresna.Doamin.csproj.CoreCompileInputs.cache
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Doamin\obj\Debug\net8.0\Mdaresna.Doamin.sourcelink.json
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Doamin\obj\Debug\net8.0\Mdaresna.Doamin.dll
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Doamin\obj\Debug\net8.0\refint\Mdaresna.Doamin.dll
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Doamin\obj\Debug\net8.0\Mdaresna.Doamin.pdb
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Doamin\obj\Debug\net8.0\ref\Mdaresna.Doamin.dll

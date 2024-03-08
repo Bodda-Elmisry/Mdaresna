@@ -1,0 +1,12 @@
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Repository\bin\Debug\net8.0\Mdaresna.Repository.deps.json
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Repository\bin\Debug\net8.0\Mdaresna.Repository.dll
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Repository\bin\Debug\net8.0\Mdaresna.Repository.pdb
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Repository\obj\Debug\net8.0\Mdaresna.Repository.GeneratedMSBuildEditorConfig.editorconfig
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Repository\obj\Debug\net8.0\Mdaresna.Repository.AssemblyInfoInputs.cache
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Repository\obj\Debug\net8.0\Mdaresna.Repository.AssemblyInfo.cs
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Repository\obj\Debug\net8.0\Mdaresna.Repository.csproj.CoreCompileInputs.cache
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Repository\obj\Debug\net8.0\Mdaresna.Repository.sourcelink.json
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Repository\obj\Debug\net8.0\Mdaresna.Repository.dll
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Repository\obj\Debug\net8.0\refint\Mdaresna.Repository.dll
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Repository\obj\Debug\net8.0\Mdaresna.Repository.pdb
+F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Repository\obj\Debug\net8.0\ref\Mdaresna.Repository.dll

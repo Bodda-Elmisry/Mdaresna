@@ -4,12 +4,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.7.34202.233
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mdaresna", "Mdaresna\Mdaresna.csproj", "{70C153DE-50E0-4334-BF37-E7FF5BBEEE8A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4E8EE933-EEBD-4180-B951-1EB2B1BCD5E7} = {4E8EE933-EEBD-4180-B951-1EB2B1BCD5E7}
+		{5FE80E77-50A4-4BF8-8A90-72ED4863BEAE} = {5FE80E77-50A4-4BF8-8A90-72ED4863BEAE}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mdaresna.Doamin", "Mdaresna.Doamin\Mdaresna.Doamin.csproj", "{4E8EE933-EEBD-4180-B951-1EB2B1BCD5E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mdaresna.Repository", "Mdaresna.Repository\Mdaresna.Repository.csproj", "{896B95E8-ABB9-44D5-A4C5-AEA6CDBAFA85}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mdaresna.Repository", "Mdaresna.Repository\Mdaresna.Repository.csproj", "{896B95E8-ABB9-44D5-A4C5-AEA6CDBAFA85}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mdaresna.Infrastructure", "Mdaresna.Infrastructure\Mdaresna.Infrastructure.csproj", "{5FE80E77-50A4-4BF8-8A90-72ED4863BEAE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mdaresna.Infrastructure", "Mdaresna.Infrastructure\Mdaresna.Infrastructure.csproj", "{5FE80E77-50A4-4BF8-8A90-72ED4863BEAE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4E8EE933-EEBD-4180-B951-1EB2B1BCD5E7} = {4E8EE933-EEBD-4180-B951-1EB2B1BCD5E7}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
