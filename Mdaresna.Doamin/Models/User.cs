@@ -45,5 +45,7 @@ namespace Mdaresna.Doamin.Models
         [MaxLength(300)]
         public string? Contry { get; set; }
 
+        public int UserType { get; set; }
+
     }
 }
