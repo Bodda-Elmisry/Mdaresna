@@ -27,5 +27,10 @@ namespace Mdaresna.Doamin.Models.CoinsManagement
 
         [ForeignKey(nameof(CoinTypeId))]
         public CoinType CoinType { get; set; }
+
+        public Guid? SchoolRequestId { get; set; }
+
+        [ForeignKey(nameof(SchoolRequestId))]
+        public SchoolPaymentRequest? SchoolPaymentRequest { get; set; }
     }
 }

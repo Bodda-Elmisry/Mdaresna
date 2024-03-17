@@ -33,9 +33,20 @@ namespace Mdaresna.Infrastructure.Data
 
             #region Column Types
 
-            modelBuilder.Entity<CoinType>().Property(p=> p.Value).HasColumnType("decimal(18,2)");
+            modelBuilder
+                .Entity<CoinType>()
+                .Property(p=> p.Value)
+                .HasColumnType("decimal(18,2)");
 
-            modelBuilder.Entity<PaymentTransaction>().Property(p=> p.Amount).HasColumnType("decimal(18,2)");
+            modelBuilder
+                .Entity<PaymentTransaction>()
+                .Property(p=> p.Amount)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder
+                .Entity<SchoolPaymentRequest>()
+                .Property(p=> p.TransfareAmount)
+                .HasColumnType("decimal(18,2)");
 
             #endregion
         }
@@ -52,6 +63,7 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<CoinType> CoinsTypes { get; set; }
         public DbSet<PaymentType> PaymentTypes { get; set; }
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
+        public DbSet<SchoolPaymentRequest> SchoolPaymentRequests { get; set; }
 
 
         
