@@ -21,6 +21,7 @@ namespace Mdaresna.Infrastructure.Data
 
             modelBuilder.Entity<RolePermission>().HasKey(r => new { r.RoleId, r.PermissionId });
             modelBuilder.Entity<UserRole>().HasKey(r => new { r.UserId, r.RoleId });
+            modelBuilder.Entity<UserPermission>().HasKey(r => new { r.UserId, r.PermissionId });
 
             #endregion
         }
@@ -30,5 +31,6 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
+        public DbSet<UserPermission> userPermissions { get; set; }
     }
 }
