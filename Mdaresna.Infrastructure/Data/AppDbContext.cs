@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Doamin.Models.UserManagement;
 using Mdaresna.Doamin.Models.CoinsManagement;
+using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 
 namespace Mdaresna.Infrastructure.Data
 {
@@ -64,6 +65,7 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<PaymentType> PaymentTypes { get; set; }
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
         public DbSet<SchoolPaymentRequest> SchoolPaymentRequests { get; set; }
+        public DbSet<SchoolPost> SchoolPosts { get; set; }
 
 
         
