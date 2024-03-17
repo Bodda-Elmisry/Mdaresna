@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Mdaresna.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0990d43b12607c1b65fc438596ac4f14cc8ccb9b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8e63b084efc6c1035a61766e531109f59109b5a2")]
 [assembly: System.Reflection.AssemblyProductAttribute("Mdaresna.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Mdaresna.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
