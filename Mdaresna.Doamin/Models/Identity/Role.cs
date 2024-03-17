@@ -14,9 +14,15 @@ namespace Mdaresna.Doamin.Models.Identity
 
         [MaxLength(200)]
         public string Name { get; set; }
+        
         public string? Description { get; set; }
+        
         public bool Active { get; set; }
+        
         public bool SchoolRole { get; set; }
+
         public bool AdminRole { get; set; }
+
+        public Guid? SchoolId { get; set; }
     }
 }
