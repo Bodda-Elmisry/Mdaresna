@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mdaresna.Doamin.Models
+namespace Mdaresna.Doamin.Models.Identity
 {
     public class Role
     {
