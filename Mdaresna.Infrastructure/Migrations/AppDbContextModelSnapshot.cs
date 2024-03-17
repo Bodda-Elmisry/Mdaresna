@@ -38,7 +38,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Permissions");
+                    b.ToTable("Permissions", (string)null);
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.Identity.Role", b =>
@@ -69,7 +69,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", (string)null);
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.Identity.RolePermission", b =>
@@ -84,7 +84,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("PermissionId");
 
-                    b.ToTable("RolePermissions");
+                    b.ToTable("RolePermissions", (string)null);
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.Identity.User", b =>
@@ -148,7 +148,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.Identity.UserPermission", b =>
@@ -163,7 +163,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("PermissionId");
 
-                    b.ToTable("userPermissions");
+                    b.ToTable("userPermissions", (string)null);
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.Identity.UserPermissionSchoolClassRoom", b =>
@@ -184,7 +184,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("PermissionId");
 
-                    b.ToTable("userPermissionSchoolClassRooms");
+                    b.ToTable("userPermissionSchoolClassRooms", (string)null);
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.Identity.UserRole", b =>
@@ -199,7 +199,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("UserRoles");
+                    b.ToTable("UserRoles", (string)null);
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.User.RelationType", b =>
@@ -215,7 +215,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("relationTypes");
+                    b.ToTable("relationTypes", (string)null);
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.Identity.RolePermission", b =>

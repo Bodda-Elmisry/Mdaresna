@@ -12,7 +12,7 @@ namespace Mdaresna.Doamin.Models.Identity
         public Guid UserId { get; set; }
 
         [ForeignKey(nameof(UserId))]
-        public virtual User User { get; set; }
+        public virtual Mdaresna.Doamin.Models.User.User User { get; set; }
 
         public Guid RoleId { get; set; }
 

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Mdaresna.Doamin")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+445713597e77bb7e87275a744817f31a53c33ff9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0d7a895bca6ed16e89f4b781165a70ae850db4d3")]
 [assembly: System.Reflection.AssemblyProductAttribute("Mdaresna.Doamin")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Mdaresna.Doamin")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
