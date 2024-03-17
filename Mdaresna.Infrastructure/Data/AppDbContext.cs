@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Mdaresna.Doamin.Models.Identity;
+using Mdaresna.Doamin.Models.User;
 
 namespace Mdaresna.Infrastructure.Data
 {
@@ -34,5 +35,8 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<UserPermission> userPermissions { get; set; }
         public DbSet<UserPermissionSchoolClassRoom> userPermissionSchoolClassRooms { get; set; }
+        public DbSet<RelationType> relationTypes { get; set; }
+
+        
     }
 }
