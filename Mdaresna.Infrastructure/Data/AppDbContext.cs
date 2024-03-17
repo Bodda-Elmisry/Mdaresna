@@ -48,6 +48,7 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<RelationType> relationTypes { get; set; }
         public DbSet<SchoolUser> SchoolUsers { get; set; }
         public DbSet<CoinType> CoinsTypes { get; set; }
+        public DbSet<PaymentType> PaymentTypes { get; set; }
 
         
     }
