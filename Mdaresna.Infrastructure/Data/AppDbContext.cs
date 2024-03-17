@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Doamin.Models.UserManagement;
+using Mdaresna.Doamin.Models.CoinsManagement;
 
 namespace Mdaresna.Infrastructure.Data
 {
@@ -28,6 +29,13 @@ namespace Mdaresna.Infrastructure.Data
             modelBuilder.Entity<SchoolUser>().HasKey(s => new { s.UserId, s.SchoolId });
 
             #endregion
+
+
+            #region Column Types
+
+            modelBuilder.Entity<CoinType>().Property(p=> p.Value).HasColumnType("decimal(18,2)");
+
+            #endregion
         }
 
         public DbSet<User> Users { get; set; }
@@ -39,6 +47,7 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<UserPermissionSchoolClassRoom> userPermissionSchoolClassRooms { get; set; }
         public DbSet<RelationType> relationTypes { get; set; }
         public DbSet<SchoolUser> SchoolUsers { get; set; }
+        public DbSet<CoinType> CoinsTypes { get; set; }
 
         
     }
