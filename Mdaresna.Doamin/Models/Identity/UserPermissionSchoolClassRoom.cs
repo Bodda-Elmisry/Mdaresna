@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mdaresna.Doamin.Models.UserManagement;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace Mdaresna.Doamin.Models.Identity
         public Guid UserId { get; set; }
 
         [ForeignKey(nameof(UserId))]
-        public virtual Mdaresna.Doamin.Models.User.User User { get; set; }
+        public virtual User User { get; set; }
 
         public Guid PermissionId { get; set; }
 

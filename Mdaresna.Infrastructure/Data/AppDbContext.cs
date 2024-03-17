@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Mdaresna.Doamin.Models.Identity;
-using Mdaresna.Doamin.Models.User;
+using Mdaresna.Doamin.Models.UserManagement;
 
 namespace Mdaresna.Infrastructure.Data
 {
@@ -24,6 +24,8 @@ namespace Mdaresna.Infrastructure.Data
             modelBuilder.Entity<UserRole>().HasKey(r => new { r.UserId, r.RoleId });
             modelBuilder.Entity<UserPermission>().HasKey(r => new { r.UserId, r.PermissionId });
             modelBuilder.Entity<UserPermissionSchoolClassRoom>().HasKey(r => new { r.UserId, r.PermissionId, r.SchoolId, r.ClassRoomId });
+            
+            modelBuilder.Entity<SchoolUser>().HasKey(s => new { s.UserId, s.SchoolId });
 
             #endregion
         }
@@ -36,6 +38,7 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<UserPermission> userPermissions { get; set; }
         public DbSet<UserPermissionSchoolClassRoom> userPermissionSchoolClassRooms { get; set; }
         public DbSet<RelationType> relationTypes { get; set; }
+        public DbSet<SchoolUser> SchoolUsers { get; set; }
 
         
     }

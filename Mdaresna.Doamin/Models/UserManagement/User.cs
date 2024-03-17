@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mdaresna.Doamin.Models.User
+namespace Mdaresna.Doamin.Models.UserManagement
 {
     public class User
     {

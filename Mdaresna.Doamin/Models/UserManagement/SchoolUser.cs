@@ -1,23 +1,22 @@
-﻿using Mdaresna.Doamin.Models.UserManagement;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mdaresna.Doamin.Models.Identity
+namespace Mdaresna.Doamin.Models.UserManagement
 {
-    public class UserRole
+    public class SchoolUser
     {
+        public Guid SchoolId { get; set; }
+
         public Guid UserId { get; set; }
 
         [ForeignKey(nameof(UserId))]
         public virtual User User { get; set; }
 
-        public Guid RoleId { get; set; }
+        public bool Active { get; set; }
 
-        [ForeignKey(nameof(RoleId))]
-        public virtual Role Role { get; set; }
     }
 }
