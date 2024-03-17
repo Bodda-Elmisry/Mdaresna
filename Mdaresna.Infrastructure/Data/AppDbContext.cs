@@ -67,6 +67,7 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<SchoolPaymentRequest> SchoolPaymentRequests { get; set; }
         public DbSet<SchoolPost> SchoolPosts { get; set; }
         public DbSet<SchoolPostImage> SchoolPostImages { get; set; }
+        public DbSet<SchoolType> SchoolTypes { get; set; }
 
 
         
