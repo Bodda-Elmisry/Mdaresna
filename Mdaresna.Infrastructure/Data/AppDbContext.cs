@@ -68,6 +68,16 @@ namespace Mdaresna.Infrastructure.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<SchoolContact>()
+                .HasOne(e=> e.School)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<SchoolContact>()
+                .HasOne(e=> e.ContactType)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+
             #endregion
         }
 
@@ -89,6 +99,7 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<SchoolType> SchoolTypes { get; set; }
         public DbSet<School> Schools { get; set; }
         public DbSet<SchoolContactType> SchoolContactTypes { get; set; }
+        public DbSet<SchoolContact> SchoolContacts { get; set; }
 
 
         
