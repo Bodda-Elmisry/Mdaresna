@@ -23,6 +23,9 @@ namespace Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement
 
         public Guid SchoolId { get; set; }
 
-        
+        [ForeignKey(nameof(SchoolId))]
+        public School School { get; set; }
+
+
     }
 }
