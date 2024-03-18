@@ -1,7 +1,9 @@
 ﻿using Mdaresna.Doamin.Models.Base;
+using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,5 +22,8 @@ namespace Mdaresna.Doamin.Models.Identity
         public bool AdminRole { get; set; }
 
         public Guid? SchoolId { get; set; }
+
+        [ForeignKey(nameof(SchoolId))]
+        public School School { get; set; }
     }
 }
