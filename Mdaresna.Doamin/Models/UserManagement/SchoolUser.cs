@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -10,6 +11,9 @@ namespace Mdaresna.Doamin.Models.UserManagement
     public class SchoolUser
     {
         public Guid SchoolId { get; set; }
+
+        [ForeignKey(nameof(SchoolId))]
+        public School School { get; set; }
 
         public Guid UserId { get; set; }
 
