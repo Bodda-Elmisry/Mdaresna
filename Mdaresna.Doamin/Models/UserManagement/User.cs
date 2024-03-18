@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mdaresna.Doamin.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -45,7 +46,7 @@ namespace Mdaresna.Doamin.Models.UserManagement
         [MaxLength(300)]
         public string? Contry { get; set; }
 
-        public int UserType { get; set; }
+        public UserTypeEnum UserType { get; set; }
 
     }
 }
