@@ -20,8 +20,6 @@ namespace Mdaresna.Doamin.Models.Identity
         [ForeignKey(nameof(PermissionId))]
         public virtual Permission Permission { get; set; }
 
-        public Guid SchoolId { get; set; }
-
         public Guid ClassRoomId { get; set; }
 
 

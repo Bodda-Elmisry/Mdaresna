@@ -24,8 +24,8 @@ namespace Mdaresna.Infrastructure.Data
 
             modelBuilder.Entity<RolePermission>().HasKey(r => new { r.RoleId, r.PermissionId });
             modelBuilder.Entity<UserRole>().HasKey(r => new { r.UserId, r.RoleId });
-            modelBuilder.Entity<UserPermission>().HasKey(r => new { r.UserId, r.PermissionId });
-            modelBuilder.Entity<UserPermissionSchoolClassRoom>().HasKey(r => new { r.UserId, r.PermissionId, r.SchoolId, r.ClassRoomId });
+            modelBuilder.Entity<UserPermission>().HasKey(r => new { r.UserId, r.PermissionId, r.SchoolId });
+            modelBuilder.Entity<UserPermissionSchoolClassRoom>().HasKey(r => new { r.UserId, r.PermissionId, r.ClassRoomId });
             
             modelBuilder.Entity<SchoolUser>().HasKey(s => new { s.UserId, s.SchoolId });
 
