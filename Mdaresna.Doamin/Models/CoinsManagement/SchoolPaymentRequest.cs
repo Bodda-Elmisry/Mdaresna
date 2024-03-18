@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.UserManagement;
+﻿using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
+using Mdaresna.Doamin.Models.UserManagement;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -20,6 +21,9 @@ namespace Mdaresna.Doamin.Models.CoinsManagement
         public decimal TransfareAmount { get; set; }
 
         public Guid SchoolId { get; set; }
+
+        [ForeignKey(nameof(SchoolId))]
+        public School School { get; set; }
 
         public bool? Approvied { get; set; }
 
