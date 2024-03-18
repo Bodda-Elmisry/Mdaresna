@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Mdaresna.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240318001023_MoveSchoolRelationFromUserPermissionSchoolClassRoomToUserPermission")]
-    partial class MoveSchoolRelationFromUserPermissionSchoolClassRoomToUserPermission
+    [Migration("20240318003332_AddSchoolRelation")]
+    partial class AddSchoolRelation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -338,6 +338,8 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("PosterId");
 
+                    b.HasIndex("SchoolId");
+
                     b.ToTable("SchoolPosts");
                 });
 
@@ -409,6 +411,8 @@ namespace Mdaresna.Infrastructure.Migrations
                         .HasColumnType("bit");
 
                     b.HasKey("UserId", "SchoolId");
+
+                    b.HasIndex("SchoolId");
 
                     b.ToTable("SchoolUsers");
                 });
@@ -558,7 +562,7 @@ namespace Mdaresna.Infrastructure.Migrations
                     b.HasOne("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.School", "School")
                         .WithMany()
                         .HasForeignKey("SchoolId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Mdaresna.Doamin.Models.UserManagement.User", "User")
@@ -647,7 +651,15 @@ namespace Mdaresna.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.School", "School")
+                        .WithMany()
+                        .HasForeignKey("SchoolId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Poster");
+
+                    b.Navigation("School");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.SchoolPostImage", b =>
@@ -663,11 +675,19 @@ namespace Mdaresna.Infrastructure.Migrations
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.UserManagement.SchoolUser", b =>
                 {
+                    b.HasOne("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.School", "School")
+                        .WithMany()
+                        .HasForeignKey("SchoolId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Mdaresna.Doamin.Models.UserManagement.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("School");
 
                     b.Navigation("User");
                 });

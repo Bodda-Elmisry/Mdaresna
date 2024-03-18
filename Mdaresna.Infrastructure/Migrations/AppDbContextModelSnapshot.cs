@@ -559,7 +559,7 @@ namespace Mdaresna.Infrastructure.Migrations
                     b.HasOne("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.School", "School")
                         .WithMany()
                         .HasForeignKey("SchoolId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Mdaresna.Doamin.Models.UserManagement.User", "User")
@@ -651,7 +651,7 @@ namespace Mdaresna.Infrastructure.Migrations
                     b.HasOne("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.School", "School")
                         .WithMany()
                         .HasForeignKey("SchoolId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Poster");
@@ -675,7 +675,7 @@ namespace Mdaresna.Infrastructure.Migrations
                     b.HasOne("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.School", "School")
                         .WithMany()
                         .HasForeignKey("SchoolId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Mdaresna.Doamin.Models.UserManagement.User", "User")

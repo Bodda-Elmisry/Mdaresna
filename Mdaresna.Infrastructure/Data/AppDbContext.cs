@@ -50,6 +50,25 @@ namespace Mdaresna.Infrastructure.Data
                 .HasColumnType("decimal(18,2)");
 
             #endregion
+
+            #region Cascade deleting manager
+
+            modelBuilder.Entity<SchoolPost>()
+                .HasOne(p=> p.School)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<UserPermission>()
+                .HasOne(p => p.School)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SchoolUser>()
+                .HasOne(p => p.School)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            #endregion
         }
 
         public DbSet<User> Users { get; set; }

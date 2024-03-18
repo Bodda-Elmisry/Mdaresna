@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Mdaresna.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class MoveSchoolRelationFromUserPermissionSchoolClassRoomToUserPermission : Migration
+    public partial class AddSchoolRelation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -45,18 +45,52 @@ namespace Mdaresna.Infrastructure.Migrations
                 table: "userPermissions",
                 column: "SchoolId");
 
+            migrationBuilder.CreateIndex(
+                name: "IX_SchoolUsers_SchoolId",
+                table: "SchoolUsers",
+                column: "SchoolId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SchoolPosts_SchoolId",
+                table: "SchoolPosts",
+                column: "SchoolId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_SchoolPosts_Schools_SchoolId",
+                table: "SchoolPosts",
+                column: "SchoolId",
+                principalTable: "Schools",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_SchoolUsers_Schools_SchoolId",
+                table: "SchoolUsers",
+                column: "SchoolId",
+                principalTable: "Schools",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
             migrationBuilder.AddForeignKey(
                 name: "FK_userPermissions_Schools_SchoolId",
                 table: "userPermissions",
                 column: "SchoolId",
                 principalTable: "Schools",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.Restrict);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_SchoolPosts_Schools_SchoolId",
+                table: "SchoolPosts");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_SchoolUsers_Schools_SchoolId",
+                table: "SchoolUsers");
+
             migrationBuilder.DropForeignKey(
                 name: "FK_userPermissions_Schools_SchoolId",
                 table: "userPermissions");
@@ -72,6 +106,14 @@ namespace Mdaresna.Infrastructure.Migrations
             migrationBuilder.DropIndex(
                 name: "IX_userPermissions_SchoolId",
                 table: "userPermissions");
+
+            migrationBuilder.DropIndex(
+                name: "IX_SchoolUsers_SchoolId",
+                table: "SchoolUsers");
+
+            migrationBuilder.DropIndex(
+                name: "IX_SchoolPosts_SchoolId",
+                table: "SchoolPosts");
 
             migrationBuilder.DropColumn(
                 name: "SchoolId",
