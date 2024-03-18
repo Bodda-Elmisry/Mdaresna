@@ -82,6 +82,11 @@ namespace Mdaresna.Infrastructure.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<SchoolYearMonth>()
+                .HasOne(e=> e.Year)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
 
             #endregion
         }
@@ -106,6 +111,7 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<SchoolContactType> SchoolContactTypes { get; set; }
         public DbSet<SchoolContact> SchoolContacts { get; set; }
         public DbSet<SchoolYear> SchoolYears { get; set; }
+        public DbSet<SchoolYearMonth> SchoolYearMonths { get; set; }
 
 
         
