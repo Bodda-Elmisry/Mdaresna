@@ -31,15 +31,7 @@ namespace Mdaresna.Infrastructure.Data
             #region Column Types
 
 
-            modelBuilder
-                .Entity<PaymentTransaction>()
-                .Property(p=> p.Amount)
-                .HasColumnType("decimal(18,2)");
-
-            modelBuilder
-                .Entity<SchoolPaymentRequest>()
-                .Property(p=> p.TransfareAmount)
-                .HasColumnType("decimal(18,2)");
+                
 
             modelBuilder
                 .Entity<SchoolExamRateHeader>()
@@ -125,6 +117,8 @@ namespace Mdaresna.Infrastructure.Data
         private void ApplyCoinManagementConfigrations(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new CoinTypeConfig());
+            modelBuilder.ApplyConfiguration(new PaymentTransactionConfig());
+            modelBuilder.ApplyConfiguration(new SchoolPaymentRequestConfig());
         }
 
         private void ApplySchoolManagementConfigrations(ModelBuilder modelBuilder)
