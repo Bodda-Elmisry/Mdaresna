@@ -102,6 +102,16 @@ namespace Mdaresna.Infrastructure.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<SchoolCourse>()
+                .HasOne(e => e.School)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SchoolCourse>()
+                .HasOne(e => e.Language)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
 
             #endregion
         }
@@ -130,6 +140,7 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<SchoolExamRateHeader> SchoolExamRateHeaders { get; set; }
         public DbSet<SchoolGrade> SchoolGrades { get; set; }
         public DbSet<ClassRoomLanguage> ClassRoomLanguages { get; set; }
+        public DbSet<SchoolCourse> SchoolCourses { get; set; }
 
 
         
