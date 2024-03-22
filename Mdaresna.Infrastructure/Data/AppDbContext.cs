@@ -9,6 +9,7 @@ using Mdaresna.Doamin.Models.UserManagement;
 using Mdaresna.Doamin.Models.CoinsManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Doamin.ModelsConfigrations.SchoolManagement;
+using Mdaresna.Doamin.ModelsConfigrations.CoinsManagement;
 
 namespace Mdaresna.Infrastructure.Data
 {
@@ -35,10 +36,6 @@ namespace Mdaresna.Infrastructure.Data
 
             #region Column Types
 
-            modelBuilder
-                .Entity<CoinType>()
-                .Property(p=> p.Value)
-                .HasColumnType("decimal(18,2)");
 
             modelBuilder
                 .Entity<PaymentTransaction>()
@@ -119,7 +116,17 @@ namespace Mdaresna.Infrastructure.Data
 
             #region Config files
 
+            #region CoinsManagement
+
+            modelBuilder.ApplyConfiguration(new CoinTypeConfig());
+
+            #endregion
+
+            #region SchoolManagement
+
             modelBuilder.ApplyConfiguration(new SchoolTeacherCourseConfig());
+
+            #endregion
 
             #endregion
         }
