@@ -129,6 +129,7 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<SchoolYearMonth> SchoolYearMonths { get; set; }
         public DbSet<SchoolExamRateHeader> SchoolExamRateHeaders { get; set; }
         public DbSet<SchoolGrade> SchoolGrades { get; set; }
+        public DbSet<ClassRoomLanguage> ClassRoomLanguages { get; set; }
 
 
         
