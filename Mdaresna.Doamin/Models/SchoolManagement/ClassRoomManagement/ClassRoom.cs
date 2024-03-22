@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mdaresna.Doamin.Models.SchoolManagement
+namespace Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement
 {
     public class ClassRoom : BaseModel
     {

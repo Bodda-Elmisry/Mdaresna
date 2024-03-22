@@ -16,7 +16,7 @@ using Mdaresna.Doamin.ModelsConfigrations.UserManagement;
 using Microsoft.IdentityModel.Abstractions;
 using Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.SchoolManagement;
 using Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.ClassRoomManagement;
-using Mdaresna.Doamin.Models.SchoolManagement;
+using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 
 namespace Mdaresna.Infrastructure.Data
 {

@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Models.SchoolManagement;
+﻿using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
