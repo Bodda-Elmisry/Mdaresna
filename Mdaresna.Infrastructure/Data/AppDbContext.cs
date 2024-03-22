@@ -10,6 +10,8 @@ using Mdaresna.Doamin.Models.CoinsManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Doamin.ModelsConfigrations.SchoolManagement;
 using Mdaresna.Doamin.ModelsConfigrations.CoinsManagement;
+using Mdaresna.Doamin.ModelsConfigrations.Identity;
+using System.Reflection.Emit;
 
 namespace Mdaresna.Infrastructure.Data
 {
@@ -24,10 +26,7 @@ namespace Mdaresna.Infrastructure.Data
         {
             #region Keies
 
-            modelBuilder.Entity<RolePermission>().HasKey(r => new { r.RoleId, r.PermissionId });
-            modelBuilder.Entity<UserRole>().HasKey(r => new { r.UserId, r.RoleId });
-            modelBuilder.Entity<UserPermission>().HasKey(r => new { r.UserId, r.PermissionId, r.SchoolId });
-            modelBuilder.Entity<UserPermissionSchoolClassRoom>().HasKey(r => new { r.UserId, r.PermissionId, r.ClassRoomId });
+            
             
             modelBuilder.Entity<SchoolUser>().HasKey(s => new { s.UserId, s.SchoolId });
 
@@ -61,10 +60,7 @@ namespace Mdaresna.Infrastructure.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<UserPermission>()
-                .HasOne(p => p.School)
-                .WithMany()
-                .OnDelete(DeleteBehavior.Restrict);
+            
 
             modelBuilder.Entity<SchoolUser>()
                 .HasOne(p => p.School)
@@ -116,20 +112,32 @@ namespace Mdaresna.Infrastructure.Data
 
             #region Config files
 
-            #region CoinsManagement
-
-            modelBuilder.ApplyConfiguration(new CoinTypeConfig());
-
-            #endregion
-
-            #region SchoolManagement
-
-            modelBuilder.ApplyConfiguration(new SchoolTeacherCourseConfig());
-
-            #endregion
+            ApplyIdentityConfigrations(modelBuilder);
+            ApplyCoinManagementConfigrations(modelBuilder);
+            ApplySchoolManagementConfigrations(modelBuilder);
 
             #endregion
         }
+
+        private void ApplyIdentityConfigrations(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new RolePermissionConfig());
+            modelBuilder.ApplyConfiguration(new UserPermissionConfig());
+            modelBuilder.ApplyConfiguration(new UserPermissionSchoolClassRoomConfig());
+            modelBuilder.ApplyConfiguration(new UserRoleConfig());
+
+        }
+
+        private void ApplyCoinManagementConfigrations(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new CoinTypeConfig());
+        }
+
+        private void ApplySchoolManagementConfigrations(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new SchoolTeacherCourseConfig());
+        }
+
 
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
