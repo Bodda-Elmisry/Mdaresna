@@ -12,6 +12,8 @@ using Mdaresna.Doamin.ModelsConfigrations.SchoolManagement;
 using Mdaresna.Doamin.ModelsConfigrations.CoinsManagement;
 using Mdaresna.Doamin.ModelsConfigrations.Identity;
 using System.Reflection.Emit;
+using Mdaresna.Doamin.ModelsConfigrations.UserManagement;
+using Microsoft.IdentityModel.Abstractions;
 
 namespace Mdaresna.Infrastructure.Data
 {
@@ -24,13 +26,6 @@ namespace Mdaresna.Infrastructure.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            #region Keies
-
-            
-            
-            modelBuilder.Entity<SchoolUser>().HasKey(s => new { s.UserId, s.SchoolId });
-
-            #endregion
 
 
             #region Column Types
@@ -57,13 +52,6 @@ namespace Mdaresna.Infrastructure.Data
 
             modelBuilder.Entity<SchoolPost>()
                 .HasOne(p=> p.School)
-                .WithMany()
-                .OnDelete(DeleteBehavior.Restrict);
-
-            
-
-            modelBuilder.Entity<SchoolUser>()
-                .HasOne(p => p.School)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -113,6 +101,7 @@ namespace Mdaresna.Infrastructure.Data
             #region Config files
 
             ApplyIdentityConfigrations(modelBuilder);
+            ApplyUserManagementConfigrations(modelBuilder);
             ApplyCoinManagementConfigrations(modelBuilder);
             ApplySchoolManagementConfigrations(modelBuilder);
 
@@ -126,6 +115,11 @@ namespace Mdaresna.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new UserPermissionSchoolClassRoomConfig());
             modelBuilder.ApplyConfiguration(new UserRoleConfig());
 
+        }
+
+        private void ApplyUserManagementConfigrations(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new SchoolUserConfig());
         }
 
         private void ApplyCoinManagementConfigrations(ModelBuilder modelBuilder)
