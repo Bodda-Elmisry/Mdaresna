@@ -14,6 +14,7 @@ using Mdaresna.Doamin.ModelsConfigrations.Identity;
 using System.Reflection.Emit;
 using Mdaresna.Doamin.ModelsConfigrations.UserManagement;
 using Microsoft.IdentityModel.Abstractions;
+using Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.SchoolManagement;
 
 namespace Mdaresna.Infrastructure.Data
 {
@@ -26,68 +27,6 @@ namespace Mdaresna.Infrastructure.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
-
-            #region Column Types
-
-
-                
-
-            modelBuilder
-                .Entity<SchoolExamRateHeader>()
-                .Property(p => p.Percentage)
-                .HasColumnType("decimal(18,2)");
-
-            #endregion
-
-            #region Cascade deleting manager
-
-            modelBuilder.Entity<SchoolPost>()
-                .HasOne(p=> p.School)
-                .WithMany()
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<SchoolContact>()
-                .HasOne(e=> e.School)
-                .WithMany()
-                .OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<SchoolContact>()
-                .HasOne(e=> e.ContactType)
-                .WithMany()
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<SchoolYear>()
-                .HasOne(e=> e.School)
-                .WithMany()
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<SchoolYearMonth>()
-                .HasOne(e=> e.Year)
-                .WithMany()
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<SchoolExamRateHeader>()
-                .HasOne(e=> e.School)
-                .WithMany()
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<SchoolGrade>()
-                .HasOne(e => e.School)
-                .WithMany()
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<SchoolCourse>()
-                .HasOne(e => e.School)
-                .WithMany()
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<SchoolCourse>()
-                .HasOne(e => e.Language)
-                .WithMany()
-                .OnDelete(DeleteBehavior.Restrict);
-
-
-            #endregion
 
 
             #region Config files
@@ -124,6 +63,13 @@ namespace Mdaresna.Infrastructure.Data
         private void ApplySchoolManagementConfigrations(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new SchoolTeacherCourseConfig());
+            modelBuilder.ApplyConfiguration(new SchoolExamRateHeaderConfig());
+            modelBuilder.ApplyConfiguration(new SchoolPostConfig());
+            modelBuilder.ApplyConfiguration(new SchoolContactConfig());
+            modelBuilder.ApplyConfiguration(new SchoolYearConfig());
+            modelBuilder.ApplyConfiguration(new SchoolYearMonthConfig());
+            modelBuilder.ApplyConfiguration(new SchoolCourseConfig());
+            modelBuilder.ApplyConfiguration(new SchoolGradeConfig());
         }
 
 

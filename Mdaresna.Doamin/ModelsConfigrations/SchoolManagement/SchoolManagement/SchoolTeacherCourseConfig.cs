@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mdaresna.Doamin.ModelsConfigrations.SchoolManagement
+namespace Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.SchoolManagement
 {
     public class SchoolTeacherCourseConfig : IEntityTypeConfiguration<SchoolTeacherCourse>
     {
@@ -22,12 +22,12 @@ namespace Mdaresna.Doamin.ModelsConfigrations.SchoolManagement
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder
-                .HasOne(e=> e.Teacher)
+                .HasOne(e => e.Teacher)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder
-                .HasOne(e=> e.Course)
+                .HasOne(e => e.Course)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
         }
