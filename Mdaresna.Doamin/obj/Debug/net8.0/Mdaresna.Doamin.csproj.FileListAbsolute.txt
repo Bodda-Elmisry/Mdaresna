@@ -22,3 +22,4 @@ F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Doamin\obj\Debug\net8.0\Mdaresn
 F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Doamin\obj\Debug\net8.0\refint\Mdaresna.Doamin.dll
 F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Doamin\obj\Debug\net8.0\Mdaresna.Doamin.pdb
 F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna.Doamin\obj\Debug\net8.0\ref\Mdaresna.Doamin.dll
+F:\Work\Mdaresna\Mdaresna.Doamin\obj\Debug\net8.0\Mdaresna.Doamin.csproj.AssemblyReference.cache

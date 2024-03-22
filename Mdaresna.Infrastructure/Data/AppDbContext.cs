@@ -8,6 +8,7 @@ using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Doamin.Models.UserManagement;
 using Mdaresna.Doamin.Models.CoinsManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
+using Mdaresna.Doamin.ModelsConfigrations.SchoolManagement;
 
 namespace Mdaresna.Infrastructure.Data
 {
@@ -114,6 +115,13 @@ namespace Mdaresna.Infrastructure.Data
 
 
             #endregion
+
+
+            #region Config files
+
+            modelBuilder.ApplyConfiguration(new SchoolTeacherCourseConfig());
+
+            #endregion
         }
 
         public DbSet<User> Users { get; set; }
@@ -141,8 +149,9 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<SchoolGrade> SchoolGrades { get; set; }
         public DbSet<ClassRoomLanguage> ClassRoomLanguages { get; set; }
         public DbSet<SchoolCourse> SchoolCourses { get; set; }
+        public DbSet<SchoolTeacherCourse> schoolTeacherCourses { get; set; }
 
 
-        
+
     }
 }

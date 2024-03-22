@@ -1,36 +1,3 @@
-F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\appsettings.Development.json
-F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\appsettings.json
-F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Mdaresna.exe
-F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Mdaresna.deps.json
-F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Mdaresna.runtimeconfig.json
-F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Mdaresna.dll
-F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Mdaresna.pdb
-F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Microsoft.OpenApi.dll
-F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll
-F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
-F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.csproj.AssemblyReference.cache
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.GeneratedMSBuildEditorConfig.editorconfig
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.AssemblyInfoInputs.cache
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.AssemblyInfo.cs
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.csproj.CoreCompileInputs.cache
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.MvcApplicationPartsAssemblyInfo.cs
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.MvcApplicationPartsAssemblyInfo.cache
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.sourcelink.json
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\staticwebassets.build.json
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\staticwebassets.development.json
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\staticwebassets\msbuild.Mdaresna.Microsoft.AspNetCore.StaticWebAssets.props
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\staticwebassets\msbuild.build.Mdaresna.props
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.Mdaresna.props
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.Mdaresna.props
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\staticwebassets.pack.json
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\scopedcss\bundle\Mdaresna.styles.css
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.csproj.Up2Date
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.dll
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\refint\Mdaresna.dll
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.pdb
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.genruntimeconfig.cache
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\ref\Mdaresna.dll
 F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna\bin\Debug\net8.0\appsettings.Development.json
 F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna\bin\Debug\net8.0\appsettings.json
 F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna\bin\Debug\net8.0\Mdaresna.exe
@@ -172,6 +139,13 @@ F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna\bin\Debug\net8.0\ru\Microsoft.C
 F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll
 F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
 F:\Win Old 22-11-2023\Projects\Mdaresna\Mdaresna\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\appsettings.Development.json
+F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\appsettings.json
+F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Mdaresna.exe
+F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Mdaresna.deps.json
+F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Mdaresna.runtimeconfig.json
+F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Mdaresna.dll
+F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Mdaresna.pdb
 F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Azure.Core.dll
 F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Azure.Identity.dll
 F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Humanizer.dll
@@ -195,9 +169,13 @@ F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
 F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
 F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Microsoft.OpenApi.dll
 F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Microsoft.SqlServer.Server.dll
 F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Microsoft.Win32.SystemEvents.dll
 F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Mono.TextTemplating.dll
+F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll
+F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
 F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\System.CodeDom.dll
 F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\System.Composition.AttributedModel.dll
 F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\System.Composition.Convention.dll
@@ -280,3 +258,25 @@ F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Mdaresna.Doamin.dll
 F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Mdaresna.Infrastructure.dll
 F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Mdaresna.Infrastructure.pdb
 F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Mdaresna.Doamin.pdb
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.csproj.AssemblyReference.cache
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.GeneratedMSBuildEditorConfig.editorconfig
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.AssemblyInfoInputs.cache
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.AssemblyInfo.cs
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.csproj.CoreCompileInputs.cache
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.MvcApplicationPartsAssemblyInfo.cs
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.MvcApplicationPartsAssemblyInfo.cache
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.sourcelink.json
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\staticwebassets.build.json
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\staticwebassets.development.json
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\staticwebassets\msbuild.Mdaresna.Microsoft.AspNetCore.StaticWebAssets.props
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\staticwebassets\msbuild.build.Mdaresna.props
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.Mdaresna.props
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.Mdaresna.props
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\staticwebassets.pack.json
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\scopedcss\bundle\Mdaresna.styles.css
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.csproj.Up2Date
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.dll
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\refint\Mdaresna.dll
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.pdb
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.genruntimeconfig.cache
+F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\ref\Mdaresna.dll

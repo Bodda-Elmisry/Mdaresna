@@ -908,6 +908,9 @@
         }
       },
       "Mdaresna.Doamin/1.0.0": {
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "8.0.2"
+        },
         "runtime": {
           "Mdaresna.Doamin.dll": {}
         }
