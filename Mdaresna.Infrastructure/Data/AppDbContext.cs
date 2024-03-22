@@ -15,6 +15,8 @@ using System.Reflection.Emit;
 using Mdaresna.Doamin.ModelsConfigrations.UserManagement;
 using Microsoft.IdentityModel.Abstractions;
 using Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.SchoolManagement;
+using Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.ClassRoomManagement;
+using Mdaresna.Doamin.Models.SchoolManagement;
 
 namespace Mdaresna.Infrastructure.Data
 {
@@ -35,6 +37,7 @@ namespace Mdaresna.Infrastructure.Data
             ApplyUserManagementConfigrations(modelBuilder);
             ApplyCoinManagementConfigrations(modelBuilder);
             ApplySchoolManagementConfigrations(modelBuilder);
+            ApplyClassRoomManagementConfigrations(modelBuilder);
 
             #endregion
         }
@@ -72,6 +75,11 @@ namespace Mdaresna.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new SchoolGradeConfig());
         }
 
+        private void ApplyClassRoomManagementConfigrations(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new ClassRoomConfig());
+        }
+
 
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
@@ -99,6 +107,7 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<ClassRoomLanguage> ClassRoomLanguages { get; set; }
         public DbSet<SchoolCourse> SchoolCourses { get; set; }
         public DbSet<SchoolTeacherCourse> schoolTeacherCourses { get; set; }
+        public DbSet<ClassRoom> ClassRooms { get; set; }
 
 
 
