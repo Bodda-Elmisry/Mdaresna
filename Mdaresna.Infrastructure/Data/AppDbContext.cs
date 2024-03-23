@@ -91,6 +91,7 @@ namespace Mdaresna.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new StudentParentConfig());
             modelBuilder.ApplyConfiguration(new StudentAttendanceConfig());
             modelBuilder.ApplyConfiguration(new ClassRoomStudentAssignmentConfig());
+            modelBuilder.ApplyConfiguration(new StudentNoteConfig());
         }
 
 
@@ -129,6 +130,7 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<StudentParent> StudentParents { get; set; }
         public DbSet<StudentAttendance> StudentAttendances { get; set; }
         public DbSet<ClassRoomStudentAssignment> ClassRoomStudentAssignments { get; set; }
+        public DbSet<StudentNote> studentNotes { get; set; }
 
 
 
