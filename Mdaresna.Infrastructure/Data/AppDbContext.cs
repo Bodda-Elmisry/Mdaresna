@@ -81,6 +81,7 @@ namespace Mdaresna.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new ClassRoomAssignmentConfig());
             modelBuilder.ApplyConfiguration(new ClassRoomTeacherCourseConfig());
             modelBuilder.ApplyConfiguration(new ClassRoomExamConfig());
+            modelBuilder.ApplyConfiguration(new ClassRoomActivityConfig());
         }
 
 
@@ -114,6 +115,7 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<ClassRoomAssignment> ClassRoomAssignments { get; set; }
         public DbSet<ClassRoomTeacherCourse> ClassRoomTeacherCourses { get; set; }
         public DbSet<ClassRoomExam> ClassRoomExams { get; set; }
+        public DbSet<ClassRoomActivity> ClassRoomActivities { get; set; }
 
 
 

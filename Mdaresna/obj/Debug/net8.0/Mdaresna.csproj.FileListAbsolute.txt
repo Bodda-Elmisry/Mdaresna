@@ -263,7 +263,6 @@ F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.GeneratedMSBuildEditorConfig
 F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.AssemblyInfoInputs.cache
 F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.AssemblyInfo.cs
 F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.csproj.CoreCompileInputs.cache
-F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.MvcApplicationPartsAssemblyInfo.cs
 F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.MvcApplicationPartsAssemblyInfo.cache
 F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.sourcelink.json
 F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\staticwebassets.build.json
