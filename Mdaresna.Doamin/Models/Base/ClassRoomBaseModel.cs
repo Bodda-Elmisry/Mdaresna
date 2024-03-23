@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
+﻿using Mdaresna.Doamin.Models.Base.Relation;
+using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Doamin.Models.UserManagement;
 using System;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Doamin.Models.Base
 {
-    public class ClassRoomBaseModel
+    public class ClassRoomBaseModel : ClassRoomSupervisorCourseReltaion
     {
         public Guid Id { get; set; }
 
@@ -20,21 +21,7 @@ namespace Mdaresna.Doamin.Models.Base
 
         public string Details { get; set; }
 
-        public Guid ClassRoomId { get; set; }
-
-        [ForeignKey(nameof(ClassRoomId))]
-        public ClassRoom ClassRoom { get; set; }
-
-        public Guid SupervisorId { get; set; }
-
-        [ForeignKey(nameof(SupervisorId))]
-        public User Supervisor { get; set; }
-
-        public Guid CourseId { get; set; }
-
-        [ForeignKey(nameof(CourseId))]
-        public SchoolCourse Course { get; set; }
-
+        
         public decimal Rate { get; set; }
     }
 }
