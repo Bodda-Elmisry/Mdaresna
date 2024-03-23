@@ -88,6 +88,7 @@ namespace Mdaresna.Infrastructure.Data
         private void ApplyStudentManagementConfigrations(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new StudentConfig());
+            modelBuilder.ApplyConfiguration(new StudentParentConfig());
         }
 
 
@@ -123,6 +124,7 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<ClassRoomExam> ClassRoomExams { get; set; }
         public DbSet<ClassRoomActivity> ClassRoomActivities { get; set; }
         public DbSet<Student> Students { get; set; }
+        public DbSet<StudentParent> StudentParents { get; set; }
 
 
 
