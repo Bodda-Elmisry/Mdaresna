@@ -17,6 +17,8 @@ using Microsoft.IdentityModel.Abstractions;
 using Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.SchoolManagement;
 using Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
+using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
+using Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.StudentManagement;
 
 namespace Mdaresna.Infrastructure.Data
 {
@@ -29,8 +31,6 @@ namespace Mdaresna.Infrastructure.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
-
             #region Config files
 
             ApplyIdentityConfigrations(modelBuilder);
@@ -38,6 +38,7 @@ namespace Mdaresna.Infrastructure.Data
             ApplyCoinManagementConfigrations(modelBuilder);
             ApplySchoolManagementConfigrations(modelBuilder);
             ApplyClassRoomManagementConfigrations(modelBuilder);
+            ApplyStudentManagementConfigrations(modelBuilder);
 
             #endregion
         }
@@ -84,6 +85,11 @@ namespace Mdaresna.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new ClassRoomActivityConfig());
         }
 
+        private void ApplyStudentManagementConfigrations(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new StudentConfig());
+        }
+
 
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
@@ -116,6 +122,7 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<ClassRoomTeacherCourse> ClassRoomTeacherCourses { get; set; }
         public DbSet<ClassRoomExam> ClassRoomExams { get; set; }
         public DbSet<ClassRoomActivity> ClassRoomActivities { get; set; }
+        public DbSet<Student> Students { get; set; }
 
 
 
