@@ -18,10 +18,6 @@ namespace Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.ClassRoomManageme
                 .HasColumnType("decimal(18,2)");
 
             builder
-                .Property(p => p.WeekDay)
-                .HasMaxLength(25);
-
-            builder
                 .HasOne(e=> e.ClassRoom)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
