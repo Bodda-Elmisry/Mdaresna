@@ -94,23 +94,42 @@ namespace Mdaresna.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new StudentNoteConfig());
             modelBuilder.ApplyConfiguration(new ClassRoomStudentActivityConfig());
             modelBuilder.ApplyConfiguration(new ClassRoomStudentExamConfig());
+            modelBuilder.ApplyConfiguration(new StudentExamRateConfig());
 
         }
 
+        #region User
 
         public DbSet<User> Users { get; set; }
+        public DbSet<RelationType> relationTypes { get; set; }
+        public DbSet<SchoolUser> SchoolUsers { get; set; }
+
+        #endregion
+
+        #region Identity
+
         public DbSet<Role> Roles { get; set; }
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<UserPermission> userPermissions { get; set; }
         public DbSet<UserPermissionSchoolClassRoom> userPermissionSchoolClassRooms { get; set; }
-        public DbSet<RelationType> relationTypes { get; set; }
-        public DbSet<SchoolUser> SchoolUsers { get; set; }
+
+
+        #endregion
+
+        #region Coin
+
         public DbSet<CoinType> CoinsTypes { get; set; }
         public DbSet<PaymentType> PaymentTypes { get; set; }
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
         public DbSet<SchoolPaymentRequest> SchoolPaymentRequests { get; set; }
+
+
+        #endregion
+
+        #region School
+
         public DbSet<SchoolPost> SchoolPosts { get; set; }
         public DbSet<SchoolPostImage> SchoolPostImages { get; set; }
         public DbSet<SchoolType> SchoolTypes { get; set; }
@@ -124,11 +143,22 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<ClassRoomLanguage> ClassRoomLanguages { get; set; }
         public DbSet<SchoolCourse> SchoolCourses { get; set; }
         public DbSet<SchoolTeacherCourse> schoolTeacherCourses { get; set; }
+
+
+        #endregion
+
+        #region ClassRoom
+
         public DbSet<ClassRoom> ClassRooms { get; set; }
         public DbSet<ClassRoomAssignment> ClassRoomAssignments { get; set; }
         public DbSet<ClassRoomTeacherCourse> ClassRoomTeacherCourses { get; set; }
         public DbSet<ClassRoomExam> ClassRoomExams { get; set; }
         public DbSet<ClassRoomActivity> ClassRoomActivities { get; set; }
+
+        #endregion
+
+        #region Student
+
         public DbSet<Student> Students { get; set; }
         public DbSet<StudentParent> StudentParents { get; set; }
         public DbSet<StudentAttendance> StudentAttendances { get; set; }
@@ -136,6 +166,12 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<StudentNote> studentNotes { get; set; }
         public DbSet<ClassRoomStudentActivity> ClassRoomStudentActivities { get; set; }
         public DbSet<ClassRoomStudentExam> ClassRoomStudentExams { get; set; }
+        public DbSet<StudentExamRate> studentExamRates { get; set; }
+
+        #endregion
+
+
+
 
 
 
