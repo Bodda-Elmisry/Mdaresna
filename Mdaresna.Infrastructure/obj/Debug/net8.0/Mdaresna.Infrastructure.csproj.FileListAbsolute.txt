@@ -34,3 +34,5 @@ F:\Work\Mdaresna\Mdaresna.Infrastructure\obj\Debug\net8.0\refint\Mdaresna.Infras
 F:\Work\Mdaresna\Mdaresna.Infrastructure\obj\Debug\net8.0\Mdaresna.Infrastructure.pdb
 F:\Work\Mdaresna\Mdaresna.Infrastructure\obj\Debug\net8.0\Mdaresna.Infrastructure.genruntimeconfig.cache
 F:\Work\Mdaresna\Mdaresna.Infrastructure\obj\Debug\net8.0\ref\Mdaresna.Infrastructure.dll
+F:\Work\Mdaresna\Mdaresna.Infrastructure\bin\Debug\net8.0\Mdaresna.Repository.dll
+F:\Work\Mdaresna\Mdaresna.Infrastructure\bin\Debug\net8.0\Mdaresna.Repository.pdb

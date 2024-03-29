@@ -9,6 +9,7 @@
       "Mdaresna.Infrastructure/1.0.0": {
         "dependencies": {
           "Mdaresna.Doamin": "1.0.0",
+          "Mdaresna.Repository": "1.0.0",
           "Microsoft.EntityFrameworkCore": "8.0.2",
           "Microsoft.EntityFrameworkCore.SqlServer": "8.0.2",
           "Microsoft.EntityFrameworkCore.Tools": "8.0.2"
@@ -928,6 +929,14 @@
         "runtime": {
           "Mdaresna.Doamin.dll": {}
         }
+      },
+      "Mdaresna.Repository/1.0.0": {
+        "dependencies": {
+          "Mdaresna.Doamin": "1.0.0"
+        },
+        "runtime": {
+          "Mdaresna.Repository.dll": {}
+        }
       }
     }
   },
@@ -1470,6 +1479,11 @@
       "hashPath": "system.windows.extensions.6.0.0.nupkg.sha512"
     },
     "Mdaresna.Doamin/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Mdaresna.Repository/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

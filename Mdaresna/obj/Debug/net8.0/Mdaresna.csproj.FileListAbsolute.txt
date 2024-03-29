@@ -280,3 +280,5 @@ F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.pdb
 F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.genruntimeconfig.cache
 F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\ref\Mdaresna.dll
 F:\Work\Mdaresna\Mdaresna\obj\Debug\net8.0\Mdaresna.MvcApplicationPartsAssemblyInfo.cs
+F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Mdaresna.Repository.dll
+F:\Work\Mdaresna\Mdaresna\bin\Debug\net8.0\Mdaresna.Repository.pdb

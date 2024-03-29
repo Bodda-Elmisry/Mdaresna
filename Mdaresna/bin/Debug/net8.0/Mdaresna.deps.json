@@ -919,11 +919,20 @@
       "Mdaresna.Infrastructure/1.0.0": {
         "dependencies": {
           "Mdaresna.Doamin": "1.0.0",
+          "Mdaresna.Repository": "1.0.0",
           "Microsoft.EntityFrameworkCore": "8.0.2",
           "Microsoft.EntityFrameworkCore.SqlServer": "8.0.2"
         },
         "runtime": {
           "Mdaresna.Infrastructure.dll": {}
+        }
+      },
+      "Mdaresna.Repository/1.0.0": {
+        "dependencies": {
+          "Mdaresna.Doamin": "1.0.0"
+        },
+        "runtime": {
+          "Mdaresna.Repository.dll": {}
         }
       }
     }
@@ -1514,6 +1523,11 @@
       "sha512": ""
     },
     "Mdaresna.Infrastructure/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Mdaresna.Repository/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
