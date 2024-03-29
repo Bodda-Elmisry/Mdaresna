@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Repository.IRepositories.Base
 {
-    public interface IBaseCommandRepoaitory<T>
+    public interface IBaseCommandRepository<T>
     {
         Task<bool> CreateAsync(T entity);
         Task<bool> UpdateAsync(T entity);

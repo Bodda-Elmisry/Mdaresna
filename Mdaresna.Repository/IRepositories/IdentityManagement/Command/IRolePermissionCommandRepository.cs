@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Repository.IRepositories.IdentityManagement.Command
 {
-    public interface IRolePermissionCommandRepository : IBaseCommandRepoaitory<RolePermission>
+    public interface IRolePermissionCommandRepository : IBaseCommandRepository<RolePermission>
     {
     }
 }

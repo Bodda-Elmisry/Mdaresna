@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Repository.IRepositories.CoinsManagement.Command
 {
-    public interface ICoinTypeCommandRepository : IBaseCommandRepoaitory<CoinType>
+    public interface ICoinTypeCommandRepository : IBaseCommandRepository<CoinType>
     {
     }
 }

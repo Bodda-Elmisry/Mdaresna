@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Repository.IRepositories.UserManagement.Command
 {
-    public interface IRelationTypeCommandRepository : IBaseCommandRepoaitory<RelationType>
+    public interface IRelationTypeCommandRepository : IBaseCommandRepository<RelationType>
     {
     }
 }

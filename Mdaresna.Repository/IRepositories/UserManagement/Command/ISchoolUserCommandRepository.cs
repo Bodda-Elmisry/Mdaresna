@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Repository.IRepositories.UserManagement.Command
 {
-    public interface ISchoolUserCommandRepository : IBaseCommandRepoaitory<SchoolUser>
+    public interface ISchoolUserCommandRepository : IBaseCommandRepository<SchoolUser>
     {
     }
 }

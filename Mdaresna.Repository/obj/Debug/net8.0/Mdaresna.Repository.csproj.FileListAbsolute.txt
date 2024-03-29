@@ -22,3 +22,7 @@ F:\Work\Mdaresna\Mdaresna.Repository\obj\Debug\net8.0\Mdaresna.Repository.dll
 F:\Work\Mdaresna\Mdaresna.Repository\obj\Debug\net8.0\refint\Mdaresna.Repository.dll
 F:\Work\Mdaresna\Mdaresna.Repository\obj\Debug\net8.0\Mdaresna.Repository.pdb
 F:\Work\Mdaresna\Mdaresna.Repository\obj\Debug\net8.0\ref\Mdaresna.Repository.dll
+F:\Work\Mdaresna\Mdaresna.Repository\obj\Debug\net8.0\Mdaresna.Repository.csproj.AssemblyReference.cache
+F:\Work\Mdaresna\Mdaresna.Repository\bin\Debug\net8.0\Mdaresna.Doamin.dll
+F:\Work\Mdaresna\Mdaresna.Repository\bin\Debug\net8.0\Mdaresna.Doamin.pdb
+F:\Work\Mdaresna\Mdaresna.Repository\obj\Debug\net8.0\Mdaresna.50CB79C3.Up2Date
