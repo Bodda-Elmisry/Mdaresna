@@ -8,8 +8,8 @@ namespace Mdaresna.Repository.IRepositories.Base
 {
     public interface IBaseCommandRepository<T>
     {
-        Task<bool> CreateAsync(T entity);
-        Task<bool> UpdateAsync(T entity);
-        Task<bool> DeleteAsync(T entity);
+        bool CreateAsync(T entity);
+        bool UpdateAsync(T entity);
+        bool DeleteAsync(T entity);
     }
 }

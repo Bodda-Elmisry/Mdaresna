@@ -1616,6 +1616,7 @@
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
           "Mdaresna.Doamin": "1.0.0",
+          "Mdaresna.Repository": "1.0.0",
           "Microsoft.EntityFrameworkCore": "8.0.2",
           "Microsoft.EntityFrameworkCore.SqlServer": "8.0.2"
         },
@@ -1624,6 +1625,19 @@
         },
         "runtime": {
           "bin/placeholder/Mdaresna.Infrastructure.dll": {}
+        }
+      },
+      "Mdaresna.Repository/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "dependencies": {
+          "Mdaresna.Doamin": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Mdaresna.Repository.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Mdaresna.Repository.dll": {}
         }
       }
     }
@@ -4542,6 +4556,11 @@
       "type": "project",
       "path": "../Mdaresna.Infrastructure/Mdaresna.Infrastructure.csproj",
       "msbuildProject": "../Mdaresna.Infrastructure/Mdaresna.Infrastructure.csproj"
+    },
+    "Mdaresna.Repository/1.0.0": {
+      "type": "project",
+      "path": "../Mdaresna.Repository/Mdaresna.Repository.csproj",
+      "msbuildProject": "../Mdaresna.Repository/Mdaresna.Repository.csproj"
     }
   },
   "projectFileDependencyGroups": {
