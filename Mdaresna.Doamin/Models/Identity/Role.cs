@@ -20,10 +20,5 @@ namespace Mdaresna.Doamin.Models.Identity
         public bool SchoolRole { get; set; }
 
         public bool AdminRole { get; set; }
-
-        public Guid? SchoolId { get; set; }
-
-        [ForeignKey(nameof(SchoolId))]
-        public School School { get; set; }
     }
 }
