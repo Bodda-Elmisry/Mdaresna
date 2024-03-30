@@ -27,6 +27,11 @@ namespace Mdaresna.Doamin.Models.UserManagement
         [MaxLength(200)]
         public string PhoneNumber { get; set; }
 
+        public bool PhoneConfirmed { get; set; }
+
+        [MaxLength(20)]
+        public string? PhoneConfirmationCode { get; set; }
+
         [MaxLength(800)]
         public string Password { get; set; }
 
@@ -47,6 +52,16 @@ namespace Mdaresna.Doamin.Models.UserManagement
         public string? Contry { get; set; }
 
         public UserTypeEnum UserType { get; set; }
+
+        public string? Email { get; set; }
+
+        public bool EmailConfirmed { get; set; }
+
+        [MaxLength(20)]
+        public string? EmailConfirmtionKey { get; set; }
+
+
+        public string? EmailConfirmationKey { get; set; }
 
     }
 }
