@@ -16,21 +16,21 @@ namespace Mdaresna.Infrastructure.Repositories.Base
         {
             this.context = context;
         }
-        public bool CreateAsync(T entity)
+        public bool Create(T entity)
         {
             context.Add(entity);
             context.SaveChanges();
             return true;
         }
 
-        public bool DeleteAsync(T entity)
+        public bool Delete(T entity)
         {
             context.Remove(entity);
             context.SaveChanges();
             return true;
         }
 
-        public bool UpdateAsync(T entity)
+        public bool Update(T entity)
         {
             context.Update(entity);
             context.SaveChanges();

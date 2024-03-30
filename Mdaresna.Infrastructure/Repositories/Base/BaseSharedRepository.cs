@@ -17,9 +17,15 @@ namespace Mdaresna.Infrastructure.Repositories.Base
         {
             this.context = context;
         }
+
+        public async Task<T> GetAsync(Guid id)
+        {
+            return await context.Set<T>().FindAsync(id);
+        }
+
         public async Task<bool> IsExistAsync(Guid id)
         {
-            var entity =  await context.Set<T>().FindAsync(id);
+            var entity =  await GetAsync(id);
             return entity != null;
         }
     }

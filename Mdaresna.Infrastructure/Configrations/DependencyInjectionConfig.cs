@@ -1,8 +1,8 @@
 ﻿using Mdaresna.Infrastructure.Repositories.Base;
 using Mdaresna.Infrastructure.Repositories.CoinsManagement.Command;
 using Mdaresna.Infrastructure.Repositories.CoinsManagement.Query;
-using Mdaresna.Infrastructure.Repositories.Identity.Command;
-using Mdaresna.Infrastructure.Repositories.Identity.Query;
+using Mdaresna.Infrastructure.Repositories.IdentityManagement.Command;
+using Mdaresna.Infrastructure.Repositories.IdentityManagement.Query;
 using Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement.Command;
