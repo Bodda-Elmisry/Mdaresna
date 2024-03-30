@@ -19,6 +19,7 @@ using Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.StudentManagement;
+using Mdaresna.Doamin.Models.SettingsManagement;
 
 namespace Mdaresna.Infrastructure.Data
 {
@@ -167,6 +168,8 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<ClassRoomStudentActivity> ClassRoomStudentActivities { get; set; }
         public DbSet<ClassRoomStudentExam> ClassRoomStudentExams { get; set; }
         public DbSet<StudentExamRate> studentExamRates { get; set; }
+
+        public DbSet<SMSProvider> SMSProviders { get; set; }
 
         #endregion
 

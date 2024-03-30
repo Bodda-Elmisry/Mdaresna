@@ -11,8 +11,4 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\NewFolder\" />
-  </ItemGroup>
-
 </Project>
