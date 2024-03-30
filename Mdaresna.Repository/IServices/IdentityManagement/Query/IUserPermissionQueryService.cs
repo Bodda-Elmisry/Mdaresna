@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mdaresna.Repository.IServices.Identity.Query
+namespace Mdaresna.Repository.IServices.IdentityManagement.Query
 {
     public interface IUserPermissionQueryService : IBaseQueryService<UserPermission>
     {

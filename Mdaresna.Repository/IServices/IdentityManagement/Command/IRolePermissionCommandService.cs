@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mdaresna.Repository.IServices.Identity.Command
+namespace Mdaresna.Repository.IServices.IdentityManagement.Command
 {
     public interface IRolePermissionCommandService : IBaseCommandService<RolePermission>
     {
