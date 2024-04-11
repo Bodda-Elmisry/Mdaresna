@@ -9,8 +9,24 @@ using Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement.Com
 using Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagement.Query;
+using Mdaresna.Infrastructure.Repositories.SettingsManagement.Command;
+using Mdaresna.Infrastructure.Repositories.SettingsManagement.Query;
 using Mdaresna.Infrastructure.Repositories.UserManagement.Command;
 using Mdaresna.Infrastructure.Repositories.UserManagement.Query;
+using Mdaresna.Infrastructure.Services.CoinsManagement.Command;
+using Mdaresna.Infrastructure.Services.CoinsManagement.Query;
+using Mdaresna.Infrastructure.Services.IdentityManagement.Command;
+using Mdaresna.Infrastructure.Services.IdentityManagement.Query;
+using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Command;
+using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Query;
+using Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Command;
+using Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Query;
+using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Command;
+using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Query;
+using Mdaresna.Infrastructure.Services.SettingsManagement.Command;
+using Mdaresna.Infrastructure.Services.SettingsManagement.Query;
+using Mdaresna.Infrastructure.Services.UserManagement.Command;
+using Mdaresna.Infrastructure.Services.UserManagement.Query;
 using Mdaresna.Repository.IRepositories.Base;
 using Mdaresna.Repository.IRepositories.CoinsManagement.Command;
 using Mdaresna.Repository.IRepositories.CoinsManagement.Query;
@@ -22,8 +38,25 @@ using Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Comman
 using Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.Query;
+using Mdaresna.Repository.IRepositories.SettingsManagement.Command;
+using Mdaresna.Repository.IRepositories.SettingsManagement.Query;
 using Mdaresna.Repository.IRepositories.UserManagement.Command;
 using Mdaresna.Repository.IRepositories.UserManagement.Query;
+using Mdaresna.Repository.IServices.Base;
+using Mdaresna.Repository.IServices.CoinsManagement.Command;
+using Mdaresna.Repository.IServices.CoinsManagement.Query;
+using Mdaresna.Repository.IServices.IdentityManagement.Command;
+using Mdaresna.Repository.IServices.IdentityManagement.Query;
+using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
+using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
+using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
+using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
+using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
+using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
+using Mdaresna.Repository.IServices.SettingsManagement.Command;
+using Mdaresna.Repository.IServices.SettingsManagement.Query;
+using Mdaresna.Repository.IServices.UserManagement.Command;
+using Mdaresna.Repository.IServices.UserManagement.Query;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -45,6 +78,7 @@ namespace Mdaresna.Infrastructure.Configrations
             ConfigerClassRoomManagementRepos(services);
             ConfigerStudentManagementRepos(services);
             ConfigerUserManagementRepos(services);
+            ConfigerSettingsManagementRepos(services);
         }
 
         private static void ConfigerBaseRepos(IServiceCollection services)
@@ -191,6 +225,196 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(IRelationTypeQueryRepository), typeof(RelationTypeQueryRepository));
             services.AddScoped(typeof(ISchoolUserQueryRepository), typeof(SchoolUserQueryRepository));
             services.AddScoped(typeof(IUserQueryRepository), typeof(UserQueryRepository));
+
+            #endregion
+        }
+
+        private static void ConfigerSettingsManagementRepos(IServiceCollection services)
+        {
+            #region Command
+            services.AddScoped(typeof(ISMSProviderCommandRepository), typeof(SMSProviderCommandRepository));
+            services.AddScoped(typeof(IEmailProviderCommandRepository), typeof(EmailProviderCommandRepository));
+
+            #endregion
+
+            #region Query
+            services.AddScoped(typeof(ISMSProviderQueryRepository), typeof(SMSProviderQueryRepository));
+            services.AddScoped(typeof(IEmailProviderQueryRepository), typeof(EmailProviderQueryRepository));
+
+            #endregion
+        }
+
+        #endregion
+
+
+        #region Services
+
+
+        public static void ConfigerServices(IServiceCollection services)
+        {
+            ConfigerCoinsManagementServ(services);
+            ConfigerIdentityManagementServ(services);
+            ConfigerSchoolManagementServ(services);
+            ConfigerClassRoomManagementServ(services);
+            ConfigerStudentManagementServ(services);
+            ConfigerUserManagementServ(services);
+            ConfigerSettingsManagementServ(services);
+        }
+
+        private static void ConfigerCoinsManagementServ(IServiceCollection services)
+        {
+            #region Command
+            services.AddScoped(typeof(ICoinTypeCommandService), typeof(CoinTypeCommandService));
+            services.AddScoped(typeof(IPaymentTransactionCommandService), typeof(PaymentTransactionCommandService));
+            services.AddScoped(typeof(IPaymentTypeCommandService), typeof(PaymentTypeCommandService));
+            services.AddScoped(typeof(ISchoolPaymentRequestCommandService), typeof(SchoolPaymentRequestCommandService));
+            #endregion
+
+            #region Query
+            services.AddScoped(typeof(ICoinTypeQueryService), typeof(CoinTypeQueryService));
+            services.AddScoped(typeof(IPaymentTransactionQueryService), typeof(PaymentTransactionQueryService));
+            services.AddScoped(typeof(IPaymentTypeQueryService), typeof(PaymentTypeQueryService));
+            services.AddScoped(typeof(ISchoolPaymentRequestQueryService), typeof(SchoolPaymentRequestQueryService));
+
+            #endregion
+        }
+
+        private static void ConfigerIdentityManagementServ(IServiceCollection services)
+        {
+            #region Command
+            services.AddScoped(typeof(IPermissionCommandService), typeof(PermissionCommandService));
+            services.AddScoped(typeof(IRoleCommandService), typeof(RoleCommandService));
+            services.AddScoped(typeof(IRolePermissionCommandService), typeof(RolePermissionCommandService));
+            services.AddScoped(typeof(IUserPermissionCommandService), typeof(UserPermissionCommandService));
+            services.AddScoped(typeof(IUserPermissionSchoolClassRoomCommandService), typeof(UserPermissionSchoolClassRoomCommandService));
+            services.AddScoped(typeof(IUserRoleCommandService), typeof(UserRoleCommandService));
+
+            #endregion
+
+            #region Query
+            services.AddScoped(typeof(IPermissionQueryService), typeof(PermissionQueryService));
+            services.AddScoped(typeof(IRolePermissionQueryService), typeof(RolePermissionQueryService));
+            services.AddScoped(typeof(IRoleQueryService), typeof(RoleQueryService));
+            services.AddScoped(typeof(IUserPermissionQueryService), typeof(UserPermissionQueryService));
+            services.AddScoped(typeof(IUserPermissionSchoolClassRoomQueryService), typeof(UserPermissionSchoolClassRoomQueryService));
+            services.AddScoped(typeof(IUserRoleQueryService), typeof(UserRoleQueryService));
+
+            #endregion
+        }
+
+        private static void ConfigerSchoolManagementServ(IServiceCollection services)
+        {
+            #region Command
+            services.AddScoped(typeof(IClassRoomLanguageCommandService), typeof(ClassRoomLanguageCommandService));
+            services.AddScoped(typeof(ISchoolCommandService), typeof(SchoolCommandService));
+            services.AddScoped(typeof(ISchoolContactCommandService), typeof(SchoolContactCommandService));
+            services.AddScoped(typeof(ISchoolContactTypeCommandService), typeof(SchoolContactTypeCommandService));
+            services.AddScoped(typeof(ISchoolCourseCommandService), typeof(SchoolCourseCommandService));
+            services.AddScoped(typeof(ISchoolExamRateHeaderCommandService), typeof(SchoolExamRateHeaderCommandService));
+            services.AddScoped(typeof(ISchoolGradeCommandService), typeof(SchoolGradeCommandService));
+            services.AddScoped(typeof(ISchoolPostCommandService), typeof(SchoolPostCommandService));
+            services.AddScoped(typeof(ISchoolPostImageCommandService), typeof(SchoolPostImageCommandService));
+            services.AddScoped(typeof(ISchoolTeacherCourseCommandService), typeof(SchoolTeacherCourseCommandService));
+            services.AddScoped(typeof(ISchoolTypeCommandService), typeof(SchoolTypeCommandService));
+            services.AddScoped(typeof(ISchoolYearCommandService), typeof(SchoolYearCommandService));
+            services.AddScoped(typeof(ISchoolYearMonthCommandService), typeof(SchoolYearMonthCommandService));
+
+            #endregion
+
+            #region Query
+            services.AddScoped(typeof(IClassRoomLanguageQueryService), typeof(ClassRoomLanguageQueryService));
+            services.AddScoped(typeof(ISchoolContactQueryService), typeof(SchoolContactQueryService));
+            services.AddScoped(typeof(ISchoolContactTypeQueryService), typeof(SchoolContactTypeQueryService));
+            services.AddScoped(typeof(ISchoolCourseQueryService), typeof(SchoolCourseQueryService));
+            services.AddScoped(typeof(ISchoolExamRateHeaderQueryService), typeof(SchoolExamRateHeaderQueryService));
+            services.AddScoped(typeof(ISchoolGradeQueryService), typeof(SchoolGradeQueryService));
+            services.AddScoped(typeof(ISchoolPostImageQueryService), typeof(SchoolPostImageQueryService));
+            services.AddScoped(typeof(ISchoolPostQueryService), typeof(SchoolPostQueryService));
+            services.AddScoped(typeof(ISchoolQueryService), typeof(SchoolQueryService));
+            services.AddScoped(typeof(ISchoolTeacherCourseQueryService), typeof(SchoolTeacherCourseQueryService));
+            services.AddScoped(typeof(ISchoolTypeQueryService), typeof(SchoolTypeQueryService));
+            services.AddScoped(typeof(ISchoolYearMonthQueryService), typeof(SchoolYearMonthQueryService));
+            services.AddScoped(typeof(ISchoolYearQueryService), typeof(SchoolYearQueryService));
+
+            #endregion
+        }
+
+        private static void ConfigerClassRoomManagementServ(IServiceCollection services)
+        {
+            #region Command
+            services.AddScoped(typeof(IClassRoomActivityCommandService), typeof(ClassRoomActivityCommandService));
+            services.AddScoped(typeof(IClassRoomAssignmentCommandService), typeof(ClassRoomAssignmentCommandService));
+            services.AddScoped(typeof(IClassRoomCommandService), typeof(ClassRoomCommandService));
+            services.AddScoped(typeof(IClassRoomExamCommandService), typeof(ClassRoomExamCommandService));
+            services.AddScoped(typeof(IClassRoomTeacherCourseCommandService), typeof(ClassRoomTeacherCourseCommandService));
+
+            #endregion
+
+            #region Query
+            services.AddScoped(typeof(IClassRoomActivityQueryService), typeof(ClassRoomActivityQueryService));
+            services.AddScoped(typeof(IClassRoomAssignmentQueryService), typeof(ClassRoomAssignmentQueryService));
+            services.AddScoped(typeof(IClassRoomExamQueryService), typeof(ClassRoomExamQueryService));
+            services.AddScoped(typeof(IClassRoomQueryService), typeof(ClassRoomQueryService));
+            services.AddScoped(typeof(IClassRoomTeacherCourseQueryService), typeof(ClassRoomTeacherCourseQueryService));
+
+            #endregion
+        }
+
+        private static void ConfigerStudentManagementServ(IServiceCollection services)
+        {
+            #region Command
+            services.AddScoped(typeof(IClassRoomStudentActivityCommandService), typeof(ClassRoomStudentActivityCommandService));
+            services.AddScoped(typeof(IClassRoomStudentAssignmentCommandService), typeof(ClassRoomStudentAssignmentCommandService));
+            services.AddScoped(typeof(IClassRoomStudentExamCommandService), typeof(ClassRoomStudentExamCommandService));
+            services.AddScoped(typeof(IStudentAttendanceCommandService), typeof(StudentAttendanceCommandService));
+            services.AddScoped(typeof(IStudentCommandService), typeof(StudentCommandService));
+            services.AddScoped(typeof(IStudentExamRateCommandService), typeof(StudentExamRateCommandService));
+            services.AddScoped(typeof(IStudentNoteCommandService), typeof(StudentNoteCommandService));
+            services.AddScoped(typeof(IStudentParentCommandService), typeof(StudentParentCommandService));
+
+            #endregion
+
+            #region Query
+            services.AddScoped(typeof(IClassRoomStudentActivityQueryService), typeof(ClassRoomStudentActivityQueryService));
+            services.AddScoped(typeof(IClassRoomStudentAssignmentQueryService), typeof(ClassRoomStudentAssignmentQueryService));
+            services.AddScoped(typeof(IClassRoomStudentExamQueryService), typeof(ClassRoomStudentExamQueryService));
+            services.AddScoped(typeof(IStudentAttendanceQueryService), typeof(StudentAttendanceQueryService));
+            services.AddScoped(typeof(IStudentExamRateQueryService), typeof(StudentExamRateQueryService));
+            services.AddScoped(typeof(IStudentNoteQueryService), typeof(StudentNoteQueryService));
+            services.AddScoped(typeof(IStudentParentQueryService), typeof(StudentParentQueryService));
+            services.AddScoped(typeof(IStudentQueryService), typeof(StudentQueryService));
+
+            #endregion
+        }
+
+        private static void ConfigerUserManagementServ(IServiceCollection services)
+        {
+            #region Command
+            services.AddScoped(typeof(IRelationTypeCommandService), typeof(RelationTypeCommandService));
+            services.AddScoped(typeof(ISchoolUserCommandService), typeof(SchoolUserCommandService));
+            services.AddScoped(typeof(IUserCommandService), typeof(UserCommandService));
+
+            #endregion
+
+            #region Query
+            services.AddScoped(typeof(IRelationTypeQueryService), typeof(RelationTypeQueryService));
+            services.AddScoped(typeof(ISchoolUserQueryService), typeof(SchoolUserQueryService));
+            services.AddScoped(typeof(IUserQueryService), typeof(UserQueryService));
+
+            #endregion
+        }
+
+        private static void ConfigerSettingsManagementServ(IServiceCollection services)
+        {
+            #region Command
+            services.AddScoped(typeof(ISMSProviderCommandService), typeof(SMSProviderCommandService));
+            services.AddScoped(typeof(IEmailProviderCommandService), typeof(EmailProviderCommandService));
+
+            #endregion
+
+            #region Query
+            services.AddScoped(typeof(ISMSProviderQueryService), typeof(SMSProviderQueryService));
+            services.AddScoped(typeof(IEmailProviderQueryService), typeof(EmailProviderQueryService));
 
             #endregion
         }
