@@ -169,7 +169,13 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<ClassRoomStudentExam> ClassRoomStudentExams { get; set; }
         public DbSet<StudentExamRate> studentExamRates { get; set; }
 
+        #endregion
+
+        #region Settings
+
         public DbSet<SMSProvider> SMSProviders { get; set; }
+        public DbSet<EmailProvider> EmailProviders { get; set; }
+
 
         #endregion
 
