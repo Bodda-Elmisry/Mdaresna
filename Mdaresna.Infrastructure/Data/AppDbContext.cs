@@ -20,6 +20,7 @@ using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.StudentManagement;
 using Mdaresna.Doamin.Models.SettingsManagement;
+using Mdaresna.Doamin.ModelsSeeding.IdentityManager;
 
 namespace Mdaresna.Infrastructure.Data
 {
@@ -40,6 +41,12 @@ namespace Mdaresna.Infrastructure.Data
             ApplySchoolManagementConfigrations(modelBuilder);
             ApplyClassRoomManagementConfigrations(modelBuilder);
             ApplyStudentManagementConfigrations(modelBuilder);
+
+            #endregion
+
+            #region Seeding files
+            ApplyIdentitySeeding(modelBuilder);
+
 
             #endregion
         }
@@ -97,6 +104,11 @@ namespace Mdaresna.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new ClassRoomStudentExamConfig());
             modelBuilder.ApplyConfiguration(new StudentExamRateConfig());
 
+        }
+
+        private void ApplyIdentitySeeding(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new PermissionSeed());
         }
 
         #region User

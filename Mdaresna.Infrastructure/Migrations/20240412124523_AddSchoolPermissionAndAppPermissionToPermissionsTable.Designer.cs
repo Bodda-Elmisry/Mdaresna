@@ -4,6 +4,7 @@ using Mdaresna.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Mdaresna.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240412124523_AddSchoolPermissionAndAppPermissionToPermissionsTable")]
+    partial class AddSchoolPermissionAndAppPermissionToPermissionsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -166,16 +169,6 @@ namespace Mdaresna.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Permissions");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("0225dbd5-9675-438c-87f2-63fb6921841c"),
-                            AppPermission = true,
-                            Description = "Assign School Manager Permission To User",
-                            Name = "AssignScoolManagerToUser",
-                            SchoolPermission = false
-                        });
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.Identity.Role", b =>
