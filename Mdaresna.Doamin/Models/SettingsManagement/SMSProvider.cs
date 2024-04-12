@@ -20,6 +20,10 @@ namespace Mdaresna.Doamin.Models.SettingsManagement
         [MaxLength(300)]
         public string SenderName { get; set; }
 
+        public string APIUrl { get; set; }
+
+        public int MessageCharactersLength { get; set; }
+
         public int ProviderPeriority { get; set; }
 
         public bool Active { get; set; }

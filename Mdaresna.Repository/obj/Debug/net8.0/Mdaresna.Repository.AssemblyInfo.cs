@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Mdaresna.Repository")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e49e2b70af012446a5db5fc6c395235048f36cd1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5e2efeca311850c396c2e5e6f441c438b071f26d")]
 [assembly: System.Reflection.AssemblyProductAttribute("Mdaresna.Repository")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Mdaresna.Repository")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

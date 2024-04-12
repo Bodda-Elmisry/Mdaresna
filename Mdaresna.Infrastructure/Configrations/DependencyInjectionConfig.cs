@@ -83,6 +83,8 @@ namespace Mdaresna.Infrastructure.Configrations
 
         private static void ConfigerBaseRepos(IServiceCollection services)
         {
+            services.AddScoped(typeof(IBaseCommandRepository<>), typeof(BaseCommandRepository<>));
+            services.AddScoped(typeof(IBaseQueryRepository<>), typeof(BaseQueryRepository<>));
             services.AddScoped(typeof(IBaseSharedRepository<>), typeof(BaseSharedRepository<>));
         }
 
