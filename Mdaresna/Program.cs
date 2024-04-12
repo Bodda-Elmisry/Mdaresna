@@ -13,6 +13,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 DependencyInjectionConfig.ConfigerRepositories(builder.Services);
+DependencyInjectionConfig.ConfigerServices(builder.Services);
 
 var app = builder.Build();
 
