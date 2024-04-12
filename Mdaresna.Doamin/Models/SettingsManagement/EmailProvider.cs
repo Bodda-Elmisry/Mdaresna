@@ -20,6 +20,11 @@ namespace Mdaresna.Doamin.Models.SettingsManagement
         [MaxLength(200)]
         public string EmailDomain { get; set; }
 
+        [MaxLength(200)]
+        public string SmtpClient { get; set; }
+
+        public int ClientPort { get; set; }
+
         public int Periority { get; set; }
 
         public bool Active { get; set; }
