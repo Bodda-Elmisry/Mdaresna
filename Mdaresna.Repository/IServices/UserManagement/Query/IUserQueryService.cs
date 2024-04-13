@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IServices.UserManagement.Query
 {
     public interface IUserQueryService : IBaseQueryService<User>
     {
+        Task<User> GetUserByPhoneNumber(string PhoneNumber);
     }
 }

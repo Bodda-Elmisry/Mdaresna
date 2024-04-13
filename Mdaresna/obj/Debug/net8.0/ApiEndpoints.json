@@ -1,5 +1,21 @@
 [
   {
+    "ContainingType": "Mdaresna.Controllers.IdentityManagement.IdentityController",
+    "Method": "Register",
+    "RelativePath": "API/Identity/Register",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "PhoneNumber",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "Mdaresna.Controllers.UserManagement.UserController",
     "Method": "CreateUser",
     "RelativePath": "API/User/CreateUser",

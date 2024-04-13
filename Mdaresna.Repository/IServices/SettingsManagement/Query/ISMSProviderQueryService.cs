@@ -10,5 +10,7 @@ namespace Mdaresna.Repository.IServices.SettingsManagement.Query
 {
     public interface ISMSProviderQueryService : IBaseQueryService<SMSProvider>
     {
+        Task<IEnumerable<SMSProvider>> GetAllActive();
+        Task<SMSProvider> GetFirstActive();
     }
 }

@@ -1,4 +1,5 @@
-﻿using Mdaresna.Infrastructure.Repositories.Base;
+﻿using Mdaresna.Infrastructure.BServices.IdentityManagement;
+using Mdaresna.Infrastructure.Repositories.Base;
 using Mdaresna.Infrastructure.Repositories.CoinsManagement.Command;
 using Mdaresna.Infrastructure.Repositories.CoinsManagement.Query;
 using Mdaresna.Infrastructure.Repositories.IdentityManagement.Command;
@@ -13,6 +14,7 @@ using Mdaresna.Infrastructure.Repositories.SettingsManagement.Command;
 using Mdaresna.Infrastructure.Repositories.SettingsManagement.Query;
 using Mdaresna.Infrastructure.Repositories.UserManagement.Command;
 using Mdaresna.Infrastructure.Repositories.UserManagement.Query;
+using Mdaresna.Infrastructure.Services.Base;
 using Mdaresna.Infrastructure.Services.CoinsManagement.Command;
 using Mdaresna.Infrastructure.Services.CoinsManagement.Query;
 using Mdaresna.Infrastructure.Services.IdentityManagement.Command;
@@ -27,6 +29,7 @@ using Mdaresna.Infrastructure.Services.SettingsManagement.Command;
 using Mdaresna.Infrastructure.Services.SettingsManagement.Query;
 using Mdaresna.Infrastructure.Services.UserManagement.Command;
 using Mdaresna.Infrastructure.Services.UserManagement.Query;
+using Mdaresna.Repository.IBServices.IdentityManagement;
 using Mdaresna.Repository.IRepositories.Base;
 using Mdaresna.Repository.IRepositories.CoinsManagement.Command;
 using Mdaresna.Repository.IRepositories.CoinsManagement.Query;
@@ -254,6 +257,7 @@ namespace Mdaresna.Infrastructure.Configrations
 
         public static void ConfigerServices(IServiceCollection services)
         {
+            //ConfigeBaseServ(services);
             ConfigerCoinsManagementServ(services);
             ConfigerIdentityManagementServ(services);
             ConfigerSchoolManagementServ(services);
@@ -261,6 +265,26 @@ namespace Mdaresna.Infrastructure.Configrations
             ConfigerStudentManagementServ(services);
             ConfigerUserManagementServ(services);
             ConfigerSettingsManagementServ(services);
+            ConfigerBIdentityManagementServ(services);
+
+        }
+
+        private static void ConfigerBIdentityManagementServ(IServiceCollection services)
+        {
+            services.AddScoped(typeof(IIdentityService), typeof(IdentityService));
+
+        }
+
+        private static void ConfigeBaseServ(IServiceCollection services)
+        {
+            #region Command
+            
+            #endregion
+
+            #region Query
+            services.AddScoped(typeof(IBaseQueryService<>), typeof(BaseQueryService<>));
+            
+            #endregion
         }
 
         private static void ConfigerCoinsManagementServ(IServiceCollection services)
