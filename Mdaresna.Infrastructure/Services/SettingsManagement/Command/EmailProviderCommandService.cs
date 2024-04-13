@@ -1,6 +1,6 @@
 ﻿using Mdaresna.Doamin.Models.CoinsManagement;
 using Mdaresna.Doamin.Models.SettingsManagement;
-using Mdaresna.Infrastructure.Hilpers;
+using Mdaresna.Infrastructure.Helpers;
 using Mdaresna.Repository.IRepositories.Base;
 using Mdaresna.Repository.IServices.Base;
 using Mdaresna.Repository.IServices.SettingsManagement.Command;
@@ -28,7 +28,7 @@ namespace Mdaresna.Infrastructure.Services.SettingsManagement.Command
         {
             try
             {
-                entity.Id = DataGenerationHilper.GenerateRowId();
+                entity.Id = DataGenerationHelper.GenerateRowId();
                 return commandRepository.Create(entity);
             }
             catch (Exception ex)

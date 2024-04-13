@@ -37,6 +37,52 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "Mdaresna.Controllers.IdentityManagement.IdentityController",
+    "Method": "SaveUserMainInfo",
+    "RelativePath": "API/Identity/SaveUserMainInfo",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "Id",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "UserName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "FirstName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "LastName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Password",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "ImageUrl",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "EncriptionKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "Mdaresna.Controllers.UserManagement.UserController",
     "Method": "CreateUser",
     "RelativePath": "API/User/CreateUser",
@@ -86,6 +132,11 @@
       },
       {
         "Name": "Password",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "EncriptionKey",
         "Type": "System.String",
         "IsRequired": false
       },

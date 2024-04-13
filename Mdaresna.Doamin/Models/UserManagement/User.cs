@@ -35,6 +35,8 @@ namespace Mdaresna.Doamin.Models.UserManagement
         [MaxLength(800)]
         public string Password { get; set; }
 
+        public string EncriptionKey { get; set; }
+
         public string? ImageUrl { get; set; }
 
         public DateTime? BirthDay { get; set; }

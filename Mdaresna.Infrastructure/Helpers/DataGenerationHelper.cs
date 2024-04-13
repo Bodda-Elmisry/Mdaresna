@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mdaresna.Infrastructure.Hilpers
+namespace Mdaresna.Infrastructure.Helpers
 {
-    public class DataGenerationHilper
+    public class DataGenerationHelper
     {
         public static Guid GenerateRowId()
         {

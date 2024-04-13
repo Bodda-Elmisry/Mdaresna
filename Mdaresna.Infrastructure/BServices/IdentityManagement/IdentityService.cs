@@ -42,6 +42,7 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             }
 
             RegisterUser.PhoneConfirmationCode = SMSHelper.GenerateConfirmationKey();
+            RegisterUser.EncriptionKey = UserHelper.GenerateEncriptionKey(32);
             result.Regidterd = userCommandService.Create(RegisterUser);
             result.MSG = await SendConferamtionKey(RegisterUser);
             return result;
@@ -75,6 +76,37 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                     result.MSG = "Number Confirmed";
                     result.User = user;
                 }
+            }
+
+            return result;
+        }
+
+        public async Task<SaveUserMainInfoResultDTO> SaveUserMainInfo(User userInfo)
+        {
+            var result = new SaveUserMainInfoResultDTO
+            {
+                Saved = false,
+                MSG = "Error",
+                User = null
+            };
+
+            var user = await userQueryService.GetByIdAsync(userInfo.Id);
+
+            if (user != null)
+            {
+                user.UserName = userInfo.UserName;
+                user.FirstName = userInfo.FirstName;
+                user.LastName = userInfo.LastName;
+                user.Password = UserHelper.EncryptPassword(userInfo.Password, userInfo.EncriptionKey);
+                user.ImageUrl = userInfo.ImageUrl;
+            }
+
+            result.Saved = userCommandService.Update(user);
+
+            if (result.Saved)
+            {
+                result.MSG = "Info Saved";
+                result.User = user;
             }
 
             return result;

@@ -58,5 +58,31 @@ namespace Mdaresna.Controllers.IdentityManagement
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost("SaveUserMainInfo")]
+        public async Task<IActionResult> SaveUserMainInfo(SaveUserMainInfoDTO userMainInfo)
+        {
+            try
+            {
+                var user = new User
+                {
+                    Id = userMainInfo.Id,
+                    UserName = userMainInfo.UserName,
+                    FirstName = userMainInfo.FirstName,
+                    LastName = userMainInfo.LastName,
+                    Password = userMainInfo.Password,
+                    EncriptionKey = userMainInfo.EncriptionKey,
+                    ImageUrl = userMainInfo.ImageUrl
+                };
+                var result = await identityService.SaveUserMainInfo(user);
+
+                return result.Saved ? Ok(result.User) : BadRequest(result.MSG);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

@@ -16,7 +16,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
             builder.HasData(
                 new Permission
                 {
-                    Id = Guid.NewGuid(),
+                    Id = Guid.Parse("0225DBD5-9675-438C-87F2-63FB6921841C"),
                     Name = "AssignScoolManagerToUser",
                     Description = "Assign School Manager Permission To User",
                     SchoolPermission = false,

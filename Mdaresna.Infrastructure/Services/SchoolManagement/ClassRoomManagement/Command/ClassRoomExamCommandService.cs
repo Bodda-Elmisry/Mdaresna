@@ -1,5 +1,5 @@
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
-using Mdaresna.Infrastructure.Hilpers;
+using Mdaresna.Infrastructure.Helpers;
 using Mdaresna.Repository.IRepositories.Base;
 using Mdaresna.Repository.IServices.Base;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
@@ -26,7 +26,7 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.
         {
             try
             {
-                entity.Id = DataGenerationHilper.GenerateRowId();
+                entity.Id = DataGenerationHelper.GenerateRowId();
                 return commandRepository.Create(entity);
             }
             catch (Exception ex)
