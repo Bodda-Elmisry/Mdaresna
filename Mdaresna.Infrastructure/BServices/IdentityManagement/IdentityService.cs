@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.UserManagement;
+﻿using Mdaresna.Doamin.DTOs.Identity;
+using Mdaresna.Doamin.Models.UserManagement;
 using Mdaresna.DTOs.IdentityDTO;
 using Mdaresna.Repository.Helpers;
 using Mdaresna.Repository.IBServices.IdentityManagement;
@@ -31,7 +32,7 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
         public async Task<RegisterResultDTO> Register(User RegisterUser)
         {
             var result = new RegisterResultDTO { MSG = string.Empty };
-          
+
             var user = await userQueryService.GetUserByPhoneNumber(RegisterUser.PhoneNumber);
             if (user != null)
             {
@@ -53,5 +54,34 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             MSG = await SMSHelper.SendConfirmationKey(smsProvider, user);
             return MSG;
         }
+
+        public async Task<ConfirmSMSKeyResultDTO> ConfirmKey(string PhoneNumber, string Key)
+        {
+            var result = new ConfirmSMSKeyResultDTO
+            {
+                Confirmed = false,
+                MSG = "Wrong Confirmation Key",
+                User = null
+            };
+
+            var user = await userQueryService.GetUserByPhoneNumberAndConfirmationKey(PhoneNumber, Key);
+            if (user != null)
+            {
+                user.PhoneConfirmed = true;
+                user.PhoneConfirmationCode = null;
+                result.Confirmed = userCommandService.Update(user);
+                if(result.Confirmed)
+                {
+                    result.MSG = "Number Confirmed";
+                    result.User = user;
+                }
+            }
+
+            return result;
+        }
+
+
+
+
     }
 }

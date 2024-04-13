@@ -27,19 +27,14 @@ namespace Mdaresna.Infrastructure.Services.UserManagement.Query
             this.userQueryRepository = userQueryRepository;
         }
 
-        //public async Task<IEnumerable<User>> GetAllAsync()
-        //{
-        //    return await userQueryRepository.GetAllAsync();
-        //}
-
-        //public Task<User> GetByIdAsync(Guid id)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
         public async Task<User> GetUserByPhoneNumber(string PhoneNumber)
         {
             return await userQueryRepository.GetUserByPhoneNumber(PhoneNumber);
+        }
+
+        public async Task<User> GetUserByPhoneNumberAndConfirmationKey(string PhoneNumber, string Key)
+        {
+            return await userQueryRepository.GetUserByPhoneNumberAndConfirmationKey(PhoneNumber, Key);
         }
     }
 }

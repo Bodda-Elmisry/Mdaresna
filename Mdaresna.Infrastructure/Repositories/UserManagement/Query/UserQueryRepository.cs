@@ -24,5 +24,11 @@ namespace Mdaresna.Infrastructure.Repositories.UserManagement.Query
         {
             return await context.Users.FirstOrDefaultAsync(u=> u.PhoneNumber == PhoneNumber);
         }
+
+        public async Task<User> GetUserByPhoneNumberAndConfirmationKey(string PhoneNumber, string Key)
+        {
+            return await context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == PhoneNumber &&
+                                                                u.PhoneConfirmationCode == Key);
+        }
     }
 }
