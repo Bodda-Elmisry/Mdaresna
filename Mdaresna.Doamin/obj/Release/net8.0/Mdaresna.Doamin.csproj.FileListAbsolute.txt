@@ -1,0 +1,13 @@
+F:\Work\Mdaresna\Mdaresna.Doamin\bin\Release\net8.0\Mdaresna.Doamin.deps.json
+F:\Work\Mdaresna\Mdaresna.Doamin\bin\Release\net8.0\Mdaresna.Doamin.dll
+F:\Work\Mdaresna\Mdaresna.Doamin\bin\Release\net8.0\Mdaresna.Doamin.pdb
+F:\Work\Mdaresna\Mdaresna.Doamin\obj\Release\net8.0\Mdaresna.Doamin.csproj.AssemblyReference.cache
+F:\Work\Mdaresna\Mdaresna.Doamin\obj\Release\net8.0\Mdaresna.Doamin.GeneratedMSBuildEditorConfig.editorconfig
+F:\Work\Mdaresna\Mdaresna.Doamin\obj\Release\net8.0\Mdaresna.Doamin.AssemblyInfoInputs.cache
+F:\Work\Mdaresna\Mdaresna.Doamin\obj\Release\net8.0\Mdaresna.Doamin.AssemblyInfo.cs
+F:\Work\Mdaresna\Mdaresna.Doamin\obj\Release\net8.0\Mdaresna.Doamin.csproj.CoreCompileInputs.cache
+F:\Work\Mdaresna\Mdaresna.Doamin\obj\Release\net8.0\Mdaresna.Doamin.sourcelink.json
+F:\Work\Mdaresna\Mdaresna.Doamin\obj\Release\net8.0\Mdaresna.Doamin.dll
+F:\Work\Mdaresna\Mdaresna.Doamin\obj\Release\net8.0\refint\Mdaresna.Doamin.dll
+F:\Work\Mdaresna\Mdaresna.Doamin\obj\Release\net8.0\Mdaresna.Doamin.pdb
+F:\Work\Mdaresna\Mdaresna.Doamin\obj\Release\net8.0\ref\Mdaresna.Doamin.dll
