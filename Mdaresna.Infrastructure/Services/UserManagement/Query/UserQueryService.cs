@@ -36,5 +36,10 @@ namespace Mdaresna.Infrastructure.Services.UserManagement.Query
         {
             return await userQueryRepository.GetUserByPhoneNumberAndConfirmationKey(PhoneNumber, Key);
         }
+
+        public async Task<User> GetUserByPhoneNumberAndPassword(string PhoneNumber, string Password)
+        {
+            return await userQueryRepository.GetUserByPhoneNumberAndPassword(PhoneNumber, Password);
+        }
     }
 }

@@ -22,6 +22,27 @@
   },
   {
     "ContainingType": "Mdaresna.Controllers.IdentityManagement.IdentityController",
+    "Method": "Login",
+    "RelativePath": "API/Identity/Login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "PhoneNumber",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Password",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Mdaresna.Controllers.IdentityManagement.IdentityController",
     "Method": "Register",
     "RelativePath": "API/Identity/Register",
     "HttpMethod": "POST",

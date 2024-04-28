@@ -84,5 +84,19 @@ namespace Mdaresna.Controllers.IdentityManagement
             }
         }
 
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login(LoginDTO login)
+        {
+            try
+            {
+                var result = await identityService.Login(login.PhoneNumber, login.Password);
+                return result == null ? BadRequest("Wrong phone number or password") : Ok(result);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

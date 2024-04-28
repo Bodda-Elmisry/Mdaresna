@@ -14,5 +14,6 @@ namespace Mdaresna.Repository.IBServices.IdentityManagement
         Task<RegisterResultDTO> Register(User RegisterUser);
         Task<ConfirmSMSKeyResultDTO> ConfirmKey(string PhoneNumber, string Key);
         Task<SaveUserMainInfoResultDTO> SaveUserMainInfo(User userInfo);
+        Task<LoginResultDTO> Login(string PhoneNumber, string Password);
     }
 }

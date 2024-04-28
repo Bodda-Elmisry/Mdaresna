@@ -20,15 +20,28 @@ namespace Mdaresna.Infrastructure.Repositories.UserManagement.Query
             this.context = context;
         }
 
-        public async Task<User> GetUserByPhoneNumber(string PhoneNumber)
+        public async Task<User?> GetUserByPhoneNumber(string PhoneNumber)
         {
-            return await context.Users.FirstOrDefaultAsync(u=> u.PhoneNumber == PhoneNumber);
+            try
+            {
+                return await context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == PhoneNumber);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
-        public async Task<User> GetUserByPhoneNumberAndConfirmationKey(string PhoneNumber, string Key)
+        public async Task<User?> GetUserByPhoneNumberAndConfirmationKey(string PhoneNumber, string Key)
         {
             return await context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == PhoneNumber &&
                                                                 u.PhoneConfirmationCode == Key);
+        }
+
+        public async Task<User?> GetUserByPhoneNumberAndPassword(string PhoneNumber, string Password)
+        {
+            return await context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == PhoneNumber &&
+                                                                u.Password == Password);
         }
     }
 }

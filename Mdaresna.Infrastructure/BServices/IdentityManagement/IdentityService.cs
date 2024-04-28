@@ -112,8 +112,19 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             return result;
         }
 
+        public async Task<LoginResultDTO> Login(string PhoneNumber, string Password)
+        {
+            var user = await userQueryService.GetUserByPhoneNumber(PhoneNumber);
 
-
-
+            if (user != null && user.Id != Guid.Empty)
+            {
+                var decp = UserHelper.DecryptPassword(user.Password, user.EncriptionKey);
+                var encriptedPassword = UserHelper.EncryptPassword(Password, user.EncriptionKey);
+                user = user.Password == encriptedPassword ? user : null;
+            }
+            var result = (user == null || user.Id == Guid.Empty) ? null : new LoginResultDTO { LogedinUser = user };
+            
+            return result;
+        }
     }
 }
