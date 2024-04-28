@@ -109,6 +109,7 @@ namespace Mdaresna.Infrastructure.Data
         private void ApplyIdentitySeeding(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new PermissionSeed());
+            modelBuilder.ApplyConfiguration(new RoleSeed());
         }
 
         #region User
