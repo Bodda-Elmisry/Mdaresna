@@ -1,6 +1,7 @@
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Infrastructure.Services.Base;
 using Mdaresna.Repository.IRepositories.Base;
+using Mdaresna.Repository.IRepositories.IdentityManagement.Query;
 using Mdaresna.Repository.IServices.IdentityManagement.Query;
 using System;
 using System.Collections.Generic;
@@ -14,13 +15,21 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Query
     {
         private readonly IBaseQueryRepository<Role> queryRepository;
         private readonly IBaseSharedRepository<Role> sharedRepository;
+        private readonly IRoleQueryRepository roleQueryRepository;
 
         public RoleQueryService(IBaseQueryRepository<Role> queryRepository,
-            IBaseSharedRepository<Role> sharedRepository) 
+            IBaseSharedRepository<Role> sharedRepository,
+            IRoleQueryRepository roleQueryRepository) 
                 : base(queryRepository, sharedRepository)
         {
             this.queryRepository = queryRepository;
             this.sharedRepository = sharedRepository;
+            this.roleQueryRepository = roleQueryRepository;
+        }
+
+        public async Task<Role?> GetStanderdRole()
+        {
+            return await roleQueryRepository.GetStanderdRole();
         }
     }
 }

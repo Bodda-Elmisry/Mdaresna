@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IRepositories.IdentityManagement.Query
 {
     public interface IUserRoleQueryRepository : IBaseQueryRepository<UserRole>
     {
+        Task<bool> CheckUserRole(UserRole userRole);
     }
 }

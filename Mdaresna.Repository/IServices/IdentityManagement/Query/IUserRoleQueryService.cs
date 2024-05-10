@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IServices.IdentityManagement.Query
 {
     public interface IUserRoleQueryService : IBaseQueryService<UserRole>
     {
+        Task<bool> CheckRoleExist(UserRole role);
     }
 }

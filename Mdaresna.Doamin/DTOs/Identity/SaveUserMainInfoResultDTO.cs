@@ -11,7 +11,7 @@ namespace Mdaresna.Doamin.DTOs.Identity
     {
         public bool Saved { get; set; }
 
-        public User User { get; set; }
+        public User? User { get; set; }
 
         public string MSG { get; set; }
     }

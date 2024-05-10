@@ -1,6 +1,7 @@
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Infrastructure.Services.Base;
 using Mdaresna.Repository.IRepositories.Base;
+using Mdaresna.Repository.IRepositories.IdentityManagement.Query;
 using Mdaresna.Repository.IServices.IdentityManagement.Query;
 using System;
 using System.Collections.Generic;
@@ -14,13 +15,21 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Query
     {
         private readonly IBaseQueryRepository<UserRole> queryRepository;
         private readonly IBaseSharedRepository<UserRole> sharedRepository;
+        private readonly IUserRoleQueryRepository userRoleQueryRepository;
 
         public UserRoleQueryService(IBaseQueryRepository<UserRole> queryRepository,
-            IBaseSharedRepository<UserRole> sharedRepository) 
+            IBaseSharedRepository<UserRole> sharedRepository,
+            IUserRoleQueryRepository userRoleQueryRepository) 
                 : base(queryRepository, sharedRepository)
         {
             this.queryRepository = queryRepository;
             this.sharedRepository = sharedRepository;
+            this.userRoleQueryRepository = userRoleQueryRepository;
+        }
+
+        public async Task<bool> CheckRoleExist(UserRole role)
+        {
+            return await userRoleQueryRepository.CheckUserRole(role);
         }
     }
 }

@@ -1,8 +1,11 @@
 ﻿using Mdaresna.Doamin.DTOs.Identity;
+using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Doamin.Models.UserManagement;
 using Mdaresna.DTOs.IdentityDTO;
 using Mdaresna.Repository.Helpers;
 using Mdaresna.Repository.IBServices.IdentityManagement;
+using Mdaresna.Repository.IRepositories.IdentityManagement.Command;
+using Mdaresna.Repository.IServices.IdentityManagement.Command;
 using Mdaresna.Repository.IServices.IdentityManagement.Query;
 using Mdaresna.Repository.IServices.SettingsManagement.Query;
 using Mdaresna.Repository.IServices.UserManagement.Command;
@@ -21,16 +24,25 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
         private readonly IUserQueryService userQueryService;
         private readonly ISMSProviderQueryService sMSProviderQueryService;
         private readonly IUserPermissionQueryService userPermissionQueryService;
+        private readonly IUserRoleQueryService userRoleQueryService;
+        private readonly IUserRoleCommandService userRoleCommandService;
+        private readonly IRoleQueryService roleQueryService;
 
         public IdentityService(IUserCommandService userCommandService,
                                 IUserQueryService userQueryService,
                                 ISMSProviderQueryService sMSProviderQueryService,
-                                IUserPermissionQueryService userPermissionQueryService)
+                                IUserPermissionQueryService userPermissionQueryService,
+                                IUserRoleQueryService userRoleQueryService,
+                                IUserRoleCommandService userRoleCommandService,
+                                IRoleQueryService roleQueryService)
         {
             this.userCommandService = userCommandService;
             this.userQueryService = userQueryService;
             this.sMSProviderQueryService = sMSProviderQueryService;
             this.userPermissionQueryService = userPermissionQueryService;
+            this.userRoleQueryService = userRoleQueryService;
+            this.userRoleCommandService = userRoleCommandService;
+            this.roleQueryService = roleQueryService;
         }
 
         public async Task<RegisterResultDTO> Register(User RegisterUser)
@@ -38,7 +50,7 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             var result = new RegisterResultDTO { MSG = string.Empty };
 
             var user = await userQueryService.GetUserByPhoneNumber(RegisterUser.PhoneNumber);
-            if (user != null)
+            if (user != null && !string.IsNullOrEmpty(user.Password))
             {
                 result.MSG = "User Already Exist";
                 result.Regidterd = false;
@@ -47,8 +59,40 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
 
             RegisterUser.PhoneConfirmationCode = SMSHelper.GenerateConfirmationKey();
             RegisterUser.EncriptionKey = UserHelper.GenerateEncriptionKey(32);
-            result.Regidterd = userCommandService.Create(RegisterUser);
+
+            if (user == null)
+            {
+                result.Regidterd = userCommandService.Create(RegisterUser);
+            }
+            else
+            {
+                RegisterUser.Id = user.Id;
+            }
+            var addStanderdRole = await AddStanderdRoleToUser(RegisterUser.Id);
             result.MSG = await SendConferamtionKey(RegisterUser);
+            return result;
+        }
+
+        private async Task<bool> AddStanderdRoleToUser(Guid UserId)
+        {
+            var result = false;
+            var standerdRole = await roleQueryService.GetStanderdRole();
+
+            if( standerdRole == null ) 
+            { 
+                return false;
+            }
+
+            var standerdUserRole = new UserRole { UserId = UserId, RoleId = standerdRole.Id };
+
+            result = await userRoleQueryService.CheckRoleExist(standerdUserRole);
+
+            if (!result)
+            {
+                userRoleCommandService.Create(standerdUserRole);
+                result = true;
+            }
+
             return result;
         }
 
@@ -101,11 +145,13 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                 user.UserName = userInfo.UserName;
                 user.FirstName = userInfo.FirstName;
                 user.LastName = userInfo.LastName;
-                user.Password = UserHelper.EncryptPassword(userInfo.Password, userInfo.EncriptionKey);
+                user.Password = UserHelper.EncryptPassword(userInfo.Password, user.EncriptionKey);
                 user.ImageUrl = userInfo.ImageUrl;
+
+                result.Saved = userCommandService.Update(user);
+
             }
 
-            result.Saved = userCommandService.Update(user);
 
             if (result.Saved)
             {

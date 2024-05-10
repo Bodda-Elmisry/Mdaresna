@@ -20,10 +20,10 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             this.context = context;
         }
 
-        public async Task<Guid> GetStanderdRole()
+        public async Task<Role?> GetStanderdRole()
         {
             var role = await context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == "standerd");
-            return role.Id;
+            return role;
         }
     }
 }

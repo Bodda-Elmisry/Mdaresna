@@ -71,7 +71,7 @@ namespace Mdaresna.Controllers.IdentityManagement
                     FirstName = userMainInfo.FirstName,
                     LastName = userMainInfo.LastName,
                     Password = userMainInfo.Password,
-                    EncriptionKey = userMainInfo.EncriptionKey,
+                    //EncriptionKey = userMainInfo.EncriptionKey,
                     ImageUrl = userMainInfo.ImageUrl
                 };
                 var result = await identityService.SaveUserMainInfo(user);

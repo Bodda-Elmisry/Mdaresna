@@ -20,7 +20,7 @@ namespace Mdaresna.DTOs.IdentityDTO
 
         public string? ImageUrl { get; set; }
 
-        public string EncriptionKey { get; set; }
+        //public string EncriptionKey { get; set; }
 
 
 
