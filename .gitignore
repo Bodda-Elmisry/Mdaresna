@@ -3,3 +3,26 @@
 ################################################################################
 
 /.vs
+/Mdaresna/bin/Debug/net8.0/Mdaresna.dll
+/Mdaresna/bin/Debug/net8.0/Mdaresna.exe
+/Mdaresna/bin/Debug/net8.0/Mdaresna.Infrastructure.dll
+/Mdaresna/bin/Debug/net8.0/Mdaresna.Infrastructure.pdb
+/Mdaresna/bin/Debug/net8.0/Mdaresna.pdb
+/Mdaresna/obj/Debug/net8.0/ref/Mdaresna.dll
+/Mdaresna/obj/Debug/net8.0/refint/Mdaresna.dll
+/Mdaresna/obj/Debug/net8.0/apphost.exe
+/Mdaresna/obj/Debug/net8.0/Mdaresna.AssemblyInfo.cs
+/Mdaresna/obj/Debug/net8.0/Mdaresna.AssemblyInfoInputs.cache
+/Mdaresna/obj/Debug/net8.0/Mdaresna.csproj.AssemblyReference.cache
+/Mdaresna/obj/Debug/net8.0/Mdaresna.dll
+/Mdaresna/obj/Debug/net8.0/Mdaresna.pdb
+/Mdaresna/obj/Debug/net8.0/Mdaresna.sourcelink.json
+/Mdaresna.Infrastructure/bin/Debug/net8.0/Mdaresna.Infrastructure.dll
+/Mdaresna.Infrastructure/bin/Debug/net8.0/Mdaresna.Infrastructure.pdb
+/Mdaresna.Infrastructure/obj/Debug/net8.0/Mdaresna.Infrastructure.AssemblyInfo.cs
+/Mdaresna.Infrastructure/obj/Debug/net8.0/Mdaresna.Infrastructure.AssemblyInfoInputs.cache
+/Mdaresna.Infrastructure/obj/Debug/net8.0/Mdaresna.Infrastructure.dll
+/Mdaresna.Infrastructure/obj/Debug/net8.0/Mdaresna.Infrastructure.pdb
+/Mdaresna.Infrastructure/obj/Debug/net8.0/Mdaresna.Infrastructure.sourcelink.json
+/Mdaresna.Infrastructure/obj/Debug/net8.0/ref/Mdaresna.Infrastructure.dll
+/Mdaresna.Infrastructure/obj/Debug/net8.0/refint/Mdaresna.Infrastructure.dll
