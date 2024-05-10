@@ -155,6 +155,10 @@ namespace Mdaresna.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Key")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -173,7 +177,26 @@ namespace Mdaresna.Infrastructure.Migrations
                             Id = new Guid("0225dbd5-9675-438c-87f2-63fb6921841c"),
                             AppPermission = true,
                             Description = "Assign School Manager Permission To User",
-                            Name = "AssignScoolManagerToUser",
+                            Key = "AssignScoolManagerToUser",
+                            Name = "Assign Scool Manager To User",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("9301fc37-ae75-4ef6-b6fa-a656452e5a2e"),
+                            AppPermission = false,
+                            Description = "Create new shool",
+                            Key = "CreateSchool",
+                            Name = "Add School",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("219007ea-620e-4d96-8292-2d015ef68db1"),
+                            AppPermission = true,
+                            Description = "View Childerns List",
+                            Key = "ViewChildernsList",
+                            Name = "View Childerns",
                             SchoolPermission = false
                         });
                 });
@@ -257,6 +280,18 @@ namespace Mdaresna.Infrastructure.Migrations
                     b.HasIndex("PermissionId");
 
                     b.ToTable("RolePermissions");
+
+                    b.HasData(
+                        new
+                        {
+                            RoleId = new Guid("92d00b28-9d25-4bd2-a587-6c22a3a07a92"),
+                            PermissionId = new Guid("219007ea-620e-4d96-8292-2d015ef68db1")
+                        },
+                        new
+                        {
+                            RoleId = new Guid("4b8a99fe-b759-4c18-9500-8052c3d7ac73"),
+                            PermissionId = new Guid("9301fc37-ae75-4ef6-b6fa-a656452e5a2e")
+                        });
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.Identity.UserPermission", b =>
@@ -308,7 +343,7 @@ namespace Mdaresna.Infrastructure.Migrations
                     b.Property<Guid?>("SchoolId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("UserId", "RoleId", "SchoolId");
+                    b.HasKey("UserId", "RoleId");
 
                     b.HasIndex("RoleId");
 
@@ -1406,8 +1441,7 @@ namespace Mdaresna.Infrastructure.Migrations
                     b.HasOne("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.School", "School")
                         .WithMany()
                         .HasForeignKey("SchoolId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Mdaresna.Doamin.Models.UserManagement.User", "User")
                         .WithMany()

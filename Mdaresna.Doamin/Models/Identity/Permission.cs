@@ -10,6 +10,8 @@ namespace Mdaresna.Doamin.Models.Identity
 {
     public class Permission : BaseModel
     {
+        [MaxLength(200)]
+        public string? Key { get; set; }
         public string? Description { get; set; }
         public bool SchoolPermission { get; set; }
         public bool AppPermission { get; set; }

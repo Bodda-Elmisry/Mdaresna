@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IRepositories.IdentityManagement.Query
 {
     public interface IRoleQueryRepository : IBaseQueryRepository<Role>
     {
+        Task<Guid> GetStanderdRole();
     }
 }

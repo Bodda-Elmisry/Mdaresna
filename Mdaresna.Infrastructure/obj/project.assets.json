@@ -4115,7 +4115,6 @@
   },
   "projectFileDependencyGroups": {
     "net8.0": [
-      "Mdaresna.Doamin >= 1.0.0",
       "Mdaresna.Repository >= 1.0.0",
       "Microsoft.EntityFrameworkCore >= 8.0.2",
       "Microsoft.EntityFrameworkCore.SqlServer >= 8.0.2",
@@ -4154,9 +4153,6 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "F:\\Work\\Mdaresna\\Mdaresna.Doamin\\Mdaresna.Doamin.csproj": {
-              "projectPath": "F:\\Work\\Mdaresna\\Mdaresna.Doamin\\Mdaresna.Doamin.csproj"
-            },
             "F:\\Work\\Mdaresna\\Mdaresna.Repository\\Mdaresna.Repository.csproj": {
               "projectPath": "F:\\Work\\Mdaresna\\Mdaresna.Repository\\Mdaresna.Repository.csproj"
             }

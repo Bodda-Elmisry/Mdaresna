@@ -3,6 +3,7 @@ using Mdaresna.Doamin.Models.UserManagement;
 using Mdaresna.DTOs.IdentityDTO;
 using Mdaresna.Repository.Helpers;
 using Mdaresna.Repository.IBServices.IdentityManagement;
+using Mdaresna.Repository.IServices.IdentityManagement.Query;
 using Mdaresna.Repository.IServices.SettingsManagement.Query;
 using Mdaresna.Repository.IServices.UserManagement.Command;
 using Mdaresna.Repository.IServices.UserManagement.Query;
@@ -19,14 +20,17 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
         private readonly IUserCommandService userCommandService;
         private readonly IUserQueryService userQueryService;
         private readonly ISMSProviderQueryService sMSProviderQueryService;
+        private readonly IUserPermissionQueryService userPermissionQueryService;
 
         public IdentityService(IUserCommandService userCommandService,
                                 IUserQueryService userQueryService,
-                                ISMSProviderQueryService sMSProviderQueryService)
+                                ISMSProviderQueryService sMSProviderQueryService,
+                                IUserPermissionQueryService userPermissionQueryService)
         {
             this.userCommandService = userCommandService;
             this.userQueryService = userQueryService;
             this.sMSProviderQueryService = sMSProviderQueryService;
+            this.userPermissionQueryService = userPermissionQueryService;
         }
 
         public async Task<RegisterResultDTO> Register(User RegisterUser)
@@ -118,11 +122,19 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
 
             if (user != null && user.Id != Guid.Empty)
             {
-                var decp = UserHelper.DecryptPassword(user.Password, user.EncriptionKey);
+                //var decp = UserHelper.DecryptPassword(user.Password, user.EncriptionKey);
                 var encriptedPassword = UserHelper.EncryptPassword(Password, user.EncriptionKey);
                 user = user.Password == encriptedPassword ? user : null;
+
+                 
             }
-            var result = (user == null || user.Id == Guid.Empty) ? null : new LoginResultDTO { LogedinUser = user };
+            var permissions = (user == null || user.Id == Guid.Empty) ? null : await userPermissionQueryService.GetUserPermissions(user.Id);
+            var result = (user == null || user.Id == Guid.Empty) ? null 
+                            : new LoginResultDTO 
+                            { 
+                                LogedinUser = user,
+                                Permissions = permissions.Select(x => x.Key),
+                            };
             
             return result;
         }

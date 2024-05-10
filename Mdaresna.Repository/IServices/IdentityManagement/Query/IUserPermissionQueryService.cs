@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IServices.IdentityManagement.Query
 {
     public interface IUserPermissionQueryService : IBaseQueryService<UserPermission>
     {
+        Task<IEnumerable<Permission>> GetUserPermissions(Guid UserId);
     }
 }

@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.UserManagement;
+﻿using Mdaresna.Doamin.Models.Identity;
+using Mdaresna.Doamin.Models.UserManagement;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,6 @@ namespace Mdaresna.Doamin.DTOs.Identity
     public class LoginResultDTO
     {
         public User LogedinUser { get; set; }
+        public IEnumerable<string> Permissions { get; set; }
     }
 }

@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Mdaresna.Doamin\Mdaresna.Doamin.csproj" />
     <ProjectReference Include="..\Mdaresna.Repository\Mdaresna.Repository.csproj" />
   </ItemGroup>
 

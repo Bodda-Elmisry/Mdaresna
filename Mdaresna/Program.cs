@@ -11,18 +11,30 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<AppDbContext>(options => 
+        options.UseSqlServer(
+                    builder.Configuration.GetConnectionString("DefaultConnection")
+                    //sqlServerOptions =>
+                    //{
+                    //    sqlServerOptions.EnableRetryOnFailure();
+                    //}
+                ),
+                ServiceLifetime.Singleton
+        );
 DependencyInjectionConfig.ConfigerRepositories(builder.Services);
 DependencyInjectionConfig.ConfigerServices(builder.Services);
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 

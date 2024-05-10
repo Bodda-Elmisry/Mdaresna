@@ -918,7 +918,6 @@
       },
       "Mdaresna.Infrastructure/1.0.0": {
         "dependencies": {
-          "Mdaresna.Doamin": "1.0.0",
           "Mdaresna.Repository": "1.0.0",
           "Microsoft.EntityFrameworkCore": "8.0.2",
           "Microsoft.EntityFrameworkCore.SqlServer": "8.0.2"

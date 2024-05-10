@@ -110,6 +110,7 @@ namespace Mdaresna.Infrastructure.Data
         {
             modelBuilder.ApplyConfiguration(new PermissionSeed());
             modelBuilder.ApplyConfiguration(new RoleSeed());
+            modelBuilder.ApplyConfiguration(new RolePermissionSeed());
         }
 
         #region User

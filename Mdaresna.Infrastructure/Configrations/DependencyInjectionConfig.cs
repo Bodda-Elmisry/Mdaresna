@@ -271,7 +271,7 @@ namespace Mdaresna.Infrastructure.Configrations
 
         private static void ConfigerBIdentityManagementServ(IServiceCollection services)
         {
-            services.AddScoped(typeof(IIdentityService), typeof(IdentityService));
+            services.AddScoped<IIdentityService, IdentityService>();
 
         }
 

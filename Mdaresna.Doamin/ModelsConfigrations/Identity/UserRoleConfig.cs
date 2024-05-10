@@ -13,7 +13,8 @@ namespace Mdaresna.Doamin.ModelsConfigrations.Identity
     {
         public void Configure(EntityTypeBuilder<UserRole> builder)
         {
-            builder.HasKey(r => new { r.UserId, r.RoleId, r.SchoolId });
+            builder.HasKey(r => new { r.UserId, r.RoleId});
+            
 
 
             builder

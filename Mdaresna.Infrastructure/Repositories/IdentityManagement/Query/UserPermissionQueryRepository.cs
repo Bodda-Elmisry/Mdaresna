@@ -2,6 +2,7 @@ using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
 using Mdaresna.Repository.IRepositories.IdentityManagement.Query;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +13,40 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
 {
     public class UserPermissionQueryRepository : BaseQueryRepository<UserPermission>, IUserPermissionQueryRepository
     {
-       public UserPermissionQueryRepository(AppDbContext context) : base(context)
+        private readonly AppDbContext context;
+
+        public UserPermissionQueryRepository(AppDbContext context) : base(context)
         {
+            this.context = context;
+        }
+
+        public async Task<IEnumerable<Permission>> GetUserPermissions(Guid UserId)
+        {
+            var query = from rp in context.RolePermissions
+                        join p in context.Permissions on rp.PermissionId equals p.Id
+                        join ur in (
+                            from userRole in context.UserRoles
+                            join schoolUser in context.SchoolUsers.OrderByDescending(su => su.SchoolId).Take(1)
+                            on userRole.SchoolId equals schoolUser.SchoolId into schoolUsers
+                            from su in schoolUsers.DefaultIfEmpty()
+                            where userRole.UserId == UserId
+                            select userRole.RoleId
+                    ) on rp.RoleId equals ur
+                        select p;
+
+            /*
+             var query = from p in context.RolePermissions
+            join perm in context.Permissions on p.PermissionId equals perm.Id
+            join ur in (from userRole in context.UserRoles
+                        join schoolUser in (from su in context.SchoolUsers
+                                            orderby su.SchoolId
+                                            select su.SchoolId).Take(1) on userRole.SchoolId equals schoolUser
+                        where userRole.UserId == "01AB4B99-CF6A-4BC2-92DA-85037D7D7F9E").DefaultIfEmpty() on ur.RoleId equals p.RoleId
+            select p;             
+              */
+
+            var result = await query.ToListAsync();
+            return result;
         }
     }
 }

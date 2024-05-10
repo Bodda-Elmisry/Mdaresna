@@ -106,9 +106,6 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "F:\\Work\\Mdaresna\\Mdaresna.Doamin\\Mdaresna.Doamin.csproj": {
-                "projectPath": "F:\\Work\\Mdaresna\\Mdaresna.Doamin\\Mdaresna.Doamin.csproj"
-              },
               "F:\\Work\\Mdaresna\\Mdaresna.Repository\\Mdaresna.Repository.csproj": {
                 "projectPath": "F:\\Work\\Mdaresna\\Mdaresna.Repository\\Mdaresna.Repository.csproj"
               }

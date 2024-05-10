@@ -2,6 +2,7 @@
 using Mdaresna.Doamin.Models.UserManagement;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
@@ -24,6 +25,6 @@ namespace Mdaresna.Doamin.Models.Identity
         public Guid? SchoolId { get; set; }
 
         [ForeignKey(nameof(SchoolId))]
-        public School School { get; set; }
+        public School? School { get; set; }
     }
 }
