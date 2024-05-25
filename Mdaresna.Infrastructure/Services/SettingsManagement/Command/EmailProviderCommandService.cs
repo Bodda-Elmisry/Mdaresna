@@ -29,6 +29,8 @@ namespace Mdaresna.Infrastructure.Services.SettingsManagement.Command
             try
             {
                 entity.Id = DataGenerationHelper.GenerateRowId();
+                entity.CreateDate = DateTime.Now;
+                entity.LastModifyDate = DateTime.Now;
                 return commandRepository.Create(entity);
             }
             catch (Exception ex)
@@ -54,6 +56,7 @@ namespace Mdaresna.Infrastructure.Services.SettingsManagement.Command
         {
             try
             {
+                entity.LastModifyDate = DateTime.Now;
                 return commandRepository.Update(entity);
             }
             catch (Exception ex)

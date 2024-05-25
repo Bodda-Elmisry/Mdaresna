@@ -18,7 +18,7 @@ namespace Mdaresna.Controllers.IdentityManagement
         }
 
         [HttpPost("Register")]
-        public async Task<IActionResult> Register(RegisterDTO register)
+        public async Task<IActionResult> Register([FromBody] RegisterDTO register)
         {
             try
             {
@@ -30,7 +30,9 @@ namespace Mdaresna.Controllers.IdentityManagement
                     Password = string.Empty,
                     UserType = UserTypeEnum.Normal,
                     EmailConfirmed = false,
-                    PhoneConfirmed = false
+                    PhoneConfirmed = false,
+                    CreateDate = DateTime.Now,
+                    LastModifyDate = DateTime.Now
                 };
 
                 var registerd = await identityService.Register(user);
@@ -45,7 +47,7 @@ namespace Mdaresna.Controllers.IdentityManagement
         }
 
         [HttpPost("ConfirmPhonNumber")]
-        public async Task<IActionResult> ConfirmPhonNumber(ConfirmPhoneDTO confirmPhone)
+        public async Task<IActionResult> ConfirmPhonNumber([FromBody] ConfirmPhoneDTO confirmPhone)
         {
             try
             {
@@ -60,7 +62,7 @@ namespace Mdaresna.Controllers.IdentityManagement
         }
 
         [HttpPost("SaveUserMainInfo")]
-        public async Task<IActionResult> SaveUserMainInfo(SaveUserMainInfoDTO userMainInfo)
+        public async Task<IActionResult> SaveUserMainInfo([FromBody] SaveUserMainInfoDTO userMainInfo)
         {
             try
             {
@@ -85,7 +87,7 @@ namespace Mdaresna.Controllers.IdentityManagement
         }
 
         [HttpPost("Login")]
-        public async Task<IActionResult> Login(LoginDTO login)
+        public async Task<IActionResult> Login([FromBody] LoginDTO login)
         {
             try
             {

@@ -21,6 +21,10 @@ using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.StudentManagement;
 using Mdaresna.Doamin.Models.SettingsManagement;
 using Mdaresna.Doamin.ModelsSeeding.IdentityManager;
+using Mdaresna.Doamin.ModelsSeeding.CoinsManagement;
+using Mdaresna.Doamin.ModelsSeeding.SchoolManagement.SchoolManagement;
+using System.Runtime.InteropServices.Marshalling;
+using Mdaresna.Doamin.ModelsConfigrations.SettingsManagement;
 
 namespace Mdaresna.Infrastructure.Data
 {
@@ -41,6 +45,7 @@ namespace Mdaresna.Infrastructure.Data
             ApplySchoolManagementConfigrations(modelBuilder);
             ApplyClassRoomManagementConfigrations(modelBuilder);
             ApplyStudentManagementConfigrations(modelBuilder);
+            ApplySettingsManagementConfig(modelBuilder);
 
             #endregion
 
@@ -53,6 +58,8 @@ namespace Mdaresna.Infrastructure.Data
 
         private void ApplyIdentityConfigrations(ModelBuilder modelBuilder)
         {
+            modelBuilder.ApplyConfiguration(new PermissionConfig());
+            modelBuilder.ApplyConfiguration(new RoleConfig());
             modelBuilder.ApplyConfiguration(new RolePermissionConfig());
             modelBuilder.ApplyConfiguration(new UserPermissionConfig());
             modelBuilder.ApplyConfiguration(new UserPermissionSchoolClassRoomConfig());
@@ -62,18 +69,26 @@ namespace Mdaresna.Infrastructure.Data
 
         private void ApplyUserManagementConfigrations(ModelBuilder modelBuilder)
         {
+            modelBuilder.ApplyConfiguration(new RelationTypeConfig());
             modelBuilder.ApplyConfiguration(new SchoolUserConfig());
+            modelBuilder.ApplyConfiguration(new UserConfig());
         }
 
         private void ApplyCoinManagementConfigrations(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new CoinTypeConfig());
             modelBuilder.ApplyConfiguration(new PaymentTransactionConfig());
+            modelBuilder.ApplyConfiguration(new PaymentTypeConfig());
             modelBuilder.ApplyConfiguration(new SchoolPaymentRequestConfig());
         }
 
         private void ApplySchoolManagementConfigrations(ModelBuilder modelBuilder)
         {
+            modelBuilder.ApplyConfiguration(new ClassRoomConfig());
+            modelBuilder.ApplyConfiguration(new SchoolConfig());
+            modelBuilder.ApplyConfiguration(new SchoolContactConfig());
+            modelBuilder.ApplyConfiguration(new SchoolPostImageConfig());
+            modelBuilder.ApplyConfiguration(new SchoolTypeConfig());
             modelBuilder.ApplyConfiguration(new SchoolTeacherCourseConfig());
             modelBuilder.ApplyConfiguration(new SchoolExamRateHeaderConfig());
             modelBuilder.ApplyConfiguration(new SchoolPostConfig());
@@ -106,11 +121,19 @@ namespace Mdaresna.Infrastructure.Data
 
         }
 
+        private void ApplySettingsManagementConfig(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new EmailProviderConfig());
+            modelBuilder.ApplyConfiguration(new SMSProviderConfig());
+        }
+
         private void ApplyIdentitySeeding(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new PermissionSeed());
             modelBuilder.ApplyConfiguration(new RoleSeed());
             modelBuilder.ApplyConfiguration(new RolePermissionSeed());
+            modelBuilder.ApplyConfiguration(new CoinTypeSeed());
+            modelBuilder.ApplyConfiguration(new SchoolTypeSeed());
         }
 
         #region User

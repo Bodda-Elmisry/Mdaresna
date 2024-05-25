@@ -26,6 +26,8 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Command
         {
             try
             {
+                entity.CreateDate = DateTime.Now;
+                entity.LastModifyDate = DateTime.Now;
                 entity.Id = DataGenerationHelper.GenerateRowId();
                 return commandRepository.Create(entity);
             }
@@ -52,6 +54,7 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Command
         {
             try
             {
+                entity.LastModifyDate = DateTime.Now;
                 return commandRepository.Update(entity);
             }
             catch (Exception ex)

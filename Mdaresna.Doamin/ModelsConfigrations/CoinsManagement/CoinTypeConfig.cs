@@ -16,6 +16,14 @@ namespace Mdaresna.Doamin.ModelsConfigrations.CoinsManagement
             builder
                 .Property(p => p.Value)
                 .HasColumnType("decimal(18,2)");
+
+            //builder
+            //    .Property(p => p.CreateDate)
+            //    .HasDefaultValue(DateTime.Now);
+
+            //builder
+            //    .Property(p => p.LastModifyDate)
+            //    .HasDefaultValue(DateTime.Now);
         }
     }
 }

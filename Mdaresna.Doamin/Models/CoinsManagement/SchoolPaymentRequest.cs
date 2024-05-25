@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
+﻿using Mdaresna.Doamin.Models.Base;
+using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Doamin.Models.UserManagement;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Doamin.Models.CoinsManagement
 {
-    public class SchoolPaymentRequest
+    public class SchoolPaymentRequest :AuditBase
     {
         public Guid Id { get; set; }
         public DateTime RequestDate { get; set; }

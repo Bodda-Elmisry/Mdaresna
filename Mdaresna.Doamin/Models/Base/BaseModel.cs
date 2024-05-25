@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Doamin.Models.Base
 {
-    public class BaseModel
+    public class BaseModel : AuditBase
     {
         public Guid Id { get; set; }
 

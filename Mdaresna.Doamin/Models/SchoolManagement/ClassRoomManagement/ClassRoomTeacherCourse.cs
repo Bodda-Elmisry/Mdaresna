@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
+﻿using Mdaresna.Doamin.Models.Base;
+using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Doamin.Models.UserManagement;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement
 {
-    public class ClassRoomTeacherCourse
+    public class ClassRoomTeacherCourse : AuditBase
     {
         public Guid TeacherId { get; set; }
 

@@ -29,6 +29,14 @@ namespace Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.StudentManagement
                 .HasOne(e => e.Activity)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
+
+            //builder
+            //    .Property(p => p.CreateDate)
+            //    .HasDefaultValue(DateTime.Now);
+
+            //builder
+            //    .Property(p => p.LastModifyDate)
+            //    .HasDefaultValue(DateTime.Now);
         }
     }
 }

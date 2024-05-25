@@ -31,6 +31,14 @@ namespace Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.ClassRoomManageme
                 .HasOne(e=> e.Course)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
+
+            //builder
+            //   .Property(p => p.CreateDate)
+            //   .HasDefaultValue(DateTime.Now);
+
+            //builder
+            //    .Property(p => p.LastModifyDate)
+            //    .HasDefaultValue(DateTime.Now);
         }
     }
 }

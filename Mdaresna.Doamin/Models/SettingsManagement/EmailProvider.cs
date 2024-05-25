@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mdaresna.Doamin.Models.Base;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Doamin.Models.SettingsManagement
 {
-    public class EmailProvider
+    public class EmailProvider : AuditBase
     {
         public Guid Id { get; set; }
 

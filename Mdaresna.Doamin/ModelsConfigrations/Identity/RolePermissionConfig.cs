@@ -15,6 +15,14 @@ namespace Mdaresna.Doamin.ModelsConfigrations.Identity
         public void Configure(EntityTypeBuilder<RolePermission> builder)
         {
             builder.HasKey(r => new { r.RoleId, r.PermissionId });
+
+            //builder
+            //   .Property(p => p.CreateDate)
+            //   .HasDefaultValue(DateTime.Now);
+
+            //builder
+            //    .Property(p => p.LastModifyDate)
+            //    .HasDefaultValue(DateTime.Now);
         }
     }
 }

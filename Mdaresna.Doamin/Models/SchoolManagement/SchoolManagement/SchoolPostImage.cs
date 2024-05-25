@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mdaresna.Doamin.Models.Base;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement
 {
-    public class SchoolPostImage
+    public class SchoolPostImage : AuditBase
     {
         public Guid Id { get; set; }
 

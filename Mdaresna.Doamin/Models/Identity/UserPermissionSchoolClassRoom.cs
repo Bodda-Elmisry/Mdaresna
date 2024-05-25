@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.UserManagement;
+﻿using Mdaresna.Doamin.Models.Base;
+using Mdaresna.Doamin.Models.UserManagement;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Doamin.Models.Identity
 {
-    public class UserPermissionSchoolClassRoom
+    public class UserPermissionSchoolClassRoom :AuditBase
     {
         public Guid UserId { get; set; }
 

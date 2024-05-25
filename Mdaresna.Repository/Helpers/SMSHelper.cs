@@ -25,7 +25,7 @@ namespace Mdaresna.Repository.Helpers
                     provider.ProviderPassword,
                     provider.SenderName,
                     user.PhoneNumber,
-                    string.Format("Welcome to Mdaresna\n Your Key: {0}", user.PhoneConfirmationCode)
+                    string.Format("Welcome to Altaly\n Your Key: {0}", user.PhoneConfirmationCode)
                     );
 
                 HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;

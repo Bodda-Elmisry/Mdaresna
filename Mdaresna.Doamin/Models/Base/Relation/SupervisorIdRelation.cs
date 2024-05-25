@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Doamin.Models.Base.Relation
 {
-    public class SupervisorIdRelation
+    public class SupervisorIdRelation : AuditBase
     {
         public Guid SupervisorId { get; set; }
 

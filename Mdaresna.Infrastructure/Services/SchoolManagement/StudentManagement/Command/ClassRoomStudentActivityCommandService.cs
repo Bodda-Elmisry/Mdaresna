@@ -26,6 +26,8 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Co
         {
             try
             {
+                entity.CreateDate = DateTime.Now;
+                entity.LastModifyDate = DateTime.Now;
                 return commandRepository.Create(entity);
             }
             catch (Exception ex)
@@ -38,6 +40,7 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Co
         {
             try
             {
+                entity.LastModifyDate = DateTime.Now;
                 return commandRepository.Delete(entity);
             }
             catch (Exception ex)

@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
+﻿using Mdaresna.Doamin.Models.Base;
+using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Doamin.Models.UserManagement
 {
-    public class SchoolUser
+    public class SchoolUser : AuditBase
     {
         public Guid SchoolId { get; set; }
 

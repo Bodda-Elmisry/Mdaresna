@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mdaresna.Doamin.Models.Base;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Doamin.Models.Identity
 {
-    public class RolePermission
+    public class RolePermission : AuditBase
     {
         public Guid RoleId { get; set; }
 

@@ -1,4 +1,5 @@
 ﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Models.Base;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Doamin.Models.UserManagement
 {
-    public class User
+    public class User : AuditBase
     {
         public Guid Id { get; set; }
 

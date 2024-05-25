@@ -14,6 +14,14 @@ namespace Mdaresna.Doamin.ModelsConfigrations.Identity
         public void Configure(EntityTypeBuilder<UserPermissionSchoolClassRoom> builder)
         {
             builder.HasKey(r => new { r.UserId, r.PermissionId, r.ClassRoomId });
+
+            //builder
+            //   .Property(p => p.CreateDate)
+            //   .HasDefaultValue(DateTime.Now);
+
+            //builder
+            //    .Property(p => p.LastModifyDate)
+            //    .HasDefaultValue(DateTime.Now);
         }
     }
 }

@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Qu
 {
     public interface ISchoolQueryRepository : IBaseQueryRepository<School>
     {
+        Task<IEnumerable<School>> GetUserAdminSchools(Guid userId);
     }
 }

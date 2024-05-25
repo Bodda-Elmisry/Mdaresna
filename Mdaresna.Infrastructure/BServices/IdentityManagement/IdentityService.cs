@@ -7,6 +7,7 @@ using Mdaresna.Repository.IBServices.IdentityManagement;
 using Mdaresna.Repository.IRepositories.IdentityManagement.Command;
 using Mdaresna.Repository.IServices.IdentityManagement.Command;
 using Mdaresna.Repository.IServices.IdentityManagement.Query;
+using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Repository.IServices.SettingsManagement.Query;
 using Mdaresna.Repository.IServices.UserManagement.Command;
 using Mdaresna.Repository.IServices.UserManagement.Query;
@@ -27,6 +28,7 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
         private readonly IUserRoleQueryService userRoleQueryService;
         private readonly IUserRoleCommandService userRoleCommandService;
         private readonly IRoleQueryService roleQueryService;
+        private readonly ISchoolQueryService schoolQueryService;
 
         public IdentityService(IUserCommandService userCommandService,
                                 IUserQueryService userQueryService,
@@ -34,7 +36,8 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                                 IUserPermissionQueryService userPermissionQueryService,
                                 IUserRoleQueryService userRoleQueryService,
                                 IUserRoleCommandService userRoleCommandService,
-                                IRoleQueryService roleQueryService)
+                                IRoleQueryService roleQueryService,
+                                ISchoolQueryService schoolQueryService)
         {
             this.userCommandService = userCommandService;
             this.userQueryService = userQueryService;
@@ -43,6 +46,7 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             this.userRoleQueryService = userRoleQueryService;
             this.userRoleCommandService = userRoleCommandService;
             this.roleQueryService = roleQueryService;
+            this.schoolQueryService = schoolQueryService;
         }
 
         public async Task<RegisterResultDTO> Register(User RegisterUser)
@@ -67,6 +71,7 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             else
             {
                 RegisterUser.Id = user.Id;
+                result.Regidterd = true;
             }
             var addStanderdRole = await AddStanderdRoleToUser(RegisterUser.Id);
             result.MSG = await SendConferamtionKey(RegisterUser);
@@ -174,15 +179,22 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
 
                  
             }
-            var permissions = (user == null || user.Id == Guid.Empty) ? null : await userPermissionQueryService.GetUserPermissions(user.Id);
             var result = (user == null || user.Id == Guid.Empty) ? null 
-                            : new LoginResultDTO 
-                            { 
-                                LogedinUser = user,
-                                Permissions = permissions.Select(x => x.Key),
-                            };
+                            : await GetUserInfo(user);
             
             return result;
+        }
+
+        private async Task<LoginResultDTO> GetUserInfo(User user)
+        {
+            var permissions = await userPermissionQueryService.GetUserPermissions(user.Id);
+
+            return new LoginResultDTO
+            {
+                LogedinUser = user,
+                Permissions = permissions.Select(x => x.Key),
+                Schools = await schoolQueryService.GetUserAdminSchools(user.Id),
+            };
         }
     }
 }

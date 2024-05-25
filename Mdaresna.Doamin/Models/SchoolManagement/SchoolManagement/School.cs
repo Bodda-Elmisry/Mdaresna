@@ -12,6 +12,7 @@ namespace Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement
 {
     public class School : BaseModel
     {
+        
         public string About { get; set; }
 
         public string Vesion { get; set; }
@@ -23,17 +24,17 @@ namespace Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement
         public Guid SchoolTypeId { get; set; }
 
         [ForeignKey(nameof(SchoolTypeId))]
-        public SchoolType SchoolType { get; set; }
+        public virtual SchoolType SchoolType { get; set; }
 
         public Guid CoinTypeId { get; set; }
 
         [ForeignKey(nameof(CoinTypeId))]
-        public CoinType CoinType { get; set; }
+        public virtual CoinType CoinType { get; set; }
 
         public int AvailableCoins { get; set; }
         public Guid SchoolAdminId { get; set; }
 
         [ForeignKey(nameof(SchoolAdminId))]
-        public User SchoolAdmin { get; set; }
+        public virtual User SchoolAdmin { get; set; }
     }
 }
