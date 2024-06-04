@@ -26,7 +26,7 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Com
         {
             try
             {
-                entity.Id = DataGenerationHelper.GenerateRowId();
+                //entity.Id = DataGenerationHelper.GenerateRowId();
                 entity.CreateDate = DateTime.Now;
                 entity.LastModifyDate = DateTime.Now;
                 return commandRepository.Create(entity);
@@ -39,15 +39,16 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Com
 
         public async Task<bool> DeleteAsync(ClassRoomLanguage entity)
         {
-            try
-            {
-                entity = await sharedRepository.GetAsync(entity.Id);
-                return commandRepository.Delete(entity);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            //try
+            //{
+            //    entity = await sharedRepository.GetAsync(entity.Id);
+            //    return commandRepository.Delete(entity);
+            //}
+            //catch (Exception ex)
+            //{
+            //    throw ex;
+            //}
+            throw new NotImplementedException();
         }
 
         public bool Update(ClassRoomLanguage entity)

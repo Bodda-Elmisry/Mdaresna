@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.Base;
+﻿using Mdaresna.Doamin.Models.AdminManagement;
+using Mdaresna.Doamin.Models.Base;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -20,6 +21,6 @@ namespace Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement
         public Guid LanguageId { get; set; }
 
         [ForeignKey(nameof(LanguageId))]
-        public ClassRoomLanguage Language { get; set; }
+        public Language Language { get; set; }
     }
 }

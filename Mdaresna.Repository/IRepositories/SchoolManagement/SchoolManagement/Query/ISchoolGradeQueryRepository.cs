@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Qu
 {
     public interface ISchoolGradeQueryRepository : IBaseQueryRepository<SchoolGrade>
     {
+        Task<IEnumerable<SchoolGrade>> GetSchoolGradesAsync(Guid SchoolId);
     }
 }

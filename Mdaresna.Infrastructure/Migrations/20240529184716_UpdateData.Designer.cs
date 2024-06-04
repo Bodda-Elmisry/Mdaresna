@@ -4,6 +4,7 @@ using Mdaresna.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Mdaresna.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240529184716_UpdateData")]
+    partial class UpdateData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,49 +24,6 @@ namespace Mdaresna.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("Mdaresna.Doamin.Models.AdminManagement.Language", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("CreateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("LastModifyDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Languages");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("7ff35951-0ad2-46c7-83a5-f4487365ec1c"),
-                            CreateDate = new DateTime(2024, 6, 4, 23, 0, 54, 602, DateTimeKind.Local).AddTicks(9807),
-                            Description = "For arabic class rooms",
-                            LastModifyDate = new DateTime(2024, 6, 4, 23, 0, 54, 602, DateTimeKind.Local).AddTicks(9877),
-                            Name = "Arabic"
-                        },
-                        new
-                        {
-                            Id = new Guid("42f73d52-5e31-485a-8f5b-6f53670447ca"),
-                            CreateDate = new DateTime(2024, 6, 4, 23, 0, 54, 602, DateTimeKind.Local).AddTicks(9882),
-                            Description = "For english class rooms",
-                            LastModifyDate = new DateTime(2024, 6, 4, 23, 0, 54, 602, DateTimeKind.Local).AddTicks(9884),
-                            Name = "English"
-                        });
-                });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.CoinsManagement.CoinType", b =>
                 {
@@ -689,23 +649,45 @@ namespace Mdaresna.Infrastructure.Migrations
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.ClassRoomLanguage", b =>
                 {
-                    b.Property<Guid>("SchoolId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("LanguageId")
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("CreateDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("LastModifyDate")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("SchoolId", "LanguageId");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
-                    b.HasIndex("LanguageId");
+                    b.HasKey("Id");
 
                     b.ToTable("ClassRoomLanguages");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("7ff35951-0ad2-46c7-83a5-f4487365ec1c"),
+                            CreateDate = new DateTime(2024, 5, 29, 21, 47, 16, 119, DateTimeKind.Local).AddTicks(6390),
+                            Description = "For arabic class rooms",
+                            LastModifyDate = new DateTime(2024, 5, 29, 21, 47, 16, 119, DateTimeKind.Local).AddTicks(6441),
+                            Name = "Arabic"
+                        },
+                        new
+                        {
+                            Id = new Guid("42f73d52-5e31-485a-8f5b-6f53670447ca"),
+                            CreateDate = new DateTime(2024, 5, 29, 21, 47, 16, 119, DateTimeKind.Local).AddTicks(6445),
+                            Description = "For english class rooms",
+                            LastModifyDate = new DateTime(2024, 5, 29, 21, 47, 16, 119, DateTimeKind.Local).AddTicks(6447),
+                            Name = "English"
+                        });
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.School", b =>
@@ -1765,7 +1747,7 @@ namespace Mdaresna.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Mdaresna.Doamin.Models.AdminManagement.Language", "Language")
+                    b.HasOne("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.ClassRoomLanguage", "Language")
                         .WithMany()
                         .HasForeignKey("LanguageId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1908,25 +1890,6 @@ namespace Mdaresna.Infrastructure.Migrations
                     b.Navigation("Teacher");
                 });
 
-            modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.ClassRoomLanguage", b =>
-                {
-                    b.HasOne("Mdaresna.Doamin.Models.AdminManagement.Language", "Language")
-                        .WithMany()
-                        .HasForeignKey("LanguageId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.School", "School")
-                        .WithMany()
-                        .HasForeignKey("SchoolId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Language");
-
-                    b.Navigation("School");
-                });
-
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.School", b =>
                 {
                     b.HasOne("Mdaresna.Doamin.Models.CoinsManagement.CoinType", "CoinType")
@@ -1975,7 +1938,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.SchoolCourse", b =>
                 {
-                    b.HasOne("Mdaresna.Doamin.Models.AdminManagement.Language", "Language")
+                    b.HasOne("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.ClassRoomLanguage", "Language")
                         .WithMany()
                         .HasForeignKey("LanguageId")
                         .OnDelete(DeleteBehavior.Restrict)

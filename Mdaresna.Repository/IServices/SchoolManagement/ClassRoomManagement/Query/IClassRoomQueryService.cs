@@ -10,5 +10,7 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Que
 {
     public interface IClassRoomQueryService : IBaseQueryService<ClassRoom>
     {
+        Task<IEnumerable<ClassRoom>> GetBySchoolIdAsync(Guid SchoolId);
+        Task<IEnumerable<ClassRoom>> GetBySchoolIdAndSupervisorIdAsync(Guid SchoolId, Guid SupervisorId);
     }
 }

@@ -13,13 +13,18 @@ namespace Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.SchoolManagement
     {
         public void Configure(EntityTypeBuilder<ClassRoomLanguage> builder)
         {
-            //builder
-            //    .Property(p => p.CreateDate)
-            //    .HasDefaultValue(DateTime.Now);
+            builder.HasKey(m => new {m.SchoolId, m.LanguageId});
 
-            //builder
-            //    .Property(p => p.LastModifyDate)
-            //    .HasDefaultValue(DateTime.Now);
+            builder.HasOne(m => m.School)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(m => m.Language)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+
         }
     }
 }

@@ -25,6 +25,10 @@ using Mdaresna.Doamin.ModelsSeeding.CoinsManagement;
 using Mdaresna.Doamin.ModelsSeeding.SchoolManagement.SchoolManagement;
 using System.Runtime.InteropServices.Marshalling;
 using Mdaresna.Doamin.ModelsConfigrations.SettingsManagement;
+using Mdaresna.Doamin.ModelsSeeding.SchoolManagement.ClassRoomManagement;
+using Mdaresna.Doamin.Models.AdminManagement;
+using Mdaresna.Doamin.ModelsSeeding.AdminManagement;
+using Mdaresna.Doamin.ModelsConfigrations.AdminManagement;
 
 namespace Mdaresna.Infrastructure.Data
 {
@@ -39,6 +43,7 @@ namespace Mdaresna.Infrastructure.Data
         {
             #region Config files
 
+            ApplyAdminConfigrations(modelBuilder);
             ApplyIdentityConfigrations(modelBuilder);
             ApplyUserManagementConfigrations(modelBuilder);
             ApplyCoinManagementConfigrations(modelBuilder);
@@ -50,10 +55,17 @@ namespace Mdaresna.Infrastructure.Data
             #endregion
 
             #region Seeding files
+            ApplyAdminSeeding(modelBuilder);
             ApplyIdentitySeeding(modelBuilder);
+            ApplySchoolSeeding(modelBuilder);
 
 
             #endregion
+        }
+
+        private void ApplyAdminConfigrations(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new LanguageConfig());
         }
 
         private void ApplyIdentityConfigrations(ModelBuilder modelBuilder)
@@ -85,6 +97,7 @@ namespace Mdaresna.Infrastructure.Data
         private void ApplySchoolManagementConfigrations(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new ClassRoomConfig());
+            modelBuilder.ApplyConfiguration(new ClassRoomLanguageConfig());
             modelBuilder.ApplyConfiguration(new SchoolConfig());
             modelBuilder.ApplyConfiguration(new SchoolContactConfig());
             modelBuilder.ApplyConfiguration(new SchoolPostImageConfig());
@@ -133,8 +146,22 @@ namespace Mdaresna.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new RoleSeed());
             modelBuilder.ApplyConfiguration(new RolePermissionSeed());
             modelBuilder.ApplyConfiguration(new CoinTypeSeed());
-            modelBuilder.ApplyConfiguration(new SchoolTypeSeed());
         }
+
+        private void ApplySchoolSeeding(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new SchoolTypeSeed());
+            modelBuilder.ApplyConfiguration(new ClassRoomLanguageSeed());
+        }
+
+        private void ApplyAdminSeeding(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new LanguageSeed());
+        }
+
+        #region Admin
+        public DbSet<Language> Languages { get; set; }
+        #endregion
 
         #region User
 
