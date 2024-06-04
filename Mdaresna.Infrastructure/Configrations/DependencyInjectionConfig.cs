@@ -1,4 +1,6 @@
 ﻿using Mdaresna.Infrastructure.BServices.IdentityManagement;
+using Mdaresna.Infrastructure.Repositories.AdminManagement.Command;
+using Mdaresna.Infrastructure.Repositories.AdminManagement.Query;
 using Mdaresna.Infrastructure.Repositories.Base;
 using Mdaresna.Infrastructure.Repositories.CoinsManagement.Command;
 using Mdaresna.Infrastructure.Repositories.CoinsManagement.Query;
@@ -14,6 +16,8 @@ using Mdaresna.Infrastructure.Repositories.SettingsManagement.Command;
 using Mdaresna.Infrastructure.Repositories.SettingsManagement.Query;
 using Mdaresna.Infrastructure.Repositories.UserManagement.Command;
 using Mdaresna.Infrastructure.Repositories.UserManagement.Query;
+using Mdaresna.Infrastructure.Services.AdminManagement.Command;
+using Mdaresna.Infrastructure.Services.AdminManagement.Query;
 using Mdaresna.Infrastructure.Services.Base;
 using Mdaresna.Infrastructure.Services.CoinsManagement.Command;
 using Mdaresna.Infrastructure.Services.CoinsManagement.Query;
@@ -30,6 +34,8 @@ using Mdaresna.Infrastructure.Services.SettingsManagement.Query;
 using Mdaresna.Infrastructure.Services.UserManagement.Command;
 using Mdaresna.Infrastructure.Services.UserManagement.Query;
 using Mdaresna.Repository.IBServices.IdentityManagement;
+using Mdaresna.Repository.IRepositories.AdminManagement.Command;
+using Mdaresna.Repository.IRepositories.AdminManagement.Query;
 using Mdaresna.Repository.IRepositories.Base;
 using Mdaresna.Repository.IRepositories.CoinsManagement.Command;
 using Mdaresna.Repository.IRepositories.CoinsManagement.Query;
@@ -45,6 +51,8 @@ using Mdaresna.Repository.IRepositories.SettingsManagement.Command;
 using Mdaresna.Repository.IRepositories.SettingsManagement.Query;
 using Mdaresna.Repository.IRepositories.UserManagement.Command;
 using Mdaresna.Repository.IRepositories.UserManagement.Query;
+using Mdaresna.Repository.IServices.AdminManagement.Command;
+using Mdaresna.Repository.IServices.AdminManagement.Query;
 using Mdaresna.Repository.IServices.Base;
 using Mdaresna.Repository.IServices.CoinsManagement.Command;
 using Mdaresna.Repository.IServices.CoinsManagement.Query;
@@ -75,6 +83,7 @@ namespace Mdaresna.Infrastructure.Configrations
         public static void ConfigerRepositories(IServiceCollection services)
         {
             ConfigerBaseRepos(services);
+            ConfigerAdminRepos(services);
             ConfigerCoinsManagementRepos(services);
             ConfigerIdentityManagementRepos(services);
             ConfigerSchoolManagementRepos(services);
@@ -89,6 +98,12 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(IBaseCommandRepository<>), typeof(BaseCommandRepository<>));
             services.AddScoped(typeof(IBaseQueryRepository<>), typeof(BaseQueryRepository<>));
             services.AddScoped(typeof(IBaseSharedRepository<>), typeof(BaseSharedRepository<>));
+        }
+
+        private static void ConfigerAdminRepos(IServiceCollection services)
+        {
+            services.AddScoped(typeof(ILanguageCommandRepository), typeof(LanguageCommandRepository));
+            services.AddScoped(typeof(ILanguageQueryRepository), typeof(LanguageQueryRepository));
         }
 
         private static void ConfigerCoinsManagementRepos(IServiceCollection services)
@@ -258,6 +273,7 @@ namespace Mdaresna.Infrastructure.Configrations
         public static void ConfigerServices(IServiceCollection services)
         {
             //ConfigeBaseServ(services);
+            ConfigeAdminServ(services);
             ConfigerCoinsManagementServ(services);
             ConfigerIdentityManagementServ(services);
             ConfigerSchoolManagementServ(services);
@@ -284,6 +300,19 @@ namespace Mdaresna.Infrastructure.Configrations
             #region Query
             services.AddScoped(typeof(IBaseQueryService<>), typeof(BaseQueryService<>));
             
+            #endregion
+        }
+
+        private static void ConfigeAdminServ(IServiceCollection services)
+        {
+            #region Command
+            services.AddScoped(typeof(ILanguageCommandService), typeof(LanguageCommandService));
+
+            #endregion
+
+            #region Query
+            services.AddScoped(typeof(ILanguageQueryService), typeof(LanguageQueryService));
+
             #endregion
         }
 
