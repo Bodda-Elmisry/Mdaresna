@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.Models.AdminManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Repository.IRepositories.Base;
 using System;
@@ -10,5 +11,7 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Qu
 {
     public interface IClassRoomLanguageQueryRepository : IBaseQueryRepository<ClassRoomLanguage>
     {
+        public Task<IEnumerable<School>> GetLanguageSchools(Guid LnaguageId);
+        public Task<IEnumerable<Language>> GetSchoolLanguages(Guid LnaguageId);
     }
 }

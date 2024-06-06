@@ -1,4 +1,5 @@
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
+using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Repository.IServices.Base;
 using System;
 using System.Collections.Generic;
