@@ -30,7 +30,6 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                     About = School.About,
                     Active = false,
                     AvailableCoins = 0,
-                    CoinTypeId = School.CoinTypeId,
                     ImageUrl = School.ImageUrl,
                     SchoolAdminId = School.SchoolAdminId,
                     SchoolTypeId = School.SchoolTypeId,

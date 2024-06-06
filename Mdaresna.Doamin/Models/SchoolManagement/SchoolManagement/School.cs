@@ -26,7 +26,7 @@ namespace Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement
         [ForeignKey(nameof(SchoolTypeId))]
         public virtual SchoolType SchoolType { get; set; }
 
-        public Guid CoinTypeId { get; set; }
+        public Guid? CoinTypeId { get; set; }
 
         [ForeignKey(nameof(CoinTypeId))]
         public virtual CoinType CoinType { get; set; }

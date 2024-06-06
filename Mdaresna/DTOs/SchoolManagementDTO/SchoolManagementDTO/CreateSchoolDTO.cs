@@ -17,7 +17,6 @@ namespace Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO
 
         public Guid SchoolTypeId { get; set; }
 
-        public Guid CoinTypeId { get; set; }
         public Guid SchoolAdminId { get; set; }
     }
 }
