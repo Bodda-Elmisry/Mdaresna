@@ -1,4 +1,5 @@
 ﻿using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
+using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.ClassRoomManagementDTO;
 using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Query;
@@ -21,12 +22,26 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
             this.classRoomCommandService = classRoomCommandService;
         }
 
-        [HttpPost("GetSchoolClasses")]
-        public async Task<IActionResult> GetSchoolClasses([FromBody] Guid SchoolId)
+        [HttpPost("GetInitialData")]
+        public async Task<IActionResult> GetInitialData([FromBody] SchoolIdDTO schoolId)
         {
             try
             {
-                var result = await classRoomQueryService.GetBySchoolIdAsync(SchoolId);
+                var result = await classRoomQueryService.getInitialValue(schoolId.SchoolId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("GetSchoolClasses")]
+        public async Task<IActionResult> GetSchoolClasses([FromBody] SchoolIdDTO schoolId)
+        {
+            try
+            {
+                var result = await classRoomQueryService.GetBySchoolIdAsync(schoolId.SchoolId);
                 return Ok(result);
             }
             catch (Exception ex)

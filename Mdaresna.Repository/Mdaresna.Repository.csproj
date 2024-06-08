@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <Folder Include="IRepositories\SchoolManagement\SchoolManagement\Command\" />
-    <Folder Include="IRepositories\SchoolManagement\SchoolManagement\Query\" />
   </ItemGroup>
 
 </Project>

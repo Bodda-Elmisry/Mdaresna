@@ -1,4 +1,5 @@
 ﻿using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
+using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
@@ -34,11 +35,11 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("GetSchoolLanguages")]
-        public async Task<IActionResult> GetSchoolLanguages([FromBody] Guid schoolId)
+        public async Task<IActionResult> GetSchoolLanguages([FromBody] SchoolIdDTO schoolId)
         {
             try
             {
-                var result = await classRoomLanguageQueryService.GetSchoolLanguages(schoolId);
+                var result = await classRoomLanguageQueryService.GetSchoolLanguages(schoolId.SchoolId);
                 return Ok(result);
             }
             catch (Exception ex)

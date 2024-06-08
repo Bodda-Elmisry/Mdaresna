@@ -200,6 +200,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(IClassRoomAssignmentQueryRepository), typeof(ClassRoomAssignmentQueryRepository));
             services.AddScoped(typeof(IClassRoomExamQueryRepository), typeof(ClassRoomExamQueryRepository));
             services.AddScoped(typeof(IClassRoomQueryRepository), typeof(ClassRoomQueryRepository));
+            services.AddScoped(typeof(IClassRoomHelpDataQueryRepository), typeof(ClassRoomHelpDataQueryRepository));
             services.AddScoped(typeof(IClassRoomTeacherCourseQueryRepository), typeof(ClassRoomTeacherCourseQueryRepository));
 
             #endregion

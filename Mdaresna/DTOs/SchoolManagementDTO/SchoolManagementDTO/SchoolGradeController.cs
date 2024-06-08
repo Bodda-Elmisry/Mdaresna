@@ -1,4 +1,5 @@
 ﻿using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
+using Mdaresna.DTOs.Common;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Microsoft.AspNetCore.Mvc;
@@ -18,11 +19,11 @@ namespace Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO
             this.schoolGradeCommandService = schoolGradeCommandService;
         }
         [HttpPost("GetSchoolGrades")]
-        public async Task<IActionResult> GetSchoolGrades([FromBody] Guid SchoolId)
+        public async Task<IActionResult> GetSchoolGrades([FromBody] SchoolIdDTO schoolId)
         {
             try
             {
-                var grades = await schoolGradeQueryService.GetSchoolGradesAsync(SchoolId);
+                var grades = await schoolGradeQueryService.GetSchoolGradesAsync(schoolId.SchoolId);
                 return Ok(grades);
             }
             catch (Exception ex)
