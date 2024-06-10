@@ -104,13 +104,23 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         }
 
         [HttpPost("UpdateClass")]
-        public IActionResult UpdateClassRoom([FromBody] ClassRoom classRoom)
+        public async Task<IActionResult> UpdateClassRoom([FromBody] UpdateClassRoomDTO classRoomDTO)
         {
             try
             {
+                var classRoom = await classRoomQueryService.GetByIdAsync(classRoomDTO.Id);
+                classRoom.Name = classRoomDTO.Name;
+                classRoom.SchoolId = classRoomDTO.SchoolId;
+                classRoom.GradeId = classRoomDTO.GradeId;
+                classRoom.LanguageId = classRoomDTO.LanguageId;
+                classRoom.SupervisorId = classRoomDTO.SupervisorId;
+                classRoom.maxOfStudents = classRoomDTO.maxOfStudents;
+                classRoom.Active = classRoomDTO.Active;
+                classRoom.WCSUrl = classRoomDTO.WCSUrl;
+
                 var updated = classRoomCommandService.Update(classRoom);
                 if (updated)
-                    return Ok(updated);
+                    return Ok(classRoom);
                 else
                     return BadRequest("Error In Update Class");
 

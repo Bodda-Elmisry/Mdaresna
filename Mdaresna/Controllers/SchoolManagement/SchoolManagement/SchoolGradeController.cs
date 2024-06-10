@@ -1,10 +1,11 @@
 ﻿using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.DTOs.Common;
+using Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO
+namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 {
     [Route("Grade")]
     public class SchoolGradeController : Controller
@@ -25,6 +26,20 @@ namespace Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO
             {
                 var grades = await schoolGradeQueryService.GetSchoolGradesAsync(schoolId.SchoolId);
                 return Ok(grades);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("GetSchoolGradeById")]
+        public async Task<IActionResult> GetSchoolGradeById([FromBody] SchoolGradeIdDTO gradeId)
+        {
+            try
+            {
+                var grade = await schoolGradeQueryService.GetByIdAsync(gradeId.GradeId);
+                return Ok(grade);
             }
             catch (Exception ex)
             {
@@ -57,10 +72,14 @@ namespace Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO
         }
 
         [HttpPost("EditGrade")]
-        public IActionResult EditSchoolGrade([FromBody] SchoolGrade schoolGrade)
+        public async Task<IActionResult> EditSchoolGrade([FromBody] UpdateSchoolGradeDTO schoolGradeDTO)
         {
             try
             {
+                SchoolGrade schoolGrade = await schoolGradeQueryService.GetByIdAsync(schoolGradeDTO.Id);
+                schoolGrade.Name = schoolGradeDTO.Name;
+                schoolGrade.Notes = schoolGradeDTO.Notes;
+
                 var Updated = schoolGradeCommandService.Update(schoolGrade);
                 if (Updated)
                     return Ok(schoolGrade);
