@@ -36,12 +36,27 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
             }
         }
 
+        [HttpPost("GetClassById")]
+        public async Task<IActionResult> GetClassRoomById([FromBody] ClassRoomIdDTO classRoomIdDTO)
+        {
+            try
+            {
+                var room = await classRoomQueryService.GetByIdAsync(classRoomIdDTO.ClassRoomId);
+                return Ok(room);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("GetSchoolClasses")]
         public async Task<IActionResult> GetSchoolClasses([FromBody] SchoolIdDTO schoolId)
         {
             try
             {
                 var result = await classRoomQueryService.GetBySchoolIdAsync(schoolId.SchoolId);
+                
                 return Ok(result);
             }
             catch (Exception ex)

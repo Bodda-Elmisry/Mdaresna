@@ -23,7 +23,9 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
 
         public async Task<IEnumerable<ClassRoom>> GetBySchoolIdAsync(Guid SchoolId)
         {
-            return await context.ClassRooms.Where(c=> c.SchoolId == SchoolId).ToListAsync();
+            return await context.ClassRooms
+                            .Include(c=> c.Grade).Include(c=> c.Language).Include(c=> c.Supervisor)
+                            .Where(c=> c.SchoolId == SchoolId).ToListAsync();
         }
 
         public async Task<IEnumerable<ClassRoom>> GetBySchoolIdAndSupervisorIdAsync(Guid SchoolId, Guid SupervisorId)
