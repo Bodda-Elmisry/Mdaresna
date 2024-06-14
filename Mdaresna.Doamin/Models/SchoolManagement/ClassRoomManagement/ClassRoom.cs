@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.AdminManagement;
+﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Models.AdminManagement;
 using Mdaresna.Doamin.Models.Base;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Doamin.Models.UserManagement;
@@ -13,6 +14,11 @@ namespace Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement
 {
     public class ClassRoom : BaseModel
     {
+        public ClassRoom()
+        {
+            Gender = ClassRoomGenderEnum.Both;
+        }
+
         public int maxOfStudents { get; set; }
 
         public Guid SupervisorId { get; set; }
@@ -38,5 +44,7 @@ namespace Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement
 
         [ForeignKey(nameof(GradeId))]
         public SchoolGrade Grade { get; set; }
+
+        public ClassRoomGenderEnum Gender { get; set; }
     }
 }

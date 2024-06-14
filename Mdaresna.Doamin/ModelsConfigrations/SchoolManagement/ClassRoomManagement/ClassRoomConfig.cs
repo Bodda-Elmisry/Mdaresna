@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
+﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -33,6 +34,10 @@ namespace Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.ClassRoomManageme
                 .HasOne(e=> e.Language)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder
+                .Property(e => e.Gender)
+                .HasDefaultValue(ClassRoomGenderEnum.Both);
 
             //builder
             //   .Property(p => p.CreateDate)

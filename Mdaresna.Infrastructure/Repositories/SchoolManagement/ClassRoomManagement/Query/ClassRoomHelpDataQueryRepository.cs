@@ -1,5 +1,6 @@
 ﻿using Mdaresna.Doamin.DTOs.ClassRoom;
 using Mdaresna.Doamin.DTOs.Common;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Repository.IRepositories.SchoolManagement.ClassRoomManagement.Command;
 using Microsoft.EntityFrameworkCore;
@@ -28,14 +29,30 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                                 .Where(g=> g.SchoolId == SchoolId)
                                 .Select (g=> new DropDownDTO{Id = g.Id, Name = g.Name}).ToListAsync();
 
+
+
             var result = new ClassRoomHelpDataDTO
             {
                 SchoolGrades = grades,
-                SchoolLanguages = languages
+                SchoolLanguages = languages,
+                Genders = GetGenders()
             };
 
             return result;
 
         }
+
+        private Dictionary<int,string> GetGenders()
+        {
+            var genders = new Dictionary<int,string>();
+            foreach(var value in Enum.GetValues<ClassRoomGenderEnum>())
+            {
+                genders.Add((int)value,value.ToString());
+            }
+
+            return genders;
+        }
     }
+
+   
 }

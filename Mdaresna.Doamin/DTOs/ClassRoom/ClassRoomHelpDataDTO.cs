@@ -1,4 +1,5 @@
 ﻿using Mdaresna.Doamin.DTOs.Common;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.AdminManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using System;
@@ -13,5 +14,6 @@ namespace Mdaresna.Doamin.DTOs.ClassRoom
     {
         public IEnumerable<DropDownDTO> SchoolGrades { get; set; }
         public IEnumerable<DropDownDTO> SchoolLanguages { get; set; }
+        public Dictionary<int, string> Genders { get; set; }
     }
 }
