@@ -151,6 +151,7 @@ namespace Mdaresna.Infrastructure.Data
         private void ApplySchoolSeeding(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new SchoolTypeSeed());
+            modelBuilder.ApplyConfiguration(new SchoolContactTypeSeed());
             modelBuilder.ApplyConfiguration(new ClassRoomLanguageSeed());
         }
 

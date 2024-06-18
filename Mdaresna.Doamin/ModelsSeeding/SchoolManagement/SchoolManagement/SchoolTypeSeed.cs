@@ -19,7 +19,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.SchoolManagement.SchoolManagement
                 {
                     Id = Guid.Parse("04D490AD-0994-404E-9D8B-8ECF504811F3"),
                     Name = "Standerd",
-                    Description = "Standerd Schools"
+                    Description = "Standerd Schools",
                 }
                 );
         }
