@@ -31,5 +31,7 @@ namespace Mdaresna.DTOs.SchoolManagementDTO.ClassRoomManagementDTO
 
         public Guid GradeId { get; set; }
 
+        public int Gender { get; set; }
+
     }
 }

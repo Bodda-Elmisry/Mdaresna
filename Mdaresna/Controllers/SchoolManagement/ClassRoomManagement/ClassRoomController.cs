@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
+﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.ClassRoomManagementDTO;
 using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Command;
@@ -6,6 +7,7 @@ using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Quer
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Microsoft.AspNetCore.Mvc;
+using System.Reflection;
 
 namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
 {
@@ -132,6 +134,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                 classRoom.maxOfStudents = classRoomDTO.maxOfStudents;
                 classRoom.Active = classRoomDTO.Active;
                 classRoom.WCSUrl = classRoomDTO.WCSUrl;
+                classRoom.Gender = (ClassRoomGenderEnum)classRoomDTO.Gender;
 
                 var updated = classRoomCommandService.Update(classRoom);
                 if (updated)
@@ -160,7 +163,8 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                     SupervisorId = classRoomDTO.SupervisorId,
                     maxOfStudents = classRoomDTO.maxOfStudents,
                     Active = classRoomDTO.Active,
-                    WCSUrl = classRoomDTO.WCSUrl
+                    WCSUrl = classRoomDTO.WCSUrl,
+                    Gender = (ClassRoomGenderEnum)classRoomDTO.Gender
                 };
 
                 var created = classRoomCommandService.Create(classRoom);
