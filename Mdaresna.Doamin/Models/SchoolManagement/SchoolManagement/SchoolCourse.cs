@@ -16,11 +16,11 @@ namespace Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement
         public Guid SchoolId { get; set; }
 
         [ForeignKey(nameof(SchoolId))]
-        public School School { get; set; }
+        public virtual School School { get; set; }
 
         public Guid LanguageId { get; set; }
 
         [ForeignKey(nameof(LanguageId))]
-        public Language Language { get; set; }
+        public virtual Language Language { get; set; }
     }
 }

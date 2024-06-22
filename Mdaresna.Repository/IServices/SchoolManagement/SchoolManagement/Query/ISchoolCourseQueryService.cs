@@ -10,5 +10,8 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query
 {
     public interface ISchoolCourseQueryService : IBaseQueryService<SchoolCourse>
     {
+        Task<IEnumerable<SchoolCourse>> GetCoursesBySchoolIdAsync(Guid schoolId);
+
+        Task<IEnumerable<SchoolCourse>> GetCoursesBySchoolIdAndLanguageIDAsync(Guid schoolId, Guid languageId);
     }
 }

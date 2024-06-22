@@ -1,4 +1,5 @@
 ﻿using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
+using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
@@ -48,5 +49,35 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 return BadRequest(ex);
             }
         }
+
+        [HttpGet("GetAll")]
+        public async Task<IActionResult> GetSchools()
+        {
+            try
+            {
+                var result = await schoolQueryService.GetAllAsync();
+                return Ok(result);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("GetById")]
+        public async Task<IActionResult> GetSchoolById([FromBody] SchoolIdDTO schoolIdDTO)
+        {
+            try
+            {
+                var school = await schoolQueryService.GetByIdAsync(schoolIdDTO.SchoolId);
+                return Ok(school);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
     }
 }
