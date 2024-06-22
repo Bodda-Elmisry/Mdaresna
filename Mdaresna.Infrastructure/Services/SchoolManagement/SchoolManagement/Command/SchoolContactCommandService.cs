@@ -1,6 +1,7 @@
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Infrastructure.Helpers;
 using Mdaresna.Repository.IRepositories.Base;
+using Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.Base;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using System;

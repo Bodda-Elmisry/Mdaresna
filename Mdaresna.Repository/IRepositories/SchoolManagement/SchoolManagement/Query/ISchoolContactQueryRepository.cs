@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.SchoolManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Repository.IRepositories.Base;
 using System;
@@ -10,5 +11,6 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Qu
 {
     public interface ISchoolContactQueryRepository : IBaseQueryRepository<SchoolContact>
     {
+        Task<IEnumerable<SchoolContactResultDTO>> GetSchoolContacts(Guid schoolId);
     }
 }
