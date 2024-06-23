@@ -10,5 +10,7 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.Q
 {
     public interface IStudentQueryRepository : IBaseQueryRepository<Student>
     {
+        Task<IEnumerable<Student>> GetStudentsBySchoolIdAsync(Guid schoolId);
+        Task<IEnumerable<Student>> GetStudentsBySchoolIdAndClassRoomIdAsync(Guid schoolId, Guid classroomId);
     }
 }

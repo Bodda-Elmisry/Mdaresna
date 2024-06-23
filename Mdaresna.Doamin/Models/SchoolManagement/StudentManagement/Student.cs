@@ -43,6 +43,8 @@ namespace Mdaresna.Doamin.Models.SchoolManagement.StudentManagement
 
         public bool IsPayed { get; set; }
 
+        public DateTime? BirthDate { get; set; }
+
 
     }
 }

@@ -23,6 +23,10 @@ namespace Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.StudentManagement
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder
+                .Property(e => e.BirthDate)
+                .HasColumnType("datetime");
+
             //builder
             //    .Property(p => p.CreateDate)
             //    .HasDefaultValue(DateTime.Now);
