@@ -159,6 +159,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(ISchoolGradeCommandRepository), typeof(SchoolGradeCommandRepository));
             services.AddScoped(typeof(ISchoolPostCommandRepository), typeof(SchoolPostCommandRepository));
             services.AddScoped(typeof(ISchoolPostImageCommandRepository), typeof(SchoolPostImageCommandRepository));
+            services.AddScoped(typeof(ISchoolTeacherCommandRepository), typeof(SchoolTeacherCommandRepository));
             services.AddScoped(typeof(ISchoolTeacherCourseCommandRepository), typeof(SchoolTeacherCourseCommandRepository));
             services.AddScoped(typeof(ISchoolTypeCommandRepository), typeof(SchoolTypeCommandRepository));
             services.AddScoped(typeof(ISchoolYearCommandRepository), typeof(SchoolYearCommandRepository));
@@ -176,6 +177,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(ISchoolPostImageQueryRepository), typeof(SchoolPostImageQueryRepository));
             services.AddScoped(typeof(ISchoolPostQueryRepository), typeof(SchoolPostQueryRepository));
             services.AddScoped(typeof(ISchoolQueryRepository), typeof(SchoolQueryRepository));
+            services.AddScoped(typeof(ISchoolTeacherQueryRepository), typeof(SchoolTeacherQueryRepository));
             services.AddScoped(typeof(ISchoolTeacherCourseQueryRepository), typeof(SchoolTeacherCourseQueryRepository));
             services.AddScoped(typeof(ISchoolTypeQueryRepository), typeof(SchoolTypeQueryRepository));
             services.AddScoped(typeof(ISchoolYearMonthQueryRepository), typeof(SchoolYearMonthQueryRepository));
@@ -370,6 +372,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(ISchoolGradeCommandService), typeof(SchoolGradeCommandService));
             services.AddScoped(typeof(ISchoolPostCommandService), typeof(SchoolPostCommandService));
             services.AddScoped(typeof(ISchoolPostImageCommandService), typeof(SchoolPostImageCommandService));
+            services.AddScoped(typeof(ISchoolTeacherCommandService), typeof(SchoolTeacherCommandService));
             services.AddScoped(typeof(ISchoolTeacherCourseCommandService), typeof(SchoolTeacherCourseCommandService));
             services.AddScoped(typeof(ISchoolTypeCommandService), typeof(SchoolTypeCommandService));
             services.AddScoped(typeof(ISchoolYearCommandService), typeof(SchoolYearCommandService));
@@ -387,6 +390,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(ISchoolPostImageQueryService), typeof(SchoolPostImageQueryService));
             services.AddScoped(typeof(ISchoolPostQueryService), typeof(SchoolPostQueryService));
             services.AddScoped(typeof(ISchoolQueryService), typeof(SchoolQueryService));
+            services.AddScoped(typeof(ISchoolTeacherQueryService), typeof(SchoolTeacherQueryService));
             services.AddScoped(typeof(ISchoolTeacherCourseQueryService), typeof(SchoolTeacherCourseQueryService));
             services.AddScoped(typeof(ISchoolTypeQueryService), typeof(SchoolTypeQueryService));
             services.AddScoped(typeof(ISchoolYearMonthQueryService), typeof(SchoolYearMonthQueryService));

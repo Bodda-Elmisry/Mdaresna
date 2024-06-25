@@ -1,4 +1,5 @@
 ﻿using Mdaresna.Doamin.Models.UserManagement;
+using Mdaresna.DTOs.Common;
 using Mdaresna.Repository.IServices.UserManagement.Command;
 using Mdaresna.Repository.IServices.UserManagement.Query;
 using Microsoft.AspNetCore.Mvc;
@@ -31,5 +32,22 @@ namespace Mdaresna.Controllers.UserManagement
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost("GetByPhoneNumber")]
+        public async Task<IActionResult> GetUserByPhoneNumber([FromBody] PhoneDTO phoneDTO)
+        {
+            try
+            {
+                var user = await userQueryService.GetUserByPhoneNumber(phoneDTO.PhoneNumber);
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
     }
 }

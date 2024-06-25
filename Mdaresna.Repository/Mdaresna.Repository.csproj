@@ -10,8 +10,4 @@
     <ProjectReference Include="..\Mdaresna.Doamin\Mdaresna.Doamin.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="IRepositories\SchoolManagement\SchoolManagement\Command\" />
-  </ItemGroup>
-
 </Project>
