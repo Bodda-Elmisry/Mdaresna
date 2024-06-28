@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.SchoolManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Repository.IServices.Base;
 using System;
@@ -10,5 +11,8 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query
 {
     public interface ISchoolTeacherCourseQueryService : IBaseQueryService<SchoolTeacherCourse>
     {
+        Task<IEnumerable<SchoolCourse>> GetSchoolTeacherCourcesAsync(Guid schoolId, Guid teacherId);
+        Task<SchoolTeacherCourse?> GetSchoolTeacherCourceAsync(Guid schoolId, Guid teacherId, Guid courseId);
+        Task<SchoolTeacherCourseInitialDTO> GetSchoolTeacherCourceInitialListsAsync(Guid schoolId);
     }
 }
