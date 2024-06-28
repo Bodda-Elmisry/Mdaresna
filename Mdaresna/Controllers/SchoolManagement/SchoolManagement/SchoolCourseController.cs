@@ -34,6 +34,20 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             }
         }
 
+        [HttpPost("GetSchoolCourceById")]
+        public async Task<IActionResult> GetSchoolCourceById([FromBody] CourseIdDTO courseIdDTO)
+        {
+            try
+            {
+                var result = await schoolCourseQueryService.GetByIdAsync(courseIdDTO.CourseId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("GetSchoolLanguageCources")]
         public async Task<IActionResult> GetSchoolLanguageCources([FromBody] SchoolIdLanguageIdDTO schoolIdLanguageIdDTO)
         {
