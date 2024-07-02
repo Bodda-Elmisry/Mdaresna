@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.SchoolManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Repository.IRepositories.Base;
 using System;
@@ -10,5 +11,7 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Qu
 {
     public interface ISchoolYearQueryRepository : IBaseQueryRepository<SchoolYear>
     {
+        Task<SchoolYearResultDTO> GetCurrentYearAsync();
+        Task<IEnumerable<SchoolYearResultDTO>> GetSchoolYearsAsync(Guid schoolId);
     }
 }
