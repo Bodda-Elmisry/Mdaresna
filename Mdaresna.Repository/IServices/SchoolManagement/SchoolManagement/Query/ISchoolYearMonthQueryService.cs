@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.SchoolManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Repository.IServices.Base;
 using System;
@@ -10,5 +11,7 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query
 {
     public interface ISchoolYearMonthQueryService : IBaseQueryService<SchoolYearMonth>
     {
+        Task<IEnumerable<SchoolYearMonthResultDTO>> GetYearMonthesAsync(Guid yearId, bool? isActive, string name);
+        Task<SchoolYearMonthResultDTO?> GetYearMonthAsync(Guid monthId);
     }
 }
