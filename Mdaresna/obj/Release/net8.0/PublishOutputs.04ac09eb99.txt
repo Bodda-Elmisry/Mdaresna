@@ -1,4 +1,5 @@
 F:\Work\Mdaresna\Mdaresna\obj\Release\net8.0\PubTmp\Out\Mdaresna.exe
+F:\Work\Mdaresna\Mdaresna\obj\Release\net8.0\PubTmp\Out\web.config
 F:\Work\Mdaresna\Mdaresna\obj\Release\net8.0\PubTmp\Out\appsettings.Development.json
 F:\Work\Mdaresna\Mdaresna\obj\Release\net8.0\PubTmp\Out\appsettings.json
 F:\Work\Mdaresna\Mdaresna\obj\Release\net8.0\PubTmp\Out\Mdaresna.dll

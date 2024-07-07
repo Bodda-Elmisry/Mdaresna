@@ -6,6 +6,7 @@ using Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Query;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
@@ -29,27 +30,98 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
         public async Task<IEnumerable<TeacherResultDTO>> GetSchoolTeachersAsync(Guid schoolId)
         {
-            var teachers = await context.schoolTeachers
-                .Where(s=> s.SchoolId == schoolId)
-                .Select(t => new TeacherResultDTO
-            {
-                Id = t.Teacher.Id,
-                UserName = t.Teacher.UserName,
-                FirstName = t.Teacher.FirstName,
-                MiddelName = t.Teacher.MiddelName,
-                LastName = t.Teacher.LastName,
-                PhoneNumber = t.Teacher.PhoneNumber,
-                BirthDay = t.Teacher.BirthDay,
-                Email = t.Teacher.Email,
-                Address = t.Teacher.Address,
-                City = t.Teacher.City,
-                Region = t.Teacher.Region,
-                Contry = t.Teacher.Contry,
-                ImageUrl = t.Teacher.ImageUrl
-            }).ToListAsync();
+            //var teachers = await context.schoolTeachers
+            //    .Where(s=> s.SchoolId == schoolId)
+            //    .Select(t => new TeacherResultDTO
+            //{
+            //    Id = t.Teacher.Id,
+            //    UserName = t.Teacher.UserName,
+            //    FirstName = t.Teacher.FirstName,
+            //    MiddelName = t.Teacher.MiddelName,
+            //    LastName = t.Teacher.LastName,
+            //    PhoneNumber = t.Teacher.PhoneNumber,
+            //    BirthDay = t.Teacher.BirthDay,
+            //    Email = t.Teacher.Email,
+            //    Address = t.Teacher.Address,
+            //    City = t.Teacher.City,
+            //    Region = t.Teacher.Region,
+            //    Contry = t.Teacher.Contry,
+            //    ImageUrl = t.Teacher.ImageUrl
+            //}).ToListAsync();
 
+            //var teacherQuery = from st in context.schoolTeachers
+            //                   join stc in (
+            //                   from stc in context.schoolTeacherCourses
+            //                   group stc by new { stc.SchoolId, stc.TeacherId } into g
+            //                   select new
+            //                   {
+            //                       SchoolId = g == null ? (Guid?) g.Key.SchoolId : null,
+            //                       TeacherId = g == null ? (Guid?) g.Key.TeacherId : null,
+            //                       TeacherCoursesCount = (int?)g.Count()
+            //                   }
+            //                   )
+            //                   on new { st.SchoolId, st.TeacherId } equals new { stc.SchoolId, stc.TeacherId } into stcGroup
+            //                   from stc in stcGroup.DefaultIfEmpty()
+            //                   select new 
+            //                   {
+            //                       Id = st.Teacher.Id,
+            //                       UserName = st.Teacher.UserName,
+            //                       FirstName = st.Teacher.FirstName,
+            //                       MiddelName = st.Teacher.MiddelName,
+            //                       LastName = st.Teacher.LastName,
+            //                       PhoneNumber = st.Teacher.PhoneNumber,
+            //                       BirthDay = st.Teacher.BirthDay,
+            //                       Email = st.Teacher.Email,
+            //                       Address = st.Teacher.Address,
+            //                       City = st.Teacher.City,
+            //                       Region = st.Teacher.Region,
+            //                       Contry = st.Teacher.Contry,
+            //                       ImageUrl = st.Teacher.ImageUrl,
+            //                       CoursesCount = stc == null ? 0 : stc.TeacherCoursesCount == null ? 0 : stc.TeacherCoursesCount
+            //                   };
+            var teacherQuery = from st in context.schoolTeachers
+                               join stcGroup in (
+                                   from stc in context.schoolTeacherCourses
+                                   group stc by new { stc.SchoolId, stc.TeacherId } into g
+                                   select new
+                                   {
+                                       SchoolId = g.Key.SchoolId,
+                                       TeacherId = g.Key.TeacherId,
+                                       TeacherCoursesCount = (int?)g.Count()
+                                   }
+                               )
+                               on new { st.SchoolId, st.TeacherId } equals new { stcGroup.SchoolId, stcGroup.TeacherId } into stcGroupJoin
+                               from stc in stcGroupJoin.DefaultIfEmpty()
+                               select new TeacherResultDTO
+                               {
+                                   Id = st.Teacher.Id,
+                                   UserName = st.Teacher.UserName,
+                                   FirstName = st.Teacher.FirstName,
+                                   MiddelName = st.Teacher.MiddelName,
+                                   LastName = st.Teacher.LastName,
+                                   PhoneNumber = st.Teacher.PhoneNumber,
+                                   BirthDay = st.Teacher.BirthDay,
+                                   Email = st.Teacher.Email,
+                                   Address = st.Teacher.Address,
+                                   City = st.Teacher.City,
+                                   Region = st.Teacher.Region,
+                                   Contry = st.Teacher.Contry,
+                                   ImageUrl = st.Teacher.ImageUrl,
+                                   CoursesCount = stc.TeacherCoursesCount == null ? 0 : stc.TeacherCoursesCount
+                               };
+
+            
+
+            //var query = teacherQuery.ToQueryString();
+            var teachers = await teacherQuery.ToListAsync();
             return teachers;
                 
+        }
+
+        private int GetCount(int? coursestCount)
+        {
+            var result = coursestCount == null ? 0 : coursestCount.Value;
+            return result;
         }
 
         public async Task<IEnumerable<TeacherSchoolResultDTO>> GetTeacherSchoolsAsync(Guid teacherId)

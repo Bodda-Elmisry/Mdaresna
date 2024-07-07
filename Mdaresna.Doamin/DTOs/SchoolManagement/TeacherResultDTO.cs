@@ -20,7 +20,7 @@ namespace Mdaresna.Doamin.DTOs.SchoolManagement
 
         public string LastName { get; set; }
 
-        public string PhoneNumber { get; set; }
+        public string? PhoneNumber { get; set; }
 
         public string? ImageUrl { get; set; }
 
@@ -35,6 +35,7 @@ namespace Mdaresna.Doamin.DTOs.SchoolManagement
         public string? Contry { get; set; }
 
         public string? Email { get; set; }
+        public int? CoursesCount { get; set; }
 
     }
 }
