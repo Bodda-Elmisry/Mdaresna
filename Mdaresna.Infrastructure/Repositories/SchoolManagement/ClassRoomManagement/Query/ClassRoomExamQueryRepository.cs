@@ -1,3 +1,5 @@
+using Mdaresna.Doamin.DTOs.ClassRoomManagement;
+using Mdaresna.Doamin.Models.Base.Relation;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
@@ -12,8 +14,42 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
 {
     public class ClassRoomExamQueryRepository : BaseQueryRepository<ClassRoomExam>, IClassRoomExamQueryRepository
     {
-       public ClassRoomExamQueryRepository(AppDbContext context) : base(context)
+        private readonly AppDbContext context;
+
+        public ClassRoomExamQueryRepository(AppDbContext context) : base(context)
         {
+            this.context = context;
         }
+
+        public Task<IEnumerable<ClassRoomExamResultDTO>> GetExamsList(IEnumerable<Guid> months, DateTime? fromDate, DateTime? toDate,
+                                                                      string weekDay, Guid? classRoomId, Guid? supervisorId,
+                                                                      Guid? courseId, decimal? rate) 
+        {
+            var query = context.ClassRoomExams.Where(e => months.Contains(e.MonthId));
+
+            if (fromDate != null && toDate != null)
+                query = query.Where(e => e.ExamDate >= fromDate && e.ExamDate <= toDate);
+            else if(fromDate != null)
+                query = query.Where(e=> e.ExamDate == fromDate);
+
+            if(!string.IsNullOrEmpty(weekDay))
+                query = query.Where(e=> e.WeekDay == weekDay);
+
+            if(classRoomId != null)
+                query = query.Where(e=> e.ClassRoomId == classRoomId);
+
+            if(supervisorId != null)
+                query = query.Where(e=> e.SupervisorId == supervisorId);
+
+
+
+        }
+
+
+
+
+
+
+
     }
 }

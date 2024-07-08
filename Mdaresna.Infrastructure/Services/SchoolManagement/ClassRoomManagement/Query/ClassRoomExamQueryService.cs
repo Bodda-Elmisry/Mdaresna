@@ -1,6 +1,7 @@
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Infrastructure.Services.Base;
 using Mdaresna.Repository.IRepositories.Base;
+using Mdaresna.Repository.IRepositories.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using System;
 using System.Collections.Generic;
@@ -12,15 +13,25 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.
 {
     public class ClassRoomExamQueryService : BaseQueryService<ClassRoomExam>, IClassRoomExamQueryService
     {
-        private readonly IBaseQueryRepository<ClassRoomExam> queryRepository;
-        private readonly IBaseSharedRepository<ClassRoomExam> sharedRepository;
+        private readonly IClassRoomExamQueryRepository classRoomExamQueryRepository;
 
         public ClassRoomExamQueryService(IBaseQueryRepository<ClassRoomExam> queryRepository,
-            IBaseSharedRepository<ClassRoomExam> sharedRepository) 
+            IBaseSharedRepository<ClassRoomExam> sharedRepository,
+            IClassRoomExamQueryRepository classRoomExamQueryRepository) 
                 : base(queryRepository, sharedRepository)
         {
-            this.queryRepository = queryRepository;
-            this.sharedRepository = sharedRepository;
+            this.classRoomExamQueryRepository = classRoomExamQueryRepository;
         }
+
+
+
+
+
+
+
+
+
+
+
     }
 }
