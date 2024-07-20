@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Infrastructure.Services.Base;
 using Mdaresna.Repository.IRepositories.Base;
@@ -23,15 +24,10 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.
             this.classRoomExamQueryRepository = classRoomExamQueryRepository;
         }
 
-
-
-
-
-
-
-
-
-
-
+        public async Task<IEnumerable<ClassRoomExamResultDTO>> GetExamsList(IEnumerable<Guid> months, DateTime? fromDate, DateTime? toDate, 
+                                                                      string weekDay, Guid? classRoomId, Guid? supervisorId, Guid? courseId, decimal? rate)
+        {
+            return await classRoomExamQueryRepository.GetExamsList(months, fromDate, toDate, weekDay, classRoomId, supervisorId, courseId, rate);
+        }
     }
 }

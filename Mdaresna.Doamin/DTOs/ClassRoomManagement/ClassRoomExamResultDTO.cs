@@ -12,8 +12,8 @@ namespace Mdaresna.Doamin.DTOs.ClassRoomManagement
         public DateTime ExamDate { get; set; }
         public string WeekDay { get; set; }
         public string ExamDetails { get; set; }
-        public Guid CalssRoomId { get; set; }
-        public string CalssRoom { get; set; }
+        public Guid ClassRoomId { get; set; }
+        public string ClassRoom { get; set; }
         public Guid SupervisorId { get; set; }
         public string SupervisorName { get; set; }
         public Guid MonthId { get; set; }

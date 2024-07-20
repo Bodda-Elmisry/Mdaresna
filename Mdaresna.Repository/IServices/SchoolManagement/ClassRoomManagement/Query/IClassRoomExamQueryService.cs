@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Repository.IServices.Base;
 using System;
@@ -10,5 +11,8 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Que
 {
     public interface IClassRoomExamQueryService : IBaseQueryService<ClassRoomExam>
     {
+        Task<IEnumerable<ClassRoomExamResultDTO>> GetExamsList(IEnumerable<Guid> months, DateTime? fromDate, DateTime? toDate,
+                                                                      string weekDay, Guid? classRoomId, Guid? supervisorId,
+                                                                      Guid? courseId, decimal? rate);
     }
 }
