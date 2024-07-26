@@ -14,5 +14,7 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Que
         Task<IEnumerable<ClassRoomExamResultDTO>> GetExamsList(IEnumerable<Guid> months, DateTime? fromDate, DateTime? toDate,
                                                                       string weekDay, Guid? classRoomId, Guid? supervisorId,
                                                                       Guid? courseId, decimal? rate);
+
+        Task<CreateClassRoomExamInitialDataDTO> GetInitialData(Guid schoolId);
     }
 }

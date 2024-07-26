@@ -29,5 +29,10 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.
         {
             return await classRoomExamQueryRepository.GetExamsList(months, fromDate, toDate, weekDay, classRoomId, supervisorId, courseId, rate);
         }
+
+        public async Task<CreateClassRoomExamInitialDataDTO> GetInitialData(Guid schoolId)
+        {
+            return await classRoomExamQueryRepository.GetInitialData(schoolId);
+        }
     }
 }
