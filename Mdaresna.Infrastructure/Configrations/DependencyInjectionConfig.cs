@@ -1,9 +1,11 @@
-﻿using Mdaresna.Infrastructure.BServices.IdentityManagement;
+﻿using Mdaresna.Infrastructure.BServices.Common;
+using Mdaresna.Infrastructure.BServices.IdentityManagement;
 using Mdaresna.Infrastructure.Repositories.AdminManagement.Command;
 using Mdaresna.Infrastructure.Repositories.AdminManagement.Query;
 using Mdaresna.Infrastructure.Repositories.Base;
 using Mdaresna.Infrastructure.Repositories.CoinsManagement.Command;
 using Mdaresna.Infrastructure.Repositories.CoinsManagement.Query;
+using Mdaresna.Infrastructure.Repositories.Common;
 using Mdaresna.Infrastructure.Repositories.IdentityManagement.Command;
 using Mdaresna.Infrastructure.Repositories.IdentityManagement.Query;
 using Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagement.Command;
@@ -33,12 +35,14 @@ using Mdaresna.Infrastructure.Services.SettingsManagement.Command;
 using Mdaresna.Infrastructure.Services.SettingsManagement.Query;
 using Mdaresna.Infrastructure.Services.UserManagement.Command;
 using Mdaresna.Infrastructure.Services.UserManagement.Query;
+using Mdaresna.Repository.IBServices.Common;
 using Mdaresna.Repository.IBServices.IdentityManagement;
 using Mdaresna.Repository.IRepositories.AdminManagement.Command;
 using Mdaresna.Repository.IRepositories.AdminManagement.Query;
 using Mdaresna.Repository.IRepositories.Base;
 using Mdaresna.Repository.IRepositories.CoinsManagement.Command;
 using Mdaresna.Repository.IRepositories.CoinsManagement.Query;
+using Mdaresna.Repository.IRepositories.Common;
 using Mdaresna.Repository.IRepositories.IdentityManagement.Command;
 using Mdaresna.Repository.IRepositories.IdentityManagement.Query;
 using Mdaresna.Repository.IRepositories.SchoolManagement.ClassRoomManagement.Command;
@@ -91,6 +95,7 @@ namespace Mdaresna.Infrastructure.Configrations
             ConfigerStudentManagementRepos(services);
             ConfigerUserManagementRepos(services);
             ConfigerSettingsManagementRepos(services);
+            ConfigerCommonRepos(services);
         }
 
         private static void ConfigerBaseRepos(IServiceCollection services)
@@ -267,6 +272,11 @@ namespace Mdaresna.Infrastructure.Configrations
             #endregion
         }
 
+        private static void ConfigerCommonRepos(IServiceCollection services)
+        {
+            services.AddScoped<IImageUploderRepository, ImageUploderRepository>();
+        }
+
         #endregion
 
 
@@ -285,6 +295,7 @@ namespace Mdaresna.Infrastructure.Configrations
             ConfigerUserManagementServ(services);
             ConfigerSettingsManagementServ(services);
             ConfigerBIdentityManagementServ(services);
+            ConfigerCommonSer(services);
 
         }
 
@@ -477,6 +488,11 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(IEmailProviderQueryService), typeof(EmailProviderQueryService));
 
             #endregion
+        }
+
+        private static void ConfigerCommonSer(IServiceCollection services)
+        {
+            services.AddScoped<IImageUploderService, ImageUploderService>();
         }
 
         #endregion

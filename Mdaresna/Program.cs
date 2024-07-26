@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.Common;
 using Mdaresna.Infrastructure.Configrations;
 using Mdaresna.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +32,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
                 ),
                 ServiceLifetime.Singleton
         );
+
+builder.Services.Configure<AppSettingDTO>(builder.Configuration.GetSection("AppSettings"));
+
 DependencyInjectionConfig.ConfigerRepositories(builder.Services);
 DependencyInjectionConfig.ConfigerServices(builder.Services);
 
