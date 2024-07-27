@@ -38,10 +38,7 @@ namespace Mdaresna.Controllers.Common
                 var filePath = Path.Combine(localPath,
                                             _appSettings.ImagesPath,
                                             uploadImageDTO.UserId.ToString(),
-                                            "PersonalImage",
-                                            string.Format("PI_{0}.{1}",
-                                                          uploadImageDTO.UserId.ToString(),
-                                                          ext)
+                                            "PersonalImage"
                                             );
 
                 if (!Directory.Exists(filePath))
@@ -49,7 +46,10 @@ namespace Mdaresna.Controllers.Common
                     Directory.CreateDirectory(filePath);
                 }
 
-                System.IO.File.Delete(filePath);
+                filePath += string.Format("PI_{0}.{1}", uploadImageDTO.UserId.ToString(), ext);
+
+                if (System.IO.File.Exists(filePath))
+                    System.IO.File.Delete(filePath);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
