@@ -104,7 +104,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                 return BadRequest(ex.Message);
             }
         }
-
+        [HttpPost("UpdateExam")]
         public async Task<IActionResult> UpdateExam([FromBody] UpdateClassRoomExamDTO classRoomExamDTO)
         {
             try
