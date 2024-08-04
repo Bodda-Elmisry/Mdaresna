@@ -22,6 +22,21 @@ namespace Mdaresna.Infrastructure.BServices.Common
             return await imageUploderRepository.UploadImage(UserId, filePath, isStudent);
         }
 
+        public IEnumerable<byte> GetImageBytes(string imagePath)
+        {
+            List<byte> imageBytes = new List<byte>();
+
+            using(FileStream fs = File.Open(imagePath, FileMode.Open))
+            {
+                var bytes = new byte[fs.Length];
+                fs.Read(bytes, 0, bytes.Length);
+                fs.Close();
+                imageBytes = bytes.ToList();
+            }
+
+            return imageBytes;
+        }
+
 
 
 

@@ -17,6 +17,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             this.schoolTeacherCommandService = schoolTeacherCommandService;
             this.schoolTeacherQueryService = schoolTeacherQueryService;
+
         }
 
         [HttpPost("AddSchoolTeacher")]
@@ -93,6 +94,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
+                
                 var teachers = await schoolTeacherQueryService.GetSchoolTeachersAsync(schoolIdDTO.SchoolId);
                 return Ok(teachers);
             }

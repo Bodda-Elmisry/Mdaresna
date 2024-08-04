@@ -1,7 +1,10 @@
 using Mdaresna.Doamin.DTOs.Common;
+using Mdaresna.Doamin.Helpers;
 using Mdaresna.Infrastructure.Configrations;
 using Mdaresna.Infrastructure.Data;
+using Mdaresna.Middlewares;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +24,8 @@ builder.Services.AddCors(oprions =>
     });
     oprions.AddPolicy("AllowOrigin", options => options.AllowAnyOrigin());
 });
+
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddDbContext<AppDbContext>(options => 
         options.UseSqlServer(
@@ -46,6 +51,16 @@ var app = builder.Build();
 //    app.UseSwagger();
 //    app.UseSwaggerUI();
 //}
+
+app.UseMiddleware<SetAppUrlMiddleware>();
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+            Path.Combine(Directory.GetCurrentDirectory(), "Images")),
+    RequestPath = "/Images"
+});
+app.UseRouting();
 
 app.UseSwagger();
 app.UseSwaggerUI();

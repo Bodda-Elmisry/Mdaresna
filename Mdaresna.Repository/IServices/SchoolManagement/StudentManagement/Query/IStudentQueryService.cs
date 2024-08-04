@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.StudentManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.Repository.IServices.Base;
 using System;
@@ -10,7 +11,9 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query
 {
     public interface IStudentQueryService : IBaseQueryService<Student>
     {
-        Task<IEnumerable<Student>> GetStudentsBySchoolIdAsync(Guid schoolId);
-        Task<IEnumerable<Student>> GetStudentsBySchoolIdAndClassRoomIdAsync(Guid schoolId, Guid classroomId);
+        Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAsync(Guid schoolId);
+        Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAndClassRoomIdAsync(Guid schoolId, Guid classroomId);
+        Task<StudentResultDTO?> GetStudentByIdAsync(Guid studentId);
+        public Task<string> GetMaxStudebtCodeAsync(Guid schoolId);
     }
 }

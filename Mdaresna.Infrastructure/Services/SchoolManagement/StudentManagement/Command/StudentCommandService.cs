@@ -27,7 +27,7 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Co
             try
             {
                 entity.Id = DataGenerationHelper.GenerateRowId();
-                entity.Code = GenerateStudentCode();
+                //entity.Code = GenerateStudentCode();
                 entity.CreateDate = DateTime.Now;
                 entity.LastModifyDate = DateTime.Now;
                 return commandRepository.Create(entity);
@@ -36,11 +36,6 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Co
             {
                 throw ex;
             }
-        }
-
-        private string GenerateStudentCode() 
-        {
-            return Guid.NewGuid().ToString("N");
         }
 
         public async Task<bool> DeleteAsync(Student entity)

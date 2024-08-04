@@ -37,8 +37,9 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Qu
             return await studentQueryRepository.GetStudentsBySchoolIdAndClassRoomIdAsync(schoolId, classroomId);
         }
 
-
-
-
+        public async Task<string> GetMaxStudebtCodeAsync(Guid schoolId)
+        {
+            return await studentQueryRepository.GetMaxStudebtCodeAsync(schoolId);
+        }
     }
 }

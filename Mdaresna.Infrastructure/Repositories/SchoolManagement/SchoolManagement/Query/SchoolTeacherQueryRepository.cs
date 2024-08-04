@@ -1,4 +1,6 @@
-﻿using Mdaresna.Doamin.DTOs.SchoolManagement;
+﻿using Azure.Core;
+using Mdaresna.Doamin.DTOs.SchoolManagement;
+using Mdaresna.Doamin.Helpers;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
@@ -106,7 +108,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                                    City = st.Teacher.City,
                                    Region = st.Teacher.Region,
                                    Contry = st.Teacher.Contry,
-                                   ImageUrl = st.Teacher.ImageUrl,
+                                   ImageUrl = !string.IsNullOrEmpty(st.Teacher.ImageUrl) ? $"{SettingsHelper.GetAppUrl()}/{st.Teacher.ImageUrl.Replace("\\","/")}" : null,
                                    CoursesCount = stc.TeacherCoursesCount == null ? 0 : stc.TeacherCoursesCount
                                };
 

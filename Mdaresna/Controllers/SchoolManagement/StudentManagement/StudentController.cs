@@ -22,7 +22,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         }
 
         [HttpPost("GetStudent")]
-        public async Task<IActionResult> GetStudentById([FromBody]StudentIdDTO studentIdDTO)
+        public async Task<IActionResult> GetStudentById([FromBody] StudentIdDTO studentIdDTO)
         {
             try
             {
@@ -65,12 +65,14 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         }
 
         [HttpPost("AddStudent")]
-        public IActionResult CreateStudent([FromBody]CreateStudentDTO studentDTO)
+        public async Task<IActionResult> CreateStudent([FromBody] CreateStudentDTO studentDTO)
         {
             try
             {
+                var studentCode = await GenerateCode(studentDTO.SchoolId);
                 var student = new Student
                 {
+                    Code = studentCode,
                     FirstName = studentDTO.FirstName,
                     MiddelName = studentDTO.MidelName,
                     LastName = studentDTO.LastName,
@@ -84,12 +86,12 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 
                 var added = studentCommandService.Create(student);
 
-                if(added)
+                if (added)
                     return Ok(student);
 
                 return BadRequest("Error in adding student");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -107,7 +109,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 if (student == null)
                     return BadRequest("Can't update student");
 
-                
+
                 student.FirstName = studentDTO.FirstName;
                 student.MiddelName = studentDTO.MidelName;
                 student.LastName = studentDTO.LastName;
@@ -132,7 +134,21 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         }
 
 
+        private async Task<string> GenerateCode(Guid schoolId)
+        {
+            var result = "ST";
+            var lastcode = await studentQueryService.GetMaxStudebtCodeAsync(schoolId);
+            if (lastcode == null)
+                result += "0000000001";
+            else
+            {
+                var code = int.Parse(lastcode.Replace(result, string.Empty));
+                code++;
+                result += code.ToString("D10");
+            }
 
+            return result;
+        }
 
 
 

@@ -35,18 +35,22 @@ namespace Mdaresna.Controllers.Common
                 string ext = fileParts[fileParts.Length - 1];
 
                 var localPath = Directory.GetCurrentDirectory();
-                var filePath = Path.Combine(localPath,
-                                            _appSettings.ImagesPath,
+                var directoryPathWithoutLocal = Path.Combine(_appSettings.ImagesPath,
                                             uploadImageDTO.UserId.ToString(),
                                             "PersonalImage"
                                             );
+                var fileName = string.Format("PI_{0}.{1}", uploadImageDTO.UserId.ToString(), ext); //uploadImageDTO.UserId.ToString() + "." + ext;
 
-                if (!Directory.Exists(filePath))
+                var filePath = Path.Combine(localPath,
+                                            directoryPathWithoutLocal,
+                                            fileName);
+
+                if (!Directory.Exists(Path.Combine(localPath,directoryPathWithoutLocal)))
                 {
-                    Directory.CreateDirectory(filePath);
+                    Directory.CreateDirectory(Path.Combine(localPath, directoryPathWithoutLocal));
                 }
 
-                filePath += string.Format("PI_{0}.{1}", uploadImageDTO.UserId.ToString(), ext);
+                //filePath += string.Format("\\PI_{0}.{1}", uploadImageDTO.UserId.ToString(), ext);
 
                 if (System.IO.File.Exists(filePath))
                     System.IO.File.Delete(filePath);
@@ -57,7 +61,7 @@ namespace Mdaresna.Controllers.Common
                 }
 
                 var uploader = await imageUploderService.UploadImage(uploadImageDTO.UserId,
-                                                                 filePath,
+                                                                 Path.Combine(directoryPathWithoutLocal,fileName),
                                                                  uploadImageDTO.IsStudent);
                 if (uploader)
                     return Ok("File Uploade Correct");
