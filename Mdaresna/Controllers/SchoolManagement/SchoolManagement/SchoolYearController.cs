@@ -21,12 +21,12 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             this.schoolYearCommandService = schoolYearCommandService;
         }
 
-        [HttpGet("GetCurrentYear")]
-        public async Task<IActionResult> GetCurrentYear()
+        [HttpPost("GetCurrentYear")]
+        public async Task<IActionResult> GetCurrentYear([FromBody] SchoolIdDTO schoolIdDTO)
         {
             try
             {
-                var year = await schoolYearQueryService.GetCurrentYearAsync();
+                var year = await schoolYearQueryService.GetCurrentYearAsync(schoolIdDTO.SchoolId);
                 if(year == null)
                 {
                     return NotFound("There is no current year");
@@ -92,21 +92,25 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 if (year == null)
                     return NotFound("There is no year to complete");
 
-                var completedYear = new SchoolYear
-                {
-                    Id = year.Id,
-                    Name = year.Name,
-                    SchoolId = year.SchoolId,
-                    Description = string.IsNullOrEmpty(year.Description) ? "Year completed in " + DateTime.Now.ToString() : year.Description + ", Year completed in " + DateTime.Now.ToString(),
-                    Compleated = true,
-                    IsActive = false
+                //var completedYear = new SchoolYear
+                //{
+                //    Id = year.Id,
+                //    Name = year.Name,
+                //    SchoolId = year.SchoolId,
+                //    Description = string.IsNullOrEmpty(year.Description) ? "Year completed in " + DateTime.Now.ToString() : year.Description + ", Year completed in " + DateTime.Now.ToString(),
+                //    Compleated = true,
+                //    IsActive = false
 
-                };
+                //};
 
-                var updated = schoolYearCommandService.Update(completedYear);
+                year.Description = string.IsNullOrEmpty(year.Description) ? "Year completed in " + DateTime.Now.ToString() : year.Description + ", Year completed in " + DateTime.Now.ToString();
+                year.Compleated = true;
+                year.IsActive = false;
+
+                var updated = schoolYearCommandService.Update(year);
 
                 if (updated)
-                    return Ok("Year completed");
+                    return Ok(year);
                 
                 return BadRequest("Error in Complete year");
             }
@@ -126,21 +130,23 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 if (year == null)
                     return NotFound("There is no year to Activate");
 
-                var updatedYear = new SchoolYear
-                {
-                    Id = year.Id,
-                    Name = year.Name,
-                    SchoolId = year.SchoolId,
-                    Description = year.Description,
-                    Compleated = year.Compleated,
-                    IsActive = true
+                //var updatedYear = new SchoolYear
+                //{
+                //    Id = year.Id,
+                //    Name = year.Name,
+                //    SchoolId = year.SchoolId,
+                //    Description = year.Description,
+                //    Compleated = year.Compleated,
+                //    IsActive = true
 
-                };
+                //};
 
-                var updated = schoolYearCommandService.Update(updatedYear);
+                year.IsActive = true;
+
+                var updated = schoolYearCommandService.Update(year);
 
                 if (updated)
-                    return Ok("Year Activated");
+                    return Ok(year);
 
                 return BadRequest("Error in Activate year");
             }
@@ -160,21 +166,23 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 if (year == null)
                     return NotFound("There is no year to deactivate");
 
-                var updatedYear = new SchoolYear
-                {
-                    Id = year.Id,
-                    Name = year.Name,
-                    SchoolId = year.SchoolId,
-                    Description = year.Description,
-                    Compleated = year.Compleated,
-                    IsActive = false
+                //var updatedYear = new SchoolYear
+                //{
+                //    Id = year.Id,
+                //    Name = year.Name,
+                //    SchoolId = year.SchoolId,
+                //    Description = year.Description,
+                //    Compleated = year.Compleated,
+                //    IsActive = false
 
-                };
+                //};
 
-                var updated = schoolYearCommandService.Update(updatedYear);
+                year.IsActive = false;
+
+                var updated = schoolYearCommandService.Update(year);
 
                 if (updated)
-                    return Ok("Year Deactivated");
+                    return Ok(year);
 
                 return BadRequest("Error in deactivate year");
             }
@@ -202,7 +210,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 var created = schoolYearCommandService.Create(schoolYear);
 
                 if (created)
-                    return Ok("Year added");
+                    return Ok(schoolYear);
 
                 return BadRequest("Error in ading year");
             }
@@ -222,21 +230,26 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 if (year == null)
                     return NotFound("Can't update school year");
 
-                var updatedYear = new SchoolYear
-                {
-                    Id = schoolYearDTO.Id,
-                    Name = schoolYearDTO.Name,
-                    SchoolId = schoolYearDTO.SchoolId,
-                    Description = schoolYearDTO.Description,
-                    Compleated = schoolYearDTO.Completed,
-                    IsActive = schoolYearDTO.Active
+                //var updatedYear = new SchoolYear
+                //{
+                //    Id = schoolYearDTO.Id,
+                //    Name = schoolYearDTO.Name,
+                //    SchoolId = schoolYearDTO.SchoolId,
+                //    Description = schoolYearDTO.Description,
+                //    Compleated = schoolYearDTO.Completed,
+                //    IsActive = schoolYearDTO.Active
 
-                };
+                //};
 
-                var updated = schoolYearCommandService.Update(updatedYear);
+                year.Name = schoolYearDTO.Name;
+                year.Description = schoolYearDTO.Description;
+                year.IsActive = schoolYearDTO.Active;
+                year.Compleated = schoolYearDTO.Completed;
+
+                var updated = schoolYearCommandService.Update(year);
 
                 if (updated)
-                    return Ok("Year updated");
+                    return Ok(year);
 
                 return BadRequest("Error in update year");
             }

@@ -22,13 +22,15 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
         }
 
 
-        public async Task<SchoolYearResultDTO> GetCurrentYearAsync()
+        public async Task<SchoolYearResultDTO?> GetCurrentYearAsync(Guid schoolId)
         {
             var year = await context.SchoolYears
                             .OrderBy(y => y.CreateDate)
-                            .FirstOrDefaultAsync(y => y.IsActive == true && y.Compleated == false);
+                            .FirstOrDefaultAsync(y => y.SchoolId == schoolId && y.IsActive == true && y.Compleated == false);
 
-            return new SchoolYearResultDTO
+            return year == null ? 
+                null :
+                new SchoolYearResultDTO
             {
                 Id = year.Id,
                 Name = year.Name,

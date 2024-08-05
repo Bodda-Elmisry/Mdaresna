@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.StudentManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.Infrastructure.Services.Base;
 using Mdaresna.Repository.IRepositories.Base;
@@ -27,14 +28,19 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Qu
             this.studentQueryRepository = studentQueryRepository;
         }
 
-        public async Task<IEnumerable<Student>> GetStudentsBySchoolIdAsync(Guid schoolId)
+        public async Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAsync(Guid schoolId)
         {
             return await studentQueryRepository.GetStudentsBySchoolIdAsync(schoolId);
         }
 
-        public async Task<IEnumerable<Student>> GetStudentsBySchoolIdAndClassRoomIdAsync(Guid schoolId, Guid classroomId)
+        public async Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAndClassRoomIdAsync(Guid schoolId, Guid classroomId)
         {
             return await studentQueryRepository.GetStudentsBySchoolIdAndClassRoomIdAsync(schoolId, classroomId);
+        }
+
+        public async Task<StudentResultDTO?> GetStudentByIdAsync(Guid studentId)
+        {
+            return await studentQueryRepository.GetStudentByIdAsync(studentId);
         }
 
         public async Task<string> GetMaxStudebtCodeAsync(Guid schoolId)

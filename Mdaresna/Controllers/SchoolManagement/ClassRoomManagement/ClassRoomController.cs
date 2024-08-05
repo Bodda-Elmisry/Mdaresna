@@ -83,11 +83,11 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         }
 
         [HttpPost("DeactivateClass")]
-        public async Task<IActionResult> DeactivateClassRoom([FromBody] Guid RoomId)
+        public async Task<IActionResult> DeactivateClassRoom([FromBody] ClassRoomIdDTO RoomIddto)
         {
             try
             {
-                var classRoom = await classRoomQueryService.GetByIdAsync(RoomId);
+                var classRoom = await classRoomQueryService.GetByIdAsync(RoomIddto.ClassRoomId);
                 classRoom.Active = false;
                 var Updated = classRoomCommandService.Update(classRoom);
                 if (Updated)
@@ -102,11 +102,11 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         }
 
         [HttpPost("ActivateClass")]
-        public async Task<IActionResult> ActivateClassRoom([FromBody] Guid RoomId)
+        public async Task<IActionResult> ActivateClassRoom([FromBody] ClassRoomIdDTO RoomIddto)
         {
             try
             {
-                var classRoom = await classRoomQueryService.GetByIdAsync(RoomId);
+                var classRoom = await classRoomQueryService.GetByIdAsync(RoomIddto.ClassRoomId);
                 classRoom.Active = true;
                 var Updated = classRoomCommandService.Update(classRoom);
                 if (Updated)

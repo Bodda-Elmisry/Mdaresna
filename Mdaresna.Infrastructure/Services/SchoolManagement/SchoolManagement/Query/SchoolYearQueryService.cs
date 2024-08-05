@@ -31,9 +31,9 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Que
 
         
 
-        public async Task<SchoolYearResultDTO> GetCurrentYearAsync()
+        public async Task<SchoolYearResultDTO> GetCurrentYearAsync(Guid schoolId)
         {
-            return await schoolYearQueryRepository.GetCurrentYearAsync();
+            return await schoolYearQueryRepository.GetCurrentYearAsync(schoolId);
         }
 
         public async Task<IEnumerable<SchoolYearResultDTO>> GetSchoolYearsAsync(Guid schoolId)

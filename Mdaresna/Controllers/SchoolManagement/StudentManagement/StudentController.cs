@@ -26,7 +26,8 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         {
             try
             {
-                var result = await studentQueryService.GetByIdAsync(studentIdDTO.StudentId);
+                //var result = await studentQueryService.GetByIdAsync(studentIdDTO.StudentId);
+                var result = await studentQueryService.GetStudentByIdAsync(studentIdDTO.StudentId);
                 return Ok(result);
             }
             catch (Exception ex)
