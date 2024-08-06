@@ -28,12 +28,12 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Que
             this.schoolTeacherCourseQueryRepository = schoolTeacherCourseQueryRepository;
         }
 
-        public async Task<SchoolTeacherCourse?> GetSchoolTeacherCourceAsync(Guid schoolId, Guid teacherId, Guid courseId)
+        public async Task<SchoolTeacherCourseResultDTO?> GetSchoolTeacherCourceAsync(Guid schoolId, Guid teacherId, Guid courseId)
         {
             return await schoolTeacherCourseQueryRepository.GetSchoolTeacherCourceAsync(schoolId, teacherId, courseId);
         }
 
-        public async Task<IEnumerable<SchoolCourse>> GetSchoolTeacherCourcesAsync(Guid schoolId, Guid teacherId)
+        public async Task<IEnumerable<SchoolTeacherCourseResultDTO>> GetSchoolTeacherCourcesAsync(Guid schoolId, Guid teacherId)
         {
             return await schoolTeacherCourseQueryRepository.GetSchoolTeacherCourcesAsync(schoolId, teacherId);
         }

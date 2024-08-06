@@ -22,18 +22,38 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             this.context = context;
         }
 
-        public async Task<IEnumerable<SchoolCourse>> GetSchoolTeacherCourcesAsync(Guid schoolId, Guid teacherId)
+        public async Task<IEnumerable<SchoolTeacherCourseResultDTO>> GetSchoolTeacherCourcesAsync(Guid schoolId, Guid teacherId)
         {
             return await context.schoolTeacherCourses
-                        .Where(s => s.TeacherId == teacherId && s.SchoolId == schoolId)
-                        .Select(s => s.Course).ToListAsync();
+                        .Select(s => new SchoolTeacherCourseResultDTO
+                        {
+                            TeacherId = s.TeacherId,
+                            TeacherName = $"{s.Teacher.FirstName} {s.Teacher.MiddelName} {s.Teacher.LastName}",
+                            CourseId = s.CourseId,
+                            CourseName = s.Course.Name,
+                            SchoolId = s.SchoolId,
+                            SchoolName = s.School.Name
+
+                        })
+                        .Where(s => s.TeacherId == teacherId && s.SchoolId == schoolId).ToListAsync();
+                        //.Select(s => s.Course).ToListAsync();
 
         }
 
-        public async Task<SchoolTeacherCourse?> GetSchoolTeacherCourceAsync(Guid schoolId, Guid teacherId, Guid courseId)
+        public async Task<SchoolTeacherCourseResultDTO?> GetSchoolTeacherCourceAsync(Guid schoolId, Guid teacherId, Guid courseId)
         {
-            return await context.schoolTeacherCourses
+            var model =  await context.schoolTeacherCourses
                         .FirstOrDefaultAsync(s => s.TeacherId == teacherId && s.SchoolId == schoolId && s.CourseId == courseId);
+
+            return model != null ? new SchoolTeacherCourseResultDTO
+            {
+                TeacherId = model.TeacherId,
+                TeacherName = $"{model.Teacher.FirstName} {model.Teacher.MiddelName} {model.Teacher.LastName}",
+                CourseId = model.CourseId,
+                CourseName = model.Course.Name,
+                SchoolId = model.SchoolId,
+                SchoolName = model.School.Name
+            } : null;
 
         }
 

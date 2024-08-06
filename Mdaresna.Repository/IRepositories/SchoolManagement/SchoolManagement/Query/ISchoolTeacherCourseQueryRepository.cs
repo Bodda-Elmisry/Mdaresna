@@ -11,8 +11,8 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Qu
 {
     public interface ISchoolTeacherCourseQueryRepository : IBaseQueryRepository<SchoolTeacherCourse>
     {
-        Task<IEnumerable<SchoolCourse>> GetSchoolTeacherCourcesAsync(Guid schoolId, Guid teacherId);
-        Task<SchoolTeacherCourse?> GetSchoolTeacherCourceAsync(Guid schoolId, Guid teacherId, Guid courseId);
+        Task<IEnumerable<SchoolTeacherCourseResultDTO>> GetSchoolTeacherCourcesAsync(Guid schoolId, Guid teacherId);
+        Task<SchoolTeacherCourseResultDTO?> GetSchoolTeacherCourceAsync(Guid schoolId, Guid teacherId, Guid courseId);
         Task<SchoolTeacherCourseInitialDTO> GetSchoolTeacherCourceInitialListsAsync(Guid schoolId);
     }
 }
