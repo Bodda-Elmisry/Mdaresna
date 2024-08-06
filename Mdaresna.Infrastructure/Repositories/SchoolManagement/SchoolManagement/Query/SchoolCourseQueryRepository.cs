@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.SchoolManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
@@ -20,14 +21,39 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             this.context = context;
         }
 
-        public async Task<IEnumerable<SchoolCourse>> GetCoursesBySchoolIdAsync(Guid schoolId)
+        public async Task<IEnumerable<SchoolCourseResultDTO>> GetCoursesBySchoolIdAsync(Guid schoolId)
         {
-            return await context.SchoolCourses.Where(c => c.SchoolId == schoolId).ToListAsync();
+            return await context.SchoolCourses
+                        .Where(c => c.SchoolId == schoolId)
+                        .Select(s=> new SchoolCourseResultDTO
+                        {
+                            Id = s.Id,
+                            Name = s.Name,
+                            Description = s.Description,
+                            LanguageId = s.LanguageId,
+                            LanguageName = s.Language.Name,
+                            SchoolId = s.SchoolId,
+                            SchoolName = s.School.Name
+                        })
+                        .ToListAsync();
         }
 
-        public async Task<IEnumerable<SchoolCourse>> GetCoursesBySchoolIdAndLanguageIDAsync(Guid schoolId, Guid languageId)
+        public async Task<IEnumerable<SchoolCourseResultDTO>> GetCoursesBySchoolIdAndLanguageIDAsync(Guid schoolId, Guid languageId)
         {
-            return await context.SchoolCourses.Where(c => c.SchoolId == schoolId && c.LanguageId == languageId).ToListAsync();
+            return await context.SchoolCourses
+                        .Where(c => c.SchoolId == schoolId && c.LanguageId == languageId)
+                        .Select(s => new SchoolCourseResultDTO
+                        {
+                            Id = s.Id,
+                            Name = s.Name,
+                            Description = s.Description,
+                            LanguageId = s.LanguageId,
+                            LanguageName = s.Language.Name,
+                            SchoolId = s.SchoolId,
+                            SchoolName = s.School.Name
+                        })
+
+                        .ToListAsync();
         }
 
 

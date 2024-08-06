@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.SchoolManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Infrastructure.Services.Base;
 using Mdaresna.Repository.IRepositories.Base;
@@ -26,12 +27,12 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Que
             this.sharedRepository = sharedRepository;
             this.schoolCourseQueryRepository = schoolCourseQueryRepository;
         }
-        public async Task<IEnumerable<SchoolCourse>> GetCoursesBySchoolIdAsync(Guid schoolId)
+        public async Task<IEnumerable<SchoolCourseResultDTO>> GetCoursesBySchoolIdAsync(Guid schoolId)
         {
             return await schoolCourseQueryRepository.GetCoursesBySchoolIdAsync(schoolId);
         }
 
-        public async Task<IEnumerable<SchoolCourse>> GetCoursesBySchoolIdAndLanguageIDAsync(Guid schoolId, Guid languageId)
+        public async Task<IEnumerable<SchoolCourseResultDTO>> GetCoursesBySchoolIdAndLanguageIDAsync(Guid schoolId, Guid languageId)
         {
             return await schoolCourseQueryRepository.GetCoursesBySchoolIdAndLanguageIDAsync(schoolId, languageId);
         }
