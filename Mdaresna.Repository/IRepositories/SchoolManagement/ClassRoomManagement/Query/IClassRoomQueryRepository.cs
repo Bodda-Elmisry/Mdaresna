@@ -1,4 +1,5 @@
 using Mdaresna.Doamin.DTOs.ClassRoom;
+using Mdaresna.Doamin.DTOs.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Repository.IRepositories.Base;
 using System;
@@ -11,8 +12,9 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.ClassRoomManagement
 {
     public interface IClassRoomQueryRepository : IBaseQueryRepository<ClassRoom>
     {
-        Task<IEnumerable<ClassRoom>> GetBySchoolIdAsync(Guid SchoolId);
-        Task<IEnumerable<ClassRoom>> GetBySchoolIdAndSupervisorIdAsync(Guid SchoolId, Guid SupervisorId);
+        Task<IEnumerable<ClassRoomResultDTO>> GetBySchoolIdAsync(Guid SchoolId);
+        Task<IEnumerable<ClassRoomResultDTO>> GetBySchoolIdAndSupervisorIdAsync(Guid SchoolId, Guid SupervisorId);
+        Task<ClassRoomResultDTO?> GetClassRoomByIdAsync(Guid roomId);
 
     }
 }
