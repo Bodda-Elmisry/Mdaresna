@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Repository.IServices.Base;
 using System;
@@ -10,5 +11,9 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Que
 {
     public interface IClassRoomTeacherCourseQueryService : IBaseQueryService<ClassRoomTeacherCourse>
     {
+        Task<ClassRoomTeacherCourseInitialDTO> GetInitialDataAsync(Guid schoolId);
+        Task<IEnumerable<ClassRoomTeacherCourseResultDTO>> GetTeacherDataAsync(Guid teacherId);
+        Task<ClassRoomTeacherCourseResultDTO?> GetClassRoomIeacherCourseAsync(Guid teacherId, Guid roomId, Guid courseId);
+        Task<ClassRoomTeacherCourse?> GetByIdAsync(Guid teacherId, Guid roomId, Guid courseId);
     }
 }
