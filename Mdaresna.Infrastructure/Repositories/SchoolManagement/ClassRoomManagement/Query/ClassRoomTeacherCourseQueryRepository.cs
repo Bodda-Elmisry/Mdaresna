@@ -28,19 +28,19 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
 
 
             var coursesQuery = from sc in context.SchoolCourses
-                                join ctc in context.ClassRoomTeacherCourses
-                                on sc.Id equals ctc.CourseId into sc_ctc
-                                from ctc in sc_ctc.DefaultIfEmpty()
-                                where sc.SchoolId == schoolId && ctc == null
-                                select new { sc.Id, sc.Name };
+                                   //join ctc in context.ClassRoomTeacherCourses
+                                   //on sc.Id equals ctc.CourseId into sc_ctc
+                                   //from ctc in sc_ctc.DefaultIfEmpty()
+                               where sc.SchoolId == schoolId //&& ctc == null
+                               select new { sc.Id, sc.Name };
 
             var courses = await coursesQuery.Select(c=> new DropDownDTO { Id = c.Id, Name = c.Name}).ToListAsync();
 
             var roomsQuery = from cr in context.ClassRooms
-                             join ctc in context.ClassRoomTeacherCourses
-                             on cr.Id equals ctc.ClassRoomId into sc_ctc
-                             from ctc in sc_ctc.DefaultIfEmpty()
-                             where cr.SchoolId == schoolId && ctc == null
+                                 //join ctc in context.ClassRoomTeacherCourses
+                                 //on cr.Id equals ctc.ClassRoomId into sc_ctc
+                                 //from ctc in sc_ctc.DefaultIfEmpty()
+                             where cr.SchoolId == schoolId //&& ctc == null
                              select new { cr.Id, cr.Name }; 
 
             var rooms = await roomsQuery.Select(r=> new DropDownDTO { Id = r.Id, Name = r.Name }).ToListAsync();
@@ -75,7 +75,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
 
         public async Task<ClassRoomTeacherCourseResultDTO?> GetClassRoomIeacherCourseAsync(Guid teacherId, Guid roomId, Guid courseId)
         {
-            var row = await context.ClassRoomTeacherCourses.FirstOrDefaultAsync(c => c.TeacherId == teacherId &&
+            var row = await context.ClassRoomTeacherCourses.Include(c=> c.Teacher).Include(c=> c.ClassRoom).Include(c => c.Course).FirstOrDefaultAsync(c => c.TeacherId == teacherId &&
                                                                                     c.ClassRoomId == roomId &&
                                                                                     c.CourseId == courseId);
 
@@ -100,6 +100,13 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                                                                                     c.CourseId == courseId);
 
             
+        }
+
+        public async Task<bool> IsExistAsync(Guid teacherId, Guid roomId, Guid courseId)
+        {
+            return await context.ClassRoomTeacherCourses.AnyAsync(c => c.TeacherId == teacherId &&
+                                                                      c.ClassRoomId == roomId &&
+                                                                      c.CourseId == courseId);
         }
 
 

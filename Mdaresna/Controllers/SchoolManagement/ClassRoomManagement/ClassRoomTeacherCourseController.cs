@@ -22,7 +22,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         }
 
         [HttpPost("GetInitialData")]
-        public async Task<IActionResult> GetInitialData(SchoolIdDTO schoolIdDTO)
+        public async Task<IActionResult> GetInitialData([FromBody] SchoolIdDTO schoolIdDTO)
         {
             try
             {
@@ -36,7 +36,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         }
 
         [HttpPost("GetTracherData")]
-        public async Task<IActionResult> GetTracherData(TeacherIdDTO teacherIdDTO)
+        public async Task<IActionResult> GetTracherData([FromBody] TeacherIdDTO teacherIdDTO)
         {
             try
             {
@@ -51,7 +51,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         }
 
         [HttpPost("GetClassRoomIeacherCourse")]
-        public async Task<IActionResult> GetClassRoomIeacherCourse(ClassRoomIdTeacherIdCourseIdDto dto)
+        public async Task<IActionResult> GetClassRoomIeacherCourse([FromBody] ClassRoomIdTeacherIdCourseIdDto dto)
         {
             try
             {
@@ -67,10 +67,14 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         }
 
         [HttpPost("CreateClassRoomTeacherCourse")]
-        public IActionResult CreateClassRoomTeacherCourse(CreateClassRoomTeacherCourseDTO dto)
+        public async Task<IActionResult> CreateClassRoomTeacherCourse([FromBody] CreateClassRoomTeacherCourseDTO dto)
         {
             try
             {
+                var rowExist = await classRoomTeacherCourseQueryService.IsExistAsync(dto.TeacherId, dto.ClassRoomId, dto.CourseId);
+
+                if (rowExist)
+                    return BadRequest("Teacher already assigned to this course in this class");
 
                 var row = new ClassRoomTeacherCourse
                 {
@@ -82,15 +86,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                 var added = classRoomTeacherCourseCommandService.Create(row);
 
                 if (added)
-                    return Ok(new ClassRoomTeacherCourseResultDTO
-                    {
-                        ClassRoomId = row.ClassRoomId,
-                        ClassRoomName = row.ClassRoom.Name,
-                        CourseId = row.CourseId,
-                        CourseName = row.Course.Name,
-                        TeacherId = row.TeacherId,
-                        TeacherName = $"{row.Teacher.FirstName} {row.Teacher.MiddelName} {row.Teacher.LastName}"
-                    });
+                    return Ok(await classRoomTeacherCourseQueryService.GetClassRoomIeacherCourseAsync(row.TeacherId, row.ClassRoomId, row.CourseId));
 
 
                 return BadRequest("Error in assining class course to teacher");
@@ -102,7 +98,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         }
 
         [HttpPost("DeleteClassRoomIeacherCourse")]
-        public async Task<IActionResult> DeleteClassRoomIeacherCourse(ClassRoomIdTeacherIdCourseIdDto dto)
+        public async Task<IActionResult> DeleteClassRoomIeacherCourse([FromBody] ClassRoomIdTeacherIdCourseIdDto dto)
         {
             try
             {

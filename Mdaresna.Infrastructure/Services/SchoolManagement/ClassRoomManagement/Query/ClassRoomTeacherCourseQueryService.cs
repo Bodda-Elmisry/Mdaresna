@@ -48,5 +48,10 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.
         {
             return await classRoomTeacherCourseQueryRepository.GetTeacherDataAsync(teacherId);
         }
+
+        public async Task<bool> IsExistAsync(Guid teacherId, Guid roomId, Guid courseId)
+        {
+            return await classRoomTeacherCourseQueryRepository.IsExistAsync(teacherId,roomId, courseId);
+        }
     }
 }

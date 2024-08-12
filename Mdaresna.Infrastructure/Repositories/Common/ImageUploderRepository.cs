@@ -50,7 +50,7 @@ namespace Mdaresna.Infrastructure.Repositories.Common
 
             users.ImageUrl = filePath;
 
-            context.SaveChanges();
+            //context.SaveChanges();
             await context.SaveChangesAsync();
             return true;
         }

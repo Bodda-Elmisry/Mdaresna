@@ -75,7 +75,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         }
 
         [HttpPost("AddNewExam")]
-        public async Task<IActionResult> CreateNewExam(CreateClassRoomExamDTO classRoomExamDTO)
+        public async Task<IActionResult> CreateNewExam([FromBody] CreateClassRoomExamDTO classRoomExamDTO)
         {
             try
             {
@@ -95,7 +95,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                 var added = classRoomExamCommandService.Create(exam);
 
                 if (added)
-                    return Ok(ConvertExamToExamDTO(exam));
+                    return Ok(ConvertExamToExamDTO(await classRoomExamQueryService.GetByIdAsync (exam.Id)));
 
                 return BadRequest("Error in adding exam");
             }
