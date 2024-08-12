@@ -1,6 +1,7 @@
 using Mdaresna.Doamin.Models.UserManagement;
 using Mdaresna.Infrastructure.Services.Base;
 using Mdaresna.Repository.IRepositories.Base;
+using Mdaresna.Repository.IRepositories.UserManagement.Query;
 using Mdaresna.Repository.IServices.UserManagement.Query;
 using System;
 using System.Collections.Generic;
@@ -12,15 +13,19 @@ namespace Mdaresna.Infrastructure.Services.UserManagement.Query
 {
     public class RelationTypeQueryService : BaseQueryService<RelationType>, IRelationTypeQueryService
     {
-        private readonly IBaseQueryRepository<RelationType> queryRepository;
-        private readonly IBaseSharedRepository<RelationType> sharedRepository;
+        private readonly IRelationTypeQueryRepository relationTypeQueryRepository;
 
         public RelationTypeQueryService(IBaseQueryRepository<RelationType> queryRepository,
-            IBaseSharedRepository<RelationType> sharedRepository) 
+            IBaseSharedRepository<RelationType> sharedRepository,
+            IRelationTypeQueryRepository relationTypeQueryRepository) 
                 : base(queryRepository, sharedRepository)
         {
-            this.queryRepository = queryRepository;
-            this.sharedRepository = sharedRepository;
+            this.relationTypeQueryRepository = relationTypeQueryRepository;
+        }
+
+        public async Task<RelationType?> GetRelationByNameAsync(string name)
+        {
+            return await relationTypeQueryRepository.GetRelationByNameAsync(name);
         }
     }
 }

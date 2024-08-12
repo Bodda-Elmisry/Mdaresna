@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IRepositories.UserManagement.Query
 {
     public interface IRelationTypeQueryRepository : IBaseQueryRepository<RelationType>
     {
+        Task<RelationType?> GetRelationByNameAsync(string name);
     }
 }
