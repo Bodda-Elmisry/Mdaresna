@@ -95,7 +95,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                 var added = classRoomExamCommandService.Create(exam);
 
                 if (added)
-                    return Ok(ConvertExamToExamDTO(await classRoomExamQueryService.GetByIdAsync (exam.Id)));
+                    return Ok(await classRoomExamQueryService.GetExamByIdAsync (exam.Id));
 
                 return BadRequest("Error in adding exam");
             }
@@ -126,7 +126,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                 var updated = classRoomExamCommandService.Update(exam);
 
                 if(updated)
-                    return Ok(ConvertExamToExamDTO(exam));
+                    return Ok(await classRoomExamQueryService.GetExamByIdAsync(exam.Id));
 
                 return BadRequest("Error in updating exam");
 

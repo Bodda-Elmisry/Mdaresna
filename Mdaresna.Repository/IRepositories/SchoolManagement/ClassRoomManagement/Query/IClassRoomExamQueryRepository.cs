@@ -16,5 +16,6 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.ClassRoomManagement
                                                                       Guid? courseId, decimal? rate);
 
         Task<CreateClassRoomExamInitialDataDTO> GetInitialData(Guid schoolId);
+        Task<ClassRoomExamResultDTO?> GetExamByIdAsync(Guid examid);
     }
 }

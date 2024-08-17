@@ -115,6 +115,28 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
 
         }
 
+        public async Task<ClassRoomExamResultDTO?> GetExamByIdAsync(Guid examid)
+        {
+            var result = await context.ClassRoomExams.Include(e=> e.ClassRoom).Include(e => e.Supervisor).Include(e => e.Course).Include(e => e.Month).FirstOrDefaultAsync(e=> e.Id == examid);
+
+            return result != null ? new ClassRoomExamResultDTO
+            {
+                Id = result.Id,
+                ExamDate = result.ExamDate,
+                WeekDay = result.WeekDay,
+                ExamDetails = result.Details,
+                ClassRoomId = result.ClassRoomId,
+                ClassRoom = result.ClassRoom.Name,
+                SupervisorId = result.SupervisorId,
+                SupervisorName = string.Format("{0} {1} {2}", result.Supervisor.FirstName, result.Supervisor.MiddelName, result.Supervisor.LastName),
+                MonthId = result.MonthId,
+                Month = result.Month.Name,
+                CourseId = result.CourseId,
+                CourseName = result.Course.Name,
+                Rate = result.Rate
+            } : null;
+        }
+
 
 
 
