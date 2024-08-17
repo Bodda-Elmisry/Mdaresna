@@ -34,8 +34,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
                     //{
                     //    sqlServerOptions.EnableRetryOnFailure();
                     //}
-                ),
-                ServiceLifetime.Singleton
+                ).EnableSensitiveDataLogging().LogTo(Console.WriteLine,LogLevel.Information),
+                ServiceLifetime.Scoped
         );
 
 builder.Services.Configure<AppSettingDTO>(builder.Configuration.GetSection("AppSettings"));

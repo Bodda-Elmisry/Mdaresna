@@ -1,6 +1,7 @@
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.Infrastructure.Helpers;
 using Mdaresna.Repository.IRepositories.Base;
+using Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.Base;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using System;
@@ -15,12 +16,15 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Co
     {
         private readonly IBaseCommandRepository<StudentParent> commandRepository;
         private readonly IBaseSharedRepository<StudentParent> sharedRepository;
+        private readonly IStudentParentCommandRepository studentParentCommandRepository;
 
         public StudentParentCommandService(IBaseCommandRepository<StudentParent> commandRepository,
-            IBaseSharedRepository<StudentParent> sharedRepository)
+            IBaseSharedRepository<StudentParent> sharedRepository,
+            IStudentParentCommandRepository studentParentCommandRepository)
         {
             this.commandRepository = commandRepository;
             this.sharedRepository = sharedRepository;
+            this.studentParentCommandRepository = studentParentCommandRepository;
         }
         public bool Create(StudentParent entity)
         {
