@@ -78,7 +78,9 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 
                 var added = schoolTeacherCourseCommandService.Create(course);
                 if (added)
-                    return Ok(course);
+                    return Ok(await schoolTeacherCourseQueryService.GetSchoolTeacherCourceAsync(course.SchoolId,
+                                                                                                course.TeacherId,
+                                                                                                course.CourseId));
 
                 return BadRequest("Error in Adding course to teacher");
             }

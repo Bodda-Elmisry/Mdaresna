@@ -43,6 +43,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
         public async Task<SchoolTeacherCourseResultDTO?> GetSchoolTeacherCourceAsync(Guid schoolId, Guid teacherId, Guid courseId)
         {
             var model =  await context.schoolTeacherCourses
+                        .Include(s=> s.Teacher).Include(s => s.Course).Include(s => s.School)
                         .FirstOrDefaultAsync(s => s.TeacherId == teacherId && s.SchoolId == schoolId && s.CourseId == courseId);
 
             return model != null ? new SchoolTeacherCourseResultDTO
