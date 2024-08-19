@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.SchoolManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
@@ -20,9 +21,43 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             this.context = context;
         }
 
-        public async Task<IEnumerable<School>> GetUserAdminSchools(Guid userId)
+        public async Task<IEnumerable<SchoolResultDTO>> GetUserAdminSchools(Guid userId)
         {
-            return await context.Schools.Where(s => s.SchoolAdminId == userId).ToListAsync();
+            return await GetSchoolQuery().Where(s => s.SchoolAdminId == userId).ToListAsync();
+        }
+
+        public async Task<SchoolResultDTO?> GetSchoolById(Guid schoolId)
+        {
+            return await GetSchoolQuery().FirstOrDefaultAsync(s => s.Id == schoolId);
+        }
+
+        public async Task<IEnumerable<SchoolResultDTO>> GetSchoolsList()
+        {
+            return await GetSchoolQuery().ToListAsync();
+        }
+
+        private IQueryable<SchoolResultDTO> GetSchoolQuery()
+        {
+            var query = context.Schools
+                       .Include(s => s.SchoolType).Include(s => s.SchoolAdmin).Include(s => s.CoinType)
+                       .Select(s => new SchoolResultDTO
+                       {
+                           Id = s.Id,
+                           Name = s.Name,
+                           About = s.About,
+                           Vesion = s.Vesion,
+                           Active = s.Active,
+                           ImageUrl = s.ImageUrl,
+                           SchoolTypeId = s.SchoolTypeId,
+                           SchoolTypeName = s.SchoolType.Name,
+                           CoinTypeId = s.CoinTypeId,
+                           CoinTypeName = s.CoinType.Name,
+                           AvailableCoins = s.AvailableCoins,
+                           SchoolAdminId = s.SchoolAdminId,
+                           SchoolAdminName = s.SchoolType.Name
+                       });
+
+            return query;
         }
     }
 }

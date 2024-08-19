@@ -1,4 +1,7 @@
+using Mdaresna.Doamin.DTOs.SchoolManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
+using Mdaresna.Doamin.Models.UserManagement;
+using Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Infrastructure.Services.Base;
 using Mdaresna.Repository.IRepositories.Base;
 using Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Query;
@@ -27,9 +30,32 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Que
             this.schoolQueryRepository = schoolQueryRepository;
         }
 
-        public async Task<IEnumerable<School>> GetUserAdminSchools(Guid userId)
+        public async Task<SchoolResultDTO?> GetSchoolById(Guid schoolId)
+        {
+            return await schoolQueryRepository.GetSchoolById(schoolId);
+        }
+
+        public async Task<IEnumerable<SchoolResultDTO>> GetSchoolsList()
+        {
+            return await schoolQueryRepository.GetSchoolsList();
+        }
+
+        public async Task<IEnumerable<SchoolResultDTO>> GetUserAdminSchools(Guid userId)
         {
             return await schoolQueryRepository.GetUserAdminSchools(userId);
         }
+
+
+
+       
+
+
+
+
+
+
+
+
+
     }
 }

@@ -21,7 +21,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("AddSchool")]
-        public IActionResult CreateNewSchool([FromBody] CreateSchoolDTO School)
+        public async Task<IActionResult> CreateNewSchool([FromBody] CreateSchoolDTO School)
         {
             try
             {
@@ -39,7 +39,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 
                 var added = schoolCommandService.Create(newSchool);
                 if (added)
-                    return Ok(newSchool);
+                    return Ok(await schoolQueryService.GetByIdAsync(newSchool.Id));
 
                 return BadRequest();
 
@@ -55,7 +55,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
-                var result = await schoolQueryService.GetAllAsync();
+                var result = await schoolQueryService.GetSchoolsList();
                 return Ok(result);
             }
             catch(Exception ex)

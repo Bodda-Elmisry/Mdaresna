@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.Identity;
+﻿using Mdaresna.Doamin.DTOs.SchoolManagement;
+using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Doamin.Models.UserManagement;
 using System;
@@ -13,6 +14,6 @@ namespace Mdaresna.Doamin.DTOs.Identity
     {
         public User LogedinUser { get; set; }
         public IEnumerable<string> Permissions { get; set; }
-        public IEnumerable<School> Schools { get; set; }
+        public IEnumerable<SchoolResultDTO> Schools { get; set; }
     }
 }
