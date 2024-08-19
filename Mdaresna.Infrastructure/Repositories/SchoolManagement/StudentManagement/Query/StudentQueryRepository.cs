@@ -69,23 +69,50 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
 
         public async Task<StudentResultDTO?> GetStudentByIdAsync(Guid studentId)
         {
-            return await context.Students
-                .Select(s => new StudentResultDTO
+            var student = await context.Students
+                                .Include(s => s.ClassRoom).Include(s => s.School)
+                                .FirstOrDefaultAsync(s => s.Id == studentId);
+            return student == null ? null : 
+                new StudentResultDTO
                 {
-                    Id = s.Id,
-                    Active = s.Active,
-                    BirthDate = s.BirthDate,
-                    ClassRoomId = s.ClassRoomId,
-                    ClassRoomName = s.ClassRoom.Name,
-                    Code = s.Code,
-                    FirstName = s.FirstName,
-                    LastName = s.LastName,
-                    MiddelName = s.MiddelName,
-                    SchoolId = s.SchoolId,
-                    SchoolName = s.School.Name,
-                    ImageUrl = !string.IsNullOrEmpty(s.ImageUrl) ? $"{SettingsHelper.GetAppUrl()}/{s.ImageUrl.Replace("\\", "/")}" : string.Empty,
-                    IsPayed = s.IsPayed
-                }).FirstOrDefaultAsync(s => s.Id == studentId);
+                    Id = student.Id,
+                    Active = student.Active,
+                    BirthDate = student.BirthDate,
+                    ClassRoomId = student.ClassRoomId,
+                    ClassRoomName = student.ClassRoom.Name,
+                    Code = student.Code,
+                    FirstName = student.FirstName,
+                    LastName = student.LastName,
+                    MiddelName = student.MiddelName,
+                    SchoolId = student.SchoolId,
+                    SchoolName = student.School.Name,
+                    ImageUrl = !string.IsNullOrEmpty(student.ImageUrl) ? $"{SettingsHelper.GetAppUrl()}/{student.ImageUrl.Replace("\\", "/")}" : string.Empty,
+                    IsPayed = student.IsPayed
+                };
+        }
+
+        public async Task<StudentResultDTO?> GetStudentByCodeAsync(string code)
+        {
+            var student = await context.Students
+                                .Include(s=> s.ClassRoom).Include(s => s.School)
+                                .FirstOrDefaultAsync(s => s.Code == code);
+            return student == null ? null :
+                new StudentResultDTO
+                {
+                    Id = student.Id,
+                    Active = student.Active,
+                    BirthDate = student.BirthDate,
+                    ClassRoomId = student.ClassRoomId,
+                    ClassRoomName = student.ClassRoom.Name,
+                    Code = student.Code,
+                    FirstName = student.FirstName,
+                    LastName = student.LastName,
+                    MiddelName = student.MiddelName,
+                    SchoolId = student.SchoolId,
+                    SchoolName = student.School.Name,
+                    ImageUrl = !string.IsNullOrEmpty(student.ImageUrl) ? $"{SettingsHelper.GetAppUrl()}/{student.ImageUrl.Replace("\\", "/")}" : string.Empty,
+                    IsPayed = student.IsPayed
+                };
         }
 
         public async Task<string> GetMaxStudebtCodeAsync(Guid schoolId)

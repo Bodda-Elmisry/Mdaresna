@@ -36,6 +36,21 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             }
         }
 
+        [HttpPost("GetStudentByCode")]
+        public async Task<IActionResult> GetStudentByCode([FromBody] StudentCodeDTO studentCodeDTO)
+        {
+            try
+            {
+                //var result = await studentQueryService.GetByIdAsync(studentIdDTO.StudentId);
+                var result = await studentQueryService.GetStudentByCodeAsync(studentCodeDTO.StudentCode);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("GetClassRoomStudents")]
         public async Task<IActionResult> GetClassRoomStudents([FromBody] SchoolIdClassRoomIdDTO schoolIdClassRoomIdDTO)
         {

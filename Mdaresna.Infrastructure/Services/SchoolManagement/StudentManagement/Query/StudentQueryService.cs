@@ -43,6 +43,11 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Qu
             return await studentQueryRepository.GetStudentByIdAsync(studentId);
         }
 
+        public async Task<StudentResultDTO?> GetStudentByCodeAsync(string code)
+        {
+            return await studentQueryRepository.GetStudentByCodeAsync(code);
+        }
+
         public async Task<string> GetMaxStudebtCodeAsync(Guid schoolId)
         {
             return await studentQueryRepository.GetMaxStudebtCodeAsync(schoolId);
