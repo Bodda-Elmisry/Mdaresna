@@ -37,8 +37,9 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Que
             return await schoolCourseQueryRepository.GetCoursesBySchoolIdAndLanguageIDAsync(schoolId, languageId);
         }
 
-
-
-
+        public async Task<SchoolCourseResultDTO?> GetCourseIDAsync(Guid id)
+        {
+            return await schoolCourseQueryRepository.GetCourseIDAsync(id);
+        }
     }
 }

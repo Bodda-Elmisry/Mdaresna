@@ -56,7 +56,23 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                         .ToListAsync();
         }
 
+        public async Task<SchoolCourseResultDTO?> GetCourseIDAsync(Guid id)
+        {
+            var schoolCourse = await context.SchoolCourses
+                                     .Include(s => s.School).Include(s => s.Language)
+                                     .FirstOrDefaultAsync(s => s.Id == id);
 
-
+            return schoolCourse == null ? null :
+                                    new SchoolCourseResultDTO
+                                    {
+                                        Id = schoolCourse.Id,
+                                        Name = schoolCourse.Name,
+                                        Description = schoolCourse.Description,
+                                        LanguageId = schoolCourse.LanguageId,
+                                        LanguageName = schoolCourse.Language.Name,
+                                        SchoolId = schoolCourse.SchoolId,
+                                        SchoolName = schoolCourse.School.Name
+                                    };
+        }
     }
 }

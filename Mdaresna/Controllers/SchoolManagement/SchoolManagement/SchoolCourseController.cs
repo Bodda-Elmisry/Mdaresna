@@ -39,7 +39,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
-                var result = await schoolCourseQueryService.GetByIdAsync(courseIdDTO.CourseId);
+                var result = await schoolCourseQueryService.GetCourseIDAsync(courseIdDTO.CourseId);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -63,7 +63,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("AddCourse")]
-        public IActionResult CreateCourse([FromBody] CreateSchoolCourseDTO createSchoolCourseDTO)
+        public async Task<IActionResult> CreateCourse([FromBody] CreateSchoolCourseDTO createSchoolCourseDTO)
         {
             try
             {
@@ -77,7 +77,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 
                 var added = schoolCourseCommandService.Create(course);
                 if(added)
-                    return Ok(course);
+                    return Ok(await schoolCourseQueryService.GetCourseIDAsync(course.Id));
 
                 return BadRequest("Error in adding course");
             }
@@ -105,7 +105,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 var updated = schoolCourseCommandService.Update(course);
 
                 if(updated) 
-                    return Ok(course);
+                    return Ok(await schoolCourseQueryService.GetCourseIDAsync(course.Id));
 
                 return BadRequest("Error in updating course");
             }
