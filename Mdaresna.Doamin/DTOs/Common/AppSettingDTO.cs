@@ -9,5 +9,6 @@ namespace Mdaresna.Doamin.DTOs.Common
     public class AppSettingDTO
     {
         public string ImagesPath { get; set; }
+        public int? PageSize { get; set; }
     }
 }

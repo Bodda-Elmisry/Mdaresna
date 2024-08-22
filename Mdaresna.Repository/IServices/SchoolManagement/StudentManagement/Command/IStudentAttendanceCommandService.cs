@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.StudentManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.Repository.IServices.Base;
 using System;
@@ -10,5 +11,6 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Comma
 {
     public interface IStudentAttendanceCommandService : IBaseCommandService<StudentAttendance>
     {
+        Task<bool> AddClassRoomAttendance(AddClassRoomAttendanceDTO attendanceDTO);
     }
 }

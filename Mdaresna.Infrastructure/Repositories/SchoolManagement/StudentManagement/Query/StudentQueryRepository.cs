@@ -122,7 +122,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
             {
                 return null;
             }
-            var student = await context.Students.LastOrDefaultAsync(s => s.SchoolId == schoolId);
+            var student = await context.Students.OrderByDescending(s=> s.CreateDate).FirstOrDefaultAsync(s => s.SchoolId == schoolId);
+
             return student.Code;
         }
     }

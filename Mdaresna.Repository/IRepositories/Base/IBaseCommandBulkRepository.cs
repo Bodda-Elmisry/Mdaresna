@@ -6,11 +6,8 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Repository.IRepositories.Base
 {
-    public interface IBaseCommandRepository<T>
+    public interface IBaseCommandBulkRepository<T>
     {
-        bool Create(T entity);
-        bool Update(T entity);
-        bool Delete(T entity);
-        
+        Task<bool> CreateBulk<T>(IEnumerable<T> entityList) where T : class;
     }
 }

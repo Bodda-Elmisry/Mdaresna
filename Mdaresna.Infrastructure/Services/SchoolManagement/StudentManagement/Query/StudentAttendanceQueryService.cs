@@ -1,6 +1,8 @@
+using Mdaresna.Doamin.DTOs.StudentManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.Infrastructure.Services.Base;
 using Mdaresna.Repository.IRepositories.Base;
+using Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using System;
 using System.Collections.Generic;
@@ -12,15 +14,19 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Qu
 {
     public class StudentAttendanceQueryService : BaseQueryService<StudentAttendance>, IStudentAttendanceQueryService
     {
-        private readonly IBaseQueryRepository<StudentAttendance> queryRepository;
-        private readonly IBaseSharedRepository<StudentAttendance> sharedRepository;
+        private readonly IStudentAttendanceQueryRepository studentAttendanceQueryRepository;
 
         public StudentAttendanceQueryService(IBaseQueryRepository<StudentAttendance> queryRepository,
-            IBaseSharedRepository<StudentAttendance> sharedRepository) 
+            IBaseSharedRepository<StudentAttendance> sharedRepository,
+            IStudentAttendanceQueryRepository studentAttendanceQueryRepository) 
                 : base(queryRepository, sharedRepository)
         {
-            this.queryRepository = queryRepository;
-            this.sharedRepository = sharedRepository;
+            this.studentAttendanceQueryRepository = studentAttendanceQueryRepository;
+        }
+
+        public async Task<IEnumerable<StudentAttendanceResultDTO>> GetStudentsAttendancesAsync(Guid? studentId, Guid? classRoomId, int pageNumber)
+        {
+            return await studentAttendanceQueryRepository.GetStudentsAttendancesAsync(studentId, classRoomId, pageNumber);
         }
     }
 }
