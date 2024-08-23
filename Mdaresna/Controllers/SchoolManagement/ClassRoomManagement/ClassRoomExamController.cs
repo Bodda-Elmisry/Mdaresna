@@ -63,10 +63,9 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         {
             try
             {
-                var exam = await classRoomExamQueryService.GetByIdAsync(examIdDTO.ExamId);
-                var result = ConvertExamToExamDTO(exam);
+                var exam = await classRoomExamQueryService.GetExamByIdAsync(examIdDTO.ExamId);
 
-                return Ok(result);
+                return Ok(exam);
             }
             catch (Exception ex)
             {
@@ -135,28 +134,6 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
             {
                 return BadRequest(ex.Message);
             }
-        }
-
-        private ClassRoomExamResultDTO ConvertExamToExamDTO(ClassRoomExam exam)
-        {
-            var result = new ClassRoomExamResultDTO
-            {
-                Id = exam.Id,
-                ClassRoomId = exam.ClassRoomId,
-                ClassRoom = exam.ClassRoom.Name,
-                CourseId = exam.CourseId,
-                CourseName = exam.Course.Name,
-                ExamDate = exam.ExamDate,
-                ExamDetails = exam.Details,
-                MonthId = exam.MonthId,
-                Month = exam.Month.Name,
-                SupervisorId = exam.SupervisorId,
-                SupervisorName = string.Format("{0} {1} {2}", exam.Supervisor.FirstName, exam.Supervisor.MiddelName, exam.Supervisor.LastName),
-                Rate = exam.Rate,
-                WeekDay = exam.WeekDay
-            };
-
-            return result;
         }
 
 
