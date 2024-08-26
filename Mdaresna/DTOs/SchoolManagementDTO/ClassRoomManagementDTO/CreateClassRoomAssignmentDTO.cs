@@ -1,0 +1,13 @@
+﻿namespace Mdaresna.DTOs.SchoolManagementDTO.ClassRoomManagementDTO
+{
+    public class CreateClassRoomAssignmentDTO
+    {
+        public DateTime AssignmentDate { get; set; }
+        public string WeekDay { get; set; }
+        public string Details { get; set; }
+        public Guid CourseId { get; set; }
+        public Guid ClassRoomId { get; set; }
+        public Guid SupervisorId { get; set; }
+        public decimal Rate { get; set; }
+    }
+}

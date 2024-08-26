@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Repository.IRepositories.Base;
 using System;
@@ -10,5 +11,7 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.ClassRoomManagement
 {
     public interface IClassRoomAssignmentQueryRepository : IBaseQueryRepository<ClassRoomAssignment>
     {
+        Task<IEnumerable<ClassRoomAssignmentResultDTO>> GetClassRoomAssignmentsList(Guid? classRoomId, Guid? SupervisorId, Guid? courseId, string? details, decimal? rate, DateTime? fromdate, DateTime? todate, int pageNumber);
+        Task<ClassRoomAssignmentResultDTO?> GetClassRoomAssignmentById(Guid assignmentId);
     }
 }
