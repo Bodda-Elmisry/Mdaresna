@@ -17,9 +17,9 @@ namespace Mdaresna.Infrastructure.BServices.Common
             this.imageUploderRepository = imageUploderRepository;
         }
 
-        public async Task<bool> UploadImage(Guid UserId, string filePath, bool isStudent)
+        public async Task<bool> UploadImage(Guid UserId, string filePath, int type)
         {
-            return await imageUploderRepository.UploadImage(UserId, filePath, isStudent);
+            return await imageUploderRepository.UploadImage(UserId, filePath, type);
         }
 
         public IEnumerable<byte> GetImageBytes(string imagePath)

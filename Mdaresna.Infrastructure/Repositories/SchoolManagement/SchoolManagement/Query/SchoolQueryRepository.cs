@@ -1,4 +1,5 @@
 using Mdaresna.Doamin.DTOs.SchoolManagement;
+using Mdaresna.Doamin.Helpers;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
@@ -47,7 +48,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                            About = s.About,
                            Vesion = s.Vesion,
                            Active = s.Active,
-                           ImageUrl = s.ImageUrl,
+                           ImageUrl = !string.IsNullOrEmpty(s.ImageUrl) ? $"{SettingsHelper.GetAppUrl()}/{s.ImageUrl.Replace("\\", "/")}" : string.Empty,
                            SchoolTypeId = s.SchoolTypeId,
                            SchoolTypeName = s.SchoolType.Name,
                            CoinTypeId = s.CoinTypeId,

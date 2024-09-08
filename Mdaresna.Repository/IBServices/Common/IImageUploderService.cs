@@ -8,7 +8,7 @@ namespace Mdaresna.Repository.IBServices.Common
 {
     public interface IImageUploderService
     {
-        Task<bool> UploadImage(Guid UserId, string filePath, bool isStudent);
+        Task<bool> UploadImage(Guid UserId, string filePath, int type);
 
         IEnumerable<byte> GetImageBytes(string imagePath);
     }

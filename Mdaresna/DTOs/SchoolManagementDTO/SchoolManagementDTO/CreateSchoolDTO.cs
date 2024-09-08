@@ -13,7 +13,7 @@ namespace Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO
 
         public string Vesion { get; set; }
 
-        public string ImageUrl { get; set; }
+        //public string ImageUrl { get; set; }
 
         public Guid SchoolTypeId { get; set; }
 

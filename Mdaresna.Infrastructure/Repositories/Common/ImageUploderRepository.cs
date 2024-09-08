@@ -18,13 +18,21 @@ namespace Mdaresna.Infrastructure.Repositories.Common
             this.context = context;
         }
 
-        public async Task<bool> UploadImage(Guid UserId, string filePath, bool isStudent)
+        public async Task<bool> UploadImage(Guid UserId, string filePath, int type)
         {
             var result = false;
-            if(isStudent)
-                result = await UploadStudentImage(UserId, filePath);
-            else
-                result = await UploadUserImage(UserId, filePath);
+            switch(type)
+            {
+                case 1:
+                    result = await UploadStudentImage(UserId, filePath);
+                    break;
+                case 2:
+                    result = await UploadUserImage(UserId, filePath);
+                    break;
+                case 3:
+                    result = await UploadSchoolPersonalImage(UserId, filePath);
+                    break;
+            }
 
             return result;
         }
@@ -51,6 +59,19 @@ namespace Mdaresna.Infrastructure.Repositories.Common
             users.ImageUrl = filePath;
 
             //context.SaveChanges();
+            await context.SaveChangesAsync();
+            return true;
+        }
+
+        private async Task<bool> UploadSchoolPersonalImage(Guid schoolId, string filePath)
+        {
+            var school = await context.Schools.FirstOrDefaultAsync(s=> s.Id == schoolId);
+
+            if(school == null)
+                return false;
+
+            school.ImageUrl = filePath;
+
             await context.SaveChangesAsync();
             return true;
         }

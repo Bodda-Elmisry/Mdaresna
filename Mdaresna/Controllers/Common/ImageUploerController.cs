@@ -35,10 +35,7 @@ namespace Mdaresna.Controllers.Common
                 string ext = fileParts[fileParts.Length - 1];
 
                 var localPath = Directory.GetCurrentDirectory();
-                var directoryPathWithoutLocal = Path.Combine(_appSettings.ImagesPath,
-                                            uploadImageDTO.UserId.ToString(),
-                                            "PersonalImage"
-                                            );
+                var directoryPathWithoutLocal = GetPathWithoutLocal(localPath, uploadImageDTO);
                 var fileName = string.Format("PI_{0}.{1}", uploadImageDTO.UserId.ToString(), ext); //uploadImageDTO.UserId.ToString() + "." + ext;
 
                 var filePath = Path.Combine(localPath,
@@ -52,7 +49,8 @@ namespace Mdaresna.Controllers.Common
 
                 //filePath += string.Format("\\PI_{0}.{1}", uploadImageDTO.UserId.ToString(), ext);
 
-                if (System.IO.File.Exists(filePath))
+                //delete personal images (user, student or school)
+                if (System.IO.File.Exists(filePath) && uploadImageDTO.Type <= 3 && uploadImageDTO.Type > 0)
                     System.IO.File.Delete(filePath);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
@@ -62,7 +60,7 @@ namespace Mdaresna.Controllers.Common
 
                 var uploader = await imageUploderService.UploadImage(uploadImageDTO.UserId,
                                                                  Path.Combine(directoryPathWithoutLocal,fileName),
-                                                                 uploadImageDTO.IsStudent);
+                                                                 uploadImageDTO.Type);
                 if (uploader)
                     return Ok("File Uploade Correct");
                 return BadRequest("Error in uploade image");
@@ -72,5 +70,35 @@ namespace Mdaresna.Controllers.Common
                 return BadRequest(ex.Message);
             }
         }
+
+        private string GetPathWithoutLocal(string localPath ,UploadImageDTO uploadImageDTO)
+        {
+
+
+
+            var directoryPath = string.Empty;
+            switch (uploadImageDTO.Type)
+            {
+                case 1:
+                case 2:
+                    directoryPath = Path.Combine(_appSettings.ImagesPath,
+                                        uploadImageDTO.UserId.ToString(),
+                                        "PersonalImage"
+                                        );
+                    break;
+                case 3:
+                    directoryPath = Path.Combine(_appSettings.ImagesPath,
+                                        "Schools",
+                                        uploadImageDTO.UserId.ToString(),
+                                        "ProfileImage"
+                                        );
+                    break;
+            }
+             
+
+            return directoryPath;
+        }
+
+
     }
 }

@@ -8,6 +8,6 @@ namespace Mdaresna.Repository.IRepositories.Common
 {
     public interface IImageUploderRepository
     {
-        Task<bool> UploadImage(Guid UserId, string filePath, bool isStudent);
+        Task<bool> UploadImage(Guid UserId, string filePath, int type);
     }
 }

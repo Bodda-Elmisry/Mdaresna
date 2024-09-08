@@ -31,7 +31,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                     About = School.About,
                     Active = false,
                     AvailableCoins = 0,
-                    ImageUrl = School.ImageUrl,
+                    //ImageUrl = School.ImageUrl,
                     SchoolAdminId = School.SchoolAdminId,
                     SchoolTypeId = School.SchoolTypeId,
                     Vesion = School.Vesion
@@ -39,10 +39,61 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 
                 var added = schoolCommandService.Create(newSchool);
                 if (added)
-                    return Ok(await schoolQueryService.GetByIdAsync(newSchool.Id));
+                    return Ok(await schoolQueryService.GetSchoolById(newSchool.Id));
 
                 return BadRequest();
 
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpPost("UpdateSchool")]
+        public async Task<IActionResult> UpdateSchoolInfo([FromBody] UpdateSchoolDTO SchoolInfo)
+        {
+            try
+            {
+                var school = await schoolQueryService.GetByIdAsync(SchoolInfo.Id);
+
+                if (school == null)
+                    return BadRequest("There is no school to update");
+
+                school.Name = SchoolInfo.SchoolName;
+                school.About = SchoolInfo.About;
+                school.Vesion = SchoolInfo.Vesion;
+                school.SchoolAdminId = SchoolInfo.SchoolAdminId;
+
+                var updated = schoolCommandService.Update(school);
+                if (updated)
+                    return Ok(await schoolQueryService.GetSchoolById(school.Id));
+
+                return BadRequest("Error in update school");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpPost("AddCoinsToSchool")]
+        public async Task<IActionResult> AddCoinsToSchool([FromBody] AddCoinsToSchoolDTO coinsdto)
+        {
+            try
+            {
+                var school = await schoolQueryService.GetByIdAsync(coinsdto.SchoolId);
+
+                if (school == null)
+                    return BadRequest("There is no school to add coins");
+
+                school.AvailableCoins = school.AvailableCoins + coinsdto.CoinsCount;
+
+                var updated = schoolCommandService.Update(school);
+                if (updated)
+                    return Ok(await schoolQueryService.GetSchoolById(school.Id));
+
+                return BadRequest("Error in update school");
             }
             catch (Exception ex)
             {
@@ -69,7 +120,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
-                var school = await schoolQueryService.GetByIdAsync(schoolIdDTO.SchoolId);
+                var school = await schoolQueryService.GetSchoolById(schoolIdDTO.SchoolId);
                 return Ok(school);
             }
             catch (Exception ex)
