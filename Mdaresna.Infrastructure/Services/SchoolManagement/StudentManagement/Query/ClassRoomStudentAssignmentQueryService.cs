@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.StudentManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.Infrastructure.Services.Base;
 using Mdaresna.Repository.IRepositories.Base;
@@ -12,15 +13,29 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Qu
 {
     public class ClassRoomStudentAssignmentQueryService : BaseQueryService<ClassRoomStudentAssignment>, IClassRoomStudentAssignmentQueryService
     {
-        private readonly IBaseQueryRepository<ClassRoomStudentAssignment> queryRepository;
-        private readonly IBaseSharedRepository<ClassRoomStudentAssignment> sharedRepository;
+        private readonly IClassRoomStudentAssignmentQueryService classRoomStudentAssignmentQueryService;
 
         public ClassRoomStudentAssignmentQueryService(IBaseQueryRepository<ClassRoomStudentAssignment> queryRepository,
-            IBaseSharedRepository<ClassRoomStudentAssignment> sharedRepository) 
+            IBaseSharedRepository<ClassRoomStudentAssignment> sharedRepository,
+            IClassRoomStudentAssignmentQueryService classRoomStudentAssignmentQueryService) 
                 : base(queryRepository, sharedRepository)
         {
-            this.queryRepository = queryRepository;
-            this.sharedRepository = sharedRepository;
+            this.classRoomStudentAssignmentQueryService = classRoomStudentAssignmentQueryService;
+        }
+
+        public async Task<ClassRoomStudentAssignment?> GetClassRoomStudentAssignmentAsync(Guid studentId, Guid AssignmentId)
+        {
+            return await classRoomStudentAssignmentQueryService.GetClassRoomStudentAssignmentAsync(studentId, AssignmentId);
+        }
+
+        public async Task<ClassRoomStudentAssignmentResultDTO?> GetClassRoomStudentAssignmentViewAsync(Guid studentId, Guid AssignmentId)
+        {
+            return await classRoomStudentAssignmentQueryService.GetClassRoomStudentAssignmentViewAsync(studentId, AssignmentId);
+        }
+
+        public async Task<IEnumerable<ClassRoomStudentAssignmentResultDTO>> GetStudentAssignmentsListAsync(Guid StudentId, Guid? AssignementId, decimal? ResultFrom, decimal? ResultTo, bool? IsDelivered, DateTime? DeliveredDateFrom, DateTime? DeliveredDateTo)
+        {
+            return await GetStudentAssignmentsListAsync(StudentId, AssignementId, ResultFrom, ResultTo, IsDelivered, DeliveredDateFrom, DeliveredDateTo);
         }
     }
 }

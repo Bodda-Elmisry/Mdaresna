@@ -1,4 +1,5 @@
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
+using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.Infrastructure.Helpers;
 using Mdaresna.Repository.IRepositories.Base;
 using Mdaresna.Repository.IServices.Base;
@@ -15,12 +16,15 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.
     {
         private readonly IBaseCommandRepository<ClassRoomAssignment> commandRepository;
         private readonly IBaseSharedRepository<ClassRoomAssignment> sharedRepository;
+        private readonly IBaseCommandBulkRepository<ClassRoomStudentAssignment> studentAssignmentBulkRepo;
 
         public ClassRoomAssignmentCommandService(IBaseCommandRepository<ClassRoomAssignment> commandRepository,
-            IBaseSharedRepository<ClassRoomAssignment> sharedRepository)
+            IBaseSharedRepository<ClassRoomAssignment> sharedRepository,
+            IBaseCommandBulkRepository<ClassRoomStudentAssignment> studentAssignmentBulkRepo)
         {
             this.commandRepository = commandRepository;
             this.sharedRepository = sharedRepository;
+            this.studentAssignmentBulkRepo = studentAssignmentBulkRepo;
         }
         public bool Create(ClassRoomAssignment entity)
         {
@@ -29,6 +33,38 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.
                 entity.Id = DataGenerationHelper.GenerateRowId();
                 entity.CreateDate = DateTime.Now;
                 entity.LastModifyDate = DateTime.Now;
+                return commandRepository.Create(entity);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public bool Create(ClassRoomAssignment entity, IEnumerable<Guid> studentsList)
+        {
+            try
+            {
+                entity.Id = DataGenerationHelper.GenerateRowId();
+                entity.CreateDate = DateTime.Now;
+                entity.LastModifyDate = DateTime.Now;
+
+                if (studentsList != null)
+                {
+                    var studentsObjects = studentsList.Select(s => new ClassRoomStudentAssignment
+                    {
+                        StudentId = s,
+                        AssignmentId = entity.Id,
+                        CreateDate = DateTime.Now,
+                        LastModifyDate = DateTime.Now,
+                        IsDelivered = null,
+                        DeliveredDate = null,
+                        Result = 0
+                    });
+
+                    studentAssignmentBulkRepo.CreateBulk(studentsObjects);
+                }
+
                 return commandRepository.Create(entity);
             }
             catch (Exception ex)

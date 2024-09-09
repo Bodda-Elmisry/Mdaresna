@@ -21,7 +21,7 @@ namespace Mdaresna.Controllers.Common
         }
 
         [HttpPost("UploadImage")]
-        public async Task<IActionResult> UploadImage(UploadImageDTO uploadImageDTO)
+        public async Task<IActionResult> UploadImage([FromBody] UploadImageDTO uploadImageDTO)
         {
             try
             {

@@ -1,4 +1,4 @@
-﻿namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
+﻿namespace Mdaresna.DTOs.SchoolManagementDTO.StudentManagementDTO
 {
     public class CreateStudentParentDTO
     {
