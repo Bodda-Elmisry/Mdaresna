@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Com
 {
     public interface IClassRoomAssignmentCommandService : IBaseCommandService<ClassRoomAssignment>
     {
+        bool Create(ClassRoomAssignment entity, IEnumerable<Guid> studentsList);
     }
 }

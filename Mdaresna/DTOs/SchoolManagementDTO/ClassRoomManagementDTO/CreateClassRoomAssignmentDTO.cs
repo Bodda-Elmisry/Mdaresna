@@ -9,5 +9,6 @@
         public Guid ClassRoomId { get; set; }
         public Guid SupervisorId { get; set; }
         public decimal Rate { get; set; }
+        public IEnumerable<Guid> StudentIds { get; set; }
     }
 }
