@@ -73,7 +73,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                     WeekDay = dTO.WeekDay
                 };
 
-                var added = classRoomAssignmentCommandService.Create(assingment, dTO.StudentIds);
+                var added = await classRoomAssignmentCommandService.Create(assingment, dTO.StudentIds);
 
                 if(added)
                     return Ok(await classRoomAssignmentQueryService.GetClassRoomAssignmentById(assingment.Id));

@@ -1,6 +1,6 @@
-﻿namespace Mdaresna.DTOs.SchoolManagementDTO.ClassRoomManagementDTO
+﻿namespace Mdaresna.DTOs.SchoolManagementDTO.StudentManagementDTO
 {
-    public class CreateClassRoomExamDTO
+    public class CreateClassRoomStudentExamDTO
     {
         public DateTime ExamDate { get; set; }
         public string WeekDay { get; set; }
@@ -10,6 +10,8 @@
         public Guid MonthId { get; set; }
         public Guid CourseId { get; set; }
         public decimal Rate { get; set; }
-        public IEnumerable<Guid> StudentsIds { get; set; }
+        public Guid StudentId { get; set; }
+        public decimal? TotalResult { get; set; }
+        public bool IsAttend { get; set; }
     }
 }

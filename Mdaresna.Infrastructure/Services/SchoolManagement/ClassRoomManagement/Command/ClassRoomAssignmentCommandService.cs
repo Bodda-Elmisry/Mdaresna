@@ -41,15 +41,18 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.
             }
         }
 
-        public bool Create(ClassRoomAssignment entity, IEnumerable<Guid> studentsList)
+        public async Task<bool> Create(ClassRoomAssignment entity, IEnumerable<Guid> studentsList)
         {
             try
             {
+                var result = false;
                 entity.Id = DataGenerationHelper.GenerateRowId();
                 entity.CreateDate = DateTime.Now;
                 entity.LastModifyDate = DateTime.Now;
 
-                if (studentsList != null)
+                var created = commandRepository.Create(entity);
+
+                if (created && studentsList != null)
                 {
                     var studentsObjects = studentsList.Select(s => new ClassRoomStudentAssignment
                     {
@@ -62,10 +65,10 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.
                         Result = 0
                     });
 
-                    studentAssignmentBulkRepo.CreateBulk(studentsObjects);
+                    result = await studentAssignmentBulkRepo.CreateBulk(studentsObjects);
                 }
 
-                return commandRepository.Create(entity);
+                return result;
             }
             catch (Exception ex)
             {

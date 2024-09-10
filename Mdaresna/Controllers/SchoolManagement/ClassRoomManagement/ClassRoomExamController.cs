@@ -91,7 +91,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                 };
 
 
-                var added = classRoomExamCommandService.Create(exam);
+                var added = await classRoomExamCommandService.Create(exam, classRoomExamDTO.StudentsIds);
 
                 if (added)
                     return Ok(await classRoomExamQueryService.GetExamByIdAsync (exam.Id));
