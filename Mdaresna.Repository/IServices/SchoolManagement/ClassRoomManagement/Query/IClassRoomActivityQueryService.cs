@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Repository.IServices.Base;
@@ -11,5 +12,8 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Que
 {
     public interface IClassRoomActivityQueryService : IBaseQueryService<ClassRoomActivity>
     {
+        Task<IEnumerable<ClassRoomActivityResultDTO>> GetClassRoomActivitiesList(Guid? classRoomId, Guid? SupervisorId, Guid? courseId, string? details, decimal? rate, DateTime? fromdate, DateTime? todate, int pageNumber);
+
+        Task<ClassRoomActivityResultDTO?> GetClassRoomActivityById(Guid activityId);
     }
 }

@@ -57,8 +57,8 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
             }
         }
 
-        [HttpPost("CreateClassRoomAssignement")]
-        public async Task<IActionResult> CreateClassRoomAssignement([FromBody] CreateClassRoomAssignmentDTO dTO)
+        [HttpPost("CreateClassRoomAssignment")]
+        public async Task<IActionResult> CreateClassRoomAssignment([FromBody] CreateClassRoomAssignmentDTO dTO)
         {
             try
             {
@@ -78,7 +78,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                 if(added)
                     return Ok(await classRoomAssignmentQueryService.GetClassRoomAssignmentById(assingment.Id));
 
-                return BadRequest("Error in creating assignement");
+                return BadRequest("Error in creating assignment");
 
 
             }
@@ -88,30 +88,30 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
             }
         }
 
-        [HttpPost("UpdateClassRoomAssignement")]
-        public async Task<IActionResult> UpdateClassRoomAssignement([FromBody] UpdateClassRoomAssignmentDTO dTO)
+        [HttpPost("UpdateClassRoomAssignment")]
+        public async Task<IActionResult> UpdateClassRoomAssignment([FromBody] UpdateClassRoomAssignmentDTO dTO)
         {
             try
             {
                 var assignemt = await classRoomAssignmentQueryService.GetByIdAsync(dTO.Id);
 
                 if (assignemt == null)
-                    return BadRequest("Can't fiend assignement to update");
+                    return BadRequest("Can't fiend assignment to update");
 
-                dTO.AssignmentDate = dTO.AssignmentDate;
-                dTO.ClassRoomId = dTO.ClassRoomId;
-                dTO.CourseId = dTO.CourseId;
-                dTO.Details = dTO.Details;
-                dTO.Rate = dTO.Rate;
-                dTO.SupervisorId = dTO.SupervisorId;
-                dTO.WeekDay = dTO.WeekDay;
+                assignemt.AssignmentDate = dTO.AssignmentDate;
+                assignemt.ClassRoomId = dTO.ClassRoomId;
+                assignemt.CourseId = dTO.CourseId;
+                assignemt.Details = dTO.Details;
+                assignemt.Rate = dTO.Rate;
+                assignemt.SupervisorId = dTO.SupervisorId;
+                assignemt.WeekDay = dTO.WeekDay;
 
                 var updated = classRoomAssignmentCommandService.Update(assignemt);
 
                 if (updated)
                     return Ok(await classRoomAssignmentQueryService.GetClassRoomAssignmentById(dTO.Id));
 
-                return BadRequest("Error in updating assignement");
+                return BadRequest("Error in updating assignment");
 
             }
             catch (Exception ex)

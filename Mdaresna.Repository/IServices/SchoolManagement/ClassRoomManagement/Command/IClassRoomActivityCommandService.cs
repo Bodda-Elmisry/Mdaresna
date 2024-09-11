@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Com
 {
     public interface IClassRoomActivityCommandService : IBaseCommandService<ClassRoomActivity>
     {
+        Task<bool> Create(ClassRoomActivity entity, IEnumerable<Guid> studentsList);
     }
 }
