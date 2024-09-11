@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.StudentManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.Repository.IRepositories.Base;
 using System;
@@ -10,5 +11,14 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.Q
 {
     public interface IClassRoomStudentActivityQueryRepository : IBaseQueryRepository<ClassRoomStudentActivity>
     {
+        Task<IEnumerable<ClassRoomStudentActivityResultDTO>> GetStudentActivitiesListAsync(Guid StudentId,
+                                                                                                     Guid? ActivityId,
+                                                                                                     decimal? ResultFrom,
+                                                                                                     decimal? ResultTo);
+
+        Task<ClassRoomStudentActivity?> GetClassRoomStudentActivityAsync(Guid studentId, Guid ActivityId);
+
+        Task<ClassRoomStudentActivityResultDTO?> GetClassRoomStudentActivityViewAsync(Guid studentId, Guid ActivityId);
+
     }
 }

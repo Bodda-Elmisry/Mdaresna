@@ -142,9 +142,9 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 var updated = classRoomStudentExamCommandService.Update(exam);
 
                 if (!updated) 
-                    return BadRequest("Error in updating student exam"); 
+                    return BadRequest("Error in updating student exam");
 
-                return Ok(await classRoomStudentExamQueryService.GetClassRoomStudentExamViewAsync(dto.StudentId, dto.ExamId))
+                return Ok(await classRoomStudentExamQueryService.GetClassRoomStudentExamViewAsync(dto.StudentId, dto.ExamId));
 
             }
             catch (Exception ex)
