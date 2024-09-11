@@ -1,7 +1,9 @@
+using Mdaresna.Doamin.DTOs.StudentManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
 using Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.Query;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +14,87 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
 {
     public class StudentNoteQueryRepository : BaseQueryRepository<StudentNote>, IStudentNoteQueryRepository
     {
-       public StudentNoteQueryRepository(AppDbContext context) : base(context)
+        private readonly AppDbContext context;
+
+        public StudentNoteQueryRepository(AppDbContext context) : base(context)
         {
+            this.context = context;
         }
+
+        public async Task<IEnumerable<StudentNoteResultDTO>> GetStudentNotesListAsync(Guid StudentId, Guid? ClassRoomId, Guid? SupervisorId, Guid? CourseId, DateTime? DateFrom, DateTime? DateTo, string? Notes)
+        {
+            var query = context.studentNotes.Where(n => n.StudentId == StudentId);
+
+            if (ClassRoomId != null)
+                query = query.Where(n=> n.ClassRoomId == ClassRoomId.Value);
+
+            if (SupervisorId != null)
+                query = query.Where(n => n.SupervisorId == SupervisorId.Value);
+
+            if (CourseId != null)
+                query = query.Where(n => n.CourseId == CourseId.Value);
+
+            DateFrom = DateFrom != null ? new DateTime(DateFrom.Value.Year, DateFrom.Value.Month, DateFrom.Value.Day) : null;
+            DateTo = DateTo != null ? new DateTime(DateTo.Value.Year, DateTo.Value.Month, DateTo.Value.Day) : null;
+
+            if (DateFrom != null && DateTo != null)
+                query = query.Where(n => n.Date >= DateFrom.Value && n.Date < DateTo.Value);
+
+            else if (DateFrom != null && DateTo == null)
+                query = query.Where(n => n.Date == DateFrom.Value);
+
+            if (!string.IsNullOrEmpty(Notes))
+                query = query.Where(n => n.Notes.Contains(Notes));
+
+            query = query.Include(n => n.Student)
+                         .Include(n => n.Course)
+                         .Include(n => n.ClassRoom)
+                         .Include(n => n.Supervisor);
+
+            return await query.Select(n => new StudentNoteResultDTO
+            {
+                Id = n.Id,
+                Date = n.Date,
+                Notes = n.Notes,
+                CourseId = n.CourseId,
+                CourseName = n.Course != null ? n.Course.Name : string.Empty,
+                SupervisorId = n.SupervisorId,
+                SupervisorName = $"{n.Supervisor.FirstName} {n.Supervisor.MiddelName} {n.Supervisor.LastName}",
+                ClassRoomId = n.ClassRoomId,
+                ClassRoomName = n.ClassRoom.Name,
+                StudentId = n.StudentId,
+                StudentName = $"{n.Student.FirstName} {n.Student.MiddelName} {n.Student.LastName}"
+            }).ToListAsync();
+
+        }
+
+        public async Task<StudentNoteResultDTO?> GetStudentNoteViewById(Guid StudentId)
+        {
+            var note = await context.studentNotes.Include(n => n.Student)
+                                                 .Include(n => n.Course)
+                                                 .Include(n => n.ClassRoom)
+                                                 .Include(n => n.Supervisor)
+                                                 .FirstOrDefaultAsync(n => n.Id == StudentId);
+
+            return note == null ? null : new StudentNoteResultDTO
+            {
+                Id = note.Id,
+                Date = note.Date,
+                Notes = note.Notes,
+                CourseId = note.CourseId,
+                CourseName = note.Course != null ? note.Course.Name : string.Empty,
+                SupervisorId = note.SupervisorId,
+                SupervisorName = $"{note.Supervisor.FirstName} {note.Supervisor.MiddelName} {note.Supervisor.LastName}",
+                ClassRoomId = note.ClassRoomId,
+                ClassRoomName = note.ClassRoom.Name,
+                StudentId = note.StudentId,
+                StudentName = $"{note.Student.FirstName} {note.Student.MiddelName} {note.Student.LastName}"
+            };
+
+        }
+            
+
+
+
     }
 }

@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.StudentManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.Repository.IRepositories.Base;
 using System;
@@ -10,5 +11,8 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.Q
 {
     public interface IStudentNoteQueryRepository : IBaseQueryRepository<StudentNote>
     {
+        Task<IEnumerable<StudentNoteResultDTO>> GetStudentNotesListAsync(Guid StudentId, Guid? ClassRoomId, Guid? SupervisorId, Guid? CourseId, DateTime? DateFrom, DateTime? DateTo, string? Notes);
+
+        Task<StudentNoteResultDTO?> GetStudentNoteViewById(Guid StudentId);
     }
 }
