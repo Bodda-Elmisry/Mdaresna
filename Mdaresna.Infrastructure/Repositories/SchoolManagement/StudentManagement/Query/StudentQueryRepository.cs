@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.Common;
 using Mdaresna.Doamin.DTOs.StudentManagement;
 using Mdaresna.Doamin.Helpers;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
@@ -7,6 +8,7 @@ using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
 using Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.Query;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +26,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
             this.context = context;
         }
 
-        public async Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAsync(Guid schoolId)
+        public async Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAsync(Guid schoolId, int pageNumber)
         {
             return await context.Students.Where(s=> s.SchoolId == schoolId).Select(s => new StudentResultDTO
             {
@@ -42,6 +44,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                 ImageUrl = !string.IsNullOrEmpty(s.ImageUrl) ? $"{SettingsHelper.GetAppUrl()}/{s.ImageUrl.Replace("\\", "/")}" : string.Empty,
                 IsPayed = s.IsPayed
             })
+                .OrderByDescending(s => s.BirthDate)
                 .ToListAsync();
         }
 

@@ -35,7 +35,8 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 var list = await classRoomStudentActivityQueryService.GetStudentActivitiesListAsync(dto.StudentId,
                                                                                                     dto.ActivityId,
                                                                                                     dto.ResultFrom,
-                                                                                                    dto.ResultTo);
+                                                                                                    dto.ResultTo,
+                                                                                                    dto.pageNumber);
                 return Ok(list);
             }
             catch (Exception ex)

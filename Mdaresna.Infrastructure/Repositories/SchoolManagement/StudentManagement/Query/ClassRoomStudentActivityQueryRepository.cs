@@ -1,9 +1,11 @@
+using Mdaresna.Doamin.DTOs.Common;
 using Mdaresna.Doamin.DTOs.StudentManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
 using Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.Query;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,17 +17,22 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
     public class ClassRoomStudentActivityQueryRepository : BaseQueryRepository<ClassRoomStudentActivity>, IClassRoomStudentActivityQueryRepository
     {
         private readonly AppDbContext context;
+        private readonly AppSettingDTO appSettings;
 
-        public ClassRoomStudentActivityQueryRepository(AppDbContext context) : base(context)
+        public ClassRoomStudentActivityQueryRepository(AppDbContext context,
+                                                IOptions<AppSettingDTO> appSettings) : base(context)
         {
             this.context = context;
+            this.appSettings = appSettings.Value;
         }
 
         public async Task<IEnumerable<ClassRoomStudentActivityResultDTO>> GetStudentActivitiesListAsync(Guid StudentId,
                                                                                                      Guid? ActivityId,
                                                                                                      decimal? ResultFrom,
-                                                                                                     decimal? ResultTo)
+                                                                                                     decimal? ResultTo, 
+                                                                                                     int pageNumber)
         {
+            int pagesize = appSettings.PageSize != null ? appSettings.PageSize.Value : 30;
             #region Create Query
             var query = context.ClassRoomStudentActivities.Include(s => s.Student).Include(s => s.Activity)
                                                            .Include(s => s.Activity.Course)
@@ -41,10 +48,14 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
             else if (ResultFrom != null && ResultTo == null)
                 query = query.Where(s => s.Result == ResultFrom);
 
-           
+
 
 
             #endregion
+
+            query = query.OrderByDescending(q => q.Activity.ActivityDate)
+                         .Skip((pageNumber - 1) * pagesize)
+                         .Take(pagesize);
 
             var result = await query
                                 .Select(s => new ClassRoomStudentActivityResultDTO

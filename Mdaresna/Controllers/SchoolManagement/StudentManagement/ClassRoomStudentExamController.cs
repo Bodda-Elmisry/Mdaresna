@@ -32,7 +32,8 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 var exams = await classRoomStudentExamQueryService.GetClassRoomStudentExamsListAsync(dto.StudentId,
                                                                                                      dto.TotalResultFrom,
                                                                                                      dto.TotalResultTo,
-                                                                                                     dto.IsAttend);
+                                                                                                     dto.IsAttend,
+                                                                                                     dto.pageNumber);
                 return Ok(exams);
             }
             catch (Exception ex)

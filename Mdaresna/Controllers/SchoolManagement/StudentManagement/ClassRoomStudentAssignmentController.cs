@@ -37,7 +37,8 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                                                                                                  dto.ResultTo,
                                                                                                  dto.IsDelivered,
                                                                                                  dto.DeliveredDateFrom,
-                                                                                                 dto.DeliveredDateTo);
+                                                                                                 dto.DeliveredDateTo,
+                                                                                                 dto.pageNumber);
                 return Ok(list);
             }
             catch (Exception ex)

@@ -1,9 +1,11 @@
+using Mdaresna.Doamin.DTOs.Common;
 using Mdaresna.Doamin.DTOs.StudentManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
 using Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.Query;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,14 +17,18 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
     public class StudentNoteQueryRepository : BaseQueryRepository<StudentNote>, IStudentNoteQueryRepository
     {
         private readonly AppDbContext context;
+        private readonly AppSettingDTO appSettings;
 
-        public StudentNoteQueryRepository(AppDbContext context) : base(context)
+        public StudentNoteQueryRepository(AppDbContext context,
+                                                IOptions<AppSettingDTO> appSettings) : base(context)
         {
             this.context = context;
+            this.appSettings = appSettings.Value;
         }
 
-        public async Task<IEnumerable<StudentNoteResultDTO>> GetStudentNotesListAsync(Guid StudentId, Guid? ClassRoomId, Guid? SupervisorId, Guid? CourseId, DateTime? DateFrom, DateTime? DateTo, string? Notes)
+        public async Task<IEnumerable<StudentNoteResultDTO>> GetStudentNotesListAsync(Guid StudentId, Guid? ClassRoomId, Guid? SupervisorId, Guid? CourseId, DateTime? DateFrom, DateTime? DateTo, string? Notes, int pageNumber)
         {
+            int pagesize = appSettings.PageSize != null ? appSettings.PageSize.Value : 30;
             var query = context.studentNotes.Where(n => n.StudentId == StudentId);
 
             if (ClassRoomId != null)
@@ -50,6 +56,10 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                          .Include(n => n.Course)
                          .Include(n => n.ClassRoom)
                          .Include(n => n.Supervisor);
+
+            query = query.OrderByDescending(q => q.Date)
+             .Skip((pageNumber - 1) * pagesize)
+             .Take(pagesize);
 
             return await query.Select(n => new StudentNoteResultDTO
             {

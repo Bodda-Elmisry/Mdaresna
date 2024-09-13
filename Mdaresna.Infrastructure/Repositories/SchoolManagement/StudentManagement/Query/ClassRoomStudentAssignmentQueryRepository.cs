@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.Common;
 using Mdaresna.Doamin.DTOs.StudentManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
@@ -5,6 +6,7 @@ using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
 using Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.Query;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,13 +16,17 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagement.Query
 {
-    public class ClassRoomStudentAssignmentQueryRepository : BaseQueryRepository<ClassRoomStudentAssignment>, IClassRoomStudentAssignmentQueryRepository
+    public class ClassRoomStudentAssignmentQueryRepository : BaseQueryRepository<ClassRoomStudentAssignment>, 
+        IClassRoomStudentAssignmentQueryRepository
     {
         private readonly AppDbContext context;
+        private readonly AppSettingDTO appSettings;
 
-        public ClassRoomStudentAssignmentQueryRepository(AppDbContext context) : base(context)
+        public ClassRoomStudentAssignmentQueryRepository(AppDbContext context,
+                                                IOptions<AppSettingDTO> appSettings) : base(context)
         {
             this.context = context;
+            this.appSettings = appSettings.Value;
         }
 
         public async Task<IEnumerable<ClassRoomStudentAssignmentResultDTO>> GetStudentAssignmentsListAsync(Guid StudentId,
@@ -29,9 +35,12 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                                                                                                      decimal? ResultTo,
                                                                                                      bool? IsDelivered,
                                                                                                      DateTime? DeliveredDateFrom,
-                                                                                                     DateTime? DeliveredDateTo)
+                                                                                                     DateTime? DeliveredDateTo,
+                                                                                                     int pageNumber)
         {
             #region Create Query
+            int pagesize = appSettings.PageSize != null ? appSettings.PageSize.Value : 30;
+
             var query = context.ClassRoomStudentAssignments.Include(s => s.Student).Include(s => s.Assignment)
                                                            .Include(s => s.Assignment.Course)
                                                            .Include(s => s.Assignment.ClassRoom)
@@ -59,7 +68,9 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
             {
                 query = query.Where(s => s.DeliveredDate != null && s.DeliveredDate.Value == DeliveredDateFrom.Value);
             }
-
+            query = query.OrderByDescending(q => q.Assignment.AssignmentDate)
+             .Skip((pageNumber - 1) * pagesize)
+             .Take(pagesize);
 
             #endregion
 

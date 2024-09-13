@@ -6,5 +6,6 @@
         public Guid? ActivityId { get; set; }
         public decimal? ResultFrom { get; set; }
         public decimal? ResultTo { get; set; }
+        public int pageNumber { get; set; }
     }
 }

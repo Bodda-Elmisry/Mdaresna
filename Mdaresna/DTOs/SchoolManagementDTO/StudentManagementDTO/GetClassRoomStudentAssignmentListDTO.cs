@@ -9,5 +9,6 @@
         public bool? IsDelivered { get; set; }
         public DateTime? DeliveredDateFrom { get; set; }
         public DateTime? DeliveredDateTo { get; set; }
+        public int pageNumber { get; set; }
     }
 }

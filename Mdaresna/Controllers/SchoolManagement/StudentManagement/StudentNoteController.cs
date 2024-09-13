@@ -31,7 +31,8 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                                                                             dTO.CourseId,
                                                                             dTO.DateFrom,
                                                                             dTO.DateTo,
-                                                                            dTO.Notes);
+                                                                            dTO.Notes,
+                                                                            dTO.pageNumber);
                 return Ok(nots);
             }
             catch (Exception ex)

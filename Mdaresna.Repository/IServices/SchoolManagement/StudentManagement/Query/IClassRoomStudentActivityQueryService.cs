@@ -14,7 +14,7 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query
         Task<IEnumerable<ClassRoomStudentActivityResultDTO>> GetStudentActivitiesListAsync(Guid StudentId,
                                                                                                      Guid? ActivityId,
                                                                                                      decimal? ResultFrom,
-                                                                                                     decimal? ResultTo);
+                                                                                                     decimal? ResultTo, int pageNumber);
 
         Task<ClassRoomStudentActivity?> GetClassRoomStudentActivityAsync(Guid studentId, Guid ActivityId);
 

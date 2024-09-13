@@ -11,7 +11,7 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query
 {
     public interface IClassRoomStudentExamQueryService : IBaseQueryService<ClassRoomStudentExam>
     {
-        Task<IEnumerable<ClassRoomStudentExamResultDTO>> GetClassRoomStudentExamsListAsync(Guid StudentId, decimal? TotalResultFrom, decimal? TotalResultTo, bool? IsAttend);
+        Task<IEnumerable<ClassRoomStudentExamResultDTO>> GetClassRoomStudentExamsListAsync(Guid StudentId, decimal? TotalResultFrom, decimal? TotalResultTo, bool? IsAttend, int pageNumber);
 
         Task<ClassRoomStudentExamResultDTO> GetClassRoomStudentExamViewAsync(Guid studentId, Guid ExamId);
 

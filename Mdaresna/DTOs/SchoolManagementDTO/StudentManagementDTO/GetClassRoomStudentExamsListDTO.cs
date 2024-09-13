@@ -6,5 +6,7 @@
         public decimal? TotalResultFrom { get; set; }
         public decimal? TotalResultTo { get; set; }
         public bool? IsAttend { get; set; }
+        public int pageNumber { get; set; }
+
     }
 }
