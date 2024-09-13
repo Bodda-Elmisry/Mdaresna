@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
+﻿using Mdaresna.Doamin.Helpers;
+using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
@@ -20,12 +21,26 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             this.schoolContactTypeQueryService = schoolContactTypeQueryService;
         }
 
+        private string? GetTypeIconeURL(string? url)
+        {
+            return !string.IsNullOrEmpty(url) ? $"{SettingsHelper.GetAppUrl()}/{url.Replace("\\", "/")}" : string.Empty;
+        }
+
         [HttpGet("GetAll")]
         public async Task<IActionResult> GetAll()
         {
             try
             {
                 var result = await schoolContactTypeQueryService.GetAllAsync();
+                var schools = result.Select(t => new SchoolContactType
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    IconUrl = GetTypeIconeURL(t.IconUrl),
+                    Description = t.Description,
+                    CreateDate = t.CreateDate,
+                    LastModifyDate = t.LastModifyDate
+                });
                 return Ok(result);
             }
             catch (Exception ex)
@@ -40,6 +55,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             try
             {
                 var result = await schoolContactTypeQueryService.GetByIdAsync(schoolContactTypeIdDTO.SchoolContactTypeId);
+                result.IconUrl = GetTypeIconeURL(result.IconUrl);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -57,11 +73,13 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 {
                     Name = schoolContactTypeDTO.Name,
                     Description = schoolContactTypeDTO.Description,
-                    IconUrl = schoolContactTypeDTO.IconeURL
                 };
                 var added = schoolContactTypeCommandService.Create(type);
-                if(added)
+                if (added)
+                {
+                    type.IconUrl = GetTypeIconeURL(type.IconUrl);
                     return Ok(type);
+                }
 
                 return BadRequest("Error in adding");
             }
@@ -82,16 +100,18 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 
                 type.Name = updateSchoolContactTypeDTO.Name;
                 type.Description = updateSchoolContactTypeDTO.Description;
-                type.IconUrl = updateSchoolContactTypeDTO.IconeURL;
 
                 var updated = schoolContactTypeCommandService.Update(type);
-                if(updated) 
+                if (updated)
+                {
+                    type.IconUrl = GetTypeIconeURL(type.IconUrl);
                     return Ok(type);
+                }
 
                 return BadRequest("Error in update type");
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }

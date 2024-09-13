@@ -74,7 +74,12 @@ namespace Mdaresna.Controllers.Common
         private string GetPathWithoutLocal(string localPath ,UploadImageDTO uploadImageDTO)
         {
 
-
+            /*
+            1- Student Image
+            2- User Image
+            3- School Profile Image
+            5- School Conatact Type Icone
+             */
 
             var directoryPath = string.Empty;
             switch (uploadImageDTO.Type)
@@ -91,6 +96,12 @@ namespace Mdaresna.Controllers.Common
                                         "Schools",
                                         uploadImageDTO.UserId.ToString(),
                                         "ProfileImage"
+                                        );
+                    break;
+                case 5:
+                    directoryPath = Path.Combine(_appSettings.ImagesPath,
+                                        "SchoolContactTypes",
+                                        uploadImageDTO.UserId.ToString()
                                         );
                     break;
             }

@@ -32,6 +32,10 @@ namespace Mdaresna.Infrastructure.Repositories.Common
                 case 3:
                     result = await UploadSchoolPersonalImage(UserId, filePath);
                     break;
+                case 5:
+                    result = await UploadSchoolContactTypeIcon(UserId, filePath);
+                    break;
+
             }
 
             return result;
@@ -71,6 +75,19 @@ namespace Mdaresna.Infrastructure.Repositories.Common
                 return false;
 
             school.ImageUrl = filePath;
+
+            await context.SaveChangesAsync();
+            return true;
+        }
+
+        private async Task<bool> UploadSchoolContactTypeIcon(Guid TypeId, string filePath)
+        {
+            var school = await context.SchoolContactTypes.FirstOrDefaultAsync(s => s.Id == TypeId);
+
+            if (school == null)
+                return false;
+
+            school.IconUrl = filePath;
 
             await context.SaveChangesAsync();
             return true;
