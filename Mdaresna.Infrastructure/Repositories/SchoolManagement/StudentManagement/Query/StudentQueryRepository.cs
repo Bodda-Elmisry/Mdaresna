@@ -26,7 +26,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
             this.context = context;
         }
 
-        public async Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAsync(Guid schoolId, int pageNumber)
+        public async Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAsync(Guid schoolId)
         {
             return await context.Students.Where(s=> s.SchoolId == schoolId).Select(s => new StudentResultDTO
             {
