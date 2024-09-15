@@ -101,15 +101,39 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             }
         }
 
-        [HttpGet("GetAll")]
-        public async Task<IActionResult> GetSchools()
+        [HttpPost("GetAll")]
+        public async Task<IActionResult> GetSchools([FromBody] GetSchoolDTO dTO)
         {
             try
             {
-                var result = await schoolQueryService.GetSchoolsList();
+                var result = await schoolQueryService.GetSchoolsList(dTO.Name, dTO.Active, dTO.SchoolTypeId, dTO.CoinTypeId, dTO.SchoolAdminId, dTO.PageNumber);
                 return Ok(result);
             }
             catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("ChangeActivation")]
+        public async Task<IActionResult> ChangeSchoolActivition([FromBody] ChangeSchoolActivationDTO dTO)
+        {
+            try
+            {
+                var school = await schoolQueryService.GetByIdAsync(dTO.SchoolId);
+
+                if (school == null)
+                    return BadRequest("There is not school to update");
+                if (school != null && school.Active == dTO.Active)
+                    return Ok("Activation Changed");
+
+                school.Active = dTO.Active;
+
+                var updated = schoolCommandService.Update(school);
+
+                return updated ? Ok("Activation Changed") : BadRequest("Error in Updating school");
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }

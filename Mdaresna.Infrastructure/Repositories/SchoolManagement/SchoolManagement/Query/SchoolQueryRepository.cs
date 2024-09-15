@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.Common;
 using Mdaresna.Doamin.DTOs.SchoolManagement;
 using Mdaresna.Doamin.Helpers;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
@@ -5,6 +6,7 @@ using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
 using Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Query;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,15 +18,18 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
     public class SchoolQueryRepository : BaseQueryRepository<School>, ISchoolQueryRepository
     {
         private readonly AppDbContext context;
+        private readonly AppSettingDTO appSettings;
 
-        public SchoolQueryRepository(AppDbContext context) : base(context)
+        public SchoolQueryRepository(AppDbContext context,
+                                                IOptions<AppSettingDTO> appSettings) : base(context)
         {
             this.context = context;
+            this.appSettings = appSettings.Value;
         }
 
         public async Task<IEnumerable<SchoolResultDTO>> GetUserAdminSchools(Guid userId)
         {
-            return await GetSchoolQuery().Where(s => s.SchoolAdminId == userId).ToListAsync();
+            return await GetSchoolQuery().Where(s => s.SchoolAdminId == userId).OrderBy(s => s.SchoolTypeId).OrderBy(s => s.Name).ToListAsync();
         }
 
         public async Task<SchoolResultDTO?> GetSchoolById(Guid schoolId)
@@ -32,9 +37,29 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             return await GetSchoolQuery().FirstOrDefaultAsync(s => s.Id == schoolId);
         }
 
-        public async Task<IEnumerable<SchoolResultDTO>> GetSchoolsList()
+        public async Task<IEnumerable<SchoolResultDTO>> GetSchoolsList(string? name, bool? active, Guid? schoolTypeId, Guid? coinTypeId, Guid? adminId, int pageNumber)
         {
-            return await GetSchoolQuery().ToListAsync();
+            int pagesize = appSettings.PageSize != null ? appSettings.PageSize.Value : 30;
+
+            var query = GetSchoolQuery();
+            if (!string.IsNullOrEmpty(name))
+                query = query.Where(s => s.Name.Contains(name));
+
+            if (active != null)
+                query = query.Where(s => s.Active == active);
+
+            if (schoolTypeId != null)
+                query = query.Where(s => s.SchoolTypeId == schoolTypeId);
+
+            if (coinTypeId != null)
+                query = query.Where(s => s.CoinTypeId == coinTypeId);
+
+            if (adminId != null)
+                query = query.Where(s => s.SchoolAdminId == adminId);
+
+            return await query.OrderBy(s => s.SchoolTypeId).OrderBy(s=> s.Name)
+                                   .Skip((pageNumber - 1) * pagesize)
+                                   .ToListAsync();
         }
 
         private IQueryable<SchoolResultDTO> GetSchoolQuery()

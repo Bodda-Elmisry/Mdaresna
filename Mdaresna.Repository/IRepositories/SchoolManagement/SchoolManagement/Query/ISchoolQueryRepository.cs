@@ -13,6 +13,6 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Qu
     {
         Task<IEnumerable<SchoolResultDTO>> GetUserAdminSchools(Guid userId);
         Task<SchoolResultDTO?> GetSchoolById(Guid schoolId);
-        Task<IEnumerable<SchoolResultDTO>> GetSchoolsList();
+        Task<IEnumerable<SchoolResultDTO>> GetSchoolsList(string? name, bool? active, Guid? schoolTypeId, Guid? coinTypeId, Guid? adminId, int pageNumber);
     }
 }
