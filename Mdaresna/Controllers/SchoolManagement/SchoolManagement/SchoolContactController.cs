@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
+﻿using Mdaresna.Doamin.Helpers;
+using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
@@ -20,6 +21,12 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             this.schoolContactQueryService = schoolContactQueryService;
         }
 
+        private string? GetTypeIconeURL(string? url)
+        {
+            return !string.IsNullOrEmpty(url) ? $"{SettingsHelper.GetAppUrl()}/{url.Replace("\\", "/")}" : string.Empty;
+        }
+
+
         [HttpPost("GetSchoolContacts")]
         public async Task<IActionResult> GetSchoolContacts([FromBody] SchoolIdDTO schoolIdDTO)
         {
@@ -35,7 +42,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("AddContact")]
-        public IActionResult CreateContact([FromBody]CreateSchoolContactDTO createSchoolContactDTO)
+        public async Task<IActionResult> CreateContact([FromBody]CreateSchoolContactDTO createSchoolContactDTO)
         {
             try
             {
@@ -49,7 +56,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 var added = schoolContactCommandService.Create(contact);
                 
                 if(added)
-                    return Ok(contact);
+                    return Ok(await schoolContactQueryService.GetSchoolContactById(contact.Id));
 
                 return BadRequest("Error in adding Contact");
             }
@@ -75,7 +82,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 var updated = schoolContactCommandService.Update(contact);
 
                 if(updated) 
-                    return Ok(contact);
+                    return Ok(await schoolContactQueryService.GetSchoolContactById(contact.Id));
 
                 return BadRequest("Rttot in update contact");
 

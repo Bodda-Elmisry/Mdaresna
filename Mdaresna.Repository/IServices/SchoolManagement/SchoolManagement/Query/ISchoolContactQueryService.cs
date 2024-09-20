@@ -12,5 +12,6 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query
     public interface ISchoolContactQueryService : IBaseQueryService<SchoolContact>
     {
         Task<IEnumerable<SchoolContactResultDTO>> GetSchoolContacts(Guid schoolId);
+        Task<SchoolContactResultDTO?> GetSchoolContactById(Guid Id);
     }
 }

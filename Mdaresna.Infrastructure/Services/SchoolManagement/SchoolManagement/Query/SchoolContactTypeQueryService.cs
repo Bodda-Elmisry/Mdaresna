@@ -1,6 +1,7 @@
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Infrastructure.Services.Base;
 using Mdaresna.Repository.IRepositories.Base;
+using Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using System;
 using System.Collections.Generic;
@@ -12,15 +13,14 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Que
 {
     public class SchoolContactTypeQueryService : BaseQueryService<SchoolContactType>, ISchoolContactTypeQueryService
     {
-        private readonly IBaseQueryRepository<SchoolContactType> queryRepository;
-        private readonly IBaseSharedRepository<SchoolContactType> sharedRepository;
+        private readonly ISchoolContactTypeQueryRepository schoolContactTypeQueryRepository;
 
         public SchoolContactTypeQueryService(IBaseQueryRepository<SchoolContactType> queryRepository,
-            IBaseSharedRepository<SchoolContactType> sharedRepository) 
+            IBaseSharedRepository<SchoolContactType> sharedRepository,
+            ISchoolContactTypeQueryRepository schoolContactTypeQueryRepository) 
                 : base(queryRepository, sharedRepository)
         {
-            this.queryRepository = queryRepository;
-            this.sharedRepository = sharedRepository;
+            this.schoolContactTypeQueryRepository = schoolContactTypeQueryRepository;
         }
     }
 }

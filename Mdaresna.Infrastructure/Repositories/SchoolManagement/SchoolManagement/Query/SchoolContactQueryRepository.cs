@@ -1,4 +1,5 @@
 using Mdaresna.Doamin.DTOs.SchoolManagement;
+using Mdaresna.Doamin.Helpers;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
@@ -23,7 +24,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
         public async Task<IEnumerable<SchoolContactResultDTO>> GetSchoolContacts(Guid schoolId)
         {
-            var result = await context.SchoolContacts.Select(c =>
+            var result = await context.SchoolContacts.Include(c=> c.ContactType).Select(c =>
                                                                 new SchoolContactResultDTO
                                                                 {
                                                                     SchoolId = c.SchoolId,
@@ -31,12 +32,36 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                                                                     ContactTypeId = c.ContactTypeId,
                                                                     SchoolContactValue = c.Value,
                                                                     TypeDescription = c.ContactType.Description,
-                                                                    TypeIcon = c.ContactType.IconUrl,
+                                                                    //TypeIcon = this.GetTypeIconeURL(c.ContactType.IconUrl),
+                                                                    TypeIcon = !string.IsNullOrEmpty(c.ContactType.IconUrl) ? $"{SettingsHelper.GetAppUrl()}/{c.ContactType.IconUrl.Replace("\\", "/")}" : string.Empty,
                                                                     TypeName = c.ContactType.Name
                                                                 })
                                         .Where(c => c.SchoolId == schoolId).ToListAsync();
 
             return result;
+        }
+
+
+
+        public async Task<SchoolContactResultDTO?> GetSchoolContactById(Guid Id)
+        {
+            var result = await context.SchoolContacts.FirstOrDefaultAsync(c => c.Id == Id);
+
+            return result == null ? null : new SchoolContactResultDTO
+            {
+                SchoolId = result.SchoolId,
+                Id = result.Id,
+                ContactTypeId = result.ContactTypeId,
+                SchoolContactValue = result.Value,
+                TypeDescription = result.ContactType.Description,
+                TypeIcon = this.GetTypeIconeURL(result.ContactType.IconUrl),
+                TypeName = result.ContactType.Name
+            };
+        }
+
+        private string? GetTypeIconeURL(string? url)
+        {
+            return !string.IsNullOrEmpty(url) ? $"{SettingsHelper.GetAppUrl()}/{url.Replace("\\", "/")}" : string.Empty;
         }
 
 

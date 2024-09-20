@@ -28,6 +28,11 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Que
             this.schoolContactQueryRepository = schoolContactQueryRepository;
         }
 
+        public async Task<SchoolContactResultDTO?> GetSchoolContactById(Guid Id)
+        {
+            return await schoolContactQueryRepository.GetSchoolContactById(Id);
+        }
+
         public async Task<IEnumerable<SchoolContactResultDTO>> GetSchoolContacts(Guid schoolId)
         {
             return await schoolContactQueryRepository.GetSchoolContacts(schoolId);

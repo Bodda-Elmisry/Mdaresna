@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IRepositories.IdentityManagement.Query
 {
     public interface IPermissionQueryRepository : IBaseQueryRepository<Permission>
     {
+        Task<List<Permission>> GetPermissionsListAsync(int permissionsType, int pageNumber);
     }
 }

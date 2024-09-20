@@ -12,8 +12,14 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 {
     public class SchoolContactTypeQueryRepository : BaseQueryRepository<SchoolContactType>, ISchoolContactTypeQueryRepository
     {
-       public SchoolContactTypeQueryRepository(AppDbContext context) : base(context)
+        private readonly AppDbContext context;
+
+        public SchoolContactTypeQueryRepository(AppDbContext context) : base(context)
         {
+            this.context = context;
         }
+
+
+
     }
 }
