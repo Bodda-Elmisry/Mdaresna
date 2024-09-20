@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.Identity;
+﻿using Mdaresna.Doamin.DTOs.Identity;
+using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Repository.IRepositories.Base;
 using System;
 using System.Collections.Generic;
@@ -11,5 +12,6 @@ namespace Mdaresna.Repository.IRepositories.IdentityManagement.Query
     public interface IRoleQueryRepository : IBaseQueryRepository<Role>
     {
         Task<Role?> GetStanderdRole();
+        Task<IEnumerable<RoleResultDTO>> GetRolesAsync(int type, string? name, bool? activation, string? description);
     }
 }

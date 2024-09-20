@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IServices.IdentityManagement.Command
 {
     public interface IRoleCommandService : IBaseCommandService<Role>
     {
+        Task<bool> Create(Role entity, IEnumerable<Guid> permissions);
     }
 }

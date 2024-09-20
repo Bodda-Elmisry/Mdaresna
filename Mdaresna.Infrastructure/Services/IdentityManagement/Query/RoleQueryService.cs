@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.Identity;
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Infrastructure.Services.Base;
 using Mdaresna.Repository.IRepositories.Base;
@@ -25,6 +26,11 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Query
             this.queryRepository = queryRepository;
             this.sharedRepository = sharedRepository;
             this.roleQueryRepository = roleQueryRepository;
+        }
+
+        public async Task<IEnumerable<RoleResultDTO>> GetRolesAsync(int type, string? name, bool? activation, string? description)
+        {
+            return await roleQueryRepository.GetRolesAsync(type, name, activation, description);
         }
 
         public async Task<Role?> GetStanderdRole()
