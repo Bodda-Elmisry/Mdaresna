@@ -10,5 +10,7 @@ namespace Mdaresna.Repository.IServices.IdentityManagement.Command
 {
     public interface IRolePermissionCommandService : IBaseCommandService<RolePermission>
     {
+        Task<bool> Create(IEnumerable<RolePermission> entitiesList);
+        Task<bool> DeleteAsync(IEnumerable<RolePermission> entitiesList);
     }
 }

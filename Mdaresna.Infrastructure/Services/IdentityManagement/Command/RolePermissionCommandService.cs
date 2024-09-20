@@ -15,12 +15,15 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Command
     {
         private readonly IBaseCommandRepository<RolePermission> commandRepository;
         private readonly IBaseSharedRepository<RolePermission> sharedRepository;
+        private readonly IBaseCommandBulkRepository<RolePermission> baseCommandBulkRepository;
 
         public RolePermissionCommandService(IBaseCommandRepository<RolePermission> commandRepository,
-            IBaseSharedRepository<RolePermission> sharedRepository)
+            IBaseSharedRepository<RolePermission> sharedRepository,
+            IBaseCommandBulkRepository<RolePermission> baseCommandBulkRepository)
         {
             this.commandRepository = commandRepository;
             this.sharedRepository = sharedRepository;
+            this.baseCommandBulkRepository = baseCommandBulkRepository;
         }
         public bool Create(RolePermission entity)
         {
@@ -36,11 +39,35 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Command
             }
         }
 
+        public async Task<bool> Create(IEnumerable<RolePermission> entitiesList)
+        {
+            try
+            {
+                return await baseCommandBulkRepository.CreateBulk(entitiesList);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public async Task<bool> DeleteAsync(RolePermission entity)
         {
             try
             {
                 return commandRepository.Delete(entity);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<bool> DeleteAsync(IEnumerable<RolePermission> entitiesList)
+        {
+            try
+            {
+                return await baseCommandBulkRepository.DeleteBulk(entitiesList);
             }
             catch (Exception ex)
             {

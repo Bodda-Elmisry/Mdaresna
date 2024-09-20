@@ -1,6 +1,8 @@
+using Mdaresna.Doamin.DTOs.Identity;
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Infrastructure.Services.Base;
 using Mdaresna.Repository.IRepositories.Base;
+using Mdaresna.Repository.IRepositories.IdentityManagement.Query;
 using Mdaresna.Repository.IServices.IdentityManagement.Query;
 using System;
 using System.Collections.Generic;
@@ -12,15 +14,19 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Query
 {
     public class RolePermissionQueryService : BaseQueryService<RolePermission>, IRolePermissionQueryService
     {
-        private readonly IBaseQueryRepository<RolePermission> queryRepository;
-        private readonly IBaseSharedRepository<RolePermission> sharedRepository;
+        private readonly IRolePermissionQueryRepository rolePermissionQueryRepository;
 
         public RolePermissionQueryService(IBaseQueryRepository<RolePermission> queryRepository,
-            IBaseSharedRepository<RolePermission> sharedRepository) 
+            IBaseSharedRepository<RolePermission> sharedRepository,
+            IRolePermissionQueryRepository rolePermissionQueryRepository) 
                 : base(queryRepository, sharedRepository)
         {
-            this.queryRepository = queryRepository;
-            this.sharedRepository = sharedRepository;
+            this.rolePermissionQueryRepository = rolePermissionQueryRepository;
+        }
+
+        public async Task<IEnumerable<RolePermissionResultDTO>> GetRolePermissions(Guid roleId)
+        {
+            return await rolePermissionQueryRepository.GetRolePermissions(roleId);
         }
     }
 }

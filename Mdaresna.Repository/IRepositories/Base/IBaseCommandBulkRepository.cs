@@ -9,5 +9,6 @@ namespace Mdaresna.Repository.IRepositories.Base
     public interface IBaseCommandBulkRepository<T>
     {
         Task<bool> CreateBulk<T>(IEnumerable<T> entityList) where T : class;
+        Task<bool> DeleteBulk<T>(IEnumerable<T> entityList) where T : class;
     }
 }

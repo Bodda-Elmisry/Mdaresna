@@ -26,5 +26,14 @@ namespace Mdaresna.Infrastructure.Repositories.Base
             });
             return true;
         }
+
+        public async Task<bool> DeleteBulk<T>(IEnumerable<T> entityList) where T : class
+        {
+            await context.BulkDeleteAsync(entityList, BulkConfig =>
+            {
+                BulkConfig.IncludeGraph = true;
+            });
+            return true;
+        }
     }
 }
