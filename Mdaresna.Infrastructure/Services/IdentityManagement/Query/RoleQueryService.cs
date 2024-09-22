@@ -37,5 +37,10 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Query
         {
             return await roleQueryRepository.GetStanderdRole();
         }
+
+        public async Task<Role?> GetRoleByNameAsycn(string name)
+        {
+            return await roleQueryRepository.GetRoleByNameAsycn(name);
+        }
     }
 }

@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IServices.IdentityManagement.Command
 {
     public interface IUserPermissionCommandService : IBaseCommandService<UserPermission>
     {
+        Task<bool> Create(IEnumerable<UserPermission> entities);
     }
 }

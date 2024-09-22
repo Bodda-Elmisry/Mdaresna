@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.Identity;
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
@@ -48,5 +49,76 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             var result = await query.ToListAsync();
             return result;
         }
+
+
+
+        public async Task<IEnumerable<UserPermissionResultDTO>> GetUserPermissionsView(Guid userId)
+        {
+            var query1 = from ur in context.UserRoles
+                         join u in context.Users on ur.UserId equals u.Id
+                         join r in context.Roles on ur.RoleId equals r.Id
+                         join s in context.Schools on ur.SchoolId equals s.Id into schoolsGroup
+                         from s in schoolsGroup.DefaultIfEmpty() // left outer join
+                         join rp in context.RolePermissions on ur.RoleId equals rp.RoleId
+                         join p in context.Permissions on rp.PermissionId equals p.Id
+                         where u.Id == userId
+                         select new
+                         {
+                             UserId = u.Id,
+                             u.UserName,
+                             FullName = u.FirstName + " " + u.MiddelName + " " + u.LastName,
+                             RoleId = (Guid?)r.Id,
+                             RoleName = r.Name,
+                             SchoolId = s.Id,
+                             SchoolName = s.Name,
+                             permssionId = p.Id,
+                             p.Key,
+                             p.Name
+                         };
+
+            var query2 = from up in context.userPermissions
+                         join u in context.Users on up.UserId equals u.Id
+                         join s in context.Schools on up.SchoolId equals s.Id
+                         join p in context.Permissions on up.PermissionId equals p.Id
+                         where u.Id == userId
+                         select new
+                         {
+                             UserId = u.Id,
+                             u.UserName,
+                             FullName = u.FirstName + " " + u.MiddelName + " " + u.LastName,
+                             RoleId = (Guid?)null,
+                             RoleName = "Extra",
+                             SchoolId = s.Id,
+                             SchoolName = s.Name,
+                             permssionId = p.Id,
+                             p.Key,
+                             p.Name
+                         };
+
+
+            var combinedQuery = query1.Union(query2);
+
+            var result = await combinedQuery.Select(s => new UserPermissionResultDTO
+            {
+                UserId = s.UserId,
+                UserName = s.UserName,
+                UserFullName = s.FullName,
+                RoleId = s.RoleId,
+                RoleName = s.RoleName,
+                SchoolId = s.SchoolId,
+                SchoolName = s.SchoolName,
+                PermissionId = s.permssionId,
+                PermissionKey = s.Key,
+                PermissionName = s.Name
+            }).ToListAsync();
+
+            return result;
+
+
+        }
+
+
+
+
     }
 }

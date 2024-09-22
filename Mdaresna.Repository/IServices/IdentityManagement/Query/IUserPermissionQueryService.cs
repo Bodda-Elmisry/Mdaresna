@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.Identity;
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Repository.IServices.Base;
 using System;
@@ -11,5 +12,6 @@ namespace Mdaresna.Repository.IServices.IdentityManagement.Query
     public interface IUserPermissionQueryService : IBaseQueryService<UserPermission>
     {
         Task<IEnumerable<Permission>> GetUserPermissions(Guid UserId);
+        Task<IEnumerable<UserPermissionResultDTO>> GetUserPermissionsView(Guid userId);
     }
 }

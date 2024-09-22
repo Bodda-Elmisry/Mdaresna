@@ -28,6 +28,12 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             return role;
         }
 
+        public async Task<Role?> GetRoleByNameAsycn(string name)
+        {
+            var role = await context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == name.ToLower());
+            return role;
+        }
+
         public async Task<IEnumerable<RoleResultDTO>> GetRolesAsync(int type, string? name, bool? activation, string? description)
         {
 

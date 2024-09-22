@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.Identity;
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Infrastructure.Services.Base;
 using Mdaresna.Repository.IRepositories.Base;
@@ -30,6 +31,16 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Query
         public async Task<bool> CheckRoleExist(UserRole role)
         {
             return await userRoleQueryRepository.CheckUserRole(role);
+        }
+
+        public async Task<UserRoleResultDTO?> GetUserRoleAsync(Guid userId, Guid roleId)
+        {
+            return await userRoleQueryRepository.GetUserRoleAsync(userId, roleId);
+        }
+
+        public async Task<IEnumerable<UserRoleResultDTO>> GetUserRolesAsync(Guid userId, Guid? schoolId)
+        {
+            return await userRoleQueryRepository.GetUserRolesAsync(userId, schoolId);
         }
     }
 }

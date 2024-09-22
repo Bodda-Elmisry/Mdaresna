@@ -57,9 +57,28 @@ namespace Mdaresna.Controllers.IdentityManagement
                     RoleId = dTO.RoleId
                 });
 
-                var removed = await rolePermissionCommandService.DeleteAsync(rolePermissions);
+                var unRemoved = string.Empty;
+                var removed = true;
 
-                return removed ? Ok("Permissions removed") : BadRequest("Error in remove permissions");
+                foreach (var permission in dTO.Permissions)
+                {
+                    var rolePermission = new RolePermission
+                    {
+                        CreateDate = DateTime.Now,
+                        LastModifyDate = DateTime.Now,
+                        PermissionId = permission,
+                        RoleId = dTO.RoleId
+                    };
+
+                    removed = await rolePermissionCommandService.DeleteAsync(rolePermission);
+
+                    if(!removed)
+                        unRemoved = string.IsNullOrEmpty(unRemoved) ? unRemoved : $"{unRemoved}, {permission.ToString()}";
+
+                }
+
+
+                return string.IsNullOrEmpty(unRemoved) ? Ok("Permissions removed") : BadRequest("Error in remove permissions");
             }
             catch (Exception ex)
             {

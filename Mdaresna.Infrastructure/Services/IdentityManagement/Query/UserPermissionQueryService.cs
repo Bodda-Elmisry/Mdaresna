@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.Identity;
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Infrastructure.Services.Base;
 using Mdaresna.Repository.IRepositories.Base;
@@ -13,8 +14,6 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Query
 {
     public class UserPermissionQueryService : BaseQueryService<UserPermission>, IUserPermissionQueryService
     {
-        private readonly IBaseQueryRepository<UserPermission> queryRepository;
-        private readonly IBaseSharedRepository<UserPermission> sharedRepository;
         private readonly IUserPermissionQueryRepository userPermissionQueryRepository;
 
         public UserPermissionQueryService(IBaseQueryRepository<UserPermission> queryRepository,
@@ -22,14 +21,17 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Query
             IUserPermissionQueryRepository userPermissionQueryRepository) 
                 : base(queryRepository, sharedRepository)
         {
-            this.queryRepository = queryRepository;
-            this.sharedRepository = sharedRepository;
             this.userPermissionQueryRepository = userPermissionQueryRepository;
         }
 
         public async Task<IEnumerable<Permission>> GetUserPermissions(Guid UserId)
         {
             return await userPermissionQueryRepository.GetUserPermissions(UserId);
+        }
+
+        public async Task<IEnumerable<UserPermissionResultDTO>> GetUserPermissionsView(Guid userId)
+        {
+            return await userPermissionQueryRepository.GetUserPermissionsView(userId);
         }
     }
 }

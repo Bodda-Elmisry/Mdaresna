@@ -1,6 +1,8 @@
+using Mdaresna.Doamin.DTOs.Identity;
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Infrastructure.Helpers;
 using Mdaresna.Repository.IRepositories.Base;
+using Mdaresna.Repository.IRepositories.IdentityManagement.Command;
 using Mdaresna.Repository.IServices.Base;
 using Mdaresna.Repository.IServices.IdentityManagement.Command;
 using System;
@@ -15,13 +17,18 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Command
     {
         private readonly IBaseCommandRepository<UserRole> commandRepository;
         private readonly IBaseSharedRepository<UserRole> sharedRepository;
+        private readonly IBaseCommandBulkRepository<UserRole> baseCommandBulkRepository;
 
         public UserRoleCommandService(IBaseCommandRepository<UserRole> commandRepository,
-            IBaseSharedRepository<UserRole> sharedRepository)
+            IBaseSharedRepository<UserRole> sharedRepository,
+            IBaseCommandBulkRepository<UserRole> baseCommandBulkRepository,
+            IUserRoleCommandRepository userRoleCommandRepository)
         {
             this.commandRepository = commandRepository;
             this.sharedRepository = sharedRepository;
+            this.baseCommandBulkRepository = baseCommandBulkRepository;
         }
+
         public bool Create(UserRole entity)
         {
             try
@@ -36,11 +43,45 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Command
             }
         }
 
+        public async Task<bool> Create(IEnumerable<UserRoleDTO> entities)
+        {
+            try
+            {
+                var userRoles = entities.Select(e => new UserRole
+                {
+                    RoleId = e.RoleId,
+                    SchoolId = e.SchoolId,
+                    UserId = e.UserId,
+                    CreateDate = DateTime.Now,
+                    LastModifyDate = DateTime.Now
+                });
+
+                return await baseCommandBulkRepository.CreateBulk(userRoles);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public async Task<bool> DeleteAsync(UserRole entity)
         {
             try
             {
                 return commandRepository.Delete(entity);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<bool> DeleteAsync(IEnumerable<UserRoleDTO> entities)
+        {
+            try
+            {
+
+                return await baseCommandBulkRepository.DeleteBulk(entities);
             }
             catch (Exception ex)
             {

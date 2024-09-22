@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.Identity;
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
@@ -26,5 +27,48 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             return await context.UserRoles.AnyAsync(u => u.RoleId == userRole.RoleId && u.UserId == userRole.UserId);
 
         }
+
+        public async Task<IEnumerable<UserRoleResultDTO>> GetUserRolesAsync(Guid userId, Guid? schoolId)
+        {
+            var query = context.UserRoles.Include(u=> u.User)
+                                         .Include(u => u.Role)
+                                         .Include(u => u.School)
+                                         .Where(u => u.UserId == userId);
+            query = schoolId != null ? query.Where(u=> u.SchoolId == schoolId) : query;
+
+            return await query.Select(u => new UserRoleResultDTO
+            {
+                UserId = u.UserId,
+                UserName = u.User.UserName,
+                UserFullName = $"{u.User.FirstName} {u.User.MiddelName} {u.User.LastName}",
+                RoleId = u.RoleId,
+                RoleName = u.Role.Name,
+                RoleDescription = u.Role.Description,
+                SchoolId = u.SchoolId,
+                SchoolName = u.School != null ? u.School.Name : null
+            }).ToListAsync();
+        }
+
+        public async Task<UserRoleResultDTO?> GetUserRoleAsync(Guid userId, Guid roleId)
+        {
+            var userRole = await context.UserRoles.Include(u => u.User)
+                                         .Include(u => u.Role)
+                                         .Include(u => u.School)
+                                         .FirstOrDefaultAsync(u => u.UserId == userId && u.RoleId == roleId);
+
+            return userRole == null ? null : new UserRoleResultDTO
+            {
+                UserId = userRole.UserId,
+                UserName = userRole.User.UserName,
+                UserFullName = $"{userRole.User.FirstName} {userRole.User.MiddelName} {userRole.User.LastName}",
+                RoleId = userRole.RoleId,
+                RoleName = userRole.Role.Name,
+                RoleDescription = userRole.Role.Description,
+                SchoolId = userRole.SchoolId,
+                SchoolName = userRole.School != null ? userRole.School.Name : null
+            };
+        }
+
+
     }
 }

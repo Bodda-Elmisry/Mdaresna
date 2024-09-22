@@ -12,6 +12,7 @@ namespace Mdaresna.Repository.IRepositories.IdentityManagement.Query
     public interface IRoleQueryRepository : IBaseQueryRepository<Role>
     {
         Task<Role?> GetStanderdRole();
+        Task<Role?> GetRoleByNameAsycn(string name);
         Task<IEnumerable<RoleResultDTO>> GetRolesAsync(int type, string? name, bool? activation, string? description);
     }
 }

@@ -187,12 +187,12 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
 
         private async Task<LoginResultDTO> GetUserInfo(User user)
         {
-            var permissions = await userPermissionQueryService.GetUserPermissions(user.Id);
+            var permissions = await userPermissionQueryService.GetUserPermissionsView(user.Id);
 
             return new LoginResultDTO
             {
                 LogedinUser = user,
-                Permissions = permissions.Select(x => x.Key),
+                Permissions = permissions.Select(x => x.PermissionKey),
                 Schools = await schoolQueryService.GetUserAdminSchools(user.Id),
             };
         }
