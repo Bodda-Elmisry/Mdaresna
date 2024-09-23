@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.CoinsManagement;
+﻿using Mdaresna.Doamin.DTOs.CoinsManagement;
+using Mdaresna.Doamin.Models.CoinsManagement;
 using Mdaresna.Repository.IRepositories.Base;
 using System;
 using System.Collections.Generic;
@@ -10,5 +11,9 @@ namespace Mdaresna.Repository.IRepositories.CoinsManagement.Query
 {
     public interface ISchoolPaymentRequestQueryRepository : IBaseQueryRepository<SchoolPaymentRequest>
     {
+        Task<IEnumerable<SchoolPaymentRequestResultDTO>> GetSchoolPaymentRequestsListAsync(DateTime? requestDateFrom, DateTime? requestDateTo, string? transfareCode, DateTime? transfareDateFrom, DateTime? transfareDateTo,
+                                                                                                            decimal? transfareAmount, Guid? paymentTypeId, Guid? schoolId, bool? approvied, Guid? approviedById);
+
+        Task<SchoolPaymentRequestResultDTO?> GetSchoolPaymentRequestViewAsync(Guid id);
     }
 }
