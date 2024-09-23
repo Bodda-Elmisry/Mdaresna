@@ -10,5 +10,7 @@ namespace Mdaresna.Repository.IRepositories.CoinsManagement.Query
 {
     public interface IPaymentTypeQueryRepository : IBaseQueryRepository<PaymentType>
     {
+        Task<IEnumerable<PaymentType>> GetPaumentTypesAsync(string? name, string? notes, bool? isActive);
+        Task<PaymentType?> GetPaumentTypeByNameAsync(string name);
     }
 }
