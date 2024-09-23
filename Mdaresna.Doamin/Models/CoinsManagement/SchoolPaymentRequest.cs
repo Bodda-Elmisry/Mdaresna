@@ -21,6 +21,11 @@ namespace Mdaresna.Doamin.Models.CoinsManagement
 
         public decimal TransfareAmount { get; set; }
 
+        public Guid PaymentTypeId { get; set; }
+
+        [ForeignKey(nameof(PaymentTypeId))]
+        public PaymentType paymentType { get; set; }
+
         public Guid SchoolId { get; set; }
 
         [ForeignKey(nameof(SchoolId))]
