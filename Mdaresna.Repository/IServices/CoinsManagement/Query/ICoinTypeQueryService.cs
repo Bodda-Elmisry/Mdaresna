@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IServices.CoinsManagement.Query
 {
     public interface ICoinTypeQueryService : IBaseQueryService<CoinType>
     {
+        Task<IEnumerable<CoinType>> GetCoinTypesListAsync(string? name, decimal? value, string? notes);
     }
 }
