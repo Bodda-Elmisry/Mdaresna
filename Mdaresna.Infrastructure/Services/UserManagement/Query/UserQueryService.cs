@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.UserManagement;
 using Mdaresna.Doamin.Models.UserManagement;
 using Mdaresna.Infrastructure.Services.Base;
 using Mdaresna.Repository.IRepositories.Base;
@@ -25,6 +26,11 @@ namespace Mdaresna.Infrastructure.Services.UserManagement.Query
             this.queryRepository = queryRepository;
             this.sharedRepository = sharedRepository;
             this.userQueryRepository = userQueryRepository;
+        }
+
+        public async Task<UserResultDTO> GetUserById(Guid Id)
+        {
+            return await userQueryRepository.GetUserById(Id);
         }
 
         public async Task<User> GetUserByPhoneNumber(string PhoneNumber)

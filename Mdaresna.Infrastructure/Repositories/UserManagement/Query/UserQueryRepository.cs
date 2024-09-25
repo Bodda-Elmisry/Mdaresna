@@ -1,3 +1,5 @@
+using Mdaresna.Doamin.DTOs.UserManagement;
+using Mdaresna.Doamin.Helpers;
 using Mdaresna.Doamin.Models.UserManagement;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
@@ -42,6 +44,26 @@ namespace Mdaresna.Infrastructure.Repositories.UserManagement.Query
         {
             return await context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == PhoneNumber &&
                                                                 u.Password == Password);
+        }
+
+        public async Task<UserResultDTO> GetUserById(Guid Id)
+        {
+            return await context.Users.Select(s=> new UserResultDTO
+            {
+                Id = s.Id,
+                UserName = s.UserName,
+                FirstName = s.FirstName,
+                MiddelName = s.MiddelName,
+                LastName = s.LastName,
+                PhoneNumber = s.PhoneNumber,
+                ImageUrl = !string.IsNullOrEmpty(s.ImageUrl) ? $"{SettingsHelper.GetAppUrl()}/{s.ImageUrl.Replace("\\", "/")}" : null,
+                BirthDay = s.BirthDay,
+                Address = s.Address,
+                City = s.City,
+                Region = s.Region,
+                Country = s.Contry,
+                Email = s.Email
+            }).FirstAsync(u => u.Id == Id)
         }
     }
 }

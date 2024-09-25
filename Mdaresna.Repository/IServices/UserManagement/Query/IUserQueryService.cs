@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.UserManagement;
 using Mdaresna.Doamin.Models.UserManagement;
 using Mdaresna.Repository.IServices.Base;
 using System;
@@ -11,8 +12,8 @@ namespace Mdaresna.Repository.IServices.UserManagement.Query
     public interface IUserQueryService : IBaseQueryService<User>
     {
         Task<User> GetUserByPhoneNumber(string PhoneNumber);
-
         Task<User> GetUserByPhoneNumberAndConfirmationKey(string PhoneNumber, string Key);
         Task<User> GetUserByPhoneNumberAndPassword(string PhoneNumber, string Password);
+        Task<UserResultDTO> GetUserById(Guid Id);
     }
 }
