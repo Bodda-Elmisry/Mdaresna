@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.CoinsManagement;
 using Mdaresna.Doamin.Models.CoinsManagement;
 using Mdaresna.Repository.IServices.Base;
 using System;
@@ -10,5 +11,19 @@ namespace Mdaresna.Repository.IServices.CoinsManagement.Query
 {
     public interface IPaymentTransactionQueryService : IBaseQueryService<PaymentTransaction>
     {
+        Task<IEnumerable<PaymentTransactionResultDTO>> GetPaymentTransactionsListAsync(DateTime? PaymentDateFrom,
+                                                                                                    DateTime? PaymentDateTO,
+                                                                                                    decimal? Amount,
+                                                                                                    Guid? PaymentTypeId,
+                                                                                                    string? FromId,
+                                                                                                    string? FromName,
+                                                                                                    string? FromType,
+                                                                                                    string? ToId,
+                                                                                                    string? ToName,
+                                                                                                    string? ToType,
+                                                                                                    Guid? CoinTypeId,
+                                                                                                    Guid? SchoolRequestId);
+
+        Task<PaymentTransactionResultDTO?> GetPaymentTransactionByIdAsync(Guid id);
     }
 }

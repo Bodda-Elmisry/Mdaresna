@@ -3,6 +3,8 @@ using Mdaresna.DTOs.CoinsManagementDTO;
 using Mdaresna.DTOs.Common;
 using Mdaresna.Repository.IServices.CoinsManagement.Command;
 using Mdaresna.Repository.IServices.CoinsManagement.Query;
+using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
+using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers.CoinsManagement
@@ -12,12 +14,24 @@ namespace Mdaresna.Controllers.CoinsManagement
     {
         private readonly ISchoolPaymentRequestCommandService schoolPaymentRequestCommandService;
         private readonly ISchoolPaymentRequestQueryService schoolPaymentRequestQueryService;
+        private readonly IPaymentTransactionCommandService paymentTransactionCommandService;
+        private readonly ISchoolQueryService schoolQueryService;
+        private readonly ISchoolCommandService schoolCommandService;
+        private readonly ICoinTypeQueryService coinTypeQueryService;
 
         public SchoolPaymentRequestController(ISchoolPaymentRequestCommandService schoolPaymentRequestCommandService,
-                                              ISchoolPaymentRequestQueryService schoolPaymentRequestQueryService)
+                                              ISchoolPaymentRequestQueryService schoolPaymentRequestQueryService,
+                                              IPaymentTransactionCommandService paymentTransactionCommandService,
+                                              ISchoolQueryService schoolQueryService,
+                                              ISchoolCommandService schoolCommandService,
+                                              ICoinTypeQueryService coinTypeQueryService)
         {
             this.schoolPaymentRequestCommandService = schoolPaymentRequestCommandService;
             this.schoolPaymentRequestQueryService = schoolPaymentRequestQueryService;
+            this.paymentTransactionCommandService = paymentTransactionCommandService;
+            this.schoolQueryService = schoolQueryService;
+            this.schoolCommandService = schoolCommandService;
+            this.coinTypeQueryService = coinTypeQueryService;
         }
 
         [HttpPost("GetRequests")]
@@ -120,6 +134,62 @@ namespace Mdaresna.Controllers.CoinsManagement
             {
                 return BadRequest(ex.Message);
 
+            }
+        }
+
+        [HttpPost("ApproveRequest")]
+        public async Task<IActionResult> ApprovePaymentRequest([FromBody] ApprovePaymentRequestDTO dTO)
+        {
+            try
+            {
+                var request = await schoolPaymentRequestQueryService.GetByIdAsync(dTO.RequestId);
+
+                if (request == null)
+                    return BadRequest("There is no request to approve");
+
+                var school = await schoolQueryService.GetByIdAsync(request.SchoolId);
+
+                if (school == null || (school != null && school.Active == false))
+                    return BadRequest("Can't fiend the request school, It's code be not active");
+
+                var payment = new PaymentTransaction
+                {
+                    PaymentDate = dTO.PaymentDate,
+                    Amount = dTO.PaymentAmount,
+                    PaymentTypeId = request.PaymentTypeId,
+                    FromId = $"School|||{school.Id}|||{school.Name}",
+                    ToId = $"Application|||{dTO.ToId}|||{dTO.ToName}",
+                    CoinTypeId = school.CoinTypeId.Value,
+                    SchoolRequestId = request.Id
+                };
+
+                var paymentAdded = paymentTransactionCommandService.Create(payment);
+
+                if (!paymentAdded)
+                    return BadRequest("Error in adding payment");
+
+                var coinType = await coinTypeQueryService.GetByIdAsync(payment.CoinTypeId);
+
+                var paymentCoinsCount = payment.Amount / coinType.Value;
+
+                school.AvailableCoins += Convert.ToInt32(paymentCoinsCount);
+
+                var schoolUpdated = schoolCommandService.Update(school);
+
+                request.Approvied = true;
+                request.ApproviedById = Guid.Parse(dTO.ToId);
+
+                var approved = schoolPaymentRequestCommandService.Update(request);
+
+                if (!approved)
+                    return BadRequest("Error in approving request");
+
+                return Ok("Request approved");
+
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
 

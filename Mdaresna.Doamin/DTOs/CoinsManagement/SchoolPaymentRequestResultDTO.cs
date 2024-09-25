@@ -21,6 +21,7 @@ namespace Mdaresna.Doamin.DTOs.CoinsManagement
         public string PaymentTypeName { get; set; }
         public Guid SchoolId { get; set; }
         public string SchoolName { get; set; }
+        public Guid? SchoolCoinTypeId { get; set; }
         public bool? Approvied { get; set; }
         public Guid? ApproviedById { get; set; }
         public string? ApproviedByName { get; set; }

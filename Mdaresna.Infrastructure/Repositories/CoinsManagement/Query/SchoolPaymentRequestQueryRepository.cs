@@ -77,6 +77,7 @@ namespace Mdaresna.Infrastructure.Repositories.CoinsManagement.Query
                 PaymentTypeName = r.paymentType.Name,
                 SchoolId = r.SchoolId,
                 SchoolName = r.School.Name,
+                SchoolCoinTypeId = r.School.CoinTypeId,
                 Approvied = r.Approvied,
                 ApproviedById = r.ApproviedById,
                 ApproviedByName = $"{r.ApproviedBy.FirstName} {r.ApproviedBy.MiddelName} {r.ApproviedBy.LastName}"
@@ -103,6 +104,7 @@ namespace Mdaresna.Infrastructure.Repositories.CoinsManagement.Query
                 PaymentTypeName = request.paymentType.Name,
                 SchoolId = request.SchoolId,
                 SchoolName = request.School.Name,
+                SchoolCoinTypeId = request.School.CoinTypeId,
                 Approvied = request.Approvied,
                 ApproviedById = request.ApproviedById,
                 ApproviedByName = $"{request.ApproviedBy.FirstName} {request.ApproviedBy.MiddelName} {request.ApproviedBy.LastName}"
