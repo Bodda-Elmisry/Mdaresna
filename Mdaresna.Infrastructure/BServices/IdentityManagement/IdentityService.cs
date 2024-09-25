@@ -13,6 +13,7 @@ using Mdaresna.Repository.IServices.UserManagement.Command;
 using Mdaresna.Repository.IServices.UserManagement.Query;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -165,6 +166,46 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             }
 
             return result;
+        }
+
+        public async Task<ChangePasswordResultDTO> ChangePassword(Guid userId, string oldPassword, string newPassword)
+        {
+            var result = new ChangePasswordResultDTO
+            {
+                Saved = false,
+                MSG = ""
+            };
+            var user = await userQueryService.GetByIdAsync(userId);
+
+            if(user == null)
+            {
+                result.MSG = "Can't fiend user";
+            }
+            else
+            {
+                var encreptedOldPass = UserHelper.EncryptPassword(oldPassword, user.EncriptionKey);
+
+                if (encreptedOldPass != user.Password)
+                    result.MSG = "Wrong old password";
+                else
+                {
+                    var encrptedPass = UserHelper.EncryptPassword(newPassword, user.EncriptionKey);
+                    user.Password = encrptedPass;
+                    var userUpdated = userCommandService.Update(user);
+                    if(userUpdated)
+                    {
+                        result.Saved = true;
+                        result.MSG = string.Empty;
+                    }
+                    else
+                    {
+                        result.MSG = "Error in changing passeord";
+                    }
+                }
+            }
+
+            return result;
+
         }
 
         public async Task<LoginResultDTO> Login(string PhoneNumber, string Password)

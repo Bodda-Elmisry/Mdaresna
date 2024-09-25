@@ -86,6 +86,20 @@ namespace Mdaresna.Controllers.IdentityManagement
             }
         }
 
+        [HttpPost("ChangePassword")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO dTO)
+        {
+            try
+            {
+                var result = await identityService.ChangePassword(dTO.Id, dTO.OldPassword, dTO.NewPassword);
+                return result.Saved ? Ok("Password changed") : BadRequest(result.MSG);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO login)
         {
