@@ -139,6 +139,31 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             }
         }
 
+        [HttpPost("ActivateNewSchool")]
+        public async Task<IActionResult> ActivateNewSchool([FromBody] ActivateNewSchoolDTO dTO)
+        {
+            try
+            {
+                var school = await schoolQueryService.GetByIdAsync(dTO.SchoolId);
+
+                if (school == null)
+                    return BadRequest("There is not school to update");
+                if (school != null && school.Active == true && school.CoinTypeId != null && school.CoinTypeId == dTO.CoinTypeId)
+                    return Ok("School activated");
+
+                school.Active = true;
+                school.CoinTypeId = dTO.CoinTypeId;
+
+                var updated = schoolCommandService.Update(school);
+
+                return updated ? Ok("School activated") : BadRequest("Error in Updating school");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("GetById")]
         public async Task<IActionResult> GetSchoolById([FromBody] SchoolIdDTO schoolIdDTO)
         {
