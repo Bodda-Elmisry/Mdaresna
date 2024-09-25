@@ -30,7 +30,11 @@ namespace Mdaresna.Infrastructure.Repositories.CoinsManagement.Query
 
             query = isActive != null ? query.Where(t => t.IsActive == isActive) : query;
 
-            return await query.OrderBy(t => t.Name).ToListAsync();
+            query = query.OrderBy(t => t.Name);
+
+            //var ss = query.ToQueryString();
+
+            return await query.ToListAsync();
         }
 
         public async Task<PaymentType?> GetPaumentTypeByNameAsync(string name)
