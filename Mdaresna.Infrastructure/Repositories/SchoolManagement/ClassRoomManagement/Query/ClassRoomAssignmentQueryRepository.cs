@@ -83,7 +83,10 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
 
         public async Task<ClassRoomAssignmentResultDTO?> GetClassRoomAssignmentById(Guid assignmentId)
         {
-            var item = await context.ClassRoomAssignments.FirstOrDefaultAsync(c=> c.Id == assignmentId);
+            var item = await context.ClassRoomAssignments.Include(a=> a.Supervisor)
+                                                         .Include(a => a.Course)
+                                                         .Include(a => a.ClassRoom)
+                                                         .FirstOrDefaultAsync(c=> c.Id == assignmentId);
 
             return item != null ?
                 new ClassRoomAssignmentResultDTO

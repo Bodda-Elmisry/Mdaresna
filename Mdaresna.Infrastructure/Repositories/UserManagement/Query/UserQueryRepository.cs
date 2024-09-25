@@ -48,7 +48,7 @@ namespace Mdaresna.Infrastructure.Repositories.UserManagement.Query
 
         public async Task<UserResultDTO> GetUserById(Guid Id)
         {
-            return await context.Users.Select(s=> new UserResultDTO
+            return await context.Users.Select(s => new UserResultDTO
             {
                 Id = s.Id,
                 UserName = s.UserName,
@@ -63,7 +63,7 @@ namespace Mdaresna.Infrastructure.Repositories.UserManagement.Query
                 Region = s.Region,
                 Country = s.Contry,
                 Email = s.Email
-            }).FirstAsync(u => u.Id == Id)
+            }).FirstAsync(u => u.Id == Id);
         }
     }
 }
