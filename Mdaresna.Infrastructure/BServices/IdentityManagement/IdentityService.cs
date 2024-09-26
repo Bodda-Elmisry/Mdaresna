@@ -208,6 +208,57 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
 
         }
 
+        public async Task<ForgetPasseordResultDTO> ForgetPassword(string phoneNumber)
+        {
+            var result = new ForgetPasseordResultDTO
+            {
+                ConfermationKeySent = false,
+                MSG = "THis phone not regester",
+                UserId = null
+            };
+            var user = await userQueryService.GetUserByPhoneNumber(phoneNumber);
+
+            if(user != null)
+            {
+                var confirmationKey = await this.SendConferamtionKey(user);
+                if(!string.IsNullOrEmpty(confirmationKey))
+                {
+                    result.ConfermationKeySent = true;
+                    result.MSG = string.Empty;
+                    result.UserId = user.Id;
+                }
+            }
+
+            return result;
+        }
+
+        public async Task<AddUserNewPasswordResultDTO> AddUserNewPassword(Guid userId, string Password)
+        {
+            var result = new AddUserNewPasswordResultDTO
+            {
+                PasswordChanged = false,
+                MSG = "password not changed"
+            };
+            var user = await userQueryService.GetByIdAsync(userId);
+
+            if(user != null)
+            {
+                user.Password= UserHelper.EncryptPassword(Password, user.EncriptionKey);
+
+                var updated = userCommandService.Update(user);
+
+                if(updated)
+                {
+                    result.MSG = string.Empty;
+                    result.PasswordChanged = true;
+                }
+            }
+
+
+            return result;
+
+        }
+
         public async Task<LoginResultDTO> Login(string PhoneNumber, string Password)
         {
             var user = await userQueryService.GetUserByPhoneNumber(PhoneNumber);
@@ -237,5 +288,6 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                 Schools = await schoolQueryService.GetUserAdminSchools(user.Id),
             };
         }
+
     }
 }

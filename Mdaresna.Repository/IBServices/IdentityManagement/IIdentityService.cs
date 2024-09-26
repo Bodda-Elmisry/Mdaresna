@@ -16,5 +16,7 @@ namespace Mdaresna.Repository.IBServices.IdentityManagement
         Task<SaveUserMainInfoResultDTO> SaveUserMainInfo(User userInfo);
         Task<LoginResultDTO> Login(string PhoneNumber, string Password);
         Task<ChangePasswordResultDTO> ChangePassword(Guid userId, string oldPassword, string newPassword);
+        Task<ForgetPasseordResultDTO> ForgetPassword(string phoneNumber);
+        Task<AddUserNewPasswordResultDTO> AddUserNewPassword(Guid userId, string Password);
     }
 }

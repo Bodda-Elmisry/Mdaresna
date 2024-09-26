@@ -1,5 +1,6 @@
 ﻿using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.UserManagement;
+using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.IdentityDTO;
 using Mdaresna.Repository.IBServices.IdentityManagement;
 using Microsoft.AspNetCore.Mvc;
@@ -95,6 +96,36 @@ namespace Mdaresna.Controllers.IdentityManagement
                 return result.Saved ? Ok("Password changed") : BadRequest(result.MSG);
             }
             catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("ForgetPassword")]
+        public async Task<IActionResult> ForgetPassword([FromBody] PhoneNumberDTO dTO)
+        {
+            try
+            {
+                var sent = await identityService.ForgetPassword(dTO.PhoneNumber);
+
+                return sent.ConfermationKeySent ? Ok(sent.UserId) : BadRequest(sent.MSG);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("AddUserNewPassword")]
+        public async Task<IActionResult> AddUserNewPassword([FromBody] AddUserNewPasswordDTO dTO)
+        {
+            try
+            {
+                var result = await identityService.AddUserNewPassword(dTO.UserId, dTO.Password);
+
+                return result.PasswordChanged ? Ok("Password Changed") : BadRequest(result.MSG);
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
