@@ -1,4 +1,4 @@
-﻿namespace Mdaresna.DTOs.Common
+﻿namespace Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO
 {
     public class CreateSchoolTypeDTO
     {
