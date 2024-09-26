@@ -30,22 +30,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
         {
             int pagesize = appSettings.PageSize != null ? appSettings.PageSize.Value : 30;
             var query = context.ClassRoomActivities
-                        .Include(c => c.ClassRoom).Include(c => c.Course).Include(c => c.Supervisor)
-                        .Select(c => new ClassRoomActivityResultDTO
-                        {
-                            Id = c.Id,
-                            SupervisorId = c.SupervisorId,
-                            SupervisorName = $"{c.Supervisor.FirstName} {c.Supervisor.MiddelName} {c.Supervisor.LastName}",
-                            CourseId = c.CourseId,
-                            CourseName = c.Course.Name,
-                            ClassRoomId = c.ClassRoomId,
-                            ClassRoom = c.ClassRoom.Name,
-                            ActivityDetails = c.Details,
-                            WeekDay = c.WeekDay,
-                            Rate = c.Rate,
-                            CreateDate = c.CreateDate,
-                            LastModifyDate = c.LastModifyDate,
-                        });
+                        .Include(c => c.ClassRoom).Include(c => c.Course).Include(c => c.Supervisor).AsQueryable();
 
             if (classRoomId != null)
                 query = query.Where(q => q.ClassRoomId == classRoomId);
@@ -57,7 +42,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                 query = query.Where(q => q.CourseId == courseId);
 
             if (!string.IsNullOrEmpty(details))
-                query = query.Where(q => q.ActivityDetails.Contains(details));
+                query = query.Where(q => q.Details.Contains(details));
 
             if (rate != null)
                 query = query.Where(q => q.Rate == rate);
@@ -72,7 +57,25 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                          .Skip((pageNumber - 1) * pagesize)
                          .Take(pagesize);
 
-            return await query.ToListAsync();
+            var querystring = query.ToQueryString();
+
+            return await query
+                        .Select(c => new ClassRoomActivityResultDTO
+                        {
+                            Id = c.Id,
+                            SupervisorId = c.SupervisorId,
+                            SupervisorName = $"{c.Supervisor.FirstName} {c.Supervisor.MiddelName} {c.Supervisor.LastName}",
+                            CourseId = c.CourseId,
+                            CourseName = c.Course.Name,
+                            ClassRoomId = c.ClassRoomId,
+                            ClassRoom = c.ClassRoom.Name,
+                            ActivityDetails = c.Details,
+                            WeekDay = c.WeekDay,
+                            Rate = c.Rate,
+                            CreateDate = c.CreateDate,
+                            LastModifyDate = c.LastModifyDate,
+                            ActivityDate = c.ActivityDate
+                        }).ToListAsync();
 
 
 
@@ -81,7 +84,10 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
 
         public async Task<ClassRoomActivityResultDTO?> GetClassRoomActivityById(Guid activityId)
         {
-            var item = await context.ClassRoomActivities.FirstOrDefaultAsync(c => c.Id == activityId);
+            var item = await context.ClassRoomActivities.Include(a=> a.Supervisor)
+                                                        .Include(a => a.Course)
+                                                        .Include(a => a.ClassRoom)
+                                                        .FirstOrDefaultAsync(c => c.Id == activityId);
 
             return item != null ?
                 new ClassRoomActivityResultDTO
