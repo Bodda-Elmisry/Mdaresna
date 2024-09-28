@@ -149,6 +149,7 @@ namespace Mdaresna.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new RoleSeed());
             modelBuilder.ApplyConfiguration(new RolePermissionSeed());
             modelBuilder.ApplyConfiguration(new CoinTypeSeed());
+            modelBuilder.ApplyConfiguration(new UserRoleSeed());
         }
 
         private void ApplyUserSeed(ModelBuilder modelBuilder)
