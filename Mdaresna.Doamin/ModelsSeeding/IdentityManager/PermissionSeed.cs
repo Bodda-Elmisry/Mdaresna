@@ -34,6 +34,15 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 },
                 new Permission
                 {
+                    Id = Guid.Parse("B15E32EB-092E-437D-9D4E-B9ED583C23B0"),
+                    Key = "ViewUserSchoolsDropDown",
+                    Name = "View User Schools Drop Down",
+                    Description = "View User Schools Drop Down",
+                    SchoolPermission = false,
+                    AppPermission = true
+                },
+                new Permission
+                {
                     Id = Guid.Parse("072C7A82-B62D-45D8-A3ED-48A70319ABF3"),
                     Key = "ChangeSchoolActivation",
                     Name = "Change School Activation",
