@@ -17,18 +17,6 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 new Role
                 {
                     Id = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
-                    Name = "Application Owner",
-                    Description = "This Role with fuly access to all Application featuers",
-                    Active = true,
-                    AdminRole = true,
-                    SchoolRole = false
-
-                });
-
-            builder.HasData(
-                new Role
-                {
-                    Id = Guid.Parse("6E473A7A-083C-405B-8F0D-04DD85B94EDB"),
                     Name = "Application Manager",
                     Description = "This Role with fuly access to all Application featuers",
                     Active = true,

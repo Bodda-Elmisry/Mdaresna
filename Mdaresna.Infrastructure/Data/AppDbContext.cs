@@ -29,6 +29,7 @@ using Mdaresna.Doamin.ModelsSeeding.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Doamin.Models.AdminManagement;
 using Mdaresna.Doamin.ModelsSeeding.AdminManagement;
 using Mdaresna.Doamin.ModelsConfigrations.AdminManagement;
+using Mdaresna.Doamin.ModelsSeeding.UserManagement;
 
 namespace Mdaresna.Infrastructure.Data
 {
@@ -57,6 +58,7 @@ namespace Mdaresna.Infrastructure.Data
             #region Seeding files
             ApplyAdminSeeding(modelBuilder);
             ApplyIdentitySeeding(modelBuilder);
+            ApplyUserSeed(modelBuilder);
             ApplySchoolSeeding(modelBuilder);
 
 
@@ -149,11 +151,17 @@ namespace Mdaresna.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new CoinTypeSeed());
         }
 
+        private void ApplyUserSeed(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new UserSeed());
+        }
+
         private void ApplySchoolSeeding(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new SchoolTypeSeed());
             modelBuilder.ApplyConfiguration(new SchoolContactTypeSeed());
             modelBuilder.ApplyConfiguration(new ClassRoomLanguageSeed());
+            modelBuilder.ApplyConfiguration(new SchoolSeed());
         }
 
         private void ApplyAdminSeeding(ModelBuilder modelBuilder)
