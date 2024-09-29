@@ -30,7 +30,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Add School",
                     Description = "Create new shool",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -93,7 +93,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "View School Data",
                     Description = "View School Data",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -111,7 +111,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Uploade School Image",
                     Description = "Uploade School Image",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -120,7 +120,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Add School Contact",
                     Description = "Add School Contact",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -129,7 +129,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Update School Contact",
                     Description = "Update School Contact",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -138,7 +138,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "View School Languages Setting",
                     Description = "View Shool Languages Setting",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -174,7 +174,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "View Grades Setting",
                     Description = "View Grades Setting",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -183,7 +183,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Add Grade",
                     Description = "Add Grade",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -192,7 +192,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Add Multiple Grades",
                     Description = "Add Multiple Grades",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -201,7 +201,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Update Grade",
                     Description = "Update Grade",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -210,7 +210,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "View Exams Setting",
                     Description = "View Exams Setting",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -219,7 +219,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Add Exam",
                     Description = "Add Exam",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -228,7 +228,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Add Multiple Exams",
                     Description = "Add Multiple Exams",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -237,7 +237,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "View Classes Setting Section",
                     Description = "View Classes Setting Section",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -255,7 +255,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Add Class",
                     Description = "Add Class",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -264,7 +264,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Add Multiple Classes",
                     Description = "Add Multiple Classes",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -273,7 +273,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Change Class Activation",
                     Description = "Change Class Activation",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -282,7 +282,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Update Class",
                     Description = "Update Class",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -291,7 +291,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Link Teacher To School",
                     Description = "Link Teacher To School",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -300,7 +300,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Add Course",
                     Description = "Add Course",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -309,7 +309,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Add Multiple Courses",
                     Description = "Add Multiple Courses",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -318,7 +318,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Update Course",
                     Description = "Update Course",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -327,7 +327,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "View Teachers List",
                     Description = "View Teachers List",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -345,7 +345,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Unlink Teacher To School",
                     Description = "Unlink Teacher To School",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -354,7 +354,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Link Teacher To Course & Class",
                     Description = "Link Teacher To Course & Class",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -363,7 +363,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Unlink Teacher To Course & Class",
                     Description = "Unlink Teacher To Course & Class",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -372,7 +372,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "View School Students List",
                     Description = "View School Students List",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -381,7 +381,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Assign Student To School",
                     Description = "Assign Student To School",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -390,7 +390,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Assign Multiple Students To School",
                     Description = "Assign Multiple Students To School",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -399,7 +399,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Update Student Info",
                     Description = "Update Student Info",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -408,7 +408,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Change Student Activation",
                     Description = "Change Student Activation",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -417,7 +417,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "View School Current Year",
                     Description = "View School Current Year",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -426,7 +426,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Add Current Year",
                     Description = "Add Current Year",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -435,7 +435,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Add Month",
                     Description = "Add Month",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -453,7 +453,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Update Year",
                     Description = "Update Year",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -462,7 +462,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Update Month",
                     Description = "Update Month",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -471,7 +471,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Change Year Activation",
                     Description = "Change Year Activation",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -480,7 +480,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Change Month Activation",
                     Description = "Change Month Activation",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -489,7 +489,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Complete Yeare",
                     Description = "Complete Yeare",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -498,7 +498,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "View Years List",
                     Description = "View Years List",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -516,7 +516,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Attendance Action",
                     Description = "Attendance Action",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -525,7 +525,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "View Attendance List",
                     Description = "View Attendance List",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -534,7 +534,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Add Homework",
                     Description = "Add Homework",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -543,7 +543,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "View Homework",
                     Description = "View Homework",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -552,7 +552,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Update Homework",
                     Description = "Update Homework",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -570,7 +570,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "View School Settings",
                     Description = "View School Settings",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -579,7 +579,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "View Exams",
                     Description = "View Exams",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -588,7 +588,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Update Exam",
                     Description = "Update Exam",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -597,7 +597,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Rate Exam",
                     Description = "Rate Exam",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -606,7 +606,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "View Activities",
                     Description = "View Activities",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -615,7 +615,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Add Activity",
                     Description = "Add Activity",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -624,7 +624,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Update Activity",
                     Description = "Update Activity",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -633,7 +633,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Rate Activity",
                     Description = "Rate Activity",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -642,7 +642,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Add Note",
                     Description = "Add Note",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -651,7 +651,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "View Notes",
                     Description = "View Notes",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 },
                 new Permission
                 {
@@ -660,7 +660,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "Edit Note",
                     Description = "Edit Note",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = false
                 }
                 );
         }
