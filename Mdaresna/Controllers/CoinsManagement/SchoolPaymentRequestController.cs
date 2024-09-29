@@ -77,7 +77,6 @@ namespace Mdaresna.Controllers.CoinsManagement
         [HttpPost("AddRequest")]
         public async Task<IActionResult> AddRequest([FromBody] CreateSchoolPaymentRequestDTO dTO)
         {
-            return BadRequest("Error while adding request");
 
             try
             {
