@@ -1,5 +1,8 @@
-﻿using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
+﻿using Mdaresna.Doamin.Models.Identity;
+using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.DTOs.Common;
+using Mdaresna.Repository.IServices.IdentityManagement.Command;
+using Mdaresna.Repository.IServices.IdentityManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Microsoft.AspNetCore.Mvc;
@@ -11,20 +14,26 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
     {
         private readonly ISchoolTeacherCommandService schoolTeacherCommandService;
         private readonly ISchoolTeacherQueryService schoolTeacherQueryService;
+        private readonly IUserRoleCommandService userRoleCommandService;
+        private readonly IUserRoleQueryService userRoleQueryService;
 
         public SchoolTeacherController(ISchoolTeacherCommandService schoolTeacherCommandService,
-                                       ISchoolTeacherQueryService schoolTeacherQueryService)
+                                       ISchoolTeacherQueryService schoolTeacherQueryService,
+                                       IUserRoleCommandService userRoleCommandService,
+                                       IUserRoleQueryService userRoleQueryService)
         {
             this.schoolTeacherCommandService = schoolTeacherCommandService;
             this.schoolTeacherQueryService = schoolTeacherQueryService;
-
+            this.userRoleCommandService = userRoleCommandService;
+            this.userRoleQueryService = userRoleQueryService;
         }
 
         [HttpPost("AddSchoolTeacher")]
-        public IActionResult AddSchoolTeacher([FromBody] SchoolIdTeacherIdDTO schoolTeacher)
+        public async Task<IActionResult> AddSchoolTeacher([FromBody] SchoolIdTeacherIdDTO schoolTeacher)
         {
             try
             {
+                
                 var sTeacher = new SchoolTeacher
                 {
                     SchoolId = schoolTeacher.SchoolId,
@@ -32,7 +41,21 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 };
                 var added = schoolTeacherCommandService.Create(sTeacher);
                 if (added)
+                {
+                    var userrole = new UserRole
+                    {
+                        RoleId = Guid.Parse("10620C5F-37FE-4D18-996F-915ECE8893F1"),
+                        UserId = sTeacher.TeacherId
+                    };
+                    var teacherRoleAssignd = await userRoleQueryService.CheckRoleExist(userrole);
+                    if (!teacherRoleAssignd)
+                    {
+                        var roleadded = userRoleCommandService.Create(userrole);
+                        if (!roleadded)
+                            return BadRequest("Error in adding teacher role");
+                    }
                     return Ok(schoolTeacher);
+                }
                 return BadRequest("Can't add teacher to school");
             }
             catch (Exception ex)

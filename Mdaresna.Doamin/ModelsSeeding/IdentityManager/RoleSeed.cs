@@ -40,6 +40,18 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
             builder.HasData(
                 new Role
                 {
+                    Id = Guid.Parse("10620C5F-37FE-4D18-996F-915ECE8893F1"),
+                    Name = "School Teacher",
+                    Description = "",
+                    Active = true,
+                    AdminRole = true,
+                    SchoolRole = false
+
+                });
+
+            builder.HasData(
+                new Role
+                {
                     Id = Guid.Parse("92D00B28-9D25-4BD2-A587-6C22A3A07A92"),
                     Name = "Standerd",
                     Description = "This Role to work in normal account and it's the default role for all accounts. \nWith this role you can track your souns activites and schools.",

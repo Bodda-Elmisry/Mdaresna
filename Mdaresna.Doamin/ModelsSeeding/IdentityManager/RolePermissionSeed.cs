@@ -18,6 +18,7 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
             InitAppManagerRolePermissions(builder);
             InitStanderdPermissions(builder);
             InitSchoolManagerPermissions(builder);
+            InitSchoolTeacherPermissions(builder);
         }
 
 
@@ -91,6 +92,15 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
             {
                 PermissionId = Guid.Parse("219007EA-620E-4D96-8292-2D015EF68DB1"),
                 RoleId = Guid.Parse("92D00B28-9D25-4BD2-A587-6C22A3A07A92")
+            });
+        }
+
+        private void InitSchoolTeacherPermissions(EntityTypeBuilder<RolePermission> builder)
+        {
+            builder.HasData(new RolePermission
+            {
+                PermissionId = Guid.Parse("B15E32EB-092E-437D-9D4E-B9ED583C23B0"),
+                RoleId = Guid.Parse("10620C5F-37FE-4D18-996F-915ECE8893F1")
             });
         }
 
