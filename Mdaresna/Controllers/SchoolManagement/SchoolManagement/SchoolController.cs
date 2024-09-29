@@ -31,7 +31,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                     About = School.About,
                     Active = false,
                     AvailableCoins = 0,
-                    //ImageUrl = School.ImageUrl,
+                    ImageUrl = string.Empty,
                     SchoolAdminId = School.SchoolAdminId,
                     SchoolTypeId = School.SchoolTypeId,
                     Vesion = School.Vesion
