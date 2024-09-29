@@ -25,7 +25,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             this.appSettings = appSettings.Value;
         }
 
-        public async Task<List<Permission>> GetPermissionsListAsync(int permissionsType, int pageNumber)
+        public async Task<List<Permission>> GetPermissionsListAsync(int permissionsType, int pageNumber, string? permissionName)
         {
 
             var result = new List<Permission>();
@@ -34,29 +34,33 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             switch (permissionsType)
             {
                 case 1:
-                    result = await GetSchoolPermissions(pageNumber);
+                    result = await GetSchoolPermissions(pageNumber, permissionName);
                     break;
                 case 2:
-                    result = await GetAppPermissions(pageNumber);
+                    result = await GetAppPermissions(pageNumber, permissionName);
                     break;
             }
 
             return result;
         }
 
-        private async Task<List<Permission>> GetSchoolPermissions(int pageNumber)
+        private async Task<List<Permission>> GetSchoolPermissions(int pageNumber, string? permissionName)
         {
             int pagesize = this.appSettings.PageSize != null ? this.appSettings.PageSize.Value : 30;
-            return await _context.Permissions.Where(p => p.SchoolPermission == true).OrderBy(p => p.Name)
+            var query = _context.Permissions.Where(p => p.SchoolPermission == true);
+            query = !string.IsNullOrEmpty(permissionName) ? query.Where(p=> p.Name.Contains(permissionName)) : query;
+            return await query.OrderBy(p => p.Name)
                                   .Skip((pageNumber - 1) * pagesize)
                                   .Take(pagesize).ToListAsync();
 
         }
 
-        private async Task<List<Permission>> GetAppPermissions(int pageNumber)
+        private async Task<List<Permission>> GetAppPermissions(int pageNumber, string? permissionName)
         {
             int pagesize = this.appSettings.PageSize != null ? this.appSettings.PageSize.Value : 30;
-            return await _context.Permissions.Where(p => p.AppPermission == true).OrderBy(p => p.Name)
+            var query = _context.Permissions.Where(p => p.AppPermission == true);
+            query = !string.IsNullOrEmpty(permissionName) ? query.Where(p => p.Name.Contains(permissionName)) : query;
+            return await query.OrderBy(p => p.Name)
                                   .Skip((pageNumber - 1) * pagesize)
                                   .Take(pagesize).ToListAsync();
         }

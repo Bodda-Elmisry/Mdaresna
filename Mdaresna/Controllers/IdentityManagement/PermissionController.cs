@@ -21,7 +21,8 @@ namespace Mdaresna.Controllers.IdentityManagement
             try
             {
                 var permissions = await permissionQueryService.GetPermissionsListAsync(dTO.permissionsType,
-                                                                                 dTO.PageNumber);
+                                                                                 dTO.PageNumber,
+                                                                                 dTO.PermissionName);
 
                 return Ok(permissions);
             }

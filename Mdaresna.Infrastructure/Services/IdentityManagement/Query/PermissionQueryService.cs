@@ -27,9 +27,9 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Query
             this.permissionQueryRepository = permissionQueryRepository;
         }
 
-        public async Task<IEnumerable<Permission>> GetPermissionsListAsync(int permissionsType, int pageNumber)
+        public async Task<IEnumerable<Permission>> GetPermissionsListAsync(int permissionsType, int pageNumber, string? permissionName)
         {
-            return await permissionQueryRepository. GetPermissionsListAsync(permissionsType, pageNumber);
+            return await permissionQueryRepository. GetPermissionsListAsync(permissionsType, pageNumber, permissionName);
         }
     }
 }
