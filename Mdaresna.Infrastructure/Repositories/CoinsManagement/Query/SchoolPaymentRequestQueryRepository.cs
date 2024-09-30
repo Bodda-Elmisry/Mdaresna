@@ -107,7 +107,7 @@ namespace Mdaresna.Infrastructure.Repositories.CoinsManagement.Query
                 SchoolCoinTypeId = request.School.CoinTypeId,
                 Approvied = request.Approvied,
                 ApproviedById = request.ApproviedById,
-                ApproviedByName = $"{request.ApproviedBy.FirstName} {request.ApproviedBy.MiddelName} {request.ApproviedBy.LastName}"
+                ApproviedByName = request.ApproviedBy != null ? $"{request.ApproviedBy.FirstName} {request.ApproviedBy.MiddelName} {request.ApproviedBy.LastName}" : null
             };
         }
 

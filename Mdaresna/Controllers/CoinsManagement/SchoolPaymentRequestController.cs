@@ -194,6 +194,32 @@ namespace Mdaresna.Controllers.CoinsManagement
             }
         }
 
+        [HttpPost("RejectRequest")]
+        public async Task<IActionResult> RejectRequest([FromBody] RejectPaymentRequestDTO dTO)
+        {
+            try
+            {
+                var request = await schoolPaymentRequestQueryService.GetByIdAsync(dTO.RequestId);
+
+                if (request == null)
+                    return BadRequest("There is no request to reject");
+
+                request.Approvied = false;
+                request.ApproviedById = dTO.RejectedById;
+
+                var updated = schoolPaymentRequestCommandService.Update(request);
+
+                if (!updated)
+                    return BadRequest("Error in rejection");
+
+                return Ok("Request rejected");
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("DeleteRequest")]
         public async Task<IActionResult> DeleteRequest([FromBody] PaymentRequestIdDTO dTO)
         {
