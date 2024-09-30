@@ -129,7 +129,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 student.FirstName = studentDTO.FirstName;
                 student.MiddelName = studentDTO.MidelName;
                 student.LastName = studentDTO.LastName;
-                student.ImageUrl = studentDTO.ImageUrl;
+                //student.ImageUrl = studentDTO.ImageUrl;
                 student.BirthDate = studentDTO.BirthDate;
                 student.ClassRoomId = studentDTO.ClassRoomId;
                 student.SchoolId = studentDTO.SchoolId;

@@ -45,7 +45,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
         public async Task<SchoolContactResultDTO?> GetSchoolContactById(Guid Id)
         {
-            var result = await context.SchoolContacts.FirstOrDefaultAsync(c => c.Id == Id);
+            var result = await context.SchoolContacts.Include(s=>s.ContactType).FirstOrDefaultAsync(c => c.Id == Id);
 
             return result == null ? null : new SchoolContactResultDTO
             {
