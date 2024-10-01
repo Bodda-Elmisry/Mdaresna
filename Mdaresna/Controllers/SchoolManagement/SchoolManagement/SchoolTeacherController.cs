@@ -33,6 +33,10 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
+                var teacher = await schoolTeacherQueryService.GetSchoolTeacherByIdAsync(schoolTeacher.SchoolId, schoolTeacher.TeacherId);
+
+                if (teacher != null)
+                    return Conflict("Teacher already assignd to school");
                 
                 var sTeacher = new SchoolTeacher
                 {
