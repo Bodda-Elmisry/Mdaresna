@@ -108,7 +108,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                 ActivityRate = Activity.Activity.Rate,
                 StudentId = Activity.StudentId,
                 StudentName = $"{Activity.Student.FirstName} {Activity.Student.MiddelName} {Activity.Student.LastName}",
-                Result = Activity.Result
+                Result = Activity.Result,
+                IsAttend = Activity.IsAttend
             };
         }
 

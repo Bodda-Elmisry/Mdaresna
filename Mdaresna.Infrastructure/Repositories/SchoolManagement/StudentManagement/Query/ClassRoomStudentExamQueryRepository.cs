@@ -29,7 +29,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
         public async Task<IEnumerable<ClassRoomStudentExamResultDTO>> GetClassRoomStudentExamsListAsync(Guid StudentId, decimal? TotalResultFrom, decimal? TotalResultTo, bool? IsAttend, int pageNumber)
         {
             int pagesize = appSettings.PageSize != null ? appSettings.PageSize.Value : 30;
-            var query = context.ClassRoomStudentExams.Include(e => e.StudentId)
+            var query = context.ClassRoomStudentExams.Include(e => e.Student)
                                                      .Include(e => e.Exam)
                                                      .Include(e => e.Exam.Month)
                                                      .Include(e => e.Exam.ClassRoom)
