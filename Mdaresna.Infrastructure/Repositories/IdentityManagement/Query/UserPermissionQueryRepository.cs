@@ -21,6 +21,11 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             this.context = context;
         }
 
+        public async Task<UserPermission?> GetUserPermissionByID(Guid permissionId, Guid schoolId,Guid UserId)
+        {
+            return await context.userPermissions.FirstOrDefaultAsync(p=> p.UserId == UserId && p.SchoolId == schoolId && p.UserId == UserId);
+        }
+
         public async Task<IEnumerable<Permission>> GetUserPermissions(Guid UserId)
         {
             var query = from rp in context.RolePermissions
@@ -96,7 +101,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
                          };
 
 
-            var combinedQuery = query1.Union(query2);
+            var combinedQuery = query1.Union(query2).Distinct();
 
             var result = await combinedQuery.Select(s => new UserPermissionResultDTO
             {

@@ -13,5 +13,6 @@ namespace Mdaresna.Repository.IServices.IdentityManagement.Query
     {
         Task<IEnumerable<Permission>> GetUserPermissions(Guid UserId);
         Task<IEnumerable<UserPermissionResultDTO>> GetUserPermissionsView(Guid userId);
+        Task<UserPermission?> GetUserPermissionByID(Guid permissionId, Guid schoolId, Guid UserId);
     }
 }

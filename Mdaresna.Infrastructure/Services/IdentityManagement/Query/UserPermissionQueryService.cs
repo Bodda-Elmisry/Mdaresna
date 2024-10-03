@@ -24,6 +24,11 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Query
             this.userPermissionQueryRepository = userPermissionQueryRepository;
         }
 
+        public async Task<UserPermission?> GetUserPermissionByID(Guid permissionId, Guid schoolId, Guid UserId)
+        {
+            return await userPermissionQueryRepository.GetUserPermissionByID(permissionId, schoolId, UserId);
+        }
+
         public async Task<IEnumerable<Permission>> GetUserPermissions(Guid UserId)
         {
             return await userPermissionQueryRepository.GetUserPermissions(UserId);

@@ -43,7 +43,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                             SupervisorId = a.SupervisorId,
                             SupervisorName = (a != null && a.Supervisor != null) ? $"{a.Supervisor.FirstName} {a.Supervisor.MiddelName} {a.Supervisor.LastName}" : string.Empty,
                             StudentId = a.StudentId,
-                            StudentName = (a != null && a.Student != null) ? $"{a.Student.FirstName} {a.Student.MiddelName} {a.Student.LastName}" : string.Empty
+                            StudentName = (a != null && a.Student != null) ? $"{a.Student.FirstName} {a.Student.MiddelName} {a.Student.LastName}" : string.Empty,
+                            IsAttend = a.IsAttend
                         });
 
             if (studentId != null)

@@ -32,8 +32,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "School Manager",
                     Description = "This Role with fuly access to all school featuers",
                     Active = true,
-                    AdminRole = true,
-                    SchoolRole = false
+                    AdminRole = false,
+                    SchoolRole = true
 
                 });
 
@@ -44,8 +44,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name = "School Teacher",
                     Description = "",
                     Active = true,
-                    AdminRole = true,
-                    SchoolRole = false
+                    AdminRole = false,
+                    SchoolRole = true
 
                 });
 

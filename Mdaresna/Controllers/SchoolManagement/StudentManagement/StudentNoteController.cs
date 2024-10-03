@@ -25,7 +25,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         {
             try
             {
-                var nots = studentNoteQueryService.GetStudentNotesListAsync(dTO.StudentId,
+                var nots = await studentNoteQueryService.GetStudentNotesListAsync(dTO.StudentId,
                                                                             dTO.ClassRoomId,
                                                                             dTO.SupervisorId,
                                                                             dTO.CourseId,

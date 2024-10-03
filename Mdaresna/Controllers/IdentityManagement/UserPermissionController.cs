@@ -69,12 +69,7 @@ namespace Mdaresna.Controllers.IdentityManagement
 
                 foreach(var up in dto.UserPermissions)
                 {
-                    var userPermission = new UserPermission
-                    {
-                        UserId = up.UserId,
-                        PermissionId = up.PermissionId,
-                        SchoolId = up.SchoolId
-                    };
+                    var userPermission = await userPermissionQueryService.GetUserPermissionByID(up.PermissionId, up.SchoolId, up.UserId);
 
                     removed = await userPermissionCommandService.DeleteAsync(userPermission);
 
