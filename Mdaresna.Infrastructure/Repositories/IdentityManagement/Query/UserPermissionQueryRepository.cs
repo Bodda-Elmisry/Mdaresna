@@ -103,6 +103,8 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
 
             var combinedQuery = query1.Union(query2).Distinct();
 
+            var querystring = combinedQuery.ToQueryString();
+
             var result = await combinedQuery.Select(s => new UserPermissionResultDTO
             {
                 UserId = s.UserId,

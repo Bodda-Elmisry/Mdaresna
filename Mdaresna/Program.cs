@@ -5,74 +5,117 @@ using Mdaresna.Infrastructure.Data;
 using Mdaresna.Middlewares;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-builder.Services.AddCors(oprions =>
+namespace Mdaresna
 {
-    oprions.AddDefaultPolicy(policy =>
+    public class Program
     {
-        policy.WithOrigins("http://localhost:5173");
-        
-    });
-    oprions.AddPolicy("AllowOrigin", options => options.AllowAnyOrigin());
-});
+        public static void Main(string[] args)
+        {
 
-builder.Services.AddHttpContextAccessor();
+            //Serilog.Debugging.SelfLog.Enable(msg => Console.WriteLine(msg));
 
-builder.Services.AddDbContext<AppDbContext>(options => 
-        options.UseSqlServer(
-                    builder.Configuration.GetConnectionString("DefaultConnection")
-                    //sqlServerOptions =>
-                    //{
-                    //    sqlServerOptions.EnableRetryOnFailure();
-                    //}
-                ).EnableSensitiveDataLogging().LogTo(Console.WriteLine,LogLevel.Information),
-                ServiceLifetime.Scoped
-        );
+            var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<AppSettingDTO>(builder.Configuration.GetSection("AppSettings"));
+            //var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
 
-DependencyInjectionConfig.ConfigerRepositories(builder.Services);
-DependencyInjectionConfig.ConfigerServices(builder.Services);
+            // Add services to the container.
+            //Log.Logger = new LoggerConfiguration()
+            ////.ReadFrom.Configuration(builder.Configuration)
+            ////.Enrich.FromLogContext()
+            ////.WriteTo.Console()
+            ////.WriteTo.File("C:/Logs/Mdaresnalog-.txt", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true)
+            //.ReadFrom.Configuration(config)
+            //.CreateLogger();
+            //builder.Host.UseSerilog();
 
-var app = builder.Build();
+            builder.Services.AddControllers();
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
 
-// Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-//    app.UseSwagger();
-//    app.UseSwaggerUI();
-//}
+            builder.Services.AddCors(oprions =>
+            {
+                oprions.AddDefaultPolicy(policy =>
+                {
+                    policy.WithOrigins("http://localhost:5173");
 
-app.UseMiddleware<SetAppUrlMiddleware>();
+                });
+                oprions.AddPolicy("AllowOrigin", options => options.AllowAnyOrigin());
+            });
 
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(
-            Path.Combine(Directory.GetCurrentDirectory(), "Images")),
-    RequestPath = "/Images"
-});
-app.UseRouting();
+            builder.Services.AddHttpContextAccessor();
 
-app.UseSwagger();
-app.UseSwaggerUI();
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                    options.UseSqlServer(
+                                builder.Configuration.GetConnectionString("DefaultConnection")
+                            //sqlServerOptions =>
+                            //{
+                            //    sqlServerOptions.EnableRetryOnFailure();
+                            //}
+                            ).EnableSensitiveDataLogging().LogTo(Console.WriteLine, LogLevel.Information),
+                            ServiceLifetime.Scoped
+                    );
 
-app.UseCors(builder => builder.AllowAnyOrigin()
-                              .AllowAnyMethod()
-                              .AllowAnyHeader());
+            builder.Services.Configure<AppSettingDTO>(builder.Configuration.GetSection("AppSettings"));
 
-app.UseHttpsRedirection();
+            DependencyInjectionConfig.ConfigerRepositories(builder.Services);
+            DependencyInjectionConfig.ConfigerServices(builder.Services);
 
-app.UseAuthorization();
+            var app = builder.Build();
 
-app.MapControllers();
+            // Configure the HTTP request pipeline.
+            //if (app.Environment.IsDevelopment())
+            //{
+            //    app.UseSwagger();
+            //    app.UseSwaggerUI();
+            //}
 
-app.Run();
+            //app.UseSerilogRequestLogging();
+
+            app.UseMiddleware<SetAppUrlMiddleware>();
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                        Path.Combine(Directory.GetCurrentDirectory(), "Images")),
+                RequestPath = "/Images"
+            });
+            app.UseRouting();
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
+            app.UseCors(builder => builder.AllowAnyOrigin()
+                                          .AllowAnyMethod()
+                                          .AllowAnyHeader());
+
+
+            app.UseHttpsRedirection();
+
+            app.UseAuthorization();
+
+            app.MapControllers();
+
+            app.Run();
+
+            //try
+            //{
+            //    Log.Information("Application Will Run");
+
+            //    app.Run();
+            //}
+            //catch (Exception ex)
+            //{
+            //    Log.Fatal(ex, "Application terminated unexpectedly.");
+            //}
+            //finally
+            //{
+            //    Log.Information("Application Finally");
+            //    Log.CloseAndFlush();
+            //}
+        }
+
+    }
+}

@@ -35,6 +35,9 @@ namespace Mdaresna.Infrastructure.Repositories.Common
                 case 5:
                     result = await UploadSchoolContactTypeIcon(UserId, filePath);
                     break;
+                case 6:
+                    result = await UploadClassrommWCS(UserId, filePath);
+                    break;
 
             }
 
@@ -88,6 +91,19 @@ namespace Mdaresna.Infrastructure.Repositories.Common
                 return false;
 
             school.IconUrl = filePath;
+
+            await context.SaveChangesAsync();
+            return true;
+        }
+
+        private async Task<bool> UploadClassrommWCS(Guid TypeId, string filePath)
+        {
+            var school = await context.ClassRooms.FirstOrDefaultAsync(s => s.Id == TypeId);
+
+            if (school == null)
+                return false;
+
+            school.WCSUrl = filePath;
 
             await context.SaveChangesAsync();
             return true;

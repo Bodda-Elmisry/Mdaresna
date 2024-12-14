@@ -21,7 +21,7 @@ namespace Mdaresna.Controllers.Common
         }
 
         [HttpPost("UploadImage")]
-        public async Task<IActionResult> UploadImage([FromBody] UploadImageDTO uploadImageDTO)
+        public async Task<IActionResult> UploadImage(UploadImageDTO uploadImageDTO)
         {
             try
             {
@@ -62,7 +62,7 @@ namespace Mdaresna.Controllers.Common
                                                                  Path.Combine(directoryPathWithoutLocal,fileName),
                                                                  uploadImageDTO.Type);
                 if (uploader)
-                    return Ok("File Uploade Correct");
+                    return Ok(Path.Combine(directoryPathWithoutLocal, fileName));
                 return BadRequest("Error in uploade image");
             }
             catch (Exception ex)
@@ -79,6 +79,7 @@ namespace Mdaresna.Controllers.Common
             2- User Image
             3- School Profile Image
             5- School Conatact Type Icone
+            6- Classroom WCS
              */
 
             var directoryPath = string.Empty;
@@ -101,6 +102,12 @@ namespace Mdaresna.Controllers.Common
                 case 5:
                     directoryPath = Path.Combine(_appSettings.ImagesPath,
                                         "SchoolContactTypes",
+                                        uploadImageDTO.UserId.ToString()
+                                        );
+                    break;
+                case 6:
+                    directoryPath = Path.Combine(_appSettings.ImagesPath,
+                                        "ClassroomsWCS",
                                         uploadImageDTO.UserId.ToString()
                                         );
                     break;
