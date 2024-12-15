@@ -49,7 +49,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                 Name = y.Name,
                 Description = y.Description,
                 Completed = y.Compleated,
-                SchoolId = y.SchoolId
+                SchoolId = y.SchoolId,
+                Active = y.IsActive
             }).ToListAsync();
 
             return years;
