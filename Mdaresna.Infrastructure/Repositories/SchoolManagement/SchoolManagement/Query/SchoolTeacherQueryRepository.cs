@@ -81,7 +81,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             //                       ImageUrl = st.Teacher.ImageUrl,
             //                       CoursesCount = stc == null ? 0 : stc.TeacherCoursesCount == null ? 0 : stc.TeacherCoursesCount
             //                   };
-            var teacherQuery = from st in context.schoolTeachers
+            var teacherQuery = from st in context.schoolTeachers.Where(s=> s.SchoolId == schoolId)
                                join stcGroup in (
                                    from stc in context.schoolTeacherCourses
                                    group stc by new { stc.SchoolId, stc.TeacherId } into g
@@ -112,9 +112,9 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                                    CoursesCount = stc.TeacherCoursesCount == null ? 0 : stc.TeacherCoursesCount
                                };
 
-            
 
-            //var query = teacherQuery.ToQueryString();
+
+            var query = teacherQuery.ToQueryString();
             var teachers = await teacherQuery.ToListAsync();
             return teachers;
                 
