@@ -66,6 +66,22 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
             }
         }
 
+        [HttpPost("GetClassRoomIeacherCoursesList")]
+        public async Task<IActionResult> GetClassRoomIeacherCoursesList([FromBody] ClassroomIdT6eacherIdDTO dto)
+        {
+            try
+            {
+                var rows = await classRoomTeacherCourseQueryService.GetClassRoomIeacherCoursesAsync(dto.TeacherId, dto.ClassRoomId);
+
+
+                return Ok(rows);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("CreateClassRoomTeacherCourse")]
         public async Task<IActionResult> CreateClassRoomTeacherCourse([FromBody] CreateClassRoomTeacherCourseDTO dto)
         {

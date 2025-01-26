@@ -67,11 +67,11 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         }
 
         [HttpPost("GetSchoolStudents")]
-        public async Task<IActionResult> GetSchoolStudents([FromBody] SchoolIdDTO schoolIdDTO)
+        public async Task<IActionResult> GetSchoolStudents([FromBody] GetSchoolStudentsDTO dTO)
         {
             try
             {
-                var result = await studentQueryService.GetStudentsBySchoolIdAsync(schoolIdDTO.SchoolId);
+                var result = await studentQueryService.GetStudentsBySchoolIdAsync(dTO.SchoolId, dTO.StudentCode, dTO.StudentName);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -147,6 +147,28 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpPost("PayStudent")]
+        public async Task<IActionResult> PayStudent([FromBody] StudentIdDTO studentIdDTO)
+        {
+            try
+            {
+                var student = await studentQueryService.GetByIdAsync(studentIdDTO.StudentId);
+
+                if (student == null)
+                    return BadRequest("Can't update student");
+
+                var payed = await studentCommandService.Pay(student);
+
+
+                return payed ? Ok("Student Payed") : BadRequest("Error in payment");
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
 

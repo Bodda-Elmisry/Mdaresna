@@ -285,7 +285,7 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             {
                 LogedinUser = user,
                 Permissions = permissions.Select(x => x.PermissionKey),
-                Schools = await schoolQueryService.GetUserAdminSchools(user.Id),
+                Schools = await schoolQueryService.GetUserSchools(user.Id),
             };
         }
 

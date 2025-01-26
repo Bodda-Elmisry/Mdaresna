@@ -22,9 +22,9 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
             this.context = context;
         }
 
-        public async Task<IEnumerable<StudentParentResultDTO>> GetParentStudentsAsync(Guid parentId, Guid? relationId)
+        public async Task<IEnumerable<ParentStudentResultDTO>> GetParentStudentsAsync(Guid parentId, Guid? relationId)
         {
-            var query = GetQuery();
+            var query = GetParentStudentsQuery();
             query = query.Where(p => p.ParentId == parentId);
 
             if (relationId != null && relationId != Guid.Empty)
@@ -83,6 +83,35 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                             RelationId = p.RelationId,
                             RelationName= p.Relation.Name
                         });
+        }
+
+        private IQueryable<ParentStudentResultDTO> GetParentStudentsQuery()
+        {
+             var result = from sp in context.StudentParents
+                                join s in context.Students on sp.StudentId equals s.Id
+                                join sc in context.Schools on s.SchoolId equals sc.Id
+                                join cr in context.ClassRooms on s.ClassRoomId equals cr.Id
+                                join sg in context.SchoolGrades on cr.GradeId equals sg.Id
+                          where s.IsPayed == true && s.Active == true
+                                select new ParentStudentResultDTO
+                                {
+                                    StudentId = s.Id,
+                                    StudentCode = s.Code,
+                                    StudentName = s.FirstName + " " + s.MiddelName + " " + s.LastName,
+                                    ImageUrl = !string.IsNullOrEmpty(s.ImageUrl) ? $"{SettingsHelper.GetAppUrl()}/{s.ImageUrl.Replace("\\", "/")}" : "",
+                                    SchoolId = sc.Id,
+                                    SchoolName = sc.Name,
+                                    CalssroomId = cr.Id,
+                                    ClassroomName = cr.Name,
+                                    GradeId = sg.Id,
+                                    GradeName = sg.Name,
+                                    ParentId = sp.ParentId,
+                                    RelationId=sp.RelationId
+                                };
+
+            var querystring = result.ToQueryString();
+
+            return result;
         }
 
 

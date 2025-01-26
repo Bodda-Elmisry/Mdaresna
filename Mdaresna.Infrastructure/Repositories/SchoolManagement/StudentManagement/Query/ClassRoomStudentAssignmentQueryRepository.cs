@@ -29,7 +29,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
             this.appSettings = appSettings.Value;
         }
 
-        public async Task<IEnumerable<ClassRoomStudentAssignmentResultDTO>> GetStudentAssignmentsListAsync(Guid StudentId,
+        public async Task<IEnumerable<ClassRoomStudentAssignmentResultDTO>> GetStudentAssignmentsListAsync(Guid? StudentId,
                                                                                                      Guid? AssignementId,
                                                                                                      decimal? ResultFrom,
                                                                                                      decimal? ResultTo,
@@ -45,7 +45,10 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                                                            .Include(s => s.Assignment.Course)
                                                            .Include(s => s.Assignment.ClassRoom)
                                                            .Include(s => s.Assignment.Supervisor)
-                                                           .Where(s => s.StudentId == StudentId);
+                                                           .AsQueryable();
+
+            if (StudentId != null)
+                query = query.Where(s => s.StudentId == StudentId);
 
             if (AssignementId != null)
                 query = query.Where(s => s.AssignmentId == AssignementId);

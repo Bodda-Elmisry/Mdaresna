@@ -34,7 +34,7 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Qu
             return await classRoomStudentAssignmentQueryRepository.GetClassRoomStudentAssignmentViewAsync(studentId, AssignmentId);
         }
 
-        public async Task<IEnumerable<ClassRoomStudentAssignmentResultDTO>> GetStudentAssignmentsListAsync(Guid StudentId, Guid? AssignementId, decimal? ResultFrom, decimal? ResultTo, bool? IsDelivered, DateTime? DeliveredDateFrom, DateTime? DeliveredDateTo, int pageNumber)
+        public async Task<IEnumerable<ClassRoomStudentAssignmentResultDTO>> GetStudentAssignmentsListAsync(Guid? StudentId, Guid? AssignementId, decimal? ResultFrom, decimal? ResultTo, bool? IsDelivered, DateTime? DeliveredDateFrom, DateTime? DeliveredDateTo, int pageNumber)
         {
             return await classRoomStudentAssignmentQueryRepository.GetStudentAssignmentsListAsync(StudentId, AssignementId, ResultFrom, ResultTo, IsDelivered, DeliveredDateFrom, DeliveredDateTo, pageNumber);
         }

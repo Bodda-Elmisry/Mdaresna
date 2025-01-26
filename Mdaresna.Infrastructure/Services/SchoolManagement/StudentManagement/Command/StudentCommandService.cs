@@ -1,6 +1,7 @@
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.Infrastructure.Helpers;
 using Mdaresna.Repository.IRepositories.Base;
+using Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.Base;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using System;
@@ -15,12 +16,15 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Co
     {
         private readonly IBaseCommandRepository<Student> commandRepository;
         private readonly IBaseSharedRepository<Student> sharedRepository;
+        private readonly IStudentCommandRepository studentCommandRepository;
 
         public StudentCommandService(IBaseCommandRepository<Student> commandRepository,
-            IBaseSharedRepository<Student> sharedRepository)
+            IBaseSharedRepository<Student> sharedRepository,
+            IStudentCommandRepository studentCommandRepository)
         {
             this.commandRepository = commandRepository;
             this.sharedRepository = sharedRepository;
+            this.studentCommandRepository = studentCommandRepository;
         }
         public bool Create(Student entity)
         {
@@ -57,6 +61,18 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Co
             {
                 entity.LastModifyDate = DateTime.Now;
                 return commandRepository.Update(entity);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<bool> Pay(Student student)
+        {
+            try
+            {
+                return await studentCommandRepository.Pay(student);
             }
             catch (Exception ex)
             {

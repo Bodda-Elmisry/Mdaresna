@@ -34,7 +34,7 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Qu
             return await classRoomStudentActivityQueryRepository.GetClassRoomStudentActivityViewAsync(studentId, ActivityId);
         }
 
-        public async Task<IEnumerable<ClassRoomStudentActivityResultDTO>> GetStudentActivitiesListAsync(Guid StudentId, Guid? ActivityId, decimal? ResultFrom, decimal? ResultTo, int pageNumber)
+        public async Task<IEnumerable<ClassRoomStudentActivityResultDTO>> GetStudentActivitiesListAsync(Guid? StudentId, Guid? ActivityId, decimal? ResultFrom, decimal? ResultTo, int pageNumber)
         {
             return await classRoomStudentActivityQueryRepository.GetStudentActivitiesListAsync(StudentId, ActivityId, ResultFrom, ResultTo, pageNumber);
         }

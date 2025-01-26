@@ -11,7 +11,7 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query
 {
     public interface IClassRoomStudentActivityQueryService : IBaseQueryService<ClassRoomStudentActivity>
     {
-        Task<IEnumerable<ClassRoomStudentActivityResultDTO>> GetStudentActivitiesListAsync(Guid StudentId,
+        Task<IEnumerable<ClassRoomStudentActivityResultDTO>> GetStudentActivitiesListAsync(Guid? StudentId,
                                                                                                      Guid? ActivityId,
                                                                                                      decimal? ResultFrom,
                                                                                                      decimal? ResultTo, int pageNumber);

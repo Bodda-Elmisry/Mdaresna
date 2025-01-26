@@ -14,6 +14,7 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.ClassRoomManagement
     {
         Task<IEnumerable<ClassRoomResultDTO>> GetBySchoolIdAsync(Guid SchoolId);
         Task<IEnumerable<ClassRoomResultDTO>> GetBySchoolIdAndSupervisorIdAsync(Guid SchoolId, Guid SupervisorId);
+        Task<IEnumerable<ClassRoomResultDTO>> GetBySchoolIdAndUserIdAsync(Guid schoolId, Guid userId);
         Task<ClassRoomResultDTO?> GetClassRoomByIdAsync(Guid roomId);
 
     }

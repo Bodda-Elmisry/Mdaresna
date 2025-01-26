@@ -11,7 +11,7 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.Q
 {
     public interface IStudentNoteQueryRepository : IBaseQueryRepository<StudentNote>
     {
-        Task<IEnumerable<StudentNoteResultDTO>> GetStudentNotesListAsync(Guid StudentId, Guid? ClassRoomId, Guid? SupervisorId, Guid? CourseId, DateTime? DateFrom, DateTime? DateTo, string? Notes, int pageNumber);
+        Task<IEnumerable<StudentNoteResultDTO>> GetStudentNotesListAsync(Guid? StudentId, Guid? ClassRoomId, Guid? SupervisorId, Guid? CourseId, DateTime? DateFrom, DateTime? DateTo, string? Notes, int pageNumber);
 
         Task<StudentNoteResultDTO?> GetStudentNoteViewById(Guid StudentId);
     }

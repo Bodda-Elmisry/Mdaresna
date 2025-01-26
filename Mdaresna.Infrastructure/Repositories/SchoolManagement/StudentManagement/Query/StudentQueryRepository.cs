@@ -26,9 +26,22 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
             this.context = context;
         }
 
-        public async Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAsync(Guid schoolId)
+        public async Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAsync(Guid schoolId, string studentCode, string studentName)
         {
-            return await context.Students.Where(s=> s.SchoolId == schoolId).Select(s => new StudentResultDTO
+            var query = context.Students.Where(s => s.SchoolId == schoolId);
+
+            if (!string.IsNullOrEmpty(studentCode))
+            {
+                query = query.Where(q => q.Code.Contains(studentCode));
+            }
+
+            if (!string.IsNullOrEmpty(studentName))
+            {
+                query = query.Where(q => (q.FirstName + " " + q.MiddelName + " " + q.LastName).Contains(studentName));
+            }
+
+
+            var result = query.Select(s => new StudentResultDTO
             {
                 Id = s.Id,
                 Active = s.Active,
@@ -43,9 +56,11 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                 SchoolName = s.School.Name,
                 ImageUrl = !string.IsNullOrEmpty(s.ImageUrl) ? $"{SettingsHelper.GetAppUrl()}/{s.ImageUrl.Replace("\\", "/")}" : string.Empty,
                 IsPayed = s.IsPayed
-            })
-                .OrderByDescending(s => s.BirthDate)
+            }).OrderByDescending(s => s.BirthDate)
                 .ToListAsync();
+
+
+            return await result;
         }
 
         public async Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAndClassRoomIdAsync(Guid schoolId, Guid classroomId)

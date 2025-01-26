@@ -32,6 +32,43 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             return await GetSchoolQuery().Where(s => s.SchoolAdminId == userId).OrderBy(s => s.SchoolTypeId).OrderBy(s => s.Name).ToListAsync();
         }
 
+        public async Task<IEnumerable<SchoolResultDTO>> GetUserSchools(Guid userId)
+        {
+
+
+            var query = context.Schools
+                        .Include(s => s.SchoolType)
+                        .Include(s => s.SchoolAdmin)
+                        .Include(s => s.CoinType)
+                        .Join(context.schoolTeachers,
+                              s => s.Id,
+                              st => st.SchoolId,
+                              (s, st) => new { School = s, SchoolTeacher = st })
+                        .Where(x => x.School.SchoolAdminId == userId || x.SchoolTeacher.TeacherId == userId)
+                        .Select(x => new SchoolResultDTO
+                        {
+                            Id = x.School.Id,
+                            Name = x.School.Name,
+                            About = x.School.About,
+                            Vesion = x.School.Vesion,
+                            Active = x.School.Active,
+                            ImageUrl = !string.IsNullOrEmpty(x.School.ImageUrl)
+                                ? $"{SettingsHelper.GetAppUrl()}/{x.School.ImageUrl.Replace("\\", "/")}"
+                                : string.Empty,
+                            SchoolTypeId = x.School.SchoolTypeId,
+                            SchoolTypeName = x.School.SchoolType.Name,
+                            CoinTypeId = x.School.CoinTypeId,
+                            CoinTypeName = x.School.CoinType.Name,
+                            AvailableCoins = x.School.AvailableCoins,
+                            SchoolAdminId = x.School.SchoolAdminId,
+                            SchoolAdminName = $"{x.School.SchoolAdmin.FirstName} {x.School.SchoolAdmin.LastName}"
+                        })
+                        .Distinct();
+
+
+            return await query.OrderBy(s => s.SchoolTypeId).OrderBy(s => s.Name).ToListAsync();
+        }
+
         public async Task<SchoolResultDTO?> GetSchoolById(Guid schoolId)
         {
             return await GetSchoolQuery().FirstOrDefaultAsync(s => s.Id == schoolId);
@@ -80,10 +117,13 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                            CoinTypeName = s.CoinType.Name,
                            AvailableCoins = s.AvailableCoins,
                            SchoolAdminId = s.SchoolAdminId,
-                           SchoolAdminName = s.SchoolType.Name
+                           SchoolAdminName = $"{s.SchoolAdmin.FirstName} {s.SchoolAdmin.LastName}"
                        });
 
             return query;
         }
+
+
+
     }
 }

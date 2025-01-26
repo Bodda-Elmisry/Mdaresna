@@ -8,7 +8,7 @@
         public Guid? CourseId { get; set; }
         public Guid? SupervisorId { get; set; }
         public Guid? ClassRoomId { get; set; }
-        public Guid StudentId { get; set; }
+        public Guid? StudentId { get; set; }
         public int pageNumber { get; set; }
 
 

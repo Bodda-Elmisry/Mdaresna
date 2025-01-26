@@ -26,10 +26,13 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
             this.appSettings = appSettings.Value;
         }
 
-        public async Task<IEnumerable<StudentNoteResultDTO>> GetStudentNotesListAsync(Guid StudentId, Guid? ClassRoomId, Guid? SupervisorId, Guid? CourseId, DateTime? DateFrom, DateTime? DateTo, string? Notes, int pageNumber)
+        public async Task<IEnumerable<StudentNoteResultDTO>> GetStudentNotesListAsync(Guid? StudentId, Guid? ClassRoomId, Guid? SupervisorId, Guid? CourseId, DateTime? DateFrom, DateTime? DateTo, string? Notes, int pageNumber)
         {
             int pagesize = appSettings.PageSize != null ? appSettings.PageSize.Value : 30;
-            var query = context.studentNotes.Where(n => n.StudentId == StudentId);
+            var query = context.studentNotes.AsQueryable();
+
+            if(StudentId != null )
+                query = query.Where(n => n.StudentId == StudentId);
 
             if (ClassRoomId != null)
                 query = query.Where(n=> n.ClassRoomId == ClassRoomId.Value);

@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Comma
 {
     public interface IStudentCommandService : IBaseCommandService<Student>
     {
+        Task<bool> Pay(Student student);
     }
 }

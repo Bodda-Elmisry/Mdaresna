@@ -1,5 +1,7 @@
 using Mdaresna.Doamin.DTOs.ClassRoomManagement;
+using Mdaresna.Doamin.Models.AdminManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
+using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
 using Mdaresna.Repository.IRepositories.SchoolManagement.ClassRoomManagement.Query;
@@ -8,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -70,6 +73,42 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                                 Gender = c.Gender
 
                             }).ToListAsync();
+        }
+
+        public async Task<IEnumerable<ClassRoomResultDTO>> GetBySchoolIdAndUserIdAsync(Guid schoolId, Guid userId)
+        {
+            var query = (from cr in context.ClassRooms
+                         join s in context.Schools on cr.SchoolId equals s.Id
+                         join su in context.Users on cr.SupervisorId equals su.Id
+                         join l in context.Languages on cr.LanguageId equals l.Id
+                         join g in context.SchoolGrades on cr.GradeId equals g.Id
+                         join crtc in context.ClassRoomTeacherCourses
+                             on cr.Id equals crtc.ClassRoomId into classroomTeacherCourses
+                         from crtc in classroomTeacherCourses.DefaultIfEmpty()
+                         where (s.SchoolAdminId == userId || cr.SupervisorId == userId || crtc.TeacherId == userId)
+                               && s.Id == schoolId
+                         orderby cr.Name
+                         select new ClassRoomResultDTO
+                         {
+                             Id = cr.Id,
+                             Name = cr.Name,
+                             maxOfStudents = cr.maxOfStudents,
+                             SupervisorId = cr.SupervisorId,
+                             SupervisorName = $"{su.FirstName} {su.LastName}",
+                             Active = cr.Active,
+                             WCSUrl = cr.WCSUrl,
+                             SchoolId = cr.SchoolId,
+                             SchoolName = s.Name,
+                             LanguageId = cr.LanguageId,
+                             LanguageName = l.Name,
+                             GradeId = cr.GradeId,
+                             Gradename = g.Name,
+                             Gender = cr.Gender
+
+                         })
+                         .Distinct();
+
+            return await query.ToListAsync();
         }
 
 

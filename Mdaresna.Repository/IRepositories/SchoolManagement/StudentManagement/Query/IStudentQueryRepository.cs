@@ -11,7 +11,7 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.Q
 {
     public interface IStudentQueryRepository : IBaseQueryRepository<Student>
     {
-        Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAsync(Guid schoolId);
+        Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAsync(Guid schoolId, string studentCode, string studentName);
         Task<StudentResultDTO?> GetStudentByIdAsync(Guid studentId);
         Task<StudentResultDTO?> GetStudentByCodeAsync(string code);
         Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAndClassRoomIdAsync(Guid schoolId, Guid classroomId);

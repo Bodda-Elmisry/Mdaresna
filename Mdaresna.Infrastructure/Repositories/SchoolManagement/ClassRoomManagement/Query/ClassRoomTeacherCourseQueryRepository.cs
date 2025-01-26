@@ -93,6 +93,23 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
             };
         }
 
+        public async Task<IEnumerable<ClassRoomTeacherCourseResultDTO>?> GetClassRoomIeacherCoursesAsync(Guid teacherId, Guid roomId)
+        {
+            var rows = await context.ClassRoomTeacherCourses
+                            .Include(c => c.Teacher).Include(c => c.ClassRoom).Include(c => c.Course)
+                            .Where(c => c.TeacherId == teacherId && c.ClassRoomId == roomId)
+                            .Select(c => new ClassRoomTeacherCourseResultDTO
+                            {
+                                TeacherId = c.TeacherId,
+                                TeacherName = $"{c.Teacher.FirstName} {c.Teacher.MiddelName} {c.Teacher.LastName}",
+                                ClassRoomId = c.ClassRoomId,
+                                ClassRoomName = c.ClassRoom.Name,
+                                CourseId = c.CourseId,
+                                CourseName = c.Course.Name
+                            }).ToListAsync();
+            return rows;
+        }
+
         public async Task<ClassRoomTeacherCourse?> GetByIdAsync(Guid teacherId, Guid roomId, Guid courseId)
         {
             return await context.ClassRoomTeacherCourses.FirstOrDefaultAsync(c => c.TeacherId == teacherId &&

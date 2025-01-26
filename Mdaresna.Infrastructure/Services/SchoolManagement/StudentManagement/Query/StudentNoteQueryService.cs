@@ -24,7 +24,7 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Qu
             this.studentNoteQueryRepository = studentNoteQueryRepository;
         }
 
-        public async Task<IEnumerable<StudentNoteResultDTO>> GetStudentNotesListAsync(Guid StudentId, Guid? ClassRoomId, Guid? SupervisorId, Guid? CourseId, DateTime? DateFrom, DateTime? DateTo, string? Notes, int pageNumber)
+        public async Task<IEnumerable<StudentNoteResultDTO>> GetStudentNotesListAsync(Guid? StudentId, Guid? ClassRoomId, Guid? SupervisorId, Guid? CourseId, DateTime? DateFrom, DateTime? DateTo, string? Notes, int pageNumber)
         {
             return await studentNoteQueryRepository.GetStudentNotesListAsync(StudentId, ClassRoomId, SupervisorId, CourseId, DateFrom, DateTo, Notes, pageNumber);
         }

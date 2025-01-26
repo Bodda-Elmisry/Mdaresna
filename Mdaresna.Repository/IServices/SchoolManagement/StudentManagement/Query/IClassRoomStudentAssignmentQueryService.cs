@@ -11,7 +11,7 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query
 {
     public interface IClassRoomStudentAssignmentQueryService : IBaseQueryService<ClassRoomStudentAssignment>
     {
-        Task<IEnumerable<ClassRoomStudentAssignmentResultDTO>> GetStudentAssignmentsListAsync(Guid StudentId,
+        Task<IEnumerable<ClassRoomStudentAssignmentResultDTO>> GetStudentAssignmentsListAsync(Guid? StudentId,
                                                                                                      Guid? AssignementId,
                                                                                                      decimal? ResultFrom,
                                                                                                      decimal? ResultTo,

@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.C
 {
     public interface IStudentCommandRepository : IBaseCommandRepository<Student>
     {
+        Task<bool> Pay(Student student);
     }
 }

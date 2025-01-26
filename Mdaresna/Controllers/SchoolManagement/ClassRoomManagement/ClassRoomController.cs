@@ -82,6 +82,21 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
             }
         }
 
+        [HttpPost("GetUserClasses")]
+        public async Task<IActionResult> GetUserClasses([FromBody] GetSupervisorClassesDTO supervisorClassesDTO)
+        {
+            try
+            {
+                var result = await classRoomQueryService.GetBySchoolIdAndUserIdAsync(supervisorClassesDTO.SchoolId,
+                                                                                     supervisorClassesDTO.SupervisorId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("DeactivateClass")]
         public async Task<IActionResult> DeactivateClassRoom([FromBody] ClassRoomIdDTO RoomIddto)
         {

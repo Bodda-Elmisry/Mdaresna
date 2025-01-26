@@ -24,7 +24,7 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Qu
             this.studentParentQueryRepository = studentParentQueryRepository;
         }
 
-        public async Task<IEnumerable<StudentParentResultDTO>> GetParentStudentsAsync(Guid parentId, Guid? relationId)
+        public async Task<IEnumerable<ParentStudentResultDTO>> GetParentStudentsAsync(Guid parentId, Guid? relationId)
         {
             return await studentParentQueryRepository.GetParentStudentsAsync(parentId, relationId);
         }

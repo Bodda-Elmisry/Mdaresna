@@ -11,7 +11,7 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.Q
 {
     public interface IClassRoomStudentAssignmentQueryRepository : IBaseQueryRepository<ClassRoomStudentAssignment>
     {
-        Task<IEnumerable<ClassRoomStudentAssignmentResultDTO>> GetStudentAssignmentsListAsync(Guid StudentId,
+        Task<IEnumerable<ClassRoomStudentAssignmentResultDTO>> GetStudentAssignmentsListAsync(Guid? StudentId,
                                                                                                      Guid? AssignementId,
                                                                                                      decimal? ResultFrom,
                                                                                                      decimal? ResultTo,

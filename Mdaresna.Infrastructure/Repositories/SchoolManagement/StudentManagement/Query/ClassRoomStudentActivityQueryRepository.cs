@@ -26,7 +26,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
             this.appSettings = appSettings.Value;
         }
 
-        public async Task<IEnumerable<ClassRoomStudentActivityResultDTO>> GetStudentActivitiesListAsync(Guid StudentId,
+        public async Task<IEnumerable<ClassRoomStudentActivityResultDTO>> GetStudentActivitiesListAsync(Guid? StudentId,
                                                                                                      Guid? ActivityId,
                                                                                                      decimal? ResultFrom,
                                                                                                      decimal? ResultTo, 
@@ -38,7 +38,10 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                                                            .Include(s => s.Activity.Course)
                                                            .Include(s => s.Activity.ClassRoom)
                                                            .Include(s => s.Activity.Supervisor)
-                                                           .Where(s => s.StudentId == StudentId);
+                                                           .AsQueryable();
+
+            if (StudentId != null)
+                query = query.Where(s => s.StudentId == StudentId);
 
             if (ActivityId != null)
                 query = query.Where(s => s.ActivityId == ActivityId);

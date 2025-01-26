@@ -178,6 +178,20 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             }
         }
 
+        [HttpPost("GetUserSchools")]
+        public async Task<IActionResult> GetUserSchools([FromBody] UserIdDTO userIdDTO)
+        {
+            try
+            {
+                var schools = await schoolQueryService.GetUserSchools(userIdDTO.UserId);
+                return Ok(schools);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
     }
 }
