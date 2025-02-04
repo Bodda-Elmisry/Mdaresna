@@ -1,6 +1,9 @@
-﻿using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
+﻿using Mdaresna.Doamin.DTOs.StudentManagement;
+using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.StudentManagementDTO;
+using Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Command;
+using Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Microsoft.AspNetCore.Mvc;
@@ -13,12 +16,18 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
     {
         private readonly IStudentCommandService studentCommandService;
         private readonly IStudentQueryService studentQueryService;
+        private readonly ISchoolCommandRepository schoolCommandRepository;
+        private readonly ISchoolQueryRepository schoolQueryRepository;
 
         public StudentController(IStudentCommandService studentCommandService,
-                                 IStudentQueryService studentQueryService)
+                                 IStudentQueryService studentQueryService,
+                                 ISchoolCommandRepository schoolCommandRepository,
+                                 ISchoolQueryRepository schoolQueryRepository)
         {
             this.studentCommandService = studentCommandService;
             this.studentQueryService = studentQueryService;
+            this.schoolCommandRepository = schoolCommandRepository;
+            this.schoolQueryRepository = schoolQueryRepository;
         }
 
         [HttpPost("GetStudent")]
@@ -103,7 +112,23 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 var added = studentCommandService.Create(student);
 
                 if (added)
-                    return Ok(student);
+                {
+                    var schoolAvailableCoins = 0;
+                    if (studentDTO.IsPayed)
+                    {
+                        var school = await schoolQueryRepository.GetByIdAsync(studentDTO.SchoolId);
+                        school.AvailableCoins--;
+                        schoolCommandRepository.Update(school);
+                        schoolAvailableCoins = school.AvailableCoins;
+                    }
+                    CreateStudentResultDTO resultDTO = new CreateStudentResultDTO
+                    {
+                        Student = student,
+                        AvailableCoins = schoolAvailableCoins
+                    };
+                    return Ok(resultDTO);
+
+                }
 
                 return BadRequest("Error in adding student");
             }
@@ -162,7 +187,8 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 var payed = await studentCommandService.Pay(student);
 
 
-                return payed ? Ok("Student Payed") : BadRequest("Error in payment");
+
+                return payed.Payed ? Ok(payed.AvaialableCoins) : BadRequest("Error in payment");
             }
             catch(Exception ex)
             {

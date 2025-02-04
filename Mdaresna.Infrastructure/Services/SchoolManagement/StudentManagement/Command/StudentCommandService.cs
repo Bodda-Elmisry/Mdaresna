@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.StudentManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.Infrastructure.Helpers;
 using Mdaresna.Repository.IRepositories.Base;
@@ -68,7 +69,7 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Co
             }
         }
 
-        public async Task<bool> Pay(Student student)
+        public async Task<StudentPayResultDTO> Pay(Student student)
         {
             try
             {

@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.StudentManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
@@ -21,7 +22,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
         }
 
 
-        public async Task<bool> Pay(Student student)
+        public async Task<StudentPayResultDTO> Pay(Student student)
         {
             try
             {
@@ -36,7 +37,13 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                 }
                 await context.SaveChangesAsync();
 
-                return true;
+                StudentPayResultDTO result = new StudentPayResultDTO
+                {
+                    Payed = true,
+                    AvaialableCoins = school.AvailableCoins,
+                };
+
+                return result;
             }
             catch (Exception ex)
             {

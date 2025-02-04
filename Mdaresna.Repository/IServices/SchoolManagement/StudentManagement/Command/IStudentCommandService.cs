@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.StudentManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.Repository.IServices.Base;
 using System;
@@ -10,6 +11,6 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Comma
 {
     public interface IStudentCommandService : IBaseCommandService<Student>
     {
-        Task<bool> Pay(Student student);
+        Task<StudentPayResultDTO> Pay(Student student);
     }
 }
