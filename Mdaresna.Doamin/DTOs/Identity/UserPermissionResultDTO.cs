@@ -18,5 +18,6 @@ namespace Mdaresna.Doamin.DTOs.Identity
         public string PermissionName { get; set; }
         public Guid? RoleId { get; set; }
         public string RoleName { get; set; }
+        public IEnumerable<Guid> Classrooms { get; set; }
     }
 }

@@ -13,7 +13,7 @@ namespace Mdaresna.Doamin.DTOs.Identity
     public class LoginResultDTO
     {
         public User LogedinUser { get; set; }
-        public IEnumerable<string> Permissions { get; set; }
+        public IEnumerable<PermissionClasseroomsResultDTO> Permissions { get; set; }
         public IEnumerable<SchoolResultDTO> Schools { get; set; }
     }
 }

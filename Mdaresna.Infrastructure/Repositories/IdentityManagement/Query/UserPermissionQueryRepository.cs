@@ -1,5 +1,6 @@
 using Mdaresna.Doamin.DTOs.Identity;
 using Mdaresna.Doamin.Models.Identity;
+using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
 using Mdaresna.Repository.IRepositories.IdentityManagement.Query;
@@ -105,6 +106,8 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
 
             var querystring = combinedQuery.ToQueryString();
 
+            
+
             var result = await combinedQuery.Select(s => new UserPermissionResultDTO
             {
                 UserId = s.UserId,
@@ -118,6 +121,34 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
                 PermissionKey = s.Key,
                 PermissionName = s.Name
             }).ToListAsync();
+
+
+            var userIds = result.Select(r=> r.UserId).ToList();
+
+            var permissionIds = result.Select(r=> r.PermissionId).ToList();
+
+            //var userPermissionsClassrooms = context.userPermissionSchoolClassRooms
+            //                                .Include(u=> u.ClassRoom)
+            //                                .se
+            //                                .Where(u=> userIds.Contains(u.UserId) && permissionIds.Contains(u.PermissionId)).ToList();
+
+            var userPermissionsClassroomsQuery = from upc in context.userPermissionSchoolClassRooms
+                                            join c in context.ClassRooms on upc.ClassRoomId equals c.Id
+                                            where permissionIds.Contains(upc.PermissionId)
+                                                  && userIds.Contains(upc.UserId)
+                                            select new
+                                            {
+                                                ClassroomName = c.Name,
+                                                ClassroomId = upc.ClassRoomId,
+                                                UserId = upc.UserId,
+                                                PermissionId = upc.PermissionId
+                                            };
+            var userPermissionsClassrooms = userPermissionsClassroomsQuery.ToList();
+
+            foreach(var r in result)
+            {
+                r.Classrooms = userPermissionsClassrooms.Where(c=> c.PermissionId == r.PermissionId &&  c.UserId == r.UserId).Select(c=> c.ClassroomId).ToList();
+            }
 
             return result;
 

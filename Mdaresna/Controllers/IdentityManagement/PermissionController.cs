@@ -1,4 +1,6 @@
-﻿using Mdaresna.DTOs.IdentityDTO;
+﻿using Mdaresna.DTOs.Common;
+using Mdaresna.DTOs.IdentityDTO;
+using Mdaresna.Repository.IServices.IdentityManagement.Command;
 using Mdaresna.Repository.IServices.IdentityManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 using System.Security;
@@ -9,10 +11,13 @@ namespace Mdaresna.Controllers.IdentityManagement
     public class PermissionController : Controller
     {
         private readonly IPermissionQueryService permissionQueryService;
+        private readonly IPermissionCommandService permissionCommandService;
 
-        public PermissionController(IPermissionQueryService permissionQueryService)
+        public PermissionController(IPermissionQueryService permissionQueryService,
+                                    IPermissionCommandService permissionCommandService)
         {
             this.permissionQueryService = permissionQueryService;
+            this.permissionCommandService = permissionCommandService;
         }
 
         [HttpPost("GetPermissions")]
@@ -25,6 +30,26 @@ namespace Mdaresna.Controllers.IdentityManagement
                                                                                  dTO.PermissionName);
 
                 return Ok(permissions);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("TogglePermissionsMappingToClassroom")]
+        public async Task<IActionResult> TogglePermissionsMappingToClassroom([FromBody] PermissionIdDTO dTO)
+        {
+            try
+            {
+                var permission = await permissionQueryService.GetByIdAsync(dTO.PermissionId);
+
+                permission.AllowedToMapToClassroom = !permission.AllowedToMapToClassroom;
+
+                var updated = permissionCommandService.Update(permission);
+
+
+                return updated ? Ok("Toggle Completed") : BadRequest("Error in toggle");
             }
             catch (Exception ex)
             {

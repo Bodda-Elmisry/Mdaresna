@@ -284,7 +284,11 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             return new LoginResultDTO
             {
                 LogedinUser = user,
-                Permissions = permissions.Select(x => x.PermissionKey),
+                Permissions = permissions.Select(x => new PermissionClasseroomsResultDTO
+                {
+                    PermissionKey = x.PermissionKey,
+                    Classrooms = x.Classrooms
+                }),
                 Schools = await schoolQueryService.GetUserSchools(user.Id),
             };
         }

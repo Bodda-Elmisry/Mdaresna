@@ -15,5 +15,6 @@ namespace Mdaresna.Doamin.Models.Identity
         public string? Description { get; set; }
         public bool SchoolPermission { get; set; }
         public bool AppPermission { get; set; }
+        public bool AllowedToMapToClassroom { get; set; }
     }
 }
