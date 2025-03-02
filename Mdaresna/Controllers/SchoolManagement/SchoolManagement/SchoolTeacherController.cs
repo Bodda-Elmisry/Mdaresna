@@ -49,7 +49,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                     var userrole = new UserRole
                     {
                         RoleId = Guid.Parse("10620C5F-37FE-4D18-996F-915ECE8893F1"),
-                        UserId = sTeacher.TeacherId
+                        UserId = sTeacher.TeacherId,
+                        SchoolId = schoolTeacher.SchoolId
                     };
                     var teacherRoleAssignd = await userRoleQueryService.CheckRoleExist(userrole);
                     if (!teacherRoleAssignd)

@@ -279,7 +279,9 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
 
         private async Task<LoginResultDTO> GetUserInfo(User user)
         {
-            var permissions = await userPermissionQueryService.GetUserPermissionsView(user.Id);
+            var userSchools = await schoolQueryService.GetUserSchools(user.Id);
+            var firstSchool = userSchools.FirstOrDefault();
+            var permissions = await userPermissionQueryService.GetUserPermissionsView(user.Id, firstSchool == null ? null : firstSchool.Id);
 
             return new LoginResultDTO
             {
@@ -289,7 +291,7 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                     PermissionKey = x.PermissionKey,
                     Classrooms = x.Classrooms
                 }),
-                Schools = await schoolQueryService.GetUserSchools(user.Id),
+                Schools = userSchools,
             };
         }
 

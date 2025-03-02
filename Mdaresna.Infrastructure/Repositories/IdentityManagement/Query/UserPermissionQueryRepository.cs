@@ -58,7 +58,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
 
 
 
-        public async Task<IEnumerable<UserPermissionResultDTO>> GetUserPermissionsView(Guid userId)
+        public async Task<IEnumerable<UserPermissionResultDTO>> GetUserPermissionsView(Guid userId, Guid? schoolID)
         {
             var query1 = from ur in context.UserRoles
                          join u in context.Users on ur.UserId equals u.Id
@@ -103,6 +103,9 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
 
 
             var combinedQuery = query1.Union(query2).Distinct();
+
+            if(schoolID != null)
+                combinedQuery = combinedQuery.Where(p=> p.SchoolId == schoolID || p.SchoolId == null);
 
             var querystring = combinedQuery.ToQueryString();
 

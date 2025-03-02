@@ -7,6 +7,7 @@
         public Guid? SchoolTypeId { get; set; }
         public Guid? CoinTypeId { get; set; }
         public Guid? SchoolAdminId { get; set; }
+        public bool? NewSchools { get; set; }
         public int PageNumber { get; set; }
 
     }

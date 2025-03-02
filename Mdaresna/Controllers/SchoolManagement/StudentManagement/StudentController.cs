@@ -146,6 +146,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             try
             {
                 var student = await studentQueryService.GetByIdAsync(studentDTO.Id);
+                var payedChanged = !student.IsPayed && studentDTO.IsPayed;
 
                 if (student == null)
                     return BadRequest("Can't update student");
@@ -164,7 +165,23 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 var updated = studentCommandService.Update(student);
 
                 if (updated)
-                    return Ok(student);
+                {
+                    var schoolAvailableCoins = 0;
+                    if (payedChanged)
+                    {
+                        var school = await schoolQueryRepository.GetByIdAsync(studentDTO.SchoolId);
+                        school.AvailableCoins--;
+                        schoolCommandRepository.Update(school);
+                        schoolAvailableCoins = school.AvailableCoins;
+                    }
+                    CreateStudentResultDTO resultDTO = new CreateStudentResultDTO
+                    {
+                        Student = student,
+                        AvailableCoins = schoolAvailableCoins
+                    };
+                    return Ok(resultDTO);
+                }
+                    
 
                 return BadRequest("Error in updating student");
             }

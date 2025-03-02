@@ -77,6 +77,30 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             }
         }
 
+        [HttpPost("ChangeSchoolCoinType")]
+        public async Task<IActionResult> ChangeSchoolCoinType([FromBody] ChangeSchoolCoinTypeDTO dto)
+        {
+            try
+            {
+                var school = await schoolQueryService.GetByIdAsync(dto.SchoolId);
+
+                if (school == null)
+                    return BadRequest("There is no school to update");
+
+                school.CoinTypeId = dto.CoinTypeId;
+
+                var updated = schoolCommandService.Update(school);
+                if (updated)
+                    return Ok(await schoolQueryService.GetSchoolById(school.Id));
+
+                return BadRequest("Error in change school coin type");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
         [HttpPost("AddCoinsToSchool")]
         public async Task<IActionResult> AddCoinsToSchool([FromBody] AddCoinsToSchoolDTO coinsdto)
         {
@@ -106,7 +130,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
-                var result = await schoolQueryService.GetSchoolsList(dTO.Name, dTO.Active, dTO.SchoolTypeId, dTO.CoinTypeId, dTO.SchoolAdminId, dTO.PageNumber);
+                var result = await schoolQueryService.GetSchoolsList(dTO.Name, dTO.Active, dTO.SchoolTypeId, dTO.CoinTypeId, dTO.SchoolAdminId, dTO.PageNumber, dTO.NewSchools);
                 return Ok(result);
             }
             catch(Exception ex)

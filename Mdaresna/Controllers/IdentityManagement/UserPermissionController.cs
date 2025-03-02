@@ -21,11 +21,11 @@ namespace Mdaresna.Controllers.IdentityManagement
         }
 
         [HttpPost("GetUserPermissions")]
-        public async Task<IActionResult> GetUserPermissions([FromBody] UserIdDTO dTO)
+        public async Task<IActionResult> GetUserPermissions([FromBody] GetUserPermissionsDTO dTO)
         {
             try
             {
-                var permissions = await userPermissionQueryService.GetUserPermissionsView(dTO.UserId);
+                var permissions = await userPermissionQueryService.GetUserPermissionsView(dTO.UserId, dTO.SchoolId);
 
                 return Ok(permissions);
             }

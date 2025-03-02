@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IServices.IdentityManagement.Command
 {
     public interface IUserPermissionSchoolClassRoomCommandService : IBaseCommandService<UserPermissionSchoolClassRoom>
     {
+        Task<bool> Create(IEnumerable<UserPermissionSchoolClassRoom> entities);
     }
 }

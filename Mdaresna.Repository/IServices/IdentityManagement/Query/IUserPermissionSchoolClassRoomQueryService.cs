@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IServices.IdentityManagement.Query
 {
     public interface IUserPermissionSchoolClassRoomQueryService : IBaseQueryService<UserPermissionSchoolClassRoom>
     {
+        Task<UserPermissionSchoolClassRoom?> GetUserPermissionSchoolClassRoomByIdAsync(Guid userId, Guid permissionId, Guid classroomId);
     }
 }

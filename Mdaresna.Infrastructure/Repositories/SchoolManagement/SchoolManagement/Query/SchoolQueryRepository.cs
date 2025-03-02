@@ -74,7 +74,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             return await GetSchoolQuery().FirstOrDefaultAsync(s => s.Id == schoolId);
         }
 
-        public async Task<IEnumerable<SchoolResultDTO>> GetSchoolsList(string? name, bool? active, Guid? schoolTypeId, Guid? coinTypeId, Guid? adminId, int pageNumber)
+        public async Task<IEnumerable<SchoolResultDTO>> GetSchoolsList(string? name, bool? active, Guid? schoolTypeId, Guid? coinTypeId, Guid? adminId, int pageNumber, bool? getNewSchools)
         {
             int pagesize = appSettings.PageSize != null ? appSettings.PageSize.Value : 30;
 
@@ -93,6 +93,9 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
             if (adminId != null)
                 query = query.Where(s => s.SchoolAdminId == adminId);
+
+            if(getNewSchools != null && getNewSchools.Value) 
+                query = query.Where(s=> s.CoinTypeId == null);
 
             return await query.OrderBy(s => s.SchoolTypeId).OrderBy(s=> s.Name)
                                    .Skip((pageNumber - 1) * pagesize)
