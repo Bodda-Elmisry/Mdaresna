@@ -33,6 +33,35 @@ namespace Mdaresna.Controllers.IdentityManagement
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("GetSchoolsAdmins")]
+        public async Task<IActionResult> GetSchoolsAdmins()
+        {
+            try
+            {
+                var userRoles = await userRoleQueryService.GetSchoolsAdminsAsync();
+                return Ok(userRoles);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("GetRoleUsers")]
+        public async Task<IActionResult> GetRoleUsers([FromBody] GetRoleUsersDTO dTO)
+        {
+            try
+            {
+                var userRoles = await userRoleQueryService.GetRoleUsersAsync(dTO.RoleId, dTO.SchoolId);
+                return Ok(userRoles);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("GetUserRole")]
         public async Task<IActionResult> GetUserRole([FromBody] UserIdRoleIdDTO dTO)
         {
@@ -46,6 +75,7 @@ namespace Mdaresna.Controllers.IdentityManagement
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpPost("AssignUerRoles")]
         public async Task<IActionResult> AssignUerRoles([FromBody] AssignAndRemoveUserRolesDTO dTO)
         {

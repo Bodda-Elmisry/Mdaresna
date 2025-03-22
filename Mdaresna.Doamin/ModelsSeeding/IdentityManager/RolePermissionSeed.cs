@@ -70,12 +70,6 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
             builder.HasData(new RolePermission
             {
                 RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
-                PermissionId = Guid.Parse("69A0778B-A7A8-4E47-B8FD-D061428DBB95")
-            });
-
-            builder.HasData(new RolePermission
-            {
-                RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
                 PermissionId = Guid.Parse("68713DF9-ED1B-449C-8060-D919A2592B02")
             });
 
@@ -110,6 +104,12 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
             {
                 RoleId = Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"),
                 PermissionId = Guid.Parse("BE86C901-37F9-4F63-B7B3-03653E75FEA5")
+            });
+
+            builder.HasData(new RolePermission
+            {
+                RoleId = Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"),
+                PermissionId = Guid.Parse("69A0778B-A7A8-4E47-B8FD-D061428DBB95")
             });
             builder.HasData(new RolePermission
             {

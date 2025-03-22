@@ -87,6 +87,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                          from crtc in classroomTeacherCourses.DefaultIfEmpty()
                          where (s.SchoolAdminId == userId || cr.SupervisorId == userId || crtc.TeacherId == userId)
                                && s.Id == schoolId
+                               && cr.Active == true
                          orderby cr.Name
                          select new ClassRoomResultDTO
                          {

@@ -491,8 +491,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Key = "ViewYearMonthes",
                     Name = "View Year Monthes",
                     Description = "View Year Monthes",
-                    SchoolPermission = false,
-                    AppPermission = true
+                    SchoolPermission = true,
+                    AppPermission = false
                 },
                 new Permission
                 {

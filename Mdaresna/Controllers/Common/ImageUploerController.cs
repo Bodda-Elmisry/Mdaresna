@@ -1,4 +1,5 @@
 ﻿using Mdaresna.Doamin.DTOs.Common;
+using Mdaresna.Doamin.Helpers;
 using Mdaresna.Doamin.Models.UserManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.Repository.IBServices.Common;
@@ -62,7 +63,7 @@ namespace Mdaresna.Controllers.Common
                                                                  Path.Combine(directoryPathWithoutLocal,fileName),
                                                                  uploadImageDTO.Type);
                 if (uploader)
-                    return Ok(Path.Combine(directoryPathWithoutLocal, fileName));
+                    return Ok(Path.Combine(SettingsHelper.GetAppUrl(), directoryPathWithoutLocal, fileName));
                 return BadRequest("Error in uploade image");
             }
             catch (Exception ex)

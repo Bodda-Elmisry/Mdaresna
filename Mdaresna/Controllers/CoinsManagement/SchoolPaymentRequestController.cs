@@ -84,7 +84,7 @@ namespace Mdaresna.Controllers.CoinsManagement
                 {
                     RequestDate = dTO.RequestDate,
                     TransfareCode = dTO.TransfareCode,
-                    TransfareDate = dTO.RequestDate,
+                    TransfareDate = dTO.TransfareDate,
                     TransfareAmount = dTO.TransfareAmount,
                     PaymentTypeId = dTO.PaymentTypeId,
                     SchoolId = dTO.SchoolId,
@@ -171,9 +171,9 @@ namespace Mdaresna.Controllers.CoinsManagement
 
                 var coinType = await coinTypeQueryService.GetByIdAsync(payment.CoinTypeId);
 
-                var paymentCoinsCount = payment.Amount / coinType.Value;
+                //var paymentCoinsCount = payment.Amount / coinType.Value;
 
-                school.AvailableCoins += Convert.ToInt32(paymentCoinsCount);
+                school.AvailableCoins += Convert.ToInt32(payment.Amount);
 
                 var schoolUpdated = schoolCommandService.Update(school);
 

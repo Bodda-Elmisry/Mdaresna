@@ -27,7 +27,10 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                                                                       string weekDay, Guid? classRoomId, Guid? supervisorId,
                                                                       Guid? courseId, decimal? rate)
         {
-            var query = context.ClassRoomExams.Where(e => months.Contains(e.MonthId));
+            var query = context.ClassRoomExams.AsQueryable();
+
+            if(months != null && months.Count() > 0)
+                query = query.Where(e => months.Contains(e.MonthId));
 
             if (fromDate != null && toDate != null)
                 query = query.Where(e => e.ExamDate >= fromDate && e.ExamDate <= toDate);
@@ -50,6 +53,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
 
             if (rate != null)
                 query = query.Where(e => e.Rate == rate);
+
+            var queryString = query.ToQueryString();
 
             var result = await query.Select(e =>
             new ClassRoomExamResultDTO

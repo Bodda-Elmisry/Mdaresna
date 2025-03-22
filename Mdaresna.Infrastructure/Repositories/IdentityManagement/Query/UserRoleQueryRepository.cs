@@ -41,6 +41,51 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
                 UserId = u.UserId,
                 UserName = u.User.UserName,
                 UserFullName = $"{u.User.FirstName} {u.User.MiddelName} {u.User.LastName}",
+                UserPhoneNumber = u.User.PhoneNumber,
+                RoleId = u.RoleId,
+                RoleName = u.Role.Name,
+                RoleDescription = u.Role.Description,
+                SchoolId = u.SchoolId,
+                SchoolName = u.School != null ? u.School.Name : null
+            }).ToListAsync();
+        }
+
+        public async Task<IEnumerable<UserRoleResultDTO>> GetRoleUsersAsync(Guid roleId, Guid? schoolId)
+        {
+            var query = context.UserRoles.Include(u => u.User)
+                                         .Include(u => u.Role)
+                                         .Include(u => u.School)
+                                         .Where(u => u.RoleId == roleId);
+            query = schoolId != null ? query.Where(u => u.SchoolId == schoolId) : query;
+
+            return await query.Select(u => new UserRoleResultDTO
+            {
+                UserId = u.UserId,
+                UserName = u.User.UserName,
+                UserFullName = $"{u.User.FirstName} {u.User.MiddelName} {u.User.LastName}",
+                UserPhoneNumber = u.User.PhoneNumber,
+                RoleId = u.RoleId,
+                RoleName = u.Role.Name,
+                RoleDescription = u.Role.Description,
+                SchoolId = u.SchoolId,
+                SchoolName = u.School != null ? u.School.Name : null
+            }).ToListAsync();
+        }
+
+        public async Task<IEnumerable<UserRoleResultDTO>> GetSchoolsAdminsAsync()
+        {
+            var query = context.UserRoles.Include(u => u.User)
+                                         .Include(u => u.Role)
+                                         .Include(u => u.School)
+                                         .Where(u => u.RoleId == Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"));
+            
+
+            return await query.Select(u => new UserRoleResultDTO
+            {
+                UserId = u.UserId,
+                UserName = u.User.UserName,
+                UserFullName = $"{u.User.FirstName} {u.User.MiddelName} {u.User.LastName}",
+                UserPhoneNumber = u.User.PhoneNumber,
                 RoleId = u.RoleId,
                 RoleName = u.Role.Name,
                 RoleDescription = u.Role.Description,
@@ -61,6 +106,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
                 UserId = userRole.UserId,
                 UserName = userRole.User.UserName,
                 UserFullName = $"{userRole.User.FirstName} {userRole.User.MiddelName} {userRole.User.LastName}",
+                UserPhoneNumber = userRole.User.PhoneNumber,
                 RoleId = userRole.RoleId,
                 RoleName = userRole.Role.Name,
                 RoleDescription = userRole.Role.Description,

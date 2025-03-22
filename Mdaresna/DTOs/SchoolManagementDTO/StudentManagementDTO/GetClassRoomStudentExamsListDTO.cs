@@ -2,7 +2,8 @@
 {
     public class GetClassRoomStudentExamsListDTO
     {
-        public Guid StudentId { get; set; }
+        public Guid? StudentId { get; set; }
+        public Guid? ExamId { get; set; }
         public decimal? TotalResultFrom { get; set; }
         public decimal? TotalResultTo { get; set; }
         public bool? IsAttend { get; set; }

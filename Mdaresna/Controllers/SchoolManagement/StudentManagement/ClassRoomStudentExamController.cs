@@ -30,6 +30,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             try
             {
                 var exams = await classRoomStudentExamQueryService.GetClassRoomStudentExamsListAsync(dto.StudentId,
+                                                                                                     dto.ExamId,
                                                                                                      dto.TotalResultFrom,
                                                                                                      dto.TotalResultTo,
                                                                                                      dto.IsAttend,

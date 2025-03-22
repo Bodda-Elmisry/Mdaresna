@@ -103,8 +103,9 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
 
 
             var combinedQuery = query1.Union(query2).Distinct();
+            var query = combinedQuery.ToQueryString();
 
-            if(schoolID != null)
+            if (schoolID != null)
                 combinedQuery = combinedQuery.Where(p=> p.SchoolId == schoolID || p.SchoolId == null);
 
             var querystring = combinedQuery.ToQueryString();

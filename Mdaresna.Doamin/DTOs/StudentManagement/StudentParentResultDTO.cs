@@ -13,6 +13,7 @@ namespace Mdaresna.Doamin.DTOs.StudentManagement
         public string StudentImage { get; set; }
         public Guid ParentId { get; set; }
         public string ParentName { get; set; }
+        public string PhoneNumber { get; set; }
         public string ParentImage { get; set; }
         public Guid RelationId { get; set; }
         public string RelationName { get; set; }

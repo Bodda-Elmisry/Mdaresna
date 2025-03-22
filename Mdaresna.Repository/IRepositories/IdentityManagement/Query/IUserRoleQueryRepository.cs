@@ -14,5 +14,7 @@ namespace Mdaresna.Repository.IRepositories.IdentityManagement.Query
         Task<bool> CheckUserRole(UserRole userRole);
         Task<UserRoleResultDTO?> GetUserRoleAsync(Guid userId, Guid roleId);
         Task<IEnumerable<UserRoleResultDTO>> GetUserRolesAsync(Guid userId, Guid? schoolId);
+        Task<IEnumerable<UserRoleResultDTO>> GetRoleUsersAsync(Guid roleId, Guid? schoolId);
+        Task<IEnumerable<UserRoleResultDTO>> GetSchoolsAdminsAsync();
     }
 }

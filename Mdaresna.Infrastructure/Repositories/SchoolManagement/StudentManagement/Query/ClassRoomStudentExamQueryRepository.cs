@@ -26,7 +26,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
             this.appSettings = appSettings.Value;
         }
 
-        public async Task<IEnumerable<ClassRoomStudentExamResultDTO>> GetClassRoomStudentExamsListAsync(Guid StudentId, decimal? TotalResultFrom, decimal? TotalResultTo, bool? IsAttend, int pageNumber)
+        public async Task<IEnumerable<ClassRoomStudentExamResultDTO>> GetClassRoomStudentExamsListAsync(Guid? StudentId, Guid? ExamId, decimal? TotalResultFrom, decimal? TotalResultTo, bool? IsAttend, int pageNumber)
         {
             int pagesize = appSettings.PageSize != null ? appSettings.PageSize.Value : 30;
             var query = context.ClassRoomStudentExams.Include(e => e.Student)
@@ -35,7 +35,13 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                                                      .Include(e => e.Exam.ClassRoom)
                                                      .Include(e => e.Exam.Course)
                                                      .Include(e => e.Exam.Supervisor)
-                                                     .Where(e => e.StudentId == StudentId);
+                                                     .AsQueryable();
+
+            if(ExamId != null)
+                query = query.Where(e => e.ExamId == ExamId);
+
+            if (StudentId != null)
+                query = query.Where(e => e.StudentId == StudentId);
 
             if (TotalResultFrom != null && TotalResultTo != null)
                 query = query.Where(s => s.TotalResult >= TotalResultFrom && s.TotalResult <= TotalResultTo);

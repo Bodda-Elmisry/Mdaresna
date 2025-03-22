@@ -14,5 +14,7 @@ namespace Mdaresna.Repository.IServices.IdentityManagement.Query
         Task<bool> CheckRoleExist(UserRole role);
         Task<UserRoleResultDTO?> GetUserRoleAsync(Guid userId, Guid roleId);
         Task<IEnumerable<UserRoleResultDTO>> GetUserRolesAsync(Guid userId, Guid? schoolId);
+        Task<IEnumerable<UserRoleResultDTO>> GetRoleUsersAsync(Guid roleId, Guid? schoolId);
+        Task<IEnumerable<UserRoleResultDTO>> GetSchoolsAdminsAsync();
     }
 }

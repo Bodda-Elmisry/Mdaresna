@@ -77,6 +77,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                             ParentId = p.ParentId,
                             ParentName = $"{p.Parent.FirstName} {p.Parent.MiddelName} {p.Parent.LastName}",
                             ParentImage = !string.IsNullOrEmpty(p.Parent.ImageUrl) ? $"{SettingsHelper.GetAppUrl()}/{p.Parent.ImageUrl.Replace("\\", "/")}" : "",
+                            PhoneNumber = p.Parent.PhoneNumber,
                             StudentId = p.StudentId,
                             StudentName = $"{p.Student.FirstName} {p.Student.MiddelName} {p.Student.LastName}",
                             StudentImage = !string.IsNullOrEmpty(p.Student.ImageUrl) ? $"{SettingsHelper.GetAppUrl()}/{p.Student.ImageUrl.Replace("\\", "/")}" : "",

@@ -259,7 +259,7 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
 
         }
 
-        public async Task<LoginResultDTO> Login(string PhoneNumber, string Password)
+        public async Task<LoginResultDTO> Login(string PhoneNumber, string Password, Guid? schoolId)
         {
             var user = await userQueryService.GetUserByPhoneNumber(PhoneNumber);
 
@@ -272,16 +272,16 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                  
             }
             var result = (user == null || user.Id == Guid.Empty) ? null 
-                            : await GetUserInfo(user);
+                            : await GetUserInfo(user, schoolId);
             
             return result;
         }
 
-        private async Task<LoginResultDTO> GetUserInfo(User user)
+        private async Task<LoginResultDTO> GetUserInfo(User user, Guid? schoolId)
         {
             var userSchools = await schoolQueryService.GetUserSchools(user.Id);
-            var firstSchool = userSchools.FirstOrDefault();
-            var permissions = await userPermissionQueryService.GetUserPermissionsView(user.Id, firstSchool == null ? null : firstSchool.Id);
+            var firstSchool = schoolId ?? (userSchools.Any() ? userSchools.FirstOrDefault().Id : null);
+            var permissions = await userPermissionQueryService.GetUserPermissionsView(user.Id, firstSchool == null ? null : firstSchool);
 
             return new LoginResultDTO
             {

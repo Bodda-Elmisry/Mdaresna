@@ -113,10 +113,11 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 
                 if (added)
                 {
-                    var schoolAvailableCoins = 0;
+                    var school = await schoolQueryRepository.GetByIdAsync(studentDTO.SchoolId);
+
+                    var schoolAvailableCoins = school.AvailableCoins;
                     if (studentDTO.IsPayed)
                     {
-                        var school = await schoolQueryRepository.GetByIdAsync(studentDTO.SchoolId);
                         school.AvailableCoins--;
                         schoolCommandRepository.Update(school);
                         schoolAvailableCoins = school.AvailableCoins;

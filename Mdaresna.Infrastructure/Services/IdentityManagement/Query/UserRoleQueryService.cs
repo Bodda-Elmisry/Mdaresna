@@ -42,5 +42,15 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Query
         {
             return await userRoleQueryRepository.GetUserRolesAsync(userId, schoolId);
         }
+
+        public async Task<IEnumerable<UserRoleResultDTO>> GetRoleUsersAsync(Guid roleId, Guid? schoolId)
+        {
+            return await userRoleQueryRepository.GetRoleUsersAsync(roleId, schoolId);
+        }
+
+        public async Task<IEnumerable<UserRoleResultDTO>> GetSchoolsAdminsAsync()
+        {
+            return await userRoleQueryRepository.GetSchoolsAdminsAsync();
+        }
     }
 }

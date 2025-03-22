@@ -136,7 +136,7 @@ namespace Mdaresna.Controllers.IdentityManagement
         {
             try
             {
-                var result = await identityService.Login(login.PhoneNumber, login.Password);
+                var result = await identityService.Login(login.PhoneNumber, login.Password, login.SchoolId);
                 return result == null ? BadRequest("Wrong phone number or password") : Ok(result);
             }
             catch(Exception ex)

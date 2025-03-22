@@ -97,6 +97,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             if(getNewSchools != null && getNewSchools.Value) 
                 query = query.Where(s=> s.CoinTypeId == null);
 
+            var queryString = query.ToQueryString();
+
             return await query.OrderBy(s => s.SchoolTypeId).OrderBy(s=> s.Name)
                                    .Skip((pageNumber - 1) * pagesize)
                                    .ToListAsync();
