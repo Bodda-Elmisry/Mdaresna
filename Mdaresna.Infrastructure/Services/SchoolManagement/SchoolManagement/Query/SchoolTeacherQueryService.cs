@@ -30,9 +30,9 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Que
             return await schoolTeacherQueryRepository.GetSchoolTeacherByIdAsync(schoolId, teacherId);
         }
 
-        public async Task<IEnumerable<TeacherResultDTO>> GetSchoolTeachersAsync(Guid schoolId)
+        public async Task<IEnumerable<TeacherResultDTO>> GetSchoolTeachersAsync(Guid schoolId, string teacherName, string teacherPhoneNumber, string teacherEmail)
         {
-            return await schoolTeacherQueryRepository.GetSchoolTeachersAsync(schoolId);
+            return await schoolTeacherQueryRepository.GetSchoolTeachersAsync(schoolId, teacherName, teacherPhoneNumber, teacherEmail);
         }
 
         public async Task<IEnumerable<TeacherSchoolResultDTO>> GetTeacherSchoolsAsync(Guid teacherId)

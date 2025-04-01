@@ -16,6 +16,7 @@ namespace Mdaresna.Doamin.DTOs.StudentManagement
         public string SchoolName { get; set; }
         public Guid CalssroomId { get; set; }
         public string ClassroomName { get; set; }
+        public string WCSUrl { get; set; }
         public Guid GradeId { get; set; }
         public string GradeName { get; set; }
         public Guid ParentId { get; set; }

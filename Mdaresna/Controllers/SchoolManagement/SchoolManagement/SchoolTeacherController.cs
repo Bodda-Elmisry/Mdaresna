@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.Identity;
+﻿using Mdaresna.Doamin.DTOs.SchoolManagement;
+using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.Repository.IServices.IdentityManagement.Command;
@@ -118,12 +119,12 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("GetSchoolTeachers")]
-        public async Task<IActionResult> GetSchoolTeachers([FromBody] SchoolIdDTO schoolIdDTO)
+        public async Task<IActionResult> GetSchoolTeachers([FromBody] GetSchoolTeachersDTO dto)
         {
             try
             {
                 
-                var teachers = await schoolTeacherQueryService.GetSchoolTeachersAsync(schoolIdDTO.SchoolId);
+                var teachers = await schoolTeacherQueryService.GetSchoolTeachersAsync(dto.SchoolId, dto.TeacherName, dto.TeacherPhoneNumber, dto.TeacherEmail);
                 return Ok(teachers);
             }
             catch (Exception ex)

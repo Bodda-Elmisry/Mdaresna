@@ -12,7 +12,7 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Qu
     public interface ISchoolTeacherQueryRepository : IBaseQueryRepository<SchoolTeacher>
     {
         Task<IEnumerable<TeacherSchoolResultDTO>> GetTeacherSchoolsAsync(Guid teacherId);
-        Task<IEnumerable<TeacherResultDTO>> GetSchoolTeachersAsync(Guid schoolId);
+        Task<IEnumerable<TeacherResultDTO>> GetSchoolTeachersAsync(Guid schoolId, string teacherName, string teacherPhoneNumber, string teacherEmail);
         Task<SchoolTeacher> GetSchoolTeacherByIdAsync(Guid schoolId, Guid teacherId);
     }
 }

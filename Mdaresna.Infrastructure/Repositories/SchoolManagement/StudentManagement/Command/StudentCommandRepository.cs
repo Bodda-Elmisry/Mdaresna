@@ -26,6 +26,9 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
         {
             try
             {
+                student.IsPayed = true;
+                student.Active = true;
+                student.LastModifyDate = DateTime.Now;
                 context.Students.Update(student);
 
                 var school = await context.Schools.FirstOrDefaultAsync(s=> s.Id == student.SchoolId);

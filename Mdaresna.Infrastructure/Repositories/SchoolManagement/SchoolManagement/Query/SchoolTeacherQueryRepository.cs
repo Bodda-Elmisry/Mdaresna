@@ -30,7 +30,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             return await context.schoolTeachers.FirstOrDefaultAsync(s=> s.SchoolId == schoolId && s.TeacherId ==  teacherId);
         }
 
-        public async Task<IEnumerable<TeacherResultDTO>> GetSchoolTeachersAsync(Guid schoolId)
+        public async Task<IEnumerable<TeacherResultDTO>> GetSchoolTeachersAsync(Guid schoolId, string teacherName, string teacherPhoneNumber, string teacherEmail)
         {
             //var teachers = await context.schoolTeachers
             //    .Where(s=> s.SchoolId == schoolId)
@@ -111,6 +111,10 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                                    ImageUrl = !string.IsNullOrEmpty(st.Teacher.ImageUrl) ? $"{SettingsHelper.GetAppUrl()}/{st.Teacher.ImageUrl.Replace("\\","/")}" : null,
                                    CoursesCount = stc.TeacherCoursesCount == null ? 0 : stc.TeacherCoursesCount
                                };
+
+            teacherQuery = !string.IsNullOrEmpty(teacherEmail) ? teacherQuery.Where(t => t.Email.Contains(teacherEmail)) : teacherQuery;
+            teacherQuery = !string.IsNullOrEmpty(teacherPhoneNumber) ? teacherQuery.Where(t => t.PhoneNumber.Contains(teacherPhoneNumber)) : teacherQuery;
+            teacherQuery = !string.IsNullOrEmpty(teacherName) ? teacherQuery.Where(t => (t.FirstName + t.MiddelName + t.LastName).Contains(teacherName.Replace(" ", ""))) : teacherQuery;
 
 
 

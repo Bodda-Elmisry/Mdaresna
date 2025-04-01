@@ -110,6 +110,28 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
             return rows;
         }
 
+        public async Task<IEnumerable<ClassRoomTeacherCourseResultDTO>?> GetTeacherClassroomsCoursesAsync(Guid teacherId, Guid schoolId, Guid? roomId, Guid? courseId)
+        {
+            var query = context.ClassRoomTeacherCourses
+                            .Include(c => c.Teacher).Include(c => c.ClassRoom).Include(c => c.Course)
+                            .Where(c => c.TeacherId == teacherId && c.ClassRoom.SchoolId == schoolId)
+                            .Select(c => new ClassRoomTeacherCourseResultDTO
+                            {
+                                TeacherId = c.TeacherId,
+                                TeacherName = $"{c.Teacher.FirstName} {c.Teacher.MiddelName} {c.Teacher.LastName}",
+                                ClassRoomId = c.ClassRoomId,
+                                ClassRoomName = c.ClassRoom.Name,
+                                CourseId = c.CourseId,
+                                CourseName = c.Course.Name
+                            });
+
+            query = (roomId != null) ? query.Where(c => c.ClassRoomId == roomId) : query;
+
+            query = (courseId != null) ? query.Where(c => c.CourseId == courseId) : query;
+
+            return await query.OrderBy(c=> c.ClassRoomId).ToListAsync();
+        }
+
         public async Task<ClassRoomTeacherCourse?> GetByIdAsync(Guid teacherId, Guid roomId, Guid courseId)
         {
             return await context.ClassRoomTeacherCourses.FirstOrDefaultAsync(c => c.TeacherId == teacherId &&

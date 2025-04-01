@@ -36,34 +36,48 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
         {
 
 
-            var query = context.Schools
-                        .Include(s => s.SchoolType)
-                        .Include(s => s.SchoolAdmin)
-                        .Include(s => s.CoinType)
-                        .Join(context.schoolTeachers,
-                              s => s.Id,
-                              st => st.SchoolId,
-                              (s, st) => new { School = s, SchoolTeacher = st })
-                        .Where(x => x.School.SchoolAdminId == userId || x.SchoolTeacher.TeacherId == userId)
-                        .Select(x => new SchoolResultDTO
-                        {
-                            Id = x.School.Id,
-                            Name = x.School.Name,
-                            About = x.School.About,
-                            Vesion = x.School.Vesion,
-                            Active = x.School.Active,
-                            ImageUrl = !string.IsNullOrEmpty(x.School.ImageUrl)
-                                ? $"{SettingsHelper.GetAppUrl()}/{x.School.ImageUrl.Replace("\\", "/")}"
-                                : string.Empty,
-                            SchoolTypeId = x.School.SchoolTypeId,
-                            SchoolTypeName = x.School.SchoolType.Name,
-                            CoinTypeId = x.School.CoinTypeId,
-                            CoinTypeName = x.School.CoinType.Name,
-                            AvailableCoins = x.School.AvailableCoins,
-                            SchoolAdminId = x.School.SchoolAdminId,
-                            SchoolAdminName = $"{x.School.SchoolAdmin.FirstName} {x.School.SchoolAdmin.LastName}"
-                        })
-                        .Distinct();
+            var query = (
+    from school in context.Schools
+
+        // LEFT JOIN: schoolTeachers
+    join st in context.schoolTeachers on school.Id equals st.SchoolId into stGroup
+    from schoolTeacher in stGroup.DefaultIfEmpty()
+
+        // LEFT JOIN: SchoolType
+    join schoolType in context.SchoolTypes on school.SchoolTypeId equals schoolType.Id into stTypeGroup
+    from schoolType in stTypeGroup.DefaultIfEmpty()
+
+        // LEFT JOIN: CoinType
+    join coinType in context.CoinsTypes on school.CoinTypeId equals coinType.Id into ctGroup
+    from coinType in ctGroup.DefaultIfEmpty()
+
+        // LEFT JOIN: SchoolAdmin (Users)
+    join admin in context.Users on school.SchoolAdminId equals admin.Id into adminGroup
+    from admin in adminGroup.DefaultIfEmpty()
+
+    where school.SchoolAdminId == userId || schoolTeacher.TeacherId == userId
+
+    select new SchoolResultDTO
+    {
+        Id = school.Id,
+        Name = school.Name,
+        About = school.About,
+        Vesion = school.Vesion,
+        Active = school.Active,
+        ImageUrl = !string.IsNullOrEmpty(school.ImageUrl)
+            ? $"{SettingsHelper.GetAppUrl()}/{school.ImageUrl.Replace("\\", "/")}"
+            : string.Empty,
+        SchoolTypeId = school.SchoolTypeId,
+        SchoolTypeName = schoolType != null ? schoolType.Name : null,
+        CoinTypeId = school.CoinTypeId,
+        CoinTypeName = coinType != null ? coinType.Name : null,
+        AvailableCoins = school.AvailableCoins,
+        SchoolAdminId = school.SchoolAdminId,
+        SchoolAdminName = admin != null ? $"{admin.FirstName} {admin.LastName}" : null
+    }
+).Distinct();
+
+            var sqlQUery = query.ToQueryString();
 
 
             return await query.OrderBy(s => s.SchoolTypeId).OrderBy(s => s.Name).ToListAsync();
@@ -94,12 +108,12 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             if (adminId != null)
                 query = query.Where(s => s.SchoolAdminId == adminId);
 
-            if(getNewSchools != null && getNewSchools.Value) 
-                query = query.Where(s=> s.CoinTypeId == null);
+            if (getNewSchools != null && getNewSchools.Value)
+                query = query.Where(s => s.CoinTypeId == null);
 
             var queryString = query.ToQueryString();
 
-            return await query.OrderBy(s => s.SchoolTypeId).OrderBy(s=> s.Name)
+            return await query.OrderBy(s => s.SchoolTypeId).OrderBy(s => s.Name)
                                    .Skip((pageNumber - 1) * pagesize)
                                    .ToListAsync();
         }
