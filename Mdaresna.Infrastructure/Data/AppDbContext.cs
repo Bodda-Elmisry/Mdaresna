@@ -105,6 +105,7 @@ namespace Mdaresna.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new SchoolPostImageConfig());
             modelBuilder.ApplyConfiguration(new SchoolTypeConfig());
             modelBuilder.ApplyConfiguration(new SchoolTeacherConfig());
+            modelBuilder.ApplyConfiguration(new SchoolEmployeeConfig());
             modelBuilder.ApplyConfiguration(new SchoolTeacherCourseConfig());
             modelBuilder.ApplyConfiguration(new SchoolExamRateHeaderConfig());
             modelBuilder.ApplyConfiguration(new SchoolPostConfig());
@@ -120,6 +121,7 @@ namespace Mdaresna.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new ClassRoomConfig());
             modelBuilder.ApplyConfiguration(new ClassRoomAssignmentConfig());
             modelBuilder.ApplyConfiguration(new ClassRoomTeacherCourseConfig());
+            modelBuilder.ApplyConfiguration(new ClassroomEmployeeConfig());
             modelBuilder.ApplyConfiguration(new ClassRoomExamConfig());
             modelBuilder.ApplyConfiguration(new ClassRoomActivityConfig());
         }
@@ -219,6 +221,7 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<ClassRoomLanguage> ClassRoomLanguages { get; set; }
         public DbSet<SchoolCourse> SchoolCourses { get; set; }
         public DbSet<SchoolTeacher> schoolTeachers { get; set; }
+        public DbSet<SchoolEmployee> SchoolEmployees { get; set; }
         public DbSet<SchoolTeacherCourse> schoolTeacherCourses { get; set; }
 
 
@@ -229,6 +232,7 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<ClassRoom> ClassRooms { get; set; }
         public DbSet<ClassRoomAssignment> ClassRoomAssignments { get; set; }
         public DbSet<ClassRoomTeacherCourse> ClassRoomTeacherCourses { get; set; }
+        public DbSet<ClassroomEmployee> ClassroomEmployees { get; set; }
         public DbSet<ClassRoomExam> ClassRoomExams { get; set; }
         public DbSet<ClassRoomActivity> ClassRoomActivities { get; set; }
 

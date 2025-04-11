@@ -165,6 +165,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(ISchoolGradeCommandRepository), typeof(SchoolGradeCommandRepository));
             services.AddScoped(typeof(ISchoolPostCommandRepository), typeof(SchoolPostCommandRepository));
             services.AddScoped(typeof(ISchoolPostImageCommandRepository), typeof(SchoolPostImageCommandRepository));
+            services.AddScoped(typeof(ISchoolEmployeeCommandRepository), typeof(SchoolEmployeeCommandRepository));
             services.AddScoped(typeof(ISchoolTeacherCommandRepository), typeof(SchoolTeacherCommandRepository));
             services.AddScoped(typeof(ISchoolTeacherCourseCommandRepository), typeof(SchoolTeacherCourseCommandRepository));
             services.AddScoped(typeof(ISchoolTypeCommandRepository), typeof(SchoolTypeCommandRepository));
@@ -183,6 +184,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(ISchoolPostImageQueryRepository), typeof(SchoolPostImageQueryRepository));
             services.AddScoped(typeof(ISchoolPostQueryRepository), typeof(SchoolPostQueryRepository));
             services.AddScoped(typeof(ISchoolQueryRepository), typeof(SchoolQueryRepository));
+            services.AddScoped(typeof(ISchoolEmployeeQueryRepository), typeof(SchoolEmployeeQueryRepository));
             services.AddScoped(typeof(ISchoolTeacherQueryRepository), typeof(SchoolTeacherQueryRepository));
             services.AddScoped(typeof(ISchoolTeacherCourseQueryRepository), typeof(SchoolTeacherCourseQueryRepository));
             services.AddScoped(typeof(ISchoolTypeQueryRepository), typeof(SchoolTypeQueryRepository));
@@ -199,6 +201,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(IClassRoomAssignmentCommandRepository), typeof(ClassRoomAssignmentCommandRepository));
             services.AddScoped(typeof(IClassRoomCommandRepository), typeof(ClassRoomCommandRepository));
             services.AddScoped(typeof(IClassRoomExamCommandRepository), typeof(ClassRoomExamCommandRepository));
+            services.AddScoped(typeof(IClassroomEmployeeCommandRepository), typeof(ClassroomEmployeeCommandRepository));
             services.AddScoped(typeof(IClassRoomTeacherCourseCommandRepository), typeof(ClassRoomTeacherCourseCommandRepository));
 
             #endregion
@@ -208,8 +211,9 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(IClassRoomAssignmentQueryRepository), typeof(ClassRoomAssignmentQueryRepository));
             services.AddScoped(typeof(IClassRoomExamQueryRepository), typeof(ClassRoomExamQueryRepository));
             services.AddScoped(typeof(IClassRoomQueryRepository), typeof(ClassRoomQueryRepository));
-            services.AddScoped(typeof(IClassRoomHelpDataQueryRepository), typeof(ClassRoomHelpDataQueryRepository));
+            services.AddScoped(typeof(IClassroomEmployeeQueryRepository), typeof(ClassroomEmployeeQueryRepository));
             services.AddScoped(typeof(IClassRoomTeacherCourseQueryRepository), typeof(ClassRoomTeacherCourseQueryRepository));
+            services.AddScoped(typeof(IClassRoomHelpDataQueryRepository), typeof(ClassRoomHelpDataQueryRepository));
 
             #endregion
         }
@@ -384,6 +388,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(ISchoolGradeCommandService), typeof(SchoolGradeCommandService));
             services.AddScoped(typeof(ISchoolPostCommandService), typeof(SchoolPostCommandService));
             services.AddScoped(typeof(ISchoolPostImageCommandService), typeof(SchoolPostImageCommandService));
+            services.AddScoped(typeof(ISchoolEmployeeCommandService), typeof(SchoolEmployeeCommandService));
             services.AddScoped(typeof(ISchoolTeacherCommandService), typeof(SchoolTeacherCommandService));
             services.AddScoped(typeof(ISchoolTeacherCourseCommandService), typeof(SchoolTeacherCourseCommandService));
             services.AddScoped(typeof(ISchoolTypeCommandService), typeof(SchoolTypeCommandService));
@@ -402,6 +407,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(ISchoolPostImageQueryService), typeof(SchoolPostImageQueryService));
             services.AddScoped(typeof(ISchoolPostQueryService), typeof(SchoolPostQueryService));
             services.AddScoped(typeof(ISchoolQueryService), typeof(SchoolQueryService));
+            services.AddScoped(typeof(ISchoolEmployeeQueryService), typeof(SchoolEmployeeQueryService));
             services.AddScoped(typeof(ISchoolTeacherQueryService), typeof(SchoolTeacherQueryService));
             services.AddScoped(typeof(ISchoolTeacherCourseQueryService), typeof(SchoolTeacherCourseQueryService));
             services.AddScoped(typeof(ISchoolTypeQueryService), typeof(SchoolTypeQueryService));
@@ -418,6 +424,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(IClassRoomAssignmentCommandService), typeof(ClassRoomAssignmentCommandService));
             services.AddScoped(typeof(IClassRoomCommandService), typeof(ClassRoomCommandService));
             services.AddScoped(typeof(IClassRoomExamCommandService), typeof(ClassRoomExamCommandService));
+            services.AddScoped(typeof(IClassroomEmployeeCommandService), typeof(ClassroomEmployeeCommandService));
             services.AddScoped(typeof(IClassRoomTeacherCourseCommandService), typeof(ClassRoomTeacherCourseCommandService));
 
             #endregion
@@ -427,6 +434,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(IClassRoomAssignmentQueryService), typeof(ClassRoomAssignmentQueryService));
             services.AddScoped(typeof(IClassRoomExamQueryService), typeof(ClassRoomExamQueryService));
             services.AddScoped(typeof(IClassRoomQueryService), typeof(ClassRoomQueryService));
+            services.AddScoped(typeof(IClassroomEmployeeQueryService), typeof(ClassroomEmployeeQueryService));
             services.AddScoped(typeof(IClassRoomTeacherCourseQueryService), typeof(ClassRoomTeacherCourseQueryService));
 
             #endregion

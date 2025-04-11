@@ -35,52 +35,66 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
         public async Task<IEnumerable<SchoolResultDTO>> GetUserSchools(Guid userId)
         {
 
+            var tquery = from st in context.schoolTeachers
+                         join school in context.Schools on st.SchoolId equals school.Id
+                         where school.SchoolAdminId == userId || st.TeacherId == userId
+                         join schoolType in context.SchoolTypes on school.SchoolTypeId equals schoolType.Id into stTypeGroup
+                         from schoolType in stTypeGroup.DefaultIfEmpty()
+                         join coinType in context.CoinsTypes on school.CoinTypeId equals coinType.Id into ctGroup
+                         from coinType in ctGroup.DefaultIfEmpty()
+                         join admin in context.Users on school.SchoolAdminId equals admin.Id into adminGroup
+                         from admin in adminGroup.DefaultIfEmpty()
+                         select new SchoolResultDTO
+                         {
+                             Id = school.Id,
+                             Name = school.Name,
+                             About = school.About,
+                             Vesion = school.Vesion,
+                             ImageUrl = school.ImageUrl,
+                             SchoolTypeId = school.SchoolTypeId,
+                             SchoolTypeName = schoolType != null ? schoolType.Name : null,
+                             CoinTypeId = school.CoinTypeId,
+                             CoinTypeName = coinType != null ? coinType.Name : null,
+                             AvailableCoins = school.AvailableCoins,
+                             SchoolAdminId = school.SchoolAdminId,
+                             SchoolAdminName = admin != null ? admin.FirstName + " " + admin.LastName : null
+                         };
 
-            var query = (
-    from school in context.Schools
+            var equery = from se in context.SchoolEmployees
+                         join school in context.Schools on se.SchoolId equals school.Id
+                         where school.SchoolAdminId == userId || se.EmployeeId == userId
+                         join schoolType in context.SchoolTypes on school.SchoolTypeId equals schoolType.Id into stTypeGroup
+                         from schoolType in stTypeGroup.DefaultIfEmpty()
+                         join coinType in context.CoinsTypes on school.CoinTypeId equals coinType.Id into ctGroup
+                         from coinType in ctGroup.DefaultIfEmpty()
+                         join admin in context.Users on school.SchoolAdminId equals admin.Id into adminGroup
+                         from admin in adminGroup.DefaultIfEmpty()
+                         select new SchoolResultDTO
+                         {
+                             Id = school.Id,
+                             Name = school.Name,
+                             About = school.About,
+                             Vesion = school.Vesion,
+                             ImageUrl = school.ImageUrl,
+                             SchoolTypeId = school.SchoolTypeId,
+                             SchoolTypeName = schoolType != null ? schoolType.Name : null,
+                             CoinTypeId = school.CoinTypeId,
+                             CoinTypeName = coinType != null ? coinType.Name : null,
+                             AvailableCoins = school.AvailableCoins,
+                             SchoolAdminId = school.SchoolAdminId,
+                             SchoolAdminName = admin != null ? admin.FirstName + " " + admin.LastName : null
+                         };
 
-        // LEFT JOIN: schoolTeachers
-    join st in context.schoolTeachers on school.Id equals st.SchoolId into stGroup
-    from schoolTeacher in stGroup.DefaultIfEmpty()
+            // Combine the two queries using Union
+            var query = tquery.Union(equery).Distinct();
 
-        // LEFT JOIN: SchoolType
-    join schoolType in context.SchoolTypes on school.SchoolTypeId equals schoolType.Id into stTypeGroup
-    from schoolType in stTypeGroup.DefaultIfEmpty()
+            // Optional: Sort
+            var result = await query
+                .OrderBy(s => s.SchoolTypeId)
+                .ThenBy(s => s.Name)
+                .ToListAsync();
 
-        // LEFT JOIN: CoinType
-    join coinType in context.CoinsTypes on school.CoinTypeId equals coinType.Id into ctGroup
-    from coinType in ctGroup.DefaultIfEmpty()
-
-        // LEFT JOIN: SchoolAdmin (Users)
-    join admin in context.Users on school.SchoolAdminId equals admin.Id into adminGroup
-    from admin in adminGroup.DefaultIfEmpty()
-
-    where school.SchoolAdminId == userId || schoolTeacher.TeacherId == userId
-
-    select new SchoolResultDTO
-    {
-        Id = school.Id,
-        Name = school.Name,
-        About = school.About,
-        Vesion = school.Vesion,
-        Active = school.Active,
-        ImageUrl = !string.IsNullOrEmpty(school.ImageUrl)
-            ? $"{SettingsHelper.GetAppUrl()}/{school.ImageUrl.Replace("\\", "/")}"
-            : string.Empty,
-        SchoolTypeId = school.SchoolTypeId,
-        SchoolTypeName = schoolType != null ? schoolType.Name : null,
-        CoinTypeId = school.CoinTypeId,
-        CoinTypeName = coinType != null ? coinType.Name : null,
-        AvailableCoins = school.AvailableCoins,
-        SchoolAdminId = school.SchoolAdminId,
-        SchoolAdminName = admin != null ? $"{admin.FirstName} {admin.LastName}" : null
-    }
-).Distinct();
-
-            var sqlQUery = query.ToQueryString();
-
-
-            return await query.OrderBy(s => s.SchoolTypeId).OrderBy(s => s.Name).ToListAsync();
+            return result;
         }
 
         public async Task<SchoolResultDTO?> GetSchoolById(Guid schoolId)

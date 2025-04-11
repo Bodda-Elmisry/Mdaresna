@@ -13,6 +13,6 @@ namespace Mdaresna.Repository.IServices.IdentityManagement.Query
     {
         Task<Role?> GetStanderdRole();
         Task<Role?> GetRoleByNameAsycn(string name);
-        Task<IEnumerable<RoleResultDTO>> GetRolesAsync(int type, string? name, bool? activation, string? description);
+        Task<IEnumerable<RoleResultDTO>> GetRolesAsync(int type, string? name, bool? activation, string? description, IEnumerable<Guid>? ignoredRoles = null);
     }
 }

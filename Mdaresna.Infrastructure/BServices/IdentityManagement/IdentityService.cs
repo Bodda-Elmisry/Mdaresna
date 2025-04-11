@@ -30,6 +30,8 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
         private readonly IUserRoleCommandService userRoleCommandService;
         private readonly IRoleQueryService roleQueryService;
         private readonly ISchoolQueryService schoolQueryService;
+        private readonly ISchoolEmployeeQueryService schoolEmployeeQueryService;
+        private readonly ISchoolTeacherQueryService schoolTeacherQueryService;
 
         public IdentityService(IUserCommandService userCommandService,
                                 IUserQueryService userQueryService,
@@ -38,7 +40,9 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                                 IUserRoleQueryService userRoleQueryService,
                                 IUserRoleCommandService userRoleCommandService,
                                 IRoleQueryService roleQueryService,
-                                ISchoolQueryService schoolQueryService)
+                                ISchoolQueryService schoolQueryService,
+                                ISchoolEmployeeQueryService schoolEmployeeQueryService,
+                                ISchoolTeacherQueryService schoolTeacherQueryService)
         {
             this.userCommandService = userCommandService;
             this.userQueryService = userQueryService;
@@ -48,6 +52,8 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             this.userRoleCommandService = userRoleCommandService;
             this.roleQueryService = roleQueryService;
             this.schoolQueryService = schoolQueryService;
+            this.schoolEmployeeQueryService = schoolEmployeeQueryService;
+            this.schoolTeacherQueryService = schoolTeacherQueryService;
         }
 
         public async Task<RegisterResultDTO> Register(User RegisterUser)
@@ -282,6 +288,8 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             var userSchools = await schoolQueryService.GetUserSchools(user.Id);
             var firstSchool = schoolId ?? (userSchools.Any() ? userSchools.FirstOrDefault().Id : null);
             var permissions = await userPermissionQueryService.GetUserPermissionsView(user.Id, firstSchool == null ? null : firstSchool);
+            var employee = await schoolEmployeeQueryService.IsExist(firstSchool ?? Guid.NewGuid(), user.Id);
+            var teacher = await schoolTeacherQueryService.isExist(firstSchool ?? Guid.NewGuid(), user.Id);
 
             return new LoginResultDTO
             {
@@ -292,7 +300,10 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                     Classrooms = x.Classrooms
                 }),
                 Schools = userSchools,
+                IsEmployee = employee,
+                IsTeacher = teacher
             };
+
         }
 
     }

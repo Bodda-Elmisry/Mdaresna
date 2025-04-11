@@ -1,6 +1,8 @@
+using Mdaresna.Doamin.DTOs.SchoolManagement;
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
+using Mdaresna.Repository.IRepositories.Base;
 using Mdaresna.Repository.IRepositories.IdentityManagement.Command;
 using System;
 using System.Collections.Generic;
@@ -12,6 +14,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Command
 {
     public class UserRoleCommandRepository : BaseCommandRepository<UserRole>, IUserRoleCommandRepository
     {
+
         public UserRoleCommandRepository(AppDbContext context) : base(context)
         {
         }

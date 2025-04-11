@@ -25,6 +25,11 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Que
             this.schoolTeacherQueryRepository = schoolTeacherQueryRepository;
         }
 
+        public async Task<bool> isExist(Guid schoolId, Guid teacherId)
+        {
+            return await schoolTeacherQueryRepository.isExist(schoolId, teacherId);
+        }
+
         public async Task<SchoolTeacher> GetSchoolTeacherByIdAsync(Guid schoolId, Guid teacherId)
         {
             return await schoolTeacherQueryRepository.GetSchoolTeacherByIdAsync(schoolId, teacherId);

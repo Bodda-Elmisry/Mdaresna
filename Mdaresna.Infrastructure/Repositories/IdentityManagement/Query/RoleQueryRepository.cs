@@ -34,7 +34,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             return role;
         }
 
-        public async Task<IEnumerable<RoleResultDTO>> GetRolesAsync(int type, string? name, bool? activation, string? description)
+        public async Task<IEnumerable<RoleResultDTO>> GetRolesAsync(int type, string? name, bool? activation, string? description, IEnumerable<Guid>? ignoredRoles = null)
         {
 
             var query = from r in context.Roles
@@ -63,6 +63,8 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             query = !string.IsNullOrEmpty(description) ? query.Where(r => r.Role.Description.Contains(description)) : query;
 
             query = activation != null ? query.Where(r => r.Role.Active == activation) : query;
+
+            query = ignoredRoles != null ? query.Where(r => !ignoredRoles.Contains(r.Role.Id)) : query;
 
             return await query.Select(r => new RoleResultDTO
             {

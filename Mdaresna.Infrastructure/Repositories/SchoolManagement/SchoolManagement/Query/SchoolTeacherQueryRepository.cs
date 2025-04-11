@@ -25,6 +25,11 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             this.context = context;
         }
 
+        public async Task<bool> isExist(Guid schoolId, Guid teacherId)
+        {
+            return await context.schoolTeachers.AnyAsync(s => s.SchoolId == schoolId && s.TeacherId == teacherId);
+        }
+
         public async Task<SchoolTeacher> GetSchoolTeacherByIdAsync(Guid schoolId, Guid teacherId)
         {
             return await context.schoolTeachers.FirstOrDefaultAsync(s=> s.SchoolId == schoolId && s.TeacherId ==  teacherId);

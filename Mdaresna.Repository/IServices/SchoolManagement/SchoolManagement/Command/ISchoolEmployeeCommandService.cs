@@ -1,4 +1,4 @@
-using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
+﻿using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Repository.IServices.Base;
 using System;
 using System.Collections.Generic;
@@ -8,8 +8,7 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command
 {
-    public interface ISchoolPostCommandService : IBaseCommandService<SchoolPost>
+    public interface ISchoolEmployeeCommandService : IBaseCommandService<SchoolEmployee>
     {
-        Task<bool> CreateAsync(SchoolPost entity, IEnumerable<string>? images);
     }
 }
