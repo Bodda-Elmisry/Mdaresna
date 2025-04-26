@@ -8,6 +8,8 @@ using Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Command
 using Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Repository.IServices.IdentityManagement.Command;
 using Mdaresna.Repository.IServices.IdentityManagement.Query;
+using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
+using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Microsoft.AspNetCore.Mvc;
@@ -23,18 +25,24 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         private readonly IUserRoleCommandService userRoleCommandService;
         private readonly IUserRoleQueryService userRoleQueryService;
         private readonly IRoleQueryService roleQueryService;
+        private readonly IClassroomEmployeeCommandService classroomEmployeeCommandService;
+        private readonly IClassroomEmployeeQueryService classroomEmployeeQueryService;
 
         public SchoolEmployeeController(ISchoolEmployeeCommandService schoolEmployeeCommandService,
                                         ISchoolEmployeeQueryService schoolEmployeeQueryService,
                                         IUserRoleCommandService userRoleCommandService,
                                         IUserRoleQueryService userRoleQueryService,
-                                        IRoleQueryService roleQueryService)
+                                        IRoleQueryService roleQueryService,
+                                        IClassroomEmployeeCommandService classroomEmployeeCommandService,
+                                        IClassroomEmployeeQueryService classroomEmployeeQueryService)
         {
             this.schoolEmployeeCommandService = schoolEmployeeCommandService;
             this.schoolEmployeeQueryService = schoolEmployeeQueryService;
             this.userRoleCommandService = userRoleCommandService;
             this.userRoleQueryService = userRoleQueryService;
             this.roleQueryService = roleQueryService;
+            this.classroomEmployeeCommandService = classroomEmployeeCommandService;
+            this.classroomEmployeeQueryService = classroomEmployeeQueryService;
         }
 
         [HttpPost("AddSchoolEmployee")]
@@ -47,7 +55,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 if (teacher != null)
                     return Conflict("Employee already assignd to school");
 
-                var sEmployee= new SchoolEmployee
+                var sEmployee = new SchoolEmployee
                 {
                     SchoolId = dto.SchoolId,
                     EmployeeId = dto.EmployeeId
@@ -118,7 +126,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
-                var sEmployee= await schoolEmployeeQueryService.GetSchoolEmployeeByIdAsync(dto.SchoolId, dto.EmployeeId);
+                var sEmployee = await schoolEmployeeQueryService.GetSchoolEmployeeByIdAsync(dto.SchoolId, dto.EmployeeId);
 
                 if (sEmployee == null)
                     return BadRequest("Can't update employee");
@@ -143,7 +151,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
-                var sEmployee= new SchoolEmployee
+                var sEmployee = new SchoolEmployee
                 {
                     SchoolId = dto.SchoolId,
                     EmployeeId = dto.EmployeeId
@@ -190,11 +198,46 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             }
         }
 
+        [HttpPost("SoftDeleteSchoolEmployee")]
+        public async Task<IActionResult> SoftDeleteSchoolEmployee([FromBody] SchoolIdEmployeeIdDTO dto)
+        {
+            try
+            {
+
+                var employeeClassrooms = await classroomEmployeeQueryService.GetEmployeeClassroomsAsync(dto.EmployeeId, dto.SchoolId);
+
+                var sEmployee = await schoolEmployeeQueryService.GetSchoolEmployeeByIdAsync(dto.SchoolId, dto.EmployeeId);
+                if (sEmployee == null)
+                    return BadRequest("Can't find employee to delete");
+
+                if (employeeClassrooms != null && employeeClassrooms.Count() > 0)
+                {
+
+                    foreach (var classroom in employeeClassrooms)
+                    {
+
+
+                        await classroomEmployeeCommandService.DeleteAsync(classroom);
+                    }
+                }
+
+                var deleted = await schoolEmployeeCommandService.DeleteAsync(sEmployee);
+                if (deleted)
+                    return Ok("Employee removed from school");
+
+                return BadRequest("Error in removing Employee");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
 
 
 
 
 
+
+        }
     }
 }

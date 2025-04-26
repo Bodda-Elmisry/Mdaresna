@@ -30,7 +30,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
         {
             int pagesize = appSettings.PageSize != null ? appSettings.PageSize.Value : 30;
             var query = context.ClassRoomActivities
-                        .Include(c => c.ClassRoom).Include(c => c.Course).Include(c => c.Supervisor).AsQueryable();
+                        .Include(c => c.ClassRoom).Include(c => c.Course).Include(c => c.Supervisor).Where(c=> c.Deleted == false);
 
             if (classRoomId != null)
                 query = query.Where(q => q.ClassRoomId == classRoomId);
@@ -87,7 +87,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
             var item = await context.ClassRoomActivities.Include(a=> a.Supervisor)
                                                         .Include(a => a.Course)
                                                         .Include(a => a.ClassRoom)
-                                                        .FirstOrDefaultAsync(c => c.Id == activityId);
+                                                        .FirstOrDefaultAsync(c => c.Id == activityId && c.Deleted == false);
 
             return item != null ?
                 new ClassRoomActivityResultDTO

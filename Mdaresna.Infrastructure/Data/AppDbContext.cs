@@ -30,6 +30,8 @@ using Mdaresna.Doamin.Models.AdminManagement;
 using Mdaresna.Doamin.ModelsSeeding.AdminManagement;
 using Mdaresna.Doamin.ModelsConfigrations.AdminManagement;
 using Mdaresna.Doamin.ModelsSeeding.UserManagement;
+using Mdaresna.Doamin.Models.Base;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Mdaresna.Infrastructure.Data
 {
@@ -52,6 +54,18 @@ namespace Mdaresna.Infrastructure.Data
             ApplyClassRoomManagementConfigrations(modelBuilder);
             ApplyStudentManagementConfigrations(modelBuilder);
             ApplySettingsManagementConfig(modelBuilder);
+
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                var clrType = entityType.ClrType;
+
+                if (typeof(AuditBase).IsAssignableFrom(clrType))
+                {
+                    modelBuilder.Entity(clrType)
+                        .Property(nameof(AuditBase.Deleted))
+                        .HasDefaultValue(false);
+                }
+            }
 
             #endregion
 

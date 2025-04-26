@@ -28,7 +28,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
 
         public async Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAsync(Guid schoolId, string studentCode, string studentName)
         {
-            var query = context.Students.Where(s => s.SchoolId == schoolId);
+            var query = context.Students.Where(s => s.SchoolId == schoolId && s.Deleted == false);
 
             if (!string.IsNullOrEmpty(studentCode))
             {
@@ -65,7 +65,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
 
         public async Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAndClassRoomIdAsync(Guid schoolId, Guid classroomId)
         {
-            return await context.Students.Where(s => s.SchoolId == schoolId && s.ClassRoomId == classroomId)
+            return await context.Students.Where(s => s.SchoolId == schoolId && s.ClassRoomId == classroomId && s.Deleted == false)
                 .Select(s => new StudentResultDTO
                 {
                     Id = s.Id,
@@ -89,7 +89,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
         {
             var student = await context.Students
                                 .Include(s => s.ClassRoom).Include(s => s.School)
-                                .FirstOrDefaultAsync(s => s.Id == studentId);
+                                .FirstOrDefaultAsync(s => s.Id == studentId && s.Deleted == false);
             return student == null ? null : 
                 new StudentResultDTO
                 {
@@ -113,7 +113,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
         {
             var student = await context.Students
                                 .Include(s=> s.ClassRoom).Include(s => s.School)
-                                .FirstOrDefaultAsync(s => s.Code == code);
+                                .FirstOrDefaultAsync(s => s.Code == code && s.Deleted == false);
             return student == null ? null :
                 new StudentResultDTO
                 {
@@ -135,14 +135,14 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
 
         public async Task<string> GetMaxStudebtCodeAsync(Guid schoolId)
         {
-            var anyStudents = await context.Students.AnyAsync(s => s.SchoolId == schoolId);
+            var anyStudents = await context.Students.AnyAsync(s => s.SchoolId == schoolId && s.Deleted == false);
             if(!anyStudents)
             {
                 return null;
             }
-            var student = await context.Students.OrderByDescending(s=> s.CreateDate).FirstOrDefaultAsync(s => s.SchoolId == schoolId);
+            var student = await context.Students.OrderByDescending(s=> s.CreateDate).FirstOrDefaultAsync(s => s.SchoolId == schoolId && s.Deleted == false);
 
-            return student.Code;
+            return student != null ? student.Code : string.Empty;
         }
     }
 }

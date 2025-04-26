@@ -2,8 +2,14 @@
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.ClassRoomManagementDTO;
+using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Command;
+using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Query;
+using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Command;
+using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
+using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
+using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -14,12 +20,18 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
     {
         private readonly IClassRoomExamQueryService classRoomExamQueryService;
         private readonly IClassRoomExamCommandService classRoomExamCommandService;
+        private readonly IClassRoomStudentExamCommandService classRoomStudentExamCommandService;
+        private readonly IClassRoomStudentExamQueryService classRoomStudentExamQueryService;
 
         public ClassRoomExamController(IClassRoomExamQueryService classRoomExamQueryService,
-                                       IClassRoomExamCommandService classRoomExamCommandService)
+                                       IClassRoomExamCommandService classRoomExamCommandService,
+                                       IClassRoomStudentExamCommandService classRoomStudentExamCommandService,
+                                       IClassRoomStudentExamQueryService classRoomStudentExamQueryService)
         {
             this.classRoomExamQueryService = classRoomExamQueryService;
             this.classRoomExamCommandService = classRoomExamCommandService;
+            this.classRoomStudentExamCommandService = classRoomStudentExamCommandService;
+            this.classRoomStudentExamQueryService = classRoomStudentExamQueryService;
         }
 
         [HttpPost("GetInitailData")]
@@ -129,6 +141,38 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
 
                 return BadRequest("Error in updating exam");
 
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("SoftDeleteClassroomExam")]
+        public async Task<IActionResult> SoftDeleteClassroomExam([FromBody] ExamIdDTO dTO)
+        {
+            try
+            {
+                var exam = await classRoomExamQueryService.GetByIdAsync(dTO.ExamId);
+
+                if (exam == null)
+                    return BadRequest("There is no exam to delete");
+
+                exam.Deleted = true;
+
+                var examStudents = await classRoomStudentExamQueryService.GetClassRoomStudentExamsListAsync(exam.Id);
+
+                foreach (var examStudent in examStudents)
+                {
+                    examStudent.Deleted = true;
+                    classRoomStudentExamCommandService.Update(examStudent);
+                }
+
+
+
+                var result = classRoomExamCommandService.Update(exam);
+
+                return result ? Ok("Exam Deleted") : BadRequest("Error in deleting exam");
             }
             catch (Exception ex)
             {

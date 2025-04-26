@@ -105,6 +105,28 @@ namespace Mdaresna.Controllers.CoinsManagement
             }
         }
 
+        [HttpPost("SoftDeleteCoinType")]
+        public async Task<IActionResult> SoftDeleteCoinType([FromBody] CoinTypeIdDTO dTO)
+        {
+            try
+            {
+                var type = await coinTypeQueryService.GetByIdAsync(dTO.CoinTypeId);
+
+                if (type == null)
+                    return BadRequest("There is no coin type to delete");
+
+                type.Deleted = true;
+
+                var deleted = coinTypeCommandService.Update(type);
+
+                return deleted ? Ok("Coin Type Deleted") : BadRequest("Error in delete coin type");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
 
 

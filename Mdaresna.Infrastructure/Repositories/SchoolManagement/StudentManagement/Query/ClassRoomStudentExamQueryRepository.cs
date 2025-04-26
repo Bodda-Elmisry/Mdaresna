@@ -35,7 +35,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                                                      .Include(e => e.Exam.ClassRoom)
                                                      .Include(e => e.Exam.Course)
                                                      .Include(e => e.Exam.Supervisor)
-                                                     .AsQueryable();
+                                                     .Where(e=> e.Deleted == false);
 
             if(ExamId != null)
                 query = query.Where(e => e.ExamId == ExamId);
@@ -79,7 +79,16 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
 
         }
 
-        public async Task<ClassRoomStudentExamResultDTO> GetClassRoomStudentExamViewAsync(Guid studentId, Guid ExamId)
+        public async Task<IEnumerable<ClassRoomStudentExam>> GetClassRoomStudentExamsListAsync(Guid ExamId)
+        {
+            var query = context.ClassRoomStudentExams.Where(e => e.Deleted == false && e.ExamId == ExamId);
+
+            return await query.ToListAsync();
+
+
+        }
+
+        public async Task<ClassRoomStudentExamResultDTO?> GetClassRoomStudentExamViewAsync(Guid studentId, Guid ExamId)
         {
             var studentExam = await context.ClassRoomStudentExams.Include(e => e.StudentId)
                                                      .Include(e => e.Exam)
@@ -87,7 +96,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                                                      .Include(e => e.Exam.ClassRoom)
                                                      .Include(e => e.Exam.Course)
                                                      .Include(e => e.Exam.Supervisor)
-                                                     .FirstOrDefaultAsync(s => s.StudentId == studentId && s.ExamId == ExamId);
+                                                     .FirstOrDefaultAsync(s => s.StudentId == studentId && s.ExamId == ExamId && s.Deleted == false);
             return studentExam == null ? null : new ClassRoomStudentExamResultDTO
             {
                 ExamId = studentExam.ExamId,
@@ -112,7 +121,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
 
         public async Task<ClassRoomStudentExam?> GetClassRoomStudentExamAsync(Guid studentId, Guid ExamId)
         {
-            return await context.ClassRoomStudentExams.FirstOrDefaultAsync(s => s.StudentId == studentId && s.ExamId == ExamId);
+            return await context.ClassRoomStudentExams.FirstOrDefaultAsync(s => s.StudentId == studentId && s.ExamId == ExamId && s.Deleted == false);
         }
 
 

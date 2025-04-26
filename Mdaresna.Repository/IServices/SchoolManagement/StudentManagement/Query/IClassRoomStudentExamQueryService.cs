@@ -13,6 +13,8 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query
     {
         Task<IEnumerable<ClassRoomStudentExamResultDTO>> GetClassRoomStudentExamsListAsync(Guid? StudentId, Guid? ExamId, decimal? TotalResultFrom, decimal? TotalResultTo, bool? IsAttend, int pageNumber);
 
+        Task<IEnumerable<ClassRoomStudentExam>> GetClassRoomStudentExamsListAsync(Guid ExamId);
+
         Task<ClassRoomStudentExamResultDTO> GetClassRoomStudentExamViewAsync(Guid studentId, Guid ExamId);
 
         Task<ClassRoomStudentExam?> GetClassRoomStudentExamAsync(Guid studentId, Guid ExamId);

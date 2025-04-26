@@ -27,66 +27,18 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
         public async Task<bool> isExist(Guid schoolId, Guid teacherId)
         {
-            return await context.schoolTeachers.AnyAsync(s => s.SchoolId == schoolId && s.TeacherId == teacherId);
+            return await context.schoolTeachers.AnyAsync(s => s.SchoolId == schoolId && s.TeacherId == teacherId && s.Deleted == false);
         }
 
-        public async Task<SchoolTeacher> GetSchoolTeacherByIdAsync(Guid schoolId, Guid teacherId)
+        public async Task<SchoolTeacher?> GetSchoolTeacherByIdAsync(Guid schoolId, Guid teacherId)
         {
-            return await context.schoolTeachers.FirstOrDefaultAsync(s=> s.SchoolId == schoolId && s.TeacherId ==  teacherId);
+            return await context.schoolTeachers.FirstOrDefaultAsync(s=> s.SchoolId == schoolId && s.TeacherId ==  teacherId && s.Deleted == false);
         }
 
         public async Task<IEnumerable<TeacherResultDTO>> GetSchoolTeachersAsync(Guid schoolId, string teacherName, string teacherPhoneNumber, string teacherEmail)
         {
-            //var teachers = await context.schoolTeachers
-            //    .Where(s=> s.SchoolId == schoolId)
-            //    .Select(t => new TeacherResultDTO
-            //{
-            //    Id = t.Teacher.Id,
-            //    UserName = t.Teacher.UserName,
-            //    FirstName = t.Teacher.FirstName,
-            //    MiddelName = t.Teacher.MiddelName,
-            //    LastName = t.Teacher.LastName,
-            //    PhoneNumber = t.Teacher.PhoneNumber,
-            //    BirthDay = t.Teacher.BirthDay,
-            //    Email = t.Teacher.Email,
-            //    Address = t.Teacher.Address,
-            //    City = t.Teacher.City,
-            //    Region = t.Teacher.Region,
-            //    Contry = t.Teacher.Contry,
-            //    ImageUrl = t.Teacher.ImageUrl
-            //}).ToListAsync();
 
-            //var teacherQuery = from st in context.schoolTeachers
-            //                   join stc in (
-            //                   from stc in context.schoolTeacherCourses
-            //                   group stc by new { stc.SchoolId, stc.TeacherId } into g
-            //                   select new
-            //                   {
-            //                       SchoolId = g == null ? (Guid?) g.Key.SchoolId : null,
-            //                       TeacherId = g == null ? (Guid?) g.Key.TeacherId : null,
-            //                       TeacherCoursesCount = (int?)g.Count()
-            //                   }
-            //                   )
-            //                   on new { st.SchoolId, st.TeacherId } equals new { stc.SchoolId, stc.TeacherId } into stcGroup
-            //                   from stc in stcGroup.DefaultIfEmpty()
-            //                   select new 
-            //                   {
-            //                       Id = st.Teacher.Id,
-            //                       UserName = st.Teacher.UserName,
-            //                       FirstName = st.Teacher.FirstName,
-            //                       MiddelName = st.Teacher.MiddelName,
-            //                       LastName = st.Teacher.LastName,
-            //                       PhoneNumber = st.Teacher.PhoneNumber,
-            //                       BirthDay = st.Teacher.BirthDay,
-            //                       Email = st.Teacher.Email,
-            //                       Address = st.Teacher.Address,
-            //                       City = st.Teacher.City,
-            //                       Region = st.Teacher.Region,
-            //                       Contry = st.Teacher.Contry,
-            //                       ImageUrl = st.Teacher.ImageUrl,
-            //                       CoursesCount = stc == null ? 0 : stc.TeacherCoursesCount == null ? 0 : stc.TeacherCoursesCount
-            //                   };
-            var teacherQuery = from st in context.schoolTeachers.Where(s=> s.SchoolId == schoolId)
+            var teacherQuery = from st in context.schoolTeachers.Where(s=> s.SchoolId == schoolId && s.Deleted == false)
                                join stcGroup in (
                                    from stc in context.schoolTeacherCourses
                                    group stc by new { stc.SchoolId, stc.TeacherId } into g
@@ -138,7 +90,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
         public async Task<IEnumerable<TeacherSchoolResultDTO>> GetTeacherSchoolsAsync(Guid teacherId)
         {
             var schools = await context.schoolTeachers
-                .Where(s => s.TeacherId == teacherId)
+                .Where(s => s.TeacherId == teacherId && s.Deleted == false)
                 .Select(s => new TeacherSchoolResultDTO
                 {
                     Id = s.School.Id,

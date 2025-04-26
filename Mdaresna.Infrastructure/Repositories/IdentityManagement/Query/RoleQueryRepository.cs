@@ -24,13 +24,13 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
 
         public async Task<Role?> GetStanderdRole()
         {
-            var role = await context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == "standerd");
+            var role = await context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == "standerd" && r.Deleted == false);
             return role;
         }
 
         public async Task<Role?> GetRoleByNameAsycn(string name)
         {
-            var role = await context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == name.ToLower());
+            var role = await context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == name.ToLower() && r.Deleted == false);
             return role;
         }
 
@@ -52,6 +52,8 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
                             Role = r,
                             PermissionsCount = rp.PermissionsCount
                         };
+
+            query = query.Where(r => r.Role.Deleted == false);
 
 
             query = type == 1 ? query.Where(r => r.Role.SchoolRole == true) : query.Where(r => r.Role.AdminRole == true);

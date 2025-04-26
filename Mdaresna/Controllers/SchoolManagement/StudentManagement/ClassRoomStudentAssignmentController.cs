@@ -2,6 +2,7 @@
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.SchoolManagementDTO.StudentManagementDTO;
 using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Command;
+using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
@@ -132,6 +133,27 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 
                 return Ok(await classRoomStudentAssignmentQueryService.GetClassRoomStudentAssignmentViewAsync(sAss.StudentId, sAss.AssignmentId));
 
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("SoftDeleteStudentAssignment")]
+        public async Task<IActionResult> SoftDeleteStudentAssignment([FromBody] GetClassRoomStudentAssignmentDTO dto)
+        {
+            try
+            {
+                var studentAssignment = await classRoomStudentAssignmentQueryService.GetClassRoomStudentAssignmentAsync(dto.StudentId, dto.AssignementId);
+
+                if (studentAssignment == null)
+                    return BadRequest("There is no assignment to delete");
+
+                studentAssignment.Deleted = true;
+                var deleted = classRoomStudentAssignmentCommandService.Update(studentAssignment);
+
+                return deleted ? Ok("Assignment Deleted") : BadRequest("Error in deleting assignment");
             }
             catch (Exception ex)
             {

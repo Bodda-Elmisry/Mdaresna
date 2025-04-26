@@ -16,6 +16,7 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.ClassRoomManagement
         Task<ClassRoomTeacherCourseResultDTO?> GetClassRoomIeacherCourseAsync(Guid teacherId, Guid roomId, Guid courseId);
         Task<IEnumerable<ClassRoomTeacherCourseResultDTO>?> GetClassRoomIeacherCoursesAsync(Guid teacherId, Guid roomId);
         Task<IEnumerable<ClassRoomTeacherCourseResultDTO>?> GetTeacherClassroomsCoursesAsync(Guid teacherId, Guid schoolId, Guid? roomId, Guid? courseId);
+        Task<IEnumerable<ClassRoomTeacherCourse>?> GetTeacherClassroomsCoursesAsync(Guid teacherId, Guid schoolId);
         Task<ClassRoomTeacherCourse?> GetByIdAsync(Guid teacherId, Guid roomId, Guid courseId);
         Task<bool> IsExistAsync(Guid teacherId, Guid roomId, Guid courseId);
     }

@@ -38,7 +38,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                                                            .Include(s => s.Activity.Course)
                                                            .Include(s => s.Activity.ClassRoom)
                                                            .Include(s => s.Activity.Supervisor)
-                                                           .AsQueryable();
+                                                           .Where(s=> s.Deleted == false);
 
             if (StudentId != null)
                 query = query.Where(s => s.StudentId == StudentId);
@@ -56,9 +56,13 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
 
             #endregion
 
-            query = query.OrderByDescending(q => q.Activity.ActivityDate)
-                         .Skip((pageNumber - 1) * pagesize)
-                         .Take(pagesize);
+            if (pageNumber > 0)
+            {
+                query = query.OrderByDescending(q => q.Activity.ActivityDate)
+                             .Skip((pageNumber - 1) * pagesize)
+                             .Take(pagesize);
+
+            }
 
             var result = await query
                                 .Select(s => new ClassRoomStudentActivityResultDTO
@@ -83,9 +87,23 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
             return result;
         }
 
+        public async Task<IEnumerable<ClassRoomStudentActivity>> GetStudentActivitiesListAsync(Guid ActivityId)
+        {
+            #region Create Query
+            var query = context.ClassRoomStudentActivities.Include(s => s.Student)
+                                                           .Where(s => s.Deleted == false && s.ActivityId == ActivityId);
+
+
+
+
+            #endregion
+
+            return await query.ToListAsync();
+        }
+
         public async Task<ClassRoomStudentActivity?> GetClassRoomStudentActivityAsync(Guid studentId, Guid ActivityId)
         {
-            return await context.ClassRoomStudentActivities.FirstOrDefaultAsync(s => s.StudentId == studentId && s.ActivityId == ActivityId);
+            return await context.ClassRoomStudentActivities.FirstOrDefaultAsync(s => s.StudentId == studentId && s.ActivityId == ActivityId && s.Deleted == false);
         }
 
         public async Task<ClassRoomStudentActivityResultDTO?> GetClassRoomStudentActivityViewAsync(Guid studentId, Guid ActivityId)
@@ -94,7 +112,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                                                            .Include(s => s.Activity.Course)
                                                            .Include(s => s.Activity.ClassRoom)
                                                            .Include(s => s.Activity.Supervisor)
-                                                           .FirstOrDefaultAsync(s => s.StudentId == studentId && s.ActivityId == ActivityId);
+                                                           .FirstOrDefaultAsync(s => s.StudentId == studentId && s.ActivityId == ActivityId && s.Deleted == false);
 
             return Activity == null ? null : new ClassRoomStudentActivityResultDTO
             {

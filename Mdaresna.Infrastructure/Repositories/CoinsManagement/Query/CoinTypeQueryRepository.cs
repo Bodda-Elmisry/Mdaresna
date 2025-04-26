@@ -22,7 +22,7 @@ namespace Mdaresna.Infrastructure.Repositories.CoinsManagement.Query
 
         public async Task<IEnumerable<CoinType>> GetCoinTypesListAsync(string? name, decimal? value, string? notes)
         {
-            var quey = context.CoinsTypes.AsQueryable();
+            var quey = context.CoinsTypes.Where(x=> x.Deleted == false);
 
             quey = !string.IsNullOrEmpty(name) ? quey.Where(x => x.Name.Contains(name)) : quey;
 

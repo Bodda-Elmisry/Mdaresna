@@ -22,7 +22,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
         public async Task<IEnumerable<SchoolGrade>> GetSchoolGradesAsync(Guid SchoolId)
         {
-            return await context.SchoolGrades.Where(g => g.SchoolId == SchoolId).ToListAsync();
+            return await context.SchoolGrades.Where(g => g.SchoolId == SchoolId && g.Deleted == false).ToListAsync();
         }
     }
 }

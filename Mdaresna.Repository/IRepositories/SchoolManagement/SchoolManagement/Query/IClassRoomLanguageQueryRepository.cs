@@ -13,5 +13,6 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Qu
     {
         public Task<IEnumerable<School>> GetLanguageSchools(Guid LnaguageId);
         public Task<IEnumerable<Language>> GetSchoolLanguages(Guid LnaguageId);
+        Task<ClassRoomLanguage?> GetSchoolLanguageById(Guid SchoolId, Guid LanguageId);
     }
 }

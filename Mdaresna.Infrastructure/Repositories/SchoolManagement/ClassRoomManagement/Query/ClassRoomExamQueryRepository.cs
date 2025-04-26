@@ -27,7 +27,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                                                                       string weekDay, Guid? classRoomId, Guid? supervisorId,
                                                                       Guid? courseId, decimal? rate)
         {
-            var query = context.ClassRoomExams.AsQueryable();
+            var query = context.ClassRoomExams.Where(c => c.Deleted == false);
 
             if(months != null && months.Count() > 0)
                 query = query.Where(e => months.Contains(e.MonthId));
@@ -80,28 +80,28 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
 
         public async Task<CreateClassRoomExamInitialDataDTO> GetInitialData(Guid schoolId)
         {
-            var supervisors = await context.schoolTeachers.Where(t => t.SchoolId == schoolId)
+            var supervisors = await context.schoolTeachers.Where(t => t.SchoolId == schoolId && t.Deleted == false)
                                             .Select(t => new DropDownDTO
                                             {
                                                 Id = t.TeacherId,
                                                 Name = string.Format("{0} {1} {2}", t.Teacher.FirstName, t.Teacher.MiddelName, t.Teacher.LastName)
                                             }).ToListAsync();
 
-            var classRooms = await context.ClassRooms.Where(t => t.SchoolId == schoolId)
+            var classRooms = await context.ClassRooms.Where(t => t.SchoolId == schoolId && t.Deleted == false)
                                             .Select(t => new DropDownDTO
                                             {
                                                 Id = t.Id,
                                                 Name = t.Name
                                             }).ToListAsync();
 
-            var courses = await context.SchoolCourses.Where(t => t.SchoolId == schoolId)
+            var courses = await context.SchoolCourses.Where(t => t.SchoolId == schoolId && t.Deleted == false)
                                             .Select(t => new DropDownDTO
                                             {
                                                 Id = t.Id,
                                                 Name = t.Name
                                             }).ToListAsync();
 
-            var coursesMonthes = await context.SchoolYearMonths.Where(t => t.Year.SchoolId == schoolId)
+            var coursesMonthes = await context.SchoolYearMonths.Where(t => t.Year.SchoolId == schoolId && t.Deleted == false)
                                             .Select(t => new DropDownDTO
                                             {
                                                 Id = t.Id,
@@ -122,7 +122,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
 
         public async Task<ClassRoomExamResultDTO?> GetExamByIdAsync(Guid examid)
         {
-            var result = await context.ClassRoomExams.Include(e=> e.ClassRoom).Include(e => e.Supervisor).Include(e => e.Course).Include(e => e.Month).FirstOrDefaultAsync(e=> e.Id == examid);
+            var result = await context.ClassRoomExams.Include(e=> e.ClassRoom).Include(e => e.Supervisor).Include(e => e.Course).Include(e => e.Month).FirstOrDefaultAsync(e=> e.Id == examid && e.Deleted == false);
 
             return result != null ? new ClassRoomExamResultDTO
             {

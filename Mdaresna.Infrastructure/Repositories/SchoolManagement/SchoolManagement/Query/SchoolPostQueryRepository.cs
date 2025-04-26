@@ -33,7 +33,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             var query = context.SchoolPosts
                 .Include(p => p.Poster)
                 .Include(p => p.School)
-                .Where(x => x.SchoolId == schoolId);
+                .Where(x => x.SchoolId == schoolId && x.Deleted == false);
 
             query = !string.IsNullOrEmpty(searchText) ? query.Where(x => x.Content.Contains(searchText) || x.Poster.FirstName.Contains(searchText) || x.Poster.LastName.Contains(searchText) || (x.Poster.FirstName + x.Poster.LastName).Contains(searchText.Replace(" ", ""))) : query;
 
@@ -66,7 +66,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             var post = await context.SchoolPosts
                 .Include(p=> p.Poster)
                 .Include(p => p.School)
-                .FirstOrDefaultAsync(x => x.Id == postId);
+                .FirstOrDefaultAsync(x => x.Id == postId && x.Deleted == false);
 
             var result = new PostResultDTO
             {

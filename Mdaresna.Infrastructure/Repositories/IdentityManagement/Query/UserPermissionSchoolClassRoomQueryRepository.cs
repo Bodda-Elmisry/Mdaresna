@@ -22,7 +22,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
 
         public async Task<UserPermissionSchoolClassRoom?> GetUserPermissionSchoolClassRoomByIdAsync(Guid userId, Guid permissionId, Guid classroomId)
         {
-            return await context.userPermissionSchoolClassRooms.FirstOrDefaultAsync(c => c.UserId == userId && c.PermissionId == permissionId && c.ClassRoomId == classroomId);
+            return await context.userPermissionSchoolClassRooms.FirstOrDefaultAsync(c => c.UserId == userId && c.PermissionId == permissionId && c.ClassRoomId == classroomId && c.Deleted == false);
         }
 
 

@@ -24,7 +24,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
         public async Task<IEnumerable<SchoolCourseResultDTO>> GetCoursesBySchoolIdAsync(Guid schoolId)
         {
             return await context.SchoolCourses
-                        .Where(c => c.SchoolId == schoolId)
+                        .Where(c => c.SchoolId == schoolId && c.Deleted == false)
                         .Select(s=> new SchoolCourseResultDTO
                         {
                             Id = s.Id,
@@ -41,7 +41,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
         public async Task<IEnumerable<SchoolCourseResultDTO>> GetCoursesBySchoolIdAndLanguageIDAsync(Guid schoolId, Guid languageId)
         {
             return await context.SchoolCourses
-                        .Where(c => c.SchoolId == schoolId && c.LanguageId == languageId)
+                        .Where(c => c.SchoolId == schoolId && c.LanguageId == languageId && c.Deleted == false)
                         .Select(s => new SchoolCourseResultDTO
                         {
                             Id = s.Id,
@@ -60,7 +60,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
         {
             var schoolCourse = await context.SchoolCourses
                                      .Include(s => s.School).Include(s => s.Language)
-                                     .FirstOrDefaultAsync(s => s.Id == id);
+                                     .FirstOrDefaultAsync(s => s.Id == id && s.Deleted == false);
 
             return schoolCourse == null ? null :
                                     new SchoolCourseResultDTO

@@ -39,6 +39,11 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.
             return await classRoomQueryRepository.GetBySchoolIdAsync(SchoolId);
         }
 
+        public async Task<IEnumerable<ClassRoom>> GetCLassroomsBySchoolIdAsync(Guid SchoolId)
+        {
+            return await classRoomQueryRepository.GetCLassroomsBySchoolIdAsync(SchoolId);
+        }
+
         public async Task<IEnumerable<ClassRoomResultDTO>> GetBySchoolIdAndSupervisorIdAsync(Guid SchoolId, Guid SupervisorId)
         {
             return await classRoomQueryRepository.GetBySchoolIdAndSupervisorIdAsync(SchoolId, SupervisorId);

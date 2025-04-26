@@ -12,12 +12,15 @@ namespace Mdaresna.Controllers.IdentityManagement
     {
         private readonly IRoleCommandService roleCommandService;
         private readonly IRoleQueryService roleQueryService;
+        private readonly IUserRoleQueryService userRoleQueryService;
 
         public RoleController(IRoleCommandService roleCommandService,
-                              IRoleQueryService roleQueryService)
+                              IRoleQueryService roleQueryService, 
+                              IUserRoleQueryService userRoleQueryService)
         {
             this.roleCommandService = roleCommandService;
             this.roleQueryService = roleQueryService;
+            this.userRoleQueryService = userRoleQueryService;
         }
 
         [HttpPost("GetRolesList")]
@@ -139,6 +142,29 @@ namespace Mdaresna.Controllers.IdentityManagement
                     return BadRequest("Error in changing activation");
 
                 return Ok("Role activation changed");
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("DeleteRole")]
+        public async Task<IActionResult> DeleteRole([FromBody] RoleIdDTO dto)
+        {
+            try
+            {
+                var userRoles = await userRoleQueryService.GetRoleUsersAsync(dto.RoleId, null);
+                if (userRoles != null)
+                    return BadRequest("Remove Users From Role First");
+                var role = new Role
+                {
+                    Id = dto.RoleId,
+                };
+                var deleted = await roleCommandService.DeleteAsync(role);
+
+                return deleted ? Ok("Role deleted") : BadRequest("Error in deleting role");
 
             }
             catch (Exception ex)

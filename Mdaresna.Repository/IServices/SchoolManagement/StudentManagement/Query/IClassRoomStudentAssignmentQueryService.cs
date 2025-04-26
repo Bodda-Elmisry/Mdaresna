@@ -19,6 +19,8 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query
                                                                                                      DateTime? DeliveredDateFrom,
                                                                                                      DateTime? DeliveredDateTo,
                                                                                                      int pageNumber);
+
+        Task<IEnumerable<ClassRoomStudentAssignment>> GetStudentAssignmentsListAsync(Guid AssignementId);
         Task<ClassRoomStudentAssignment?> GetClassRoomStudentAssignmentAsync(Guid studentId, Guid AssignmentId);
         Task<ClassRoomStudentAssignmentResultDTO?> GetClassRoomStudentAssignmentViewAsync(Guid studentId, Guid AssignmentId);
     }

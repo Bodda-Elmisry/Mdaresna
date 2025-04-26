@@ -1,8 +1,11 @@
 ﻿using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO;
+using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
+using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
+using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
@@ -12,12 +15,21 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
     {
         private readonly ISchoolCommandService schoolCommandService;
         private readonly ISchoolQueryService schoolQueryService;
+        private readonly IClassRoomCommandService classRoomCommandService;
+        private readonly IClassRoomQueryService classRoomQueryService;
+        private readonly IStudentQueryService studentQueryService;
 
         public SchoolController(ISchoolCommandService schoolCommandService, 
-                                ISchoolQueryService schoolQueryService)
+                                ISchoolQueryService schoolQueryService,
+                                IClassRoomCommandService classRoomCommandService,
+                                IClassRoomQueryService classRoomQueryService,
+                                IStudentQueryService studentQueryService)
         {
             this.schoolCommandService = schoolCommandService;
             this.schoolQueryService = schoolQueryService;
+            this.classRoomCommandService = classRoomCommandService;
+            this.classRoomQueryService = classRoomQueryService;
+            this.studentQueryService = studentQueryService;
         }
 
         [HttpPost("AddSchool")]
@@ -211,6 +223,41 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 return Ok(schools);
             }
             catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("SoftDeleteSchool")]
+        public async Task<IActionResult> SoftDeleteSchool([FromBody] SchoolIdDTO dto)
+        {
+            try
+            {
+                var schoolStudents = await studentQueryService.GetStudentsBySchoolIdAsync(dto.SchoolId, string.Empty, string.Empty);
+
+                if(schoolStudents != null && schoolStudents.Count() > 0)
+                    return BadRequest("There are students in this school, you can't delete it");
+
+                var school = await schoolQueryService.GetByIdAsync(dto.SchoolId);
+
+                if (school == null)
+                    return BadRequest("There is no school to delete");
+
+                var classRooms = await classRoomQueryService.GetCLassroomsBySchoolIdAsync(school.Id);
+
+                foreach (var classRoom in classRooms)
+                {
+                    classRoom.Deleted = true;
+
+                    classRoomCommandService.Update(classRoom);
+                }
+
+                var deleted = schoolCommandService.Update(school);
+
+                return deleted ? Ok("School deleted") : BadRequest("Error in deleting school");
+
+            }
+            catch(Exception ex)
             {
                 return BadRequest(ex.Message);
             }

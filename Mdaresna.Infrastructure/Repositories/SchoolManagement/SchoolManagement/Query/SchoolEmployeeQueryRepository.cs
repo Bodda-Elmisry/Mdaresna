@@ -24,13 +24,13 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
         public async Task<bool> IsExist(Guid schoolId, Guid employeeId)
         {
-            return await context.SchoolEmployees.AnyAsync(s => s.SchoolId == schoolId && s.EmployeeId == employeeId);
+            return await context.SchoolEmployees.AnyAsync(s => s.SchoolId == schoolId && s.EmployeeId == employeeId && s.Deleted == false);
         }
 
         public async Task<IEnumerable<TeacherSchoolResultDTO>> GetEmployeeSchoolsAsync(Guid employeeId)
         {
             var schools = await context.SchoolEmployees
-                .Where(s => s.EmployeeId == employeeId)
+                .Where(s => s.EmployeeId == employeeId && s.Deleted == false)
                 .Select(s => new TeacherSchoolResultDTO
                 {
                     Id = s.School.Id,
@@ -44,13 +44,13 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
         public async Task<SchoolEmployee?> GetSchoolEmployeeByIdAsync(Guid schoolId, Guid employeeId)
         {
-            return await context.SchoolEmployees.FirstOrDefaultAsync(s => s.SchoolId == schoolId && s.EmployeeId == employeeId);
+            return await context.SchoolEmployees.FirstOrDefaultAsync(s => s.SchoolId == schoolId && s.EmployeeId == employeeId && s.Deleted == false);
 
         }
 
         public async Task<IEnumerable<EmployeeResultDTO>> GetSchoolEmployeesAsync(Guid schoolId, string employeeName, string employeePhoneNumber, string employeeEmail)
         {
-            var employeeQuery = from st in context.SchoolEmployees.Where(s => s.SchoolId == schoolId)
+            var employeeQuery = from st in context.SchoolEmployees.Where(s => s.SchoolId == schoolId && s.Deleted == false)
                                select new EmployeeResultDTO
                                {
                                    Id = st.Employee.Id,

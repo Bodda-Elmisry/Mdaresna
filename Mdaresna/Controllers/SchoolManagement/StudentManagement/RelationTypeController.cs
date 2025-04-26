@@ -101,6 +101,29 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             }
         }
 
+        [HttpPost("SoftDeleteRelationType")]
+        public async Task<IActionResult> SoftDeleteRelationType([FromBody] RelationTypeIdDTO relationTypeId)
+        {
+            try
+            {
+                var type = await relationTypeQueryService.GetByIdAsync(relationTypeId.RelationTypeId);
+
+                if (type == null)
+                    return BadRequest("There is no type to delete");
+
+                type.Deleted = true;
+
+                var deleted = relationTypeCommandService.Update(type);
+                
+
+                return deleted ? Ok("Relation type deleted") : BadRequest("Error in deleting relation type");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
 
 

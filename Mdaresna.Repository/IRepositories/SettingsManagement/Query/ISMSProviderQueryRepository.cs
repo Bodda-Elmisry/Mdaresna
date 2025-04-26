@@ -11,6 +11,6 @@ namespace Mdaresna.Repository.IRepositories.SettingsManagement.Query
     public interface ISMSProviderQueryRepository : IBaseQueryRepository<SMSProvider>
     {
         Task<IEnumerable<SMSProvider>> GetAllActive();
-        Task<SMSProvider> GetFirstActive();
+        Task<SMSProvider?> GetFirstActive();
     }
 }

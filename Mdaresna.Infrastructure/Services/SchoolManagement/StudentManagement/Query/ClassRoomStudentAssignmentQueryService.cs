@@ -38,5 +38,10 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Qu
         {
             return await classRoomStudentAssignmentQueryRepository.GetStudentAssignmentsListAsync(StudentId, AssignementId, ResultFrom, ResultTo, IsDelivered, DeliveredDateFrom, DeliveredDateTo, pageNumber);
         }
+
+        public async Task<IEnumerable<ClassRoomStudentAssignment>> GetStudentAssignmentsListAsync(Guid AssignementId)
+        {
+            return await classRoomStudentAssignmentQueryRepository.GetStudentAssignmentsListAsync(AssignementId);
+        }
     }
 }

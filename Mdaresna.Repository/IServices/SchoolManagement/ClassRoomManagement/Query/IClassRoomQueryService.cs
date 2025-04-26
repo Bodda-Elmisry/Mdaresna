@@ -13,6 +13,7 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Que
     public interface IClassRoomQueryService : IBaseQueryService<ClassRoom>
     {
         Task<IEnumerable<ClassRoomResultDTO>> GetBySchoolIdAsync(Guid SchoolId);
+        Task<IEnumerable<ClassRoom>> GetCLassroomsBySchoolIdAsync(Guid SchoolId);
         Task<IEnumerable<ClassRoomResultDTO>> GetBySchoolIdAndSupervisorIdAsync(Guid SchoolId, Guid SupervisorId);
         Task<IEnumerable<ClassRoomResultDTO>> GetBySchoolIdAndUserIdAsync(Guid schoolId, Guid userId);
         Task<ClassRoomResultDTO?> GetClassRoomByIdAsync(Guid roomId);

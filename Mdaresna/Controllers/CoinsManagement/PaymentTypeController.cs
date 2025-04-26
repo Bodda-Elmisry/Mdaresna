@@ -144,6 +144,28 @@ namespace Mdaresna.Controllers.CoinsManagement
             }
         }
 
+        [HttpPost("SoftDeleteType")]
+        public async Task<IActionResult> SoftDeleteType([FromBody] PaymentTypeIdDTO dTO)
+        {
+            try
+            {
+                var type = await paymentTypeQueryService.GetByIdAsync(dTO.PaymentTypeId);
+
+                if (type == null)
+                    return BadRequest("There id no type to delete");
+
+                type.Deleted = true;
+
+                var updated = paymentTypeCommandService.Update(type);
+
+                return updated ? Ok("Type Deleted") : BadRequest("Error in delete type");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
 
 

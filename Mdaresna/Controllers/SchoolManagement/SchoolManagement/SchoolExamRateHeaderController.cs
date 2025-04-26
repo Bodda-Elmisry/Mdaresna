@@ -120,6 +120,31 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             }
         }
 
+        [HttpPost("SoftDeleteRateHeader")]
+        public async Task<IActionResult> SoftDeleteRateHeader([FromBody] RateHeaderIdDTO rateHeaderId)
+        {
+            try
+            {
+                var header = await schoolExamRateHeaderQueryService.GetByIdAsync(rateHeaderId.RateHeaderId);
+
+                if (header == null)
+                    return BadRequest("Can't find header");
+
+                header.Deleted = true;
+
+                var deleted = schoolExamRateHeaderCommandService.Update(header);
+
+                if (deleted)
+                    return Ok("Header deleted");
+
+                return BadRequest("Error in delete header");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
 
 

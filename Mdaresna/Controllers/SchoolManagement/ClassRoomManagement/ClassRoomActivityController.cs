@@ -1,10 +1,13 @@
 ﻿using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
+using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.ClassRoomManagementDTO;
 using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
+using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
+using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
@@ -14,12 +17,18 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
     {
         private readonly IClassRoomActivityQueryService classRoomActivityQueryService;
         private readonly IClassRoomActivityCommandService classRoomActivityCommandService;
+        private readonly IClassRoomStudentActivityQueryService classRoomStudentActivityQueryService;
+        private readonly IClassRoomStudentActivityCommandService classRoomStudentActivityCommandService;
 
         public ClassRoomActivityController(IClassRoomActivityQueryService classRoomActivityQueryService,
-                                           IClassRoomActivityCommandService classRoomActivityCommandService)
+                                           IClassRoomActivityCommandService classRoomActivityCommandService,
+                                           IClassRoomStudentActivityQueryService classRoomStudentActivityQueryService,
+                                           IClassRoomStudentActivityCommandService classRoomStudentActivityCommandService)
         {
             this.classRoomActivityQueryService = classRoomActivityQueryService;
             this.classRoomActivityCommandService = classRoomActivityCommandService;
+            this.classRoomStudentActivityQueryService = classRoomStudentActivityQueryService;
+            this.classRoomStudentActivityCommandService = classRoomStudentActivityCommandService;
         }
 
         [HttpPost("GetClassroomActivitysList")]
@@ -114,6 +123,38 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
 
                 return BadRequest("Error in updating activity");
 
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("SoftDeleteClassroomActivity")]
+        public async Task<IActionResult> SoftDeleteClassroomActivity([FromBody] ActivityIdDTO dTO)
+        {
+            try
+            {
+                var activity = await classRoomActivityQueryService.GetByIdAsync(dTO.ActivityId);
+
+                if (activity == null)
+                    return BadRequest("There is no activity to delete");
+
+                activity.Deleted = true;
+
+                var activityStudents = await classRoomStudentActivityQueryService.GetStudentActivitiesListAsync(activity.Id);
+
+                foreach (var activityStudent in activityStudents)
+                {
+                    activityStudent.Deleted = true;
+                    classRoomStudentActivityCommandService.Update(activityStudent);
+                }
+
+                
+
+                var result = classRoomActivityCommandService.Update(activity);
+
+                return result ? Ok("Activity Deleted") : BadRequest("Error in deleting activity");
             }
             catch (Exception ex)
             {

@@ -24,7 +24,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
         public async Task<IEnumerable<School>> GetLanguageSchools(Guid LnaguageId)
         {
             var result = await context.ClassRoomLanguages
-                        .Where(c => c.LanguageId == LnaguageId)
+                        .Where(c => c.LanguageId == LnaguageId && c.Deleted == false)
                         .Select(c => c.School).ToListAsync();
             return result;
 
@@ -33,8 +33,17 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
         public async Task<IEnumerable<Language>> GetSchoolLanguages(Guid SchoolId)
         {
             var result = await context.ClassRoomLanguages
-                        .Where(c => c.SchoolId == SchoolId)
+                        .Where(c => c.SchoolId == SchoolId && c.Deleted == false)
                         .Select(c => c.Language).ToListAsync();
+            return result;
+
+        }
+
+        public async Task<ClassRoomLanguage?> GetSchoolLanguageById(Guid SchoolId, Guid LanguageId)
+        {
+            var result = await context.ClassRoomLanguages
+                        .Where(c => c.SchoolId == SchoolId && c.LanguageId == LanguageId && c.Deleted == false)
+                        .FirstOrDefaultAsync();
             return result;
 
         }

@@ -38,5 +38,9 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Que
             return await classRoomLanguageQueryRepository.GetSchoolLanguages(SchoolId);
 
         }
+        public async Task<ClassRoomLanguage?> GetSchoolLanguageById(Guid SchoolId, Guid LanguageId)
+        {
+            return await classRoomLanguageQueryRepository.GetSchoolLanguageById(SchoolId, LanguageId);
+        }
     }
 }

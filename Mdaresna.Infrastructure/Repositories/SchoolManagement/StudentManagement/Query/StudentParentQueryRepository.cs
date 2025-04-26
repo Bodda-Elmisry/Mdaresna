@@ -65,13 +65,14 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
 
         public async Task<StudentParent?> GetstudentParentByIdAsync(Guid parentId, Guid studentId)
         {
-            return await context.StudentParents.FirstOrDefaultAsync(p => p.StudentId == studentId && p.ParentId == parentId);
+            return await context.StudentParents.FirstOrDefaultAsync(p => p.StudentId == studentId && p.ParentId == parentId && p.Deleted == false);
         }
 
         private IQueryable<StudentParentResultDTO> GetQuery()
         {
             return context.StudentParents
                         .Include(p => p.Parent).Include(p => p.Student).Include(p => p.Relation)
+                        .Where(p=> p.Deleted == false)
                         .Select(p=> new StudentParentResultDTO
                         {
                             ParentId = p.ParentId,
@@ -93,8 +94,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                                 join sc in context.Schools on s.SchoolId equals sc.Id
                                 join cr in context.ClassRooms on s.ClassRoomId equals cr.Id
                                 join sg in context.SchoolGrades on cr.GradeId equals sg.Id
-                          where s.IsPayed == true && s.Active == true
-                                select new ParentStudentResultDTO
+                          where s.IsPayed == true && s.Active == true && s.Deleted == false
+                          select new ParentStudentResultDTO
                                 {
                                     StudentId = s.Id,
                                     StudentCode = s.Code,

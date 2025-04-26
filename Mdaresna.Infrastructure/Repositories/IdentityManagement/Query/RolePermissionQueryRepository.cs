@@ -24,6 +24,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
         public async Task<IEnumerable<RolePermissionResultDTO>> GetRolePermissions(Guid roleId)
         {
             return await context.RolePermissions.Include(r => r.Role).Include(r => r.Permission)
+                                    .Where(r=> r.RoleId == roleId && r.Deleted == false)
                                     .Select(r => new RolePermissionResultDTO
                                     {
                                         RoleId = r.RoleId,
@@ -32,7 +33,6 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
                                         PermissionName = r.Permission.Name,
                                         PermissionDescription = r.Permission.Description
                                     })
-                                    .Where(r=> r.RoleId == roleId)
                                     .ToListAsync();
         }
 

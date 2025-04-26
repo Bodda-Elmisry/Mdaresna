@@ -32,6 +32,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
             int pagesize = _appSettings.PageSize != null ? _appSettings.PageSize.Value : 30;
             var query = context.ClassRoomAssignments
                         .Include(c => c.ClassRoom).Include(c => c.Course).Include(c => c.Supervisor)
+                        .Where(c=> c.Deleted == false)
                         .Select(c => new ClassRoomAssignmentResultDTO
                         {
                             Id = c.Id,
@@ -86,7 +87,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
             var item = await context.ClassRoomAssignments.Include(a=> a.Supervisor)
                                                          .Include(a => a.Course)
                                                          .Include(a => a.ClassRoom)
-                                                         .FirstOrDefaultAsync(c=> c.Id == assignmentId);
+                                                         .FirstOrDefaultAsync(c=> c.Id == assignmentId && c.Deleted == false);
 
             return item != null ?
                 new ClassRoomAssignmentResultDTO

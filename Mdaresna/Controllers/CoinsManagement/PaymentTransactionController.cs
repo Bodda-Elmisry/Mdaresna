@@ -116,5 +116,27 @@ namespace Mdaresna.Controllers.CoinsManagement
             }
         }
 
+        [HttpPost("SoftDeletePayment")]
+        public async Task<IActionResult> SoftDeletePayment([FromBody] PaymentTransactionIdDTO dto)
+        {
+            try
+            {
+                var payment = await paymentTransactionQueryService.GetByIdAsync(dto.PaymentTransactionId);
+
+                if (payment == null)
+                    return BadRequest("Payment Not Found");
+
+                payment.Deleted = true;
+
+                var result = paymentTransactionCommandService.Update(payment);
+
+                return result ? Ok("Payment Deleted") : BadRequest("Error in delete payment");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

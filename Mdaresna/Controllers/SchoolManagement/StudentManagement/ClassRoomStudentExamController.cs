@@ -1,6 +1,8 @@
 ﻿using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.SchoolManagementDTO.StudentManagementDTO;
+using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Command;
+using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
@@ -148,6 +150,27 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 
                 return Ok(await classRoomStudentExamQueryService.GetClassRoomStudentExamViewAsync(dto.StudentId, dto.ExamId));
 
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("SoftDeleteStudentExam")]
+        public async Task<IActionResult> SoftDeleteStudentExam([FromBody] GetClassRoomStudentExamDTO dto)
+        {
+            try
+            {
+                var studentExam = await classRoomStudentExamQueryService.GetClassRoomStudentExamAsync(dto.StudentId, dto.ExamId);
+
+                if (studentExam == null)
+                    return BadRequest("There is no exam to delete");
+
+                studentExam.Deleted = true;
+                var deleted = classRoomStudentExamCommandService.Update(studentExam);
+
+                return deleted ? Ok("Exam Deleted") : BadRequest("Error in deleting exam");
             }
             catch (Exception ex)
             {

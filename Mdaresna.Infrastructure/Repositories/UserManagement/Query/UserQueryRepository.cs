@@ -26,7 +26,7 @@ namespace Mdaresna.Infrastructure.Repositories.UserManagement.Query
         {
             try
             {
-                return await context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == PhoneNumber);
+                return await context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == PhoneNumber && u.Deleted == false);
             }
             catch (Exception ex)
             {
@@ -37,33 +37,37 @@ namespace Mdaresna.Infrastructure.Repositories.UserManagement.Query
         public async Task<User?> GetUserByPhoneNumberAndConfirmationKey(string PhoneNumber, string Key)
         {
             return await context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == PhoneNumber &&
-                                                                u.PhoneConfirmationCode == Key);
+                                                                u.PhoneConfirmationCode == Key &&
+                                                                u.Deleted == false);
         }
 
         public async Task<User?> GetUserByPhoneNumberAndPassword(string PhoneNumber, string Password)
         {
             return await context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == PhoneNumber &&
-                                                                u.Password == Password);
+                                                                u.Password == Password &&
+                                                                u.Deleted == false);
         }
 
-        public async Task<UserResultDTO> GetUserById(Guid Id)
+        public async Task<UserResultDTO?> GetUserById(Guid Id)
         {
-            return await context.Users.Select(s => new UserResultDTO
+            var user =  await context.Users.FirstAsync(u => u.Id == Id && u.Deleted == false);
+
+            return user != null ? new UserResultDTO
             {
-                Id = s.Id,
-                UserName = s.UserName,
-                FirstName = s.FirstName,
-                MiddelName = s.MiddelName,
-                LastName = s.LastName,
-                PhoneNumber = s.PhoneNumber,
-                ImageUrl = !string.IsNullOrEmpty(s.ImageUrl) ? $"{SettingsHelper.GetAppUrl()}/{s.ImageUrl.Replace("\\", "/")}" : null,
-                BirthDay = s.BirthDay,
-                Address = s.Address,
-                City = s.City,
-                Region = s.Region,
-                Country = s.Contry,
-                Email = s.Email
-            }).FirstAsync(u => u.Id == Id);
+                Id = user.Id,
+                UserName = user.UserName,
+                FirstName = user.FirstName,
+                MiddelName = user.MiddelName,
+                LastName = user.LastName,
+                PhoneNumber = user.PhoneNumber,
+                ImageUrl = !string.IsNullOrEmpty(user.ImageUrl) ? $"{SettingsHelper.GetAppUrl()}/{user.ImageUrl.Replace("\\", "/")}" : null,
+                BirthDay = user.BirthDay,
+                Address = user.Address,
+                City = user.City,
+                Region = user.Region,
+                Country = user.Contry,
+                Email = user.Email
+            } : null;
         }
     }
 }

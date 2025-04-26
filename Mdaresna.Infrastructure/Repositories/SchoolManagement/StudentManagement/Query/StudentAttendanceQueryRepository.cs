@@ -33,6 +33,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
             int pagesize = _appSettings.PageSize != null ? _appSettings.PageSize.Value : 30;
             var query = context.StudentAttendances
                         .Include(a=> a.Student).Include(a => a.ClassRoom).Include(a => a.Supervisor)
+                        .Where(a=> a.Deleted == false)
                         .Select(a => new StudentAttendanceResultDTO
                         {
                             Id = a.Id,

@@ -24,7 +24,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
         public async Task<IEnumerable<SchoolExamRateHeaderResultDTO>> GetRateHeadersAsync(Guid schoolId, string name, decimal? percentage)
         {
-            var query = context.SchoolExamRateHeaders.Where(h => h.SchoolId == schoolId);
+            var query = context.SchoolExamRateHeaders.Where(h => h.SchoolId == schoolId && h.Deleted == false);
 
             if(!string.IsNullOrEmpty(name)) 
                 query = query.Where(h=> h.Name.Contains(name));
@@ -45,14 +45,16 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
         public async Task<SchoolExamRateHeaderResultDTO?> GetRateHeaderAsync(Guid headerId)
         {
-            return await context.SchoolExamRateHeaders.Select(h => new SchoolExamRateHeaderResultDTO
+            var row = await context.SchoolExamRateHeaders.FirstOrDefaultAsync(h => h.Id == headerId && h.Deleted == false);
+
+            return row == null ? null : new SchoolExamRateHeaderResultDTO
             {
-                Id = h.Id,
-                Name = h.Name,
-                Percentage = h.Percentage,
-                Note = h.Note,
-                SchoolId = h.SchoolId
-            }).FirstOrDefaultAsync(h => h.Id == headerId);
+                Id = row.Id,
+                Name = row.Name,
+                Percentage = row.Percentage,
+                Note = row.Note,
+                SchoolId = row.SchoolId
+            };
         }
 
 

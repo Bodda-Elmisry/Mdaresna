@@ -215,6 +215,28 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 
         }
 
+        [HttpPost("SoftDeleteStudent")]
+        public async Task<IActionResult> SoftDeleteStudent([FromBody] StudentIdDTO studentIdDTO)
+        {
+            try
+            {
+                var student = await studentQueryService.GetByIdAsync(studentIdDTO.StudentId);
+
+                if (student == null)
+                    return BadRequest("Student Not Found");
+
+                student.Deleted = true;
+
+                var deleted = studentCommandService.Update(student);
+
+                return deleted ? Ok("Student Deleted") : BadRequest("Error in delete student");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
         private async Task<string> GenerateCode(Guid schoolId)
         {

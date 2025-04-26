@@ -22,7 +22,7 @@ namespace Mdaresna.Infrastructure.Repositories.UserManagement.Query
 
         public async Task<RelationType?> GetRelationByNameAsync(string name)
         {
-            return await context.relationTypes.FirstOrDefaultAsync(t => t.Name == name);
+            return await context.relationTypes.FirstOrDefaultAsync(t => t.Name == name && t.Deleted == false);
         }
 
 

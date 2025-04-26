@@ -14,6 +14,6 @@ namespace Mdaresna.Repository.IRepositories.UserManagement.Query
         Task<User?> GetUserByPhoneNumber(string PhoneNumber);
         Task<User?> GetUserByPhoneNumberAndConfirmationKey(string PhoneNumber, string Key);
         Task<User?> GetUserByPhoneNumberAndPassword(string PhoneNumber, string Password);
-        Task<UserResultDTO> GetUserById(Guid Id);
+        Task<UserResultDTO?> GetUserById(Guid Id);
     }
 }

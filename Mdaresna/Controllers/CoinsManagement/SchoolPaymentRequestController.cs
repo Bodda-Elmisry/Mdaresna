@@ -52,7 +52,7 @@ namespace Mdaresna.Controllers.CoinsManagement
 
                 return Ok(requests);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -188,7 +188,7 @@ namespace Mdaresna.Controllers.CoinsManagement
                 return Ok("Request approved");
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -214,7 +214,7 @@ namespace Mdaresna.Controllers.CoinsManagement
 
                 return Ok("Request rejected");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -248,7 +248,29 @@ namespace Mdaresna.Controllers.CoinsManagement
             }
         }
 
+        [HttpPost("SoftDeleteRequest")]
+        public async Task<IActionResult> SoftDeleteRequest([FromBody] PaymentRequestIdDTO dTO)
+        {
+            try
+            {
+                var request = await schoolPaymentRequestQueryService.GetByIdAsync(dTO.RequestId);
+
+                if (request == null)
+                    return BadRequest("There is no request to delete");
+
+                request.Deleted = true;
+
+                var deleted = schoolPaymentRequestCommandService.Update(request);
+
+                return deleted ? Ok("Request Deleted") : BadRequest("Error in delete request");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
 
+
+        }
     }
 }

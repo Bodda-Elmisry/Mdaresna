@@ -42,7 +42,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("AddContact")]
-        public async Task<IActionResult> CreateContact([FromBody]CreateSchoolContactDTO createSchoolContactDTO)
+        public async Task<IActionResult> CreateContact([FromBody] CreateSchoolContactDTO createSchoolContactDTO)
         {
             try
             {
@@ -54,8 +54,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 };
 
                 var added = schoolContactCommandService.Create(contact);
-                
-                if(added)
+
+                if (added)
                     return Ok(await schoolContactQueryService.GetSchoolContactById(contact.Id));
 
                 return BadRequest("Error in adding Contact");
@@ -81,11 +81,30 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 
                 var updated = schoolContactCommandService.Update(contact);
 
-                if(updated) 
+                if (updated)
                     return Ok(await schoolContactQueryService.GetSchoolContactById(contact.Id));
 
                 return BadRequest("Rttot in update contact");
 
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("DeleteContact")]
+        public async Task<IActionResult> DeleteSchoolContact([FromBody] SchoolContactIdDTO dto)
+        {
+            try
+            {
+                var contact = await schoolContactQueryService.GetByIdAsync(dto.SchoolContactId);
+                if (contact == null)
+                    return BadRequest("Can't find contact to delete");
+
+                var deleted = await schoolContactCommandService.DeleteAsync(contact);
+
+                return deleted ? Ok("Contact Deleted") : BadRequest("Error in deleting contact");
             }
             catch (Exception ex)
             {

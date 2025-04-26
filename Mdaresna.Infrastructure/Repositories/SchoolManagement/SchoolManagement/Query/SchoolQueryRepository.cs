@@ -37,7 +37,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
             var tquery = from st in context.schoolTeachers
                          join school in context.Schools on st.SchoolId equals school.Id
-                         where school.SchoolAdminId == userId || st.TeacherId == userId
+                         where st.Deleted == false && (school.SchoolAdminId == userId || st.TeacherId == userId)
                          join schoolType in context.SchoolTypes on school.SchoolTypeId equals schoolType.Id into stTypeGroup
                          from schoolType in stTypeGroup.DefaultIfEmpty()
                          join coinType in context.CoinsTypes on school.CoinTypeId equals coinType.Id into ctGroup
@@ -62,7 +62,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
             var equery = from se in context.SchoolEmployees
                          join school in context.Schools on se.SchoolId equals school.Id
-                         where school.SchoolAdminId == userId || se.EmployeeId == userId
+                         where se.Deleted == false && (school.SchoolAdminId == userId || se.EmployeeId == userId)
                          join schoolType in context.SchoolTypes on school.SchoolTypeId equals schoolType.Id into stTypeGroup
                          from schoolType in stTypeGroup.DefaultIfEmpty()
                          join coinType in context.CoinsTypes on school.CoinTypeId equals coinType.Id into ctGroup
@@ -136,6 +136,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
         {
             var query = context.Schools
                        .Include(s => s.SchoolType).Include(s => s.SchoolAdmin).Include(s => s.CoinType)
+                       .Where(s=> s.Deleted == false)
                        .Select(s => new SchoolResultDTO
                        {
                            Id = s.Id,

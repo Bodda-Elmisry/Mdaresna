@@ -188,6 +188,24 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             }
         }
 
+        [HttpPost("SoftDeleteYearMonth")]
+        public async Task<IActionResult> SoftDeleteSchoolYearMonths([FromBody] MonthIdDTO monthId)
+        {
+            try
+            {
+                var month = await schoolYearMonthQueryService.GetByIdAsync(monthId.MonthId);
+                if (month == null)
+                    return BadRequest("Can't fiend Month");
+
+                month.Deleted = true;
+                var deleted = schoolYearMonthCommandService.Update(month);
+                return deleted ? Ok("Month Deleted") : BadRequest("Error in delete month");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
 
 
@@ -197,5 +215,6 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 
 
 
-    }
+
+            }
 }

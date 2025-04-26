@@ -1,8 +1,10 @@
 ﻿using Mdaresna.Doamin.Models.AdminManagement;
 using Mdaresna.DTOs.AdminManagementDTO;
+using Mdaresna.DTOs.Common;
 using Mdaresna.Repository.IServices.AdminManagement.Command;
 using Mdaresna.Repository.IServices.AdminManagement.Query;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace Mdaresna.Controllers.AdminManagement
 {
@@ -56,7 +58,7 @@ namespace Mdaresna.Controllers.AdminManagement
             {
 
                 var lang = await languageQueryService.GetByIdAsync(language.Id);
-                if(lang == null)
+                if (lang == null)
                     return BadRequest("Can't fiend Language");
                 lang.Name = language.Name;
                 lang.Description = language.Description;
@@ -72,7 +74,29 @@ namespace Mdaresna.Controllers.AdminManagement
             }
         }
 
+        [HttpPost("SoftDeleteLanguage")]
+        public async Task<IActionResult> SoftDeleteLanguage([FromBody] LanguageIdDTO dto)
+        {
+            try
+            {
+                var language = await languageQueryService.GetByIdAsync(dto.LanguageId);
+
+                if (language == null)
+                    return BadRequest("Language Not Found");
+
+                language.Deleted = true;
+
+                var result = languageCommandService.Update(language);
+
+                return result ? Ok("Language Deleted") : BadRequest("Error in delete language");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
 
+
+        }
     }
 }

@@ -92,6 +92,29 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             }
         }
 
+        [HttpPost("SoftDeleteGrade")]
+        public async Task<IActionResult> SoftDeleteGrade([FromBody] SchoolGradeIdDTO schoolGradeId)
+        {
+            try
+            {
+                var grade = await schoolGradeQueryService.GetByIdAsync(schoolGradeId.GradeId);
+                if (grade == null)
+                    return BadRequest("There is no grade to delete");
+
+                grade.Deleted = true;
+
+                var deleted = schoolGradeCommandService.Update(grade);
+                if (deleted)
+                    return Ok("Grade deleted");
+                else
+                    return BadRequest("Error In Deleting Grade");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
 
     }

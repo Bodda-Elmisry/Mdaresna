@@ -1,8 +1,14 @@
 ﻿using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.ClassRoomManagementDTO;
+using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Command;
+using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Query;
+using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Command;
+using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
+using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
+using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -13,12 +19,18 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
     {
         private readonly IClassRoomAssignmentCommandService classRoomAssignmentCommandService;
         private readonly IClassRoomAssignmentQueryService classRoomAssignmentQueryService;
+        private readonly IClassRoomStudentAssignmentCommandService classRoomStudentAssignmentCommandService;
+        private readonly IClassRoomStudentAssignmentQueryService classRoomStudentAssignmentQueryService;
 
         public ClassRoomAssignmentController(IClassRoomAssignmentCommandService classRoomAssignmentCommandService,
-                                             IClassRoomAssignmentQueryService classRoomAssignmentQueryService)
+                                             IClassRoomAssignmentQueryService classRoomAssignmentQueryService,
+                                             IClassRoomStudentAssignmentCommandService classRoomStudentAssignmentCommandService,
+                                             IClassRoomStudentAssignmentQueryService classRoomStudentAssignmentQueryService)
         {
             this.classRoomAssignmentCommandService = classRoomAssignmentCommandService;
             this.classRoomAssignmentQueryService = classRoomAssignmentQueryService;
+            this.classRoomStudentAssignmentCommandService = classRoomStudentAssignmentCommandService;
+            this.classRoomStudentAssignmentQueryService = classRoomStudentAssignmentQueryService;
         }
 
         [HttpPost("GetClassroomAssignmentsList")]
@@ -120,7 +132,36 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
             }
         }
 
+        [HttpPost("SoftDeleteClassroomAssignment")]
+        public async Task<IActionResult> SoftDeleteClassroomAssignment([FromBody] AssignmentIdDTO dTO)
+        {
+            try
+            {
+                var assignment = await classRoomAssignmentQueryService.GetByIdAsync(dTO.AssignmentId);
 
+                if (assignment == null)
+                    return BadRequest("There is no assignment to delete");
+                assignment.Deleted = true;
+
+                var assignmentStudents = await classRoomStudentAssignmentQueryService.GetStudentAssignmentsListAsync(assignment.Id);
+
+                foreach (var assignmentStudent in assignmentStudents)
+                {
+                    assignmentStudent.Deleted = true;
+                    classRoomStudentAssignmentCommandService.Update(assignmentStudent);
+                }
+
+
+
+                var result = classRoomAssignmentCommandService.Update(assignment);
+
+                return result ? Ok("Assignment Deleted") : BadRequest("Error in deleting assignment");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
 
 

@@ -33,5 +33,10 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Que
         {
             return await schoolYearMonthQueryRepository.GetYearMonthesAsync(yearId, isActive, name);
         }
+
+        public async Task<IEnumerable<SchoolYearMonth>> GetYearMonthesAsync(Guid yearId)
+        {
+            return await schoolYearMonthQueryRepository.GetYearMonthesAsync(yearId);
+        }
     }
 }

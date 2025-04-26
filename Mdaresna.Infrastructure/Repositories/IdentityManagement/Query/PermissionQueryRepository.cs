@@ -47,7 +47,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
         private async Task<List<Permission>> GetSchoolPermissions(int pageNumber, string? permissionName)
         {
             int pagesize = this.appSettings.PageSize != null ? this.appSettings.PageSize.Value : 30;
-            var query = _context.Permissions.Where(p => p.SchoolPermission == true);
+            var query = _context.Permissions.Where(p => p.SchoolPermission == true && p.Deleted == false);
             query = !string.IsNullOrEmpty(permissionName) ? query.Where(p=> p.Name.Contains(permissionName)) : query;
             return await query.OrderBy(p => p.Name)
                                   .Skip((pageNumber - 1) * pagesize)
@@ -58,7 +58,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
         private async Task<List<Permission>> GetAppPermissions(int pageNumber, string? permissionName)
         {
             int pagesize = this.appSettings.PageSize != null ? this.appSettings.PageSize.Value : 30;
-            var query = _context.Permissions.Where(p => p.AppPermission == true);
+            var query = _context.Permissions.Where(p => p.AppPermission == true && p.Deleted == false);
             query = !string.IsNullOrEmpty(permissionName) ? query.Where(p => p.Name.Contains(permissionName)) : query;
             return await query.OrderBy(p => p.Name)
                                   .Skip((pageNumber - 1) * pagesize)

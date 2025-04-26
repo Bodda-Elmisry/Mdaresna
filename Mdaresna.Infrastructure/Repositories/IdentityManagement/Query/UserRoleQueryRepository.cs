@@ -24,7 +24,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
 
         public async Task<bool> CheckUserRole(UserRole userRole)
         {
-            return await context.UserRoles.AnyAsync(u => u.RoleId == userRole.RoleId && u.UserId == userRole.UserId);
+            return await context.UserRoles.AnyAsync(u => u.RoleId == userRole.RoleId && u.UserId == userRole.UserId && u.Deleted == false);
 
         }
 
@@ -33,7 +33,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             var query = context.UserRoles.Include(u=> u.User)
                                          .Include(u => u.Role)
                                          .Include(u => u.School)
-                                         .Where(u => u.UserId == userId);
+                                         .Where(u => u.UserId == userId && u.Deleted == false);
             query = schoolId != null ? query.Where(u=> u.SchoolId == schoolId) : query;
 
             return await query.Select(u => new UserRoleResultDTO
@@ -55,7 +55,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             var query = context.UserRoles.Include(u => u.User)
                                          .Include(u => u.Role)
                                          .Include(u => u.School)
-                                         .Where(u => u.RoleId == roleId);
+                                         .Where(u => u.RoleId == roleId && u.Deleted == false);
             query = schoolId != null ? query.Where(u => u.SchoolId == schoolId) : query;
 
             return await query.Select(u => new UserRoleResultDTO
@@ -77,7 +77,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             var query = context.UserRoles.Include(u => u.User)
                                          .Include(u => u.Role)
                                          .Include(u => u.School)
-                                         .Where(u => u.RoleId == Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"));
+                                         .Where(u => u.RoleId == Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73") && u.Deleted == false);
             
 
             return await query.Select(u => new UserRoleResultDTO
@@ -99,7 +99,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             var userRole = await context.UserRoles.Include(u => u.User)
                                          .Include(u => u.Role)
                                          .Include(u => u.School)
-                                         .FirstOrDefaultAsync(u => u.UserId == userId && u.RoleId == roleId);
+                                         .FirstOrDefaultAsync(u => u.UserId == userId && u.RoleId == roleId && u.Deleted == false);
 
             return userRole == null ? null : new UserRoleResultDTO
             {

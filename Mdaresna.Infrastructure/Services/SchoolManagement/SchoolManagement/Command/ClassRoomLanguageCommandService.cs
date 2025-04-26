@@ -39,16 +39,16 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Com
 
         public async Task<bool> DeleteAsync(ClassRoomLanguage entity)
         {
-            //try
-            //{
-            //    entity = await sharedRepository.GetAsync(entity.Id);
-            //    return commandRepository.Delete(entity);
-            //}
-            //catch (Exception ex)
-            //{
-            //    throw ex;
-            //}
-            throw new NotImplementedException();
+            try
+            {
+                
+                return commandRepository.Delete(entity);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            
         }
 
         public bool Update(ClassRoomLanguage entity)

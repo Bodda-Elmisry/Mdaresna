@@ -6,6 +6,7 @@ using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Comm
 using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
+using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection;
 
@@ -16,12 +17,15 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
     {
         private readonly IClassRoomQueryService classRoomQueryService;
         private readonly IClassRoomCommandService classRoomCommandService;
+        private readonly IStudentQueryService studentQueryService;
 
         public ClassRoomController(IClassRoomQueryService classRoomQueryService,
-                                   IClassRoomCommandService classRoomCommandService)
+                                   IClassRoomCommandService classRoomCommandService,
+                                   IStudentQueryService studentQueryService)
         {
             this.classRoomQueryService = classRoomQueryService;
             this.classRoomCommandService = classRoomCommandService;
+            this.studentQueryService = studentQueryService;
         }
 
         [HttpPost("GetInitialData")]
@@ -192,6 +196,35 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
 
 
 
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("SoftDeleteClassroom")]
+        public async Task<IActionResult> SoftDeleteClassroom([FromBody] ClassRoomIdDTO dto)
+        {
+            try
+            {
+
+                
+
+                var classroom = await classRoomQueryService.GetByIdAsync(dto.ClassRoomId);
+
+                if (classroom == null)
+                    return BadRequest("There is no classroom to delete");
+
+                var classroomStudents = await studentQueryService.GetStudentsBySchoolIdAndClassRoomIdAsync(classroom.SchoolId, dto.ClassRoomId);
+
+                if (classroomStudents != null && classroomStudents.Count() > 0)
+                    return BadRequest("Please move students from classroom first");
+
+                classroom.Deleted = true;
+
+                var updated = classRoomCommandService.Update(classroom);
+                return updated ? Ok("classroom deleted") : BadRequest("Error in deleting classroom");
             }
             catch (Exception ex)
             {

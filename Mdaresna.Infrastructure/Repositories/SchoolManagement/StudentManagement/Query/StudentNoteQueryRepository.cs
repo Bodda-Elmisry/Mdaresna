@@ -29,7 +29,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
         public async Task<IEnumerable<StudentNoteResultDTO>> GetStudentNotesListAsync(Guid? StudentId, Guid? ClassRoomId, Guid? SupervisorId, Guid? CourseId, DateTime? DateFrom, DateTime? DateTo, string? Notes, int pageNumber)
         {
             int pagesize = appSettings.PageSize != null ? appSettings.PageSize.Value : 30;
-            var query = context.studentNotes.AsQueryable();
+            var query = context.studentNotes.Where(n=> n.Deleted == false);
 
             if(StudentId != null )
                 query = query.Where(n => n.StudentId == StudentId);
@@ -87,7 +87,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                                                  .Include(n => n.Course)
                                                  .Include(n => n.ClassRoom)
                                                  .Include(n => n.Supervisor)
-                                                 .FirstOrDefaultAsync(n => n.Id == StudentId);
+                                                 .FirstOrDefaultAsync(n => n.Id == StudentId && n.Deleted == false);
 
             return note == null ? null : new StudentNoteResultDTO
             {

@@ -22,20 +22,9 @@ namespace Mdaresna.Infrastructure.Repositories.CoinsManagement.Query
             this.context = context;
         }
 
-        public async Task<IEnumerable<PaymentTransactionResultDTO>> GetPaymentTransactionsListAsync(DateTime? PaymentDateFrom, 
-                                                                                                    DateTime? PaymentDateTO, 
-                                                                                                    decimal? Amount, 
-                                                                                                    Guid? PaymentTypeId,
-                                                                                                    string? FromId,
-                                                                                                    string? FromName,
-                                                                                                    string? FromType,
-                                                                                                    string? ToId,
-                                                                                                    string? ToName,
-                                                                                                    string? ToType,
-                                                                                                    Guid? CoinTypeId,
-                                                                                                    Guid? SchoolRequestId)
+        public async Task<IEnumerable<PaymentTransactionResultDTO>> GetPaymentTransactionsListAsync(DateTime? PaymentDateFrom,                                                         DateTime? PaymentDateTO,                                                             decimal? Amount,                                                                   Guid? PaymentTypeId,                                                               string? FromId,                                                                    string? FromName,                                                                  string? FromType,                                                                  string? ToId,                                                                      string? ToName,                                                                    string? ToType,                                                                    Guid? CoinTypeId,                                                                  Guid? SchoolRequestId)
         {
-            var query = context.PaymentTransactions.AsQueryable();
+            var query = context.PaymentTransactions.Where(t=> t.Deleted == false);
 
             PaymentDateFrom = PaymentDateFrom != null ? new DateTime(PaymentDateFrom.Value.Year, PaymentDateFrom.Value.Month, PaymentDateFrom.Value.Day) : null;
             PaymentDateTO = PaymentDateTO != null ? new DateTime(PaymentDateTO.Value.Year, PaymentDateTO.Value.Month, PaymentDateTO.Value.Day) : null;
@@ -91,7 +80,7 @@ namespace Mdaresna.Infrastructure.Repositories.CoinsManagement.Query
 
         public async Task<PaymentTransactionResultDTO?> GetPaymentTransactionByIdAsync(Guid id)
         {
-            var transaction = await context.PaymentTransactions.FirstOrDefaultAsync(t => t.Id == id);
+            var transaction = await context.PaymentTransactions.FirstOrDefaultAsync(t => t.Id == id && t.Deleted == false);
 
             return transaction == null ? null : new PaymentTransactionResultDTO
             {

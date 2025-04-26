@@ -22,7 +22,7 @@ namespace Mdaresna.Infrastructure.Repositories.CoinsManagement.Query
 
         public async Task<IEnumerable<PaymentType>> GetPaumentTypesAsync(string? name, string? notes, bool? isActive)
         {
-            var query = context.PaymentTypes.AsQueryable();
+            var query = context.PaymentTypes.Where(t=> t.Deleted == false);
 
             query = !string.IsNullOrEmpty(name) ? query.Where(t=> t.Name.Contains(name)) : query;
 
@@ -39,7 +39,7 @@ namespace Mdaresna.Infrastructure.Repositories.CoinsManagement.Query
 
         public async Task<PaymentType?> GetPaumentTypeByNameAsync(string name)
         {
-            return await context.PaymentTypes.FirstOrDefaultAsync(t => t.Name == name);
+            return await context.PaymentTypes.FirstOrDefaultAsync(t => t.Name == name && t.Deleted == false);
         }
 
 

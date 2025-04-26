@@ -22,12 +22,12 @@ namespace Mdaresna.Infrastructure.Repositories.SettingsManagement.Query
 
         public async Task<IEnumerable<SMSProvider>> GetAllActive()
         {
-            return await context.SMSProviders.Where(s => s.Active == true).ToListAsync();
+            return await context.SMSProviders.Where(s => s.Active == true && s.Deleted == false).ToListAsync();
         }
 
-        public async Task<SMSProvider> GetFirstActive()
+        public async Task<SMSProvider?> GetFirstActive()
         {
-            return await context.SMSProviders.FirstOrDefaultAsync(s => s.Active == true);
+            return await context.SMSProviders.FirstOrDefaultAsync(s => s.Active == true && s.Deleted == false);
         }
     }
 }

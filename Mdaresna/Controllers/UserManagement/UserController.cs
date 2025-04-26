@@ -41,7 +41,7 @@ namespace Mdaresna.Controllers.UserManagement
             {
                 var user = await userQueryService.GetByIdAsync(dTO.Id);
 
-                if(user == null)
+                if (user == null)
                 {
                     return BadRequest("There is no user to update");
                 }
@@ -92,6 +92,28 @@ namespace Mdaresna.Controllers.UserManagement
                 var user = await userQueryService.GetUserById(dTO.UserId);
 
                 return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("SoftDeleteUser")]
+        public async Task<IActionResult> SoftDeleteUser([FromBody] UserIdDTO dTO)
+        {
+            try
+            {
+                var user = await userQueryService.GetByIdAsync(dTO.UserId);
+
+                if (user == null)
+                    return BadRequest("There is no user to delete");
+
+                user.Deleted = true;
+
+                var deleted = userCommandService.Update(user);
+
+                return deleted ? Ok("User Deleted") : BadRequest("Error in delete user");
             }
             catch (Exception ex)
             {

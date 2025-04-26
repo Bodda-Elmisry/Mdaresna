@@ -26,7 +26,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
         {
             var year = await context.SchoolYears
                             .OrderBy(y => y.CreateDate)
-                            .FirstOrDefaultAsync(y => y.SchoolId == schoolId && y.IsActive == true && y.Compleated == false);
+                            .FirstOrDefaultAsync(y => y.SchoolId == schoolId && y.IsActive == true && y.Compleated == false && y.Deleted == false);
 
             return year == null ? 
                 null :
@@ -43,7 +43,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
         public async Task<IEnumerable<SchoolYearResultDTO>> GetSchoolYearsAsync(Guid schoolId)
         {
-            var years = await context.SchoolYears.Where(y => y.SchoolId == schoolId).Select(y => new SchoolYearResultDTO
+            var years = await context.SchoolYears.Where(y => y.SchoolId == schoolId && y.Deleted == false).Select(y => new SchoolYearResultDTO
             {
                 Id = y.Id,
                 Name = y.Name,

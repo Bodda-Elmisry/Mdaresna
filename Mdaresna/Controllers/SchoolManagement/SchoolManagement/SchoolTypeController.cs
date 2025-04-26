@@ -99,6 +99,32 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             }
         }
 
+        [HttpPost("SoftDeleteSchoolType")]
+        public async Task<IActionResult> SoftDeleteSchoolType([FromBody] SchoolTypeIdDTO dTO)
+        {
+            try
+            {
+                var type = await schoolTypeQueryService.GetByIdAsync(dTO.TypeId);
+
+                if (type == null)
+                    return BadRequest("There is no type to delete");
+
+                type.Deleted = true;
+
+                var deleted = schoolTypeCommandService.Update(type);
+
+                if (!deleted)
+                    return BadRequest("Error in deleting type");
+
+                return Ok("Type deleted");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
 
 
 

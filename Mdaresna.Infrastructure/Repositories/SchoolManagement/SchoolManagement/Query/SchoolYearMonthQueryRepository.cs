@@ -24,7 +24,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
         public async Task<IEnumerable<SchoolYearMonthResultDTO>> GetYearMonthesAsync(Guid yearId, bool? isActive, string name)
         {
 
-            var resultQuery = context.SchoolYearMonths.Where(m => m.YearId == yearId)
+            var resultQuery = context.SchoolYearMonths.Where(m => m.YearId == yearId && m.Deleted == false)
                 .Select(m => new SchoolYearMonthResultDTO
                 {
                     Id = m.Id,
@@ -43,16 +43,26 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             return await resultQuery.ToListAsync();
         }
 
+        public async Task<IEnumerable<SchoolYearMonth>> GetYearMonthesAsync(Guid yearId)
+        {
+
+            var resultQuery = context.SchoolYearMonths.Where(m => m.YearId == yearId && m.Deleted == false);
+
+            return await resultQuery.ToListAsync();
+        }
+
         public async Task<SchoolYearMonthResultDTO?> GetYearMonthAsync(Guid monthId)
         {
-            return await context.SchoolYearMonths.Select(m => new SchoolYearMonthResultDTO
+            var row =  await context.SchoolYearMonths.FirstOrDefaultAsync(m => m.Id == monthId && m.Deleted == false);
+
+            return row == null ? null : new SchoolYearMonthResultDTO
             {
-                Id = m.Id,
-                Name = m.Name,
-                Description = m.Description,
-                IsActive = m.IsActive,
-                YearId = m.YearId
-            }).FirstOrDefaultAsync(m => m.Id == monthId);
+                Id = row.Id,
+                Name = row.Name,
+                Description = row.Description,
+                IsActive = row.IsActive,
+                YearId = row.YearId
+            };
 
         }
 

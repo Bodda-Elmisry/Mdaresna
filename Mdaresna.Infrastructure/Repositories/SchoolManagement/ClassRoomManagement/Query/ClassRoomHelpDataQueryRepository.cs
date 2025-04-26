@@ -23,10 +23,10 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
         public async Task<ClassRoomHelpDataDTO> GetClassRoomHrlpDataAsync(Guid SchoolId)
         {
            var languages = await context.ClassRoomLanguages
-                                  .Where(l => l.SchoolId == SchoolId) 
+                                  .Where(l => l.SchoolId == SchoolId && l.Deleted == false) 
                                   .Select(l=> new DropDownDTO {Id= l.Language.Id, Name = l.Language.Name }).ToListAsync();
             var grades = await context.SchoolGrades
-                                .Where(g=> g.SchoolId == SchoolId)
+                                .Where(g=> g.SchoolId == SchoolId && g.Deleted == false)
                                 .Select (g=> new DropDownDTO{Id = g.Id, Name = g.Name}).ToListAsync();
 
 

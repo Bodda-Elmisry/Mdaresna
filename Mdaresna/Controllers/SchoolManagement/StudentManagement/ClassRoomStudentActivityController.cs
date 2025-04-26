@@ -134,6 +134,27 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             }
         }
 
+        [HttpPost("SoftDeleteStudentActivity")]
+        public async Task<IActionResult> SoftDeleteStudentActivity([FromBody] GetClassRoomStudentActivityDTO dto)
+        {
+            try
+            {
+                var studentActivity = await classRoomStudentActivityQueryService.GetClassRoomStudentActivityAsync(dto.StudentId, dto.ActivityId);
+
+                if (studentActivity == null)
+                    return BadRequest("There is no activity to delete");
+
+                studentActivity.Deleted = true;
+                var deleted = classRoomStudentActivityCommandService.Update(studentActivity);
+
+                return deleted ? Ok("Activity Deleted") : BadRequest("Error in deleting activity");
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
 
     }

@@ -45,7 +45,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                                                            .Include(s => s.Assignment.Course)
                                                            .Include(s => s.Assignment.ClassRoom)
                                                            .Include(s => s.Assignment.Supervisor)
-                                                           .AsQueryable();
+                                                           .Where(s=> s.Deleted == false);
 
             if (StudentId != null)
                 query = query.Where(s => s.StudentId == StudentId);
@@ -102,9 +102,20 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
             return result;
         }
 
+        public async Task<IEnumerable<ClassRoomStudentAssignment>> GetStudentAssignmentsListAsync(Guid AssignementId)
+        {
+            #region Create Query
+
+            var query = context.ClassRoomStudentAssignments.Where(s => s.Deleted == false && s.AssignmentId == AssignementId);
+
+            #endregion
+
+            return await query.ToListAsync();
+        }
+
         public async Task<ClassRoomStudentAssignment?> GetClassRoomStudentAssignmentAsync(Guid studentId, Guid AssignmentId)
         {
-            return await context.ClassRoomStudentAssignments.FirstOrDefaultAsync(s=> s.StudentId == studentId && s.AssignmentId == AssignmentId);
+            return await context.ClassRoomStudentAssignments.FirstOrDefaultAsync(s=> s.StudentId == studentId && s.AssignmentId == AssignmentId && s.Deleted == false);
         }
 
         public async Task<ClassRoomStudentAssignmentResultDTO?> GetClassRoomStudentAssignmentViewAsync(Guid studentId, Guid AssignmentId)
@@ -113,7 +124,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                                                            .Include(s => s.Assignment.Course)
                                                            .Include(s => s.Assignment.ClassRoom)
                                                            .Include(s => s.Assignment.Supervisor)
-                                                           .FirstOrDefaultAsync(s => s.StudentId == studentId && s.AssignmentId == AssignmentId);
+                                                           .FirstOrDefaultAsync(s => s.StudentId == studentId && s.AssignmentId == AssignmentId && s.Deleted == false);
 
             return assignment == null ? null : new ClassRoomStudentAssignmentResultDTO
             {

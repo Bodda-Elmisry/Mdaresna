@@ -4,6 +4,8 @@ using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.Repository.IServices.IdentityManagement.Command;
 using Mdaresna.Repository.IServices.IdentityManagement.Query;
+using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
+using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Microsoft.AspNetCore.Mvc;
@@ -17,16 +19,22 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         private readonly ISchoolTeacherQueryService schoolTeacherQueryService;
         private readonly IUserRoleCommandService userRoleCommandService;
         private readonly IUserRoleQueryService userRoleQueryService;
+        private readonly IClassRoomTeacherCourseQueryService classRoomTeacherCourseQueryService;
+        private readonly IClassRoomTeacherCourseCommandService classRoomTeacherCourseCommandService;
 
         public SchoolTeacherController(ISchoolTeacherCommandService schoolTeacherCommandService,
                                        ISchoolTeacherQueryService schoolTeacherQueryService,
                                        IUserRoleCommandService userRoleCommandService,
-                                       IUserRoleQueryService userRoleQueryService)
+                                       IUserRoleQueryService userRoleQueryService,
+                                       IClassRoomTeacherCourseQueryService classRoomTeacherCourseQueryService,
+                                       IClassRoomTeacherCourseCommandService classRoomTeacherCourseCommandService)
         {
             this.schoolTeacherCommandService = schoolTeacherCommandService;
             this.schoolTeacherQueryService = schoolTeacherQueryService;
             this.userRoleCommandService = userRoleCommandService;
             this.userRoleQueryService = userRoleQueryService;
+            this.classRoomTeacherCourseQueryService = classRoomTeacherCourseQueryService;
+            this.classRoomTeacherCourseCommandService = classRoomTeacherCourseCommandService;
         }
 
         [HttpPost("AddSchoolTeacher")]
@@ -145,6 +153,48 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpPost("SoftDeleteSchoolTeacher")]
+        public async Task<IActionResult> SoftDeleteSchoolTeacher([FromBody] SchoolIdTeacherIdDTO dto)
+        {
+            try
+            {
+
+                var teacherClassrooms = await classRoomTeacherCourseQueryService.GetTeacherClassroomsCoursesAsync(dto.TeacherId, dto.SchoolId);
+
+                var sTeacher = await schoolTeacherQueryService.GetSchoolTeacherByIdAsync(dto.SchoolId, dto.TeacherId);
+                if (sTeacher == null)
+                    return BadRequest("Can't find teacher to delete");
+
+                if (teacherClassrooms != null && teacherClassrooms.Count() > 0)
+                {
+
+                    foreach (var classroom in teacherClassrooms)
+                    {
+
+
+                        await classRoomTeacherCourseCommandService.DeleteAsync(classroom);
+                    }
+                }
+
+                var deleted = await schoolTeacherCommandService.DeleteAsync(sTeacher);
+                if (deleted)
+                    return Ok("Teacher removed from school");
+
+                return BadRequest("Error in removing Teacher");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+
+
+
+
+
+
         }
 
 

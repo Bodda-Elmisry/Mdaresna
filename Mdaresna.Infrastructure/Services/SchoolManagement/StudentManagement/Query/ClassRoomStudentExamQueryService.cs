@@ -34,6 +34,11 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Qu
             return await classRoomStudentExamQueryRepository.GetClassRoomStudentExamsListAsync(StudentId, ExamId, TotalResultFrom, TotalResultTo, IsAttend, pageNumber);
         }
 
+        public async Task<IEnumerable<ClassRoomStudentExam>> GetClassRoomStudentExamsListAsync(Guid ExamId)
+        {
+            return await classRoomStudentExamQueryRepository.GetClassRoomStudentExamsListAsync(ExamId);
+        }
+
         public async Task<ClassRoomStudentExamResultDTO> GetClassRoomStudentExamViewAsync(Guid studentId, Guid ExamId)
         {
             return await classRoomStudentExamQueryRepository.GetClassRoomStudentExamViewAsync(studentId, ExamId);

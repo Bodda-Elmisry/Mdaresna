@@ -125,10 +125,6 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
             }
         }
 
-
-
-
-
-        }
+    }
 
 }

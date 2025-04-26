@@ -29,7 +29,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
         {
             return await context.ClassRooms
                             //.Include(c=> c.Grade).Include(c=> c.Language).Include(c=> c.Supervisor)
-                            .Where(c=> c.SchoolId == SchoolId)
+                            .Where(c=> c.SchoolId == SchoolId && c.Deleted == false)
                             .Select(c=> new ClassRoomResultDTO
                             {
                                 Id = c.Id,
@@ -51,10 +51,17 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                             .ToListAsync();
         }
 
+        public async Task<IEnumerable<ClassRoom>> GetCLassroomsBySchoolIdAsync(Guid SchoolId)
+        {
+            return await context.ClassRooms
+                            //.Include(c=> c.Grade).Include(c=> c.Language).Include(c=> c.Supervisor)
+                            .Where(c => c.SchoolId == SchoolId && c.Deleted == false).ToListAsync();
+        }
+
         public async Task<IEnumerable<ClassRoomResultDTO>> GetBySchoolIdAndSupervisorIdAsync(Guid SchoolId, Guid SupervisorId)
         {
             return await context.ClassRooms
-                            .Where(c => c.SchoolId == SchoolId && c.SupervisorId == SupervisorId)
+                            .Where(c => c.SchoolId == SchoolId && c.SupervisorId == SupervisorId && c.Deleted == false)
                             .Select(c => new ClassRoomResultDTO
                             {
                                 Id = c.Id,
@@ -79,94 +86,6 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
         {
             try
             {
-                //var tquery = (from cr in context.ClassRooms
-                //              join s in context.Schools on cr.SchoolId equals s.Id
-                //              join su in context.Users on cr.SupervisorId equals su.Id
-                //              join l in context.Languages on cr.LanguageId equals l.Id
-                //              join g in context.SchoolGrades on cr.GradeId equals g.Id
-                //              join crtc in context.ClassRoomTeacherCourses
-                //                  on cr.Id equals crtc.ClassRoomId into classroomTeacherCourses
-                //              from crtc in classroomTeacherCourses.DefaultIfEmpty()
-                //              where (s.SchoolAdminId == userId || cr.SupervisorId == userId || crtc.TeacherId == userId)
-                //                    && s.Id == schoolId
-                //                    && cr.Active == true
-                //              orderby cr.Name
-                //              select new
-                //              {
-                //                  Id = cr.Id,
-                //                  Name = cr.Name,
-                //                  maxOfStudents = cr.maxOfStudents,
-                //                  SupervisorId = cr.SupervisorId,
-                //                  SupervisorName = $"{su.FirstName} {su.LastName}",
-                //                  Active = cr.Active,
-                //                  WCSUrl = cr.WCSUrl,
-                //                  SchoolId = cr.SchoolId,
-                //                  SchoolName = s.Name,
-                //                  LanguageId = cr.LanguageId,
-                //                  LanguageName = l.Name,
-                //                  GradeId = cr.GradeId,
-                //                  Gradename = g.Name,
-                //                  Gender = cr.Gender
-
-                //              })
-                //             .Distinct();
-
-                //var equery = (from cr in context.ClassRooms
-                //              join s in context.Schools on cr.SchoolId equals s.Id
-                //              join su in context.Users on cr.SupervisorId equals su.Id
-                //              join l in context.Languages on cr.LanguageId equals l.Id
-                //              join g in context.SchoolGrades on cr.GradeId equals g.Id
-                //              join crtc in context.ClassroomEmployees
-                //                  on cr.Id equals crtc.ClassRoomId into ClassroomEmployees
-                //              from crtc in ClassroomEmployees.DefaultIfEmpty()
-                //              where (s.SchoolAdminId == userId || cr.SupervisorId == userId || crtc.EmployeeId == userId)
-                //                    && s.Id == schoolId
-                //                    && cr.Active == true
-                //              orderby cr.Name
-                //              select new
-                //              {
-                //                  Id = cr.Id,
-                //                  Name = cr.Name,
-                //                  maxOfStudents = cr.maxOfStudents,
-                //                  SupervisorId = cr.SupervisorId,
-                //                  SupervisorName = $"{su.FirstName} {su.LastName}",
-                //                  Active = cr.Active,
-                //                  WCSUrl = cr.WCSUrl,
-                //                  SchoolId = cr.SchoolId,
-                //                  SchoolName = s.Name,
-                //                  LanguageId = cr.LanguageId,
-                //                  LanguageName = l.Name,
-                //                  GradeId = cr.GradeId,
-                //                  Gradename = g.Name,
-                //                  Gender = cr.Gender
-
-                //              })
-                //             .Distinct();
-
-                //var query = tquery.Union(equery).Distinct();
-
-                //var queryString = query.ToQueryString();
-
-                //var result = await query.ToListAsync();
-
-                //return result.Select(cr => new ClassRoomResultDTO
-                //{
-                //    Id = cr.Id,
-                //    Name = cr.Name,
-                //    maxOfStudents = cr.maxOfStudents,
-                //    SupervisorId = cr.SupervisorId,
-                //    SupervisorName = cr.SupervisorName,
-                //    Active = cr.Active,
-                //    WCSUrl = cr.WCSUrl,
-                //    SchoolId = cr.SchoolId,
-                //    SchoolName = cr.SchoolName,
-                //    LanguageId = cr.LanguageId,
-                //    LanguageName = cr.LanguageName,
-                //    GradeId = cr.GradeId,
-                //    Gradename = cr.Gradename,
-                //    Gender = cr.Gender
-
-                //});
 
                 var tquery = from cr in context.ClassRooms
                              join s in context.Schools on cr.SchoolId equals s.Id
@@ -178,6 +97,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                              where (s.SchoolAdminId == userId || cr.SupervisorId == userId || crtc.TeacherId == userId)
                                    && s.Id == schoolId
                                    && cr.Active == true
+                                   && cr.Deleted == false
                              select new { cr, s, su, l, g };
 
                 var equery = from cr in context.ClassRooms
@@ -190,6 +110,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                              where (s.SchoolAdminId == userId || cr.SupervisorId == userId || crtc.EmployeeId == userId)
                                    && s.Id == schoolId
                                    && cr.Active == true
+                                   && cr.Deleted == false
                              select new { cr, s, su, l, g };
 
                 var query = tquery.Union(equery).Distinct(); // ✅ Union before projection
@@ -227,7 +148,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
 
         public async Task<ClassRoomResultDTO?> GetClassRoomByIdAsync(Guid roomId)
         {
-            var room = await context.ClassRooms.FirstOrDefaultAsync(c => c.Id == roomId);
+            var room = await context.ClassRooms.FirstOrDefaultAsync(c => c.Id == roomId && c.Deleted == false);
 
             return room == null ? null :
                             new ClassRoomResultDTO

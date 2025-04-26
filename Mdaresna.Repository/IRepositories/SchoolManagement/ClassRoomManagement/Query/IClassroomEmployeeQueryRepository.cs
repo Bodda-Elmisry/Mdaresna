@@ -13,6 +13,7 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.ClassRoomManagement
     {
         Task<IEnumerable<ClassroomEmployeeResultDTO>> GetEmployeeDataAsync(Guid employeeId);
         Task<IEnumerable<ClassroomEmployeeResultDTO>?> GetClassroomsEmployeesAsync(Guid? employeeId, Guid? roomId, Guid schoolId);
+        Task<IEnumerable<ClassroomEmployee>?> GetEmployeeClassroomsAsync(Guid employeeId, Guid schoolId);
         Task<ClassroomEmployeeResultDTO?> GetClassroomEmployeeAsync(Guid employeeId, Guid? roomId);
         Task<ClassroomEmployee?> GetByIdAsync(Guid employeeId, Guid roomId);
         Task<bool> IsExistAsync(Guid employeeId, Guid roomId);

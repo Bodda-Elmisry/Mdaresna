@@ -71,6 +71,28 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             }
         }
 
+        [HttpPost("RemoveLanguage")]
+        public async Task<IActionResult> RemoveLanguageFromSchool([FromBody] SchoolIdLanguageIdDTO deo)
+        {
+            try
+            {
+                var schoolLanguage = await classRoomLanguageQueryService.GetSchoolLanguageById(deo.SchoolId, deo.LanguageId);
+
+                if (schoolLanguage == null)
+                    return NotFound("School Language Not Found");
+
+                var deleted = await classRoomLanguageCommandService.DeleteAsync(schoolLanguage);
+                if (deleted)
+                    return Ok("Language removed from school");
+                else
+                    return BadRequest("Error in removing language");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
 
     }

@@ -13,12 +13,18 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
     {
         private readonly ISchoolYearQueryService schoolYearQueryService;
         private readonly ISchoolYearCommandService schoolYearCommandService;
+        private readonly ISchoolYearMonthQueryService schoolYearMonthQueryService;
+        private readonly ISchoolYearMonthCommandService schoolYearMonthCommandService;
 
         public SchoolYearController(ISchoolYearQueryService schoolYearQueryService,
-                                    ISchoolYearCommandService schoolYearCommandService)
+                                    ISchoolYearCommandService schoolYearCommandService,
+                                    ISchoolYearMonthQueryService schoolYearMonthQueryService,
+                                    ISchoolYearMonthCommandService schoolYearMonthCommandService)
         {
             this.schoolYearQueryService = schoolYearQueryService;
             this.schoolYearCommandService = schoolYearCommandService;
+            this.schoolYearMonthQueryService = schoolYearMonthQueryService;
+            this.schoolYearMonthCommandService = schoolYearMonthCommandService;
         }
 
         [HttpPost("GetCurrentYear")]
@@ -252,6 +258,40 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                     return Ok(year);
 
                 return BadRequest("Error in update year");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("SoftDeleteSchoolYear")]
+        public async Task<IActionResult> SoftDeleteSchoolYear([FromBody] YearIdDTO yearId)
+        {
+            try
+            {
+                var year = await schoolYearQueryService.GetByIdAsync(yearId.SchoolYearId);
+
+                if (year == null)
+                    return NotFound("There is no year to delete");
+
+                year.Deleted = true;
+
+                var yearMonthes = await schoolYearMonthQueryService.GetYearMonthesAsync(yearId.SchoolYearId);
+
+                foreach (var yearMonth in yearMonthes)
+                {
+                    yearMonth.Deleted = true;
+
+                    schoolYearMonthCommandService.Update(yearMonth);
+                }
+
+                var deleted = schoolYearCommandService.Update(year);
+
+                if (deleted)
+                    return Ok("Year deleted");
+
+                return BadRequest("Error in delete year");
             }
             catch (Exception ex)
             {

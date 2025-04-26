@@ -46,12 +46,15 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 SchoolId = post.SchoolId
             };
             var postImages = new List<string>();
-            foreach (var file in post.Images)
+            if(post.Images != null)
             {
-                var imagePath = UploadImage(file);
-                if (!string.IsNullOrEmpty(imagePath))
+                foreach (var file in post.Images)
                 {
-                    postImages.Add(imagePath);
+                    var imagePath = UploadImage(file);
+                    if (!string.IsNullOrEmpty(imagePath))
+                    {
+                        postImages.Add(imagePath);
+                    }
                 }
             }
 

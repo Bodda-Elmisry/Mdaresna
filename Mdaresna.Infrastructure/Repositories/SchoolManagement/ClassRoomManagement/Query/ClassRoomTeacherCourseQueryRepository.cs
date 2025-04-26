@@ -31,7 +31,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                                    //join ctc in context.ClassRoomTeacherCourses
                                    //on sc.Id equals ctc.CourseId into sc_ctc
                                    //from ctc in sc_ctc.DefaultIfEmpty()
-                               where sc.SchoolId == schoolId //&& ctc == null
+                               where sc.SchoolId == schoolId && sc.Deleted == false
                                select new { sc.Id, sc.Name };
 
             var courses = await coursesQuery.Select(c=> new DropDownDTO { Id = c.Id, Name = c.Name}).ToListAsync();
@@ -40,7 +40,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                                  //join ctc in context.ClassRoomTeacherCourses
                                  //on cr.Id equals ctc.ClassRoomId into sc_ctc
                                  //from ctc in sc_ctc.DefaultIfEmpty()
-                             where cr.SchoolId == schoolId //&& ctc == null
+                             where cr.SchoolId == schoolId && cr.Deleted == false
                              select new { cr.Id, cr.Name }; 
 
             var rooms = await roomsQuery.Select(r=> new DropDownDTO { Id = r.Id, Name = r.Name }).ToListAsync();
@@ -59,7 +59,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
         public async Task<IEnumerable<ClassRoomTeacherCourseResultDTO>> GetTeacherDataAsync(Guid teacherId)
         {
             var data = await context.ClassRoomTeacherCourses
-                            .Where(c=> c.TeacherId == teacherId)
+                            .Where(c=> c.TeacherId == teacherId && c.Deleted == false)
                             .Select(c=> new ClassRoomTeacherCourseResultDTO
                             {
                                 TeacherId = c.TeacherId,
@@ -77,7 +77,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
         {
             var row = await context.ClassRoomTeacherCourses.Include(c=> c.Teacher).Include(c=> c.ClassRoom).Include(c => c.Course).FirstOrDefaultAsync(c => c.TeacherId == teacherId &&
                                                                                     c.ClassRoomId == roomId &&
-                                                                                    c.CourseId == courseId);
+                                                                                    c.CourseId == courseId &&
+                                                                                    c.Deleted == false);
 
             if(row == null)
                 return null;
@@ -97,7 +98,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
         {
             var rows = await context.ClassRoomTeacherCourses
                             .Include(c => c.Teacher).Include(c => c.ClassRoom).Include(c => c.Course)
-                            .Where(c => c.TeacherId == teacherId && c.ClassRoomId == roomId)
+                            .Where(c => c.TeacherId == teacherId && c.ClassRoomId == roomId && c.Deleted == false)
                             .Select(c => new ClassRoomTeacherCourseResultDTO
                             {
                                 TeacherId = c.TeacherId,
@@ -114,7 +115,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
         {
             var query = context.ClassRoomTeacherCourses
                             .Include(c => c.Teacher).Include(c => c.ClassRoom).Include(c => c.Course)
-                            .Where(c => c.TeacherId == teacherId && c.ClassRoom.SchoolId == schoolId)
+                            .Where(c => c.TeacherId == teacherId && c.ClassRoom.SchoolId == schoolId && c.Deleted == false)
                             .Select(c => new ClassRoomTeacherCourseResultDTO
                             {
                                 TeacherId = c.TeacherId,
@@ -132,11 +133,20 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
             return await query.OrderBy(c=> c.ClassRoomId).ToListAsync();
         }
 
+        public async Task<IEnumerable<ClassRoomTeacherCourse>?> GetTeacherClassroomsCoursesAsync(Guid teacherId, Guid schoolId)
+        {
+            var query = context.ClassRoomTeacherCourses
+                            .Where(c => c.TeacherId == teacherId && c.ClassRoom.SchoolId == schoolId && c.Deleted == false);
+
+            return await query.OrderBy(c => c.ClassRoomId).ToListAsync();
+        }
+
         public async Task<ClassRoomTeacherCourse?> GetByIdAsync(Guid teacherId, Guid roomId, Guid courseId)
         {
             return await context.ClassRoomTeacherCourses.FirstOrDefaultAsync(c => c.TeacherId == teacherId &&
                                                                                     c.ClassRoomId == roomId &&
-                                                                                    c.CourseId == courseId);
+                                                                                    c.CourseId == courseId &&
+                                                                                    c.Deleted == false);
 
             
         }
@@ -145,7 +155,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
         {
             return await context.ClassRoomTeacherCourses.AnyAsync(c => c.TeacherId == teacherId &&
                                                                       c.ClassRoomId == roomId &&
-                                                                      c.CourseId == courseId);
+                                                                      c.CourseId == courseId &&
+                                                                      c.Deleted == false);
         }
 
 

@@ -25,6 +25,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
         public async Task<IEnumerable<SchoolTeacherCourseResultDTO>> GetSchoolTeacherCourcesAsync(Guid schoolId, Guid teacherId)
         {
             return await context.schoolTeacherCourses
+                        .Where(s => s.TeacherId == teacherId && s.SchoolId == schoolId && s.Deleted == false)
                         .Select(s => new SchoolTeacherCourseResultDTO
                         {
                             TeacherId = s.TeacherId,
@@ -35,7 +36,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                             SchoolName = s.School.Name
 
                         })
-                        .Where(s => s.TeacherId == teacherId && s.SchoolId == schoolId).ToListAsync();
+                        .ToListAsync();
                         //.Select(s => s.Course).ToListAsync();
 
         }
@@ -44,7 +45,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
         {
             var model =  await context.schoolTeacherCourses
                         .Include(s=> s.Teacher).Include(s => s.Course).Include(s => s.School)
-                        .FirstOrDefaultAsync(s => s.TeacherId == teacherId && s.SchoolId == schoolId && s.CourseId == courseId);
+                        .FirstOrDefaultAsync(s => s.TeacherId == teacherId && s.SchoolId == schoolId && s.CourseId == courseId && s.Deleted == false);
 
             return model != null ? new SchoolTeacherCourseResultDTO
             {
@@ -60,14 +61,14 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
         public async Task<SchoolTeacherCourseInitialDTO> GetSchoolTeacherCourceInitialListsAsync(Guid schoolId)
         {
-            var teachers = await context.schoolTeacherCourses.Where(s => s.SchoolId == schoolId)
+            var teachers = await context.schoolTeacherCourses.Where(s => s.SchoolId == schoolId && s.Deleted == false)
                 .Select(s => new DropDownDTO
                 {
                     Id = s.Teacher.Id,
                     Name = string.Format("{0} {1} {2}", s.Teacher.FirstName, s.Teacher.MiddelName, s.Teacher.LastName),
                 }).ToListAsync();
 
-            var courses = await context.schoolTeacherCourses.Where(s => s.SchoolId == schoolId)
+            var courses = await context.schoolTeacherCourses.Where(s => s.SchoolId == schoolId && s.Deleted == false)
                 .Select(s => new DropDownDTO
                 {
                     Id = s.Course.Id,

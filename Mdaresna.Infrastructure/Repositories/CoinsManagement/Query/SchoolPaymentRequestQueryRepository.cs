@@ -25,7 +25,7 @@ namespace Mdaresna.Infrastructure.Repositories.CoinsManagement.Query
         public async Task<IEnumerable<SchoolPaymentRequestResultDTO>> GetSchoolPaymentRequestsListAsync(DateTime? requestDateFrom, DateTime? requestDateTo, string? transfareCode, DateTime? transfareDateFrom, DateTime? transfareDateTo, 
                                                                                                             decimal? transfareAmount, Guid? paymentTypeId, Guid? schoolId, bool? approvied, Guid? approviedById)
         {
-            var query = context.SchoolPaymentRequests.AsQueryable();
+            var query = context.SchoolPaymentRequests.Where(r => r.Deleted == false);
 
             requestDateFrom = requestDateFrom == null ? null : new DateTime(requestDateFrom.Value.Year, requestDateFrom.Value.Month, requestDateFrom.Value.Day);
             requestDateTo = requestDateTo == null ? null : new DateTime(requestDateTo.Value.Year, requestDateTo.Value.Month, requestDateTo.Value.Day);
@@ -91,7 +91,7 @@ namespace Mdaresna.Infrastructure.Repositories.CoinsManagement.Query
             var request = await context.SchoolPaymentRequests.Include(r => r.paymentType)
                                                              .Include(r => r.School)
                                                              .Include(r => r.ApproviedBy)
-                                                             .FirstOrDefaultAsync(r=> r.Id == id);
+                                                             .FirstOrDefaultAsync(r=> r.Id == id && r.Deleted == false);
 
             return request == null ? null : new SchoolPaymentRequestResultDTO
             {

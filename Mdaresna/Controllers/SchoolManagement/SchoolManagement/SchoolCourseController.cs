@@ -76,7 +76,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 };
 
                 var added = schoolCourseCommandService.Create(course);
-                if(added)
+                if (added)
                     return Ok(await schoolCourseQueryService.GetCourseIDAsync(course.Id));
 
                 return BadRequest("Error in adding course");
@@ -104,10 +104,33 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 
                 var updated = schoolCourseCommandService.Update(course);
 
-                if(updated) 
+                if (updated)
                     return Ok(await schoolCourseQueryService.GetCourseIDAsync(course.Id));
 
                 return BadRequest("Error in updating course");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("SoftDeleteSchoolCourse")]
+        public async Task<IActionResult> SoftDeleteSchoolCourse([FromBody] CourseIdDTO courseIdDTO)
+        {
+            try
+            {
+                var course = await schoolCourseQueryService.GetByIdAsync(courseIdDTO.CourseId);
+
+                if (course == null)
+                    return BadRequest("There is no course to delete");
+
+                course.Deleted = true;
+
+                var deleted = schoolCourseCommandService.Update(course);
+
+                
+                return deleted ? Ok("Course deleted") : BadRequest("Error in deleting course");
             }
             catch (Exception ex)
             {

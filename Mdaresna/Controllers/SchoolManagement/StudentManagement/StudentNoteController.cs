@@ -111,6 +111,28 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             }
         }
 
+        [HttpPost("SoftDeleteStudentNote")]
+        public async Task<IActionResult> SoftDeleteStudentNote([FromBody] StudentNoteIdDTO dTO)
+        {
+            try
+            {
+                var note = await studentNoteQueryService.GetByIdAsync(dTO.NoteId);
+
+                if (note == null)
+                    return BadRequest("There is no note to delete");
+
+                note.Deleted = true;
+
+                var deleted = studentNoteCommandService.Update(note);
+
+                return deleted ? Ok("Student note Deleted") : BadRequest("Error in delete student note");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
 
 

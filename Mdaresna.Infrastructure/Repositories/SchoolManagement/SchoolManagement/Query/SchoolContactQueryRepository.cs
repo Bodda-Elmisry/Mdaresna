@@ -24,7 +24,9 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
         public async Task<IEnumerable<SchoolContactResultDTO>> GetSchoolContacts(Guid schoolId)
         {
-            var result = await context.SchoolContacts.Include(c=> c.ContactType).Select(c =>
+            var result = await context.SchoolContacts.Include(c=> c.ContactType)
+                .Where(c => c.SchoolId == schoolId && c.Deleted == false)
+                .Select(c =>
                                                                 new SchoolContactResultDTO
                                                                 {
                                                                     SchoolId = c.SchoolId,
@@ -36,7 +38,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                                                                     TypeIcon = !string.IsNullOrEmpty(c.ContactType.IconUrl) ? $"{SettingsHelper.GetAppUrl()}/{c.ContactType.IconUrl.Replace("\\", "/")}" : string.Empty,
                                                                     TypeName = c.ContactType.Name
                                                                 })
-                                        .Where(c => c.SchoolId == schoolId).ToListAsync();
+                                        .ToListAsync();
 
             return result;
         }
@@ -45,7 +47,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
         public async Task<SchoolContactResultDTO?> GetSchoolContactById(Guid Id)
         {
-            var result = await context.SchoolContacts.Include(s=>s.ContactType).FirstOrDefaultAsync(c => c.Id == Id);
+            var result = await context.SchoolContacts.Include(s=>s.ContactType).FirstOrDefaultAsync(c => c.Id == Id && c.Deleted == false);
 
             return result == null ? null : new SchoolContactResultDTO
             {
