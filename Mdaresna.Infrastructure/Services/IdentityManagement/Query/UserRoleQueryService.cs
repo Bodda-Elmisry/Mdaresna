@@ -52,5 +52,11 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Query
         {
             return await userRoleQueryRepository.GetSchoolsAdminsAsync();
         }
+
+        public async Task<IEnumerable<UserRoleResultDTO>> GetApplicationManagersAsync(string name, string phoneNumber)
+        {
+            return await userRoleQueryRepository.GetApplicationManagersAsync(name, phoneNumber);
+        }
+
     }
 }

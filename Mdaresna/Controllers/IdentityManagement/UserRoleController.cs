@@ -48,6 +48,20 @@ namespace Mdaresna.Controllers.IdentityManagement
             }
         }
 
+        [HttpPost("GetApplicationManagers")]
+        public async Task<IActionResult> GetApplicationManagers([FromBody] GetApplicationManagersDTO dto)
+        {
+            try
+            {
+                var userRoles = await userRoleQueryService.GetApplicationManagersAsync(dto.Name, dto.PhoneNumber);
+                return Ok(userRoles);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("GetRoleUsers")]
         public async Task<IActionResult> GetRoleUsers([FromBody] GetRoleUsersDTO dTO)
         {

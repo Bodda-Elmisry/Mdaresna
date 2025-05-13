@@ -16,5 +16,6 @@ namespace Mdaresna.Repository.IServices.IdentityManagement.Query
         Task<IEnumerable<UserRoleResultDTO>> GetUserRolesAsync(Guid userId, Guid? schoolId);
         Task<IEnumerable<UserRoleResultDTO>> GetRoleUsersAsync(Guid roleId, Guid? schoolId);
         Task<IEnumerable<UserRoleResultDTO>> GetSchoolsAdminsAsync();
+        Task<IEnumerable<UserRoleResultDTO>> GetApplicationManagersAsync(string name, string phoneNumber);
     }
 }
