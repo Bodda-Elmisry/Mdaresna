@@ -40,14 +40,19 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Que
             return await schoolQueryRepository.GetSchoolsList(name, active, schoolTypeId, coinTypeId, adminId, pageNumber, getNewSchools);
         }
 
+        public async Task<IEnumerable<Guid>> GetSchoolUsersIds(Guid schoolId)
+        {
+            return await schoolQueryRepository.GetSchoolUsersIds(schoolId);
+        }
+
         public async Task<IEnumerable<SchoolResultDTO>> GetUserAdminSchools(Guid userId)
         {
             return await schoolQueryRepository.GetUserAdminSchools(userId);
         }
 
-        public async Task<IEnumerable<SchoolResultDTO>> GetUserSchools(Guid userId)
+        public async Task<IEnumerable<SchoolResultDTO>> GetUserSchools(Guid userId, bool? active = null)
         {
-            return await schoolQueryRepository.GetUserSchools(userId);
+            return await schoolQueryRepository.GetUserSchools(userId, active);
         }
 
 

@@ -33,14 +33,24 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Query
             return await userRoleQueryRepository.CheckUserRole(role);
         }
 
-        public async Task<UserRoleResultDTO?> GetUserRoleAsync(Guid userId, Guid roleId)
+        public async Task<UserRoleResultDTO?> GetUserRoleViewAsync(Guid userId, Guid roleId, Guid? schoolId)
         {
-            return await userRoleQueryRepository.GetUserRoleAsync(userId, roleId);
+            return await userRoleQueryRepository.GetUserRoleViewAsync(userId, roleId, schoolId);
+        }
+
+        public async Task<UserRole?> GetUserRoleAsync(Guid userId, Guid roleId, Guid? schoolId)
+        {
+            return await userRoleQueryRepository.GetUserRoleAsync(userId, roleId, schoolId);
         }
 
         public async Task<IEnumerable<UserRoleResultDTO>> GetUserRolesAsync(Guid userId, Guid? schoolId)
         {
             return await userRoleQueryRepository.GetUserRolesAsync(userId, schoolId);
+        }
+
+        public async Task<IEnumerable<UserRole>> GetUserRolesDataAsync(Guid userId, Guid? schoolId)
+        {
+            return await userRoleQueryRepository.GetUserRolesDataAsync(userId, schoolId);
         }
 
         public async Task<IEnumerable<UserRoleResultDTO>> GetRoleUsersAsync(Guid roleId, Guid? schoolId)

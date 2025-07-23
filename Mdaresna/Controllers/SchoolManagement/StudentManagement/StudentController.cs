@@ -80,7 +80,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         {
             try
             {
-                var result = await studentQueryService.GetStudentsBySchoolIdAsync(dTO.SchoolId, dTO.StudentCode, dTO.StudentName);
+                var result = await studentQueryService.GetStudentsBySchoolIdViewAsync(dTO.SchoolId, dTO.StudentCode, dTO.StudentName);
                 return Ok(result);
             }
             catch (Exception ex)

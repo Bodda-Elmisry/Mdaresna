@@ -12,8 +12,10 @@ namespace Mdaresna.Repository.IServices.IdentityManagement.Query
     public interface IUserRoleQueryService : IBaseQueryService<UserRole>
     {
         Task<bool> CheckRoleExist(UserRole role);
-        Task<UserRoleResultDTO?> GetUserRoleAsync(Guid userId, Guid roleId);
+        Task<UserRoleResultDTO?> GetUserRoleViewAsync(Guid userId, Guid roleId, Guid? schoolId);
+        Task<UserRole?> GetUserRoleAsync(Guid userId, Guid roleId, Guid? schoolId);
         Task<IEnumerable<UserRoleResultDTO>> GetUserRolesAsync(Guid userId, Guid? schoolId);
+        Task<IEnumerable<UserRole>> GetUserRolesDataAsync(Guid userId, Guid? schoolId);
         Task<IEnumerable<UserRoleResultDTO>> GetRoleUsersAsync(Guid roleId, Guid? schoolId);
         Task<IEnumerable<UserRoleResultDTO>> GetSchoolsAdminsAsync();
         Task<IEnumerable<UserRoleResultDTO>> GetApplicationManagersAsync(string name, string phoneNumber);

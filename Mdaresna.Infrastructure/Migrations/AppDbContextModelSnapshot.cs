@@ -276,6 +276,9 @@ namespace Mdaresna.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Description_AR")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Key")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
@@ -287,6 +290,13 @@ namespace Mdaresna.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Name_AR")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasDefaultValue("");
 
                     b.Property<bool>("SchoolPermission")
                         .HasColumnType("bit");
@@ -303,8 +313,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = true,
                             Deleted = false,
                             Description = "Assign School Manager Permission To User",
+                            Description_AR = "تعيين صلاحية مدير المدرسة للمستخدم",
                             Key = "AssignScoolManagerToUser",
                             Name = "Assign Scool Manager To User",
+                            Name_AR = "تعيين مدير المدرسة للمستخدم",
                             SchoolPermission = false
                         },
                         new
@@ -314,8 +326,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Create new shool",
+                            Description_AR = "إنشاء مدرسة جديدة",
                             Key = "CreateSchool",
                             Name = "Add School",
+                            Name_AR = "إضافة مدرسة",
                             SchoolPermission = true
                         },
                         new
@@ -325,8 +339,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = true,
                             Deleted = false,
                             Description = "View User Schools Drop Down",
+                            Description_AR = "عرض قائمة المدارس للمستخدم",
                             Key = "ViewUserSchoolsDropDown",
                             Name = "View User Schools Drop Down",
+                            Name_AR = "عرض قائمة المدارس للمستخدم",
                             SchoolPermission = false
                         },
                         new
@@ -336,8 +352,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "school Admin",
+                            Description_AR = "مدير المدرسة",
                             Key = "schoolAdmin",
                             Name = "school Admin",
+                            Name_AR = "مدير المدرسة",
                             SchoolPermission = true
                         },
                         new
@@ -347,8 +365,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View Year Setting Section",
+                            Description_AR = "عرض قسم إعدادات السنة",
                             Key = "ViewYearSettingSection",
                             Name = "View Year Setting Section",
+                            Name_AR = "عرض قسم إعدادات السنة",
                             SchoolPermission = true
                         },
                         new
@@ -358,8 +378,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View School Setting Section",
+                            Description_AR = "عرض قسم إعدادات المدرسة",
                             Key = "ViewSchoolSettingSection",
                             Name = "View School Setting Section",
+                            Name_AR = "عرض قسم إعدادات المدرسة",
                             SchoolPermission = true
                         },
                         new
@@ -369,8 +391,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View Classes Setting Section",
+                            Description_AR = "عرض قسم إعدادات الفصول",
                             Key = "ViewClassesSettingSection",
                             Name = "View Classes Setting Section",
+                            Name_AR = "عرض قسم إعدادات الفصول",
                             SchoolPermission = true
                         },
                         new
@@ -380,8 +404,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View Years Setting",
+                            Description_AR = "عرض إعدادات السنوات",
                             Key = "ViewYearsSetting",
                             Name = "View Years Setting",
+                            Name_AR = "عرض إعدادات السنوات",
                             SchoolPermission = true
                         },
                         new
@@ -391,8 +417,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = true,
                             Deleted = false,
                             Description = "Change School Activation",
+                            Description_AR = "تغيير تفعيل المدرسة",
                             Key = "ChangeSchoolActivation",
                             Name = "Change School Activation",
+                            Name_AR = "تغيير تفعيل المدرسة",
                             SchoolPermission = false
                         },
                         new
@@ -402,8 +430,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = true,
                             Deleted = false,
                             Description = "Filter Schools By Activity",
+                            Description_AR = "تصفية المدارس حسب النشاط",
                             Key = "FilterSchoolsByActivity",
                             Name = "Filter Schools By Activity",
+                            Name_AR = "تصفية المدارس حسب النشاط",
                             SchoolPermission = true
                         },
                         new
@@ -413,8 +443,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = true,
                             Deleted = false,
                             Description = "Assign Coins To School",
+                            Description_AR = "تعيين العملات للمدرسة",
                             Key = "AssignCoinsToSchool",
                             Name = "Assign Coins To School",
+                            Name_AR = "تعيين العملات للمدرسة",
                             SchoolPermission = false
                         },
                         new
@@ -424,8 +456,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = true,
                             Deleted = false,
                             Description = "Change School Type",
+                            Description_AR = "تغيير نوع المدرسة",
                             Key = "ChangeSchoolType",
                             Name = "Change School Type",
+                            Name_AR = "تغيير نوع المدرسة",
                             SchoolPermission = false
                         },
                         new
@@ -435,8 +469,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = true,
                             Deleted = false,
                             Description = "Change School Coin Type",
+                            Description_AR = "تغيير نوع عملة المدرسة",
                             Key = "ChangeSchoolCoinType",
                             Name = "Change School Coin Type",
+                            Name_AR = "تغيير نوع عملة المدرسة",
                             SchoolPermission = false
                         },
                         new
@@ -446,8 +482,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View School Data",
+                            Description_AR = "عرض بيانات المدرسة",
                             Key = "ViewSchoolData",
                             Name = "View School Data",
+                            Name_AR = "عرض بيانات المدرسة",
                             SchoolPermission = true
                         },
                         new
@@ -457,8 +495,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Update School Data",
+                            Description_AR = "تحديث بيانات المدرسة",
                             Key = "UpdateSchoolData",
                             Name = "Update School Data",
+                            Name_AR = "تحديث بيانات المدرسة",
                             SchoolPermission = true
                         },
                         new
@@ -468,8 +508,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Uploade School Image",
+                            Description_AR = "رفع صورة المدرسة",
                             Key = "UploadeSchoolImage",
                             Name = "Uploade School Image",
+                            Name_AR = "رفع صورة المدرسة",
                             SchoolPermission = true
                         },
                         new
@@ -479,8 +521,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Add School Contact",
+                            Description_AR = "إضافة جهة اتصال للمدرسة",
                             Key = "AddSchoolContact",
                             Name = "Add School Contact",
+                            Name_AR = "إضافة جهة اتصال للمدرسة",
                             SchoolPermission = true
                         },
                         new
@@ -490,8 +534,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Update School Contact",
+                            Description_AR = "تحديث جهة اتصال المدرسة",
                             Key = "UpdateSchoolContact",
                             Name = "Update School Contact",
+                            Name_AR = "تحديث جهة اتصال المدرسة",
                             SchoolPermission = true
                         },
                         new
@@ -501,8 +547,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View Shool Languages Setting",
+                            Description_AR = "عرض إعدادات لغات المدرسة",
                             Key = "ViewSchoolLanguagesSetting",
                             Name = "View School Languages Setting",
+                            Name_AR = "عرض إعدادات لغات المدرسة",
                             SchoolPermission = true
                         },
                         new
@@ -512,8 +560,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Add Language To School",
+                            Description_AR = "إضافة لغة للمدرسة",
                             Key = "AddLanguageToSchool",
                             Name = "Add Language To School",
+                            Name_AR = "إضافة لغة للمدرسة",
                             SchoolPermission = true
                         },
                         new
@@ -523,8 +573,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = true,
                             Deleted = false,
                             Description = "View Languages",
+                            Description_AR = "عرض اللغات",
                             Key = "ViewLanguages",
                             Name = "View Languages",
+                            Name_AR = "عرض اللغات",
                             SchoolPermission = false
                         },
                         new
@@ -534,8 +586,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = true,
                             Deleted = false,
                             Description = "Create Language",
+                            Description_AR = "إنشاء لغة",
                             Key = "CreateLanguage",
                             Name = "Create Language",
+                            Name_AR = "إنشاء لغة",
                             SchoolPermission = false
                         },
                         new
@@ -545,8 +599,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View Grades Setting",
+                            Description_AR = "عرض إعدادات المستويات الدراسة",
                             Key = "ViewGradesSetting",
                             Name = "View Grades Setting",
+                            Name_AR = "عرض إعدادات المستويات الدراسية",
                             SchoolPermission = true
                         },
                         new
@@ -556,8 +612,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Add Grade",
+                            Description_AR = "إضافة مستوى دراسي",
                             Key = "AddGrade",
                             Name = "Add Grade",
+                            Name_AR = "إضافة مستوى دراسي",
                             SchoolPermission = true
                         },
                         new
@@ -567,8 +625,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Add Multiple Grades",
+                            Description_AR = "إضافة مستويات دراسية متعددة",
                             Key = "AddMultipleGrades",
                             Name = "Add Multiple Grades",
+                            Name_AR = "إضافة مستويات دراسية متعددة",
                             SchoolPermission = true
                         },
                         new
@@ -578,8 +638,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Update Grade",
+                            Description_AR = "تحديث المستوى الدراسي",
                             Key = "UpdateGrade",
                             Name = "Update Grade",
+                            Name_AR = "تحديث المستوى الدراسي",
                             SchoolPermission = true
                         },
                         new
@@ -589,8 +651,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View Exams Setting",
+                            Description_AR = "عرض إعدادات الامتحانات",
                             Key = "ViewExamsSetting",
                             Name = "View Exams Setting",
+                            Name_AR = "عرض إعدادات الامتحانات",
                             SchoolPermission = true
                         },
                         new
@@ -600,8 +664,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Add Exam",
+                            Description_AR = "إضافة امتحان",
                             Key = "AddExam",
                             Name = "Add Exam",
+                            Name_AR = "إضافة امتحان",
                             SchoolPermission = true
                         },
                         new
@@ -611,8 +677,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Add Multiple Exams",
+                            Description_AR = "إضافة امتحانات متعددة",
                             Key = "AddMultipleExams",
                             Name = "Add Multiple Exams",
+                            Name_AR = "إضافة امتحانات متعددة",
                             SchoolPermission = true
                         },
                         new
@@ -622,8 +690,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View Classes Setting Section",
+                            Description_AR = "عرض قسم إعدادات الفصول",
                             Key = "ViewClassesSettingSection",
                             Name = "View Classes Setting Section",
+                            Name_AR = "عرض قسم إعدادات الفصول",
                             SchoolPermission = true
                         },
                         new
@@ -633,8 +703,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View Classes Setting List",
+                            Description_AR = "عرض قائمة إعدادات الفصول",
                             Key = "ViewClassesSettingList",
                             Name = "View Classes Setting List",
+                            Name_AR = "عرض قائمة إعدادات الفصول",
                             SchoolPermission = true
                         },
                         new
@@ -644,8 +716,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Add Class",
+                            Description_AR = "إضافة فصل دراسي",
                             Key = "AddClass",
                             Name = "Add Class",
+                            Name_AR = "إضافة فصل دراسي",
                             SchoolPermission = true
                         },
                         new
@@ -655,8 +729,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Add Multiple Classes",
+                            Description_AR = "إضافة فصول دراسية متعددة",
                             Key = "AddMultipleClasses",
                             Name = "Add Multiple Classes",
+                            Name_AR = "إضافة فصول دراسية متعددة",
                             SchoolPermission = true
                         },
                         new
@@ -666,8 +742,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Change Class Activation",
+                            Description_AR = "تغيير تفعيل الفصل الدراسي",
                             Key = "ChangeClassActivation",
                             Name = "Change Class Activation",
+                            Name_AR = "تغيير تفعيل الفصل الدراسي",
                             SchoolPermission = true
                         },
                         new
@@ -677,8 +755,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Update Class",
+                            Description_AR = "تحديث الفصل الدراسي",
                             Key = "UpdateClass",
                             Name = "Update Class",
+                            Name_AR = "تحديث الفصل الدراسي",
                             SchoolPermission = true
                         },
                         new
@@ -688,8 +768,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Link Teacher To School",
+                            Description_AR = "ربط المعلم بالمدرسة",
                             Key = "LinkTeacherToSchool",
                             Name = "Link Teacher To School",
+                            Name_AR = "ربط المعلم بالمدرسة",
                             SchoolPermission = true
                         },
                         new
@@ -699,8 +781,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Add Course",
+                            Description_AR = "إضافة مادة دراسية",
                             Key = "AddCourse",
                             Name = "Add Course",
+                            Name_AR = "إضافة مادة دراسية",
                             SchoolPermission = true
                         },
                         new
@@ -710,8 +794,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Add Multiple Courses",
+                            Description_AR = "إضافة مواد دراسية متعددة",
                             Key = "AddMultipleCourses",
                             Name = "Add Multiple Courses",
+                            Name_AR = "إضافة مواد دراسية متعددة",
                             SchoolPermission = true
                         },
                         new
@@ -721,8 +807,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Update Course",
+                            Description_AR = "تحديث المادة الدراسية",
                             Key = "UpdateCourse",
                             Name = "Update Course",
+                            Name_AR = "تحديث المادة الدراسية",
                             SchoolPermission = true
                         },
                         new
@@ -732,8 +820,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View Teachers List",
+                            Description_AR = "عرض قائمة المعلمين",
                             Key = "ViewTeachersList",
                             Name = "View Teachers List",
+                            Name_AR = "عرض قائمة المعلمين",
                             SchoolPermission = true
                         },
                         new
@@ -743,8 +833,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = true,
                             Deleted = false,
                             Description = "View Admin Aettings",
+                            Description_AR = "عرض إعدادات المسؤولين",
                             Key = "ViewAdminSettings",
                             Name = "View Admin Aettings",
+                            Name_AR = "عرض إعدادات المسؤولين",
                             SchoolPermission = false
                         },
                         new
@@ -754,8 +846,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Unlink Teacher To School",
+                            Description_AR = "فك ارتباط المعلم بالمدرسة",
                             Key = "UnlinkTeacherToSchool",
                             Name = "Unlink Teacher To School",
+                            Name_AR = "فك ارتباط المعلم بالمدرسة",
                             SchoolPermission = true
                         },
                         new
@@ -765,8 +859,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Link Teacher To Course & Class",
+                            Description_AR = "ربط المعلم بالمادة الدراسية والفصل",
                             Key = "LinkTeacherToCourse&Class",
                             Name = "Link Teacher To Course & Class",
+                            Name_AR = "ربط المعلم بالمادة الدراسية والفصل",
                             SchoolPermission = true
                         },
                         new
@@ -776,19 +872,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Unlink Teacher To Course & Class",
+                            Description_AR = "فك ارتباط المعلم بالمادة الدراسية والفصل",
                             Key = "UnlinkTeacherToCourse&Class",
                             Name = "Unlink Teacher To Course & Class",
-                            SchoolPermission = true
-                        },
-                        new
-                        {
-                            Id = new Guid("ee6325a4-4bc4-4aa7-9944-f82c3b7a305a"),
-                            AllowedToMapToClassroom = false,
-                            AppPermission = false,
-                            Deleted = false,
-                            Description = "View School Students List",
-                            Key = "ViewSchoolStudentsList",
-                            Name = "View School Students List",
+                            Name_AR = "فك ارتباط المعلم بالمادة الدراسية والفصل",
                             SchoolPermission = true
                         },
                         new
@@ -798,8 +885,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Assign Student To School",
+                            Description_AR = "تعيين طالب للمدرسة",
                             Key = "AssignStudentToSchool",
                             Name = "Assign Student To School",
+                            Name_AR = "تعيين طالب للمدرسة",
                             SchoolPermission = true
                         },
                         new
@@ -809,8 +898,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Assign Multiple Students To School",
+                            Description_AR = "تعيين طلاب متعددين للمدرسة",
                             Key = "AssignMultipleStudentsToSchool",
                             Name = "Assign Multiple Students To School",
+                            Name_AR = "تعيين طلاب متعددين للمدرسة",
                             SchoolPermission = true
                         },
                         new
@@ -820,8 +911,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Update Student Info",
+                            Description_AR = "تحديث معلومات الطالب",
                             Key = "UpdateStudentInfo",
                             Name = "Update Student Info",
+                            Name_AR = "تحديث معلومات الطالب",
                             SchoolPermission = true
                         },
                         new
@@ -831,8 +924,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Change Student Activation",
+                            Description_AR = "تغيير تفعيل الطالب",
                             Key = "ChangeStudentActivation",
                             Name = "Change Student Activation",
+                            Name_AR = "تغيير تفعيل الطالب",
                             SchoolPermission = true
                         },
                         new
@@ -842,8 +937,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View School Current Year",
+                            Description_AR = "عرض السنة الدراسية الحالية للمدرسة",
                             Key = "ViewSchoolCurrentYear",
                             Name = "View School Current Year",
+                            Name_AR = "عرض السنة الدراسية الحالية للمدرسة",
                             SchoolPermission = true
                         },
                         new
@@ -853,8 +950,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Add Current Year",
+                            Description_AR = "إضافة سنة دراسية جديدة",
                             Key = "AddCurrentYear",
                             Name = "Add Current Year",
+                            Name_AR = "إضافة سنة دراسية جديدة",
                             SchoolPermission = true
                         },
                         new
@@ -864,8 +963,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Add Month",
+                            Description_AR = "إضافة شهر دراسي",
                             Key = "AddMonth",
                             Name = "Add Month",
+                            Name_AR = "إضافة شهر دراسي",
                             SchoolPermission = true
                         },
                         new
@@ -875,8 +976,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View Year Monthes",
+                            Description_AR = "عرض أشهر السنة الدراسية",
                             Key = "ViewYearMonthes",
                             Name = "View Year Monthes",
+                            Name_AR = "عرض أشهر السنة الدراسية",
                             SchoolPermission = true
                         },
                         new
@@ -886,8 +989,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Update Year",
+                            Description_AR = "تحديث السنة الدراسية",
                             Key = "UpdateYear",
                             Name = "Update Year",
+                            Name_AR = "تحديث السنة الدراسية",
                             SchoolPermission = true
                         },
                         new
@@ -897,8 +1002,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Update Month",
+                            Description_AR = "تحديث الشهر الدراسي",
                             Key = "UpdateMonth",
                             Name = "Update Month",
+                            Name_AR = "تحديث الشهر الدراسي",
                             SchoolPermission = true
                         },
                         new
@@ -908,8 +1015,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Change Year Activation",
+                            Description_AR = "تغيير تفعيل السنة الدراسية",
                             Key = "ChangeYearActivation",
                             Name = "Change Year Activation",
+                            Name_AR = "تغيير تفعيل السنة الدراسية",
                             SchoolPermission = true
                         },
                         new
@@ -919,8 +1028,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Change Month Activation",
+                            Description_AR = "تغيير تفعيل الشهر الدراسي",
                             Key = "ChangeMonthActivation",
                             Name = "Change Month Activation",
+                            Name_AR = "تغيير تفعيل الشهر الدراسي",
                             SchoolPermission = true
                         },
                         new
@@ -930,8 +1041,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Complete Yeare",
+                            Description_AR = "إكمال السنة الدراسية",
                             Key = "CompleteYeare",
                             Name = "Complete Yeare",
+                            Name_AR = "إكمال السنة الدراسية",
                             SchoolPermission = true
                         },
                         new
@@ -941,8 +1054,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View Years List",
+                            Description_AR = "عرض قائمة السنوات الدراسية",
                             Key = "ViewYearsList",
                             Name = "View Years List",
+                            Name_AR = "عرض قائمة السنوات الدراسية",
                             SchoolPermission = true
                         },
                         new
@@ -952,8 +1067,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = true,
                             Deleted = false,
                             Description = "View Childerns List",
+                            Description_AR = "عرض قائمة الأطفال",
                             Key = "ViewChildernsList",
                             Name = "View Childerns",
+                            Name_AR = "عرض قائمة الأطفال",
                             SchoolPermission = false
                         },
                         new
@@ -963,8 +1080,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Attendance Action",
+                            Description_AR = "إجراء الحضور والغياب",
                             Key = "AttendanceAction",
                             Name = "Attendance Action",
+                            Name_AR = "إجراء الحضور والغياب",
                             SchoolPermission = true
                         },
                         new
@@ -974,8 +1093,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View Attendance List",
+                            Description_AR = "عرض قائمة الحضور والغياب",
                             Key = "ViewAttendanceList",
                             Name = "View Attendance List",
+                            Name_AR = "عرض قائمة الحضور والغياب",
                             SchoolPermission = true
                         },
                         new
@@ -985,8 +1106,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Add Homework",
+                            Description_AR = "إضافة واجب منزلي",
                             Key = "AddHomework",
                             Name = "Add Homework",
+                            Name_AR = "إضافة واجب منزلي",
                             SchoolPermission = true
                         },
                         new
@@ -996,8 +1119,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View Homework",
+                            Description_AR = "عرض الواجبات المنزلية",
                             Key = "ViewHomework",
                             Name = "View Homework",
+                            Name_AR = "عرض الواجبات المنزلية",
                             SchoolPermission = true
                         },
                         new
@@ -1007,8 +1132,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Update Homework",
+                            Description_AR = "تحديث الواجب المنزلي",
                             Key = "UpdateHomework",
                             Name = "Update Homework",
+                            Name_AR = "تحديث الواجب المنزلي",
                             SchoolPermission = true
                         },
                         new
@@ -1018,8 +1145,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Rate Homework",
+                            Description_AR = "تقييم الواجب المنزلي",
                             Key = "RateHomework",
                             Name = "Rate Homework",
+                            Name_AR = "تقييم الواجب المنزلي",
                             SchoolPermission = true
                         },
                         new
@@ -1029,8 +1158,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View School Settings",
+                            Description_AR = "عرض إعدادات المدرسة",
                             Key = "ViewSchoolSettings",
                             Name = "View School Settings",
+                            Name_AR = "عرض إعدادات المدرسة",
                             SchoolPermission = true
                         },
                         new
@@ -1040,19 +1171,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View Exams",
+                            Description_AR = "عرض الامتحانات",
                             Key = "ViewExams",
                             Name = "View Exams",
-                            SchoolPermission = true
-                        },
-                        new
-                        {
-                            Id = new Guid("77127635-8fe8-4451-ac9c-59c38ee02d4d"),
-                            AllowedToMapToClassroom = false,
-                            AppPermission = false,
-                            Deleted = false,
-                            Description = "Update Exam",
-                            Key = "UpdateExam",
-                            Name = "Update Exam",
+                            Name_AR = "عرض الامتحانات",
                             SchoolPermission = true
                         },
                         new
@@ -1062,8 +1184,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Rate Exam",
+                            Description_AR = "تقييم الامتحان",
                             Key = "RateExam",
                             Name = "Rate Exam",
+                            Name_AR = "تقييم الامتحان",
                             SchoolPermission = true
                         },
                         new
@@ -1073,8 +1197,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View Activities",
+                            Description_AR = "عرض الأنشطة",
                             Key = "ViewActivities",
                             Name = "View Activities",
+                            Name_AR = "عرض الأنشطة",
                             SchoolPermission = true
                         },
                         new
@@ -1084,8 +1210,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Add Activity",
+                            Description_AR = "إضافة نشاط",
                             Key = "AddActivity",
                             Name = "Add Activity",
+                            Name_AR = "إضافة نشاط",
                             SchoolPermission = true
                         },
                         new
@@ -1095,8 +1223,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Update Activity",
+                            Description_AR = "تحديث النشاط",
                             Key = "UpdateActivity",
                             Name = "Update Activity",
+                            Name_AR = "تحديث النشاط",
                             SchoolPermission = true
                         },
                         new
@@ -1106,8 +1236,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Rate Activity",
+                            Description_AR = "تقييم النشاط",
                             Key = "RateActivity",
                             Name = "Rate Activity",
+                            Name_AR = "تقييم النشاط",
                             SchoolPermission = true
                         },
                         new
@@ -1117,8 +1249,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Add Note",
+                            Description_AR = "إضافة ملاحظة",
                             Key = "AddNote",
                             Name = "Add Note",
+                            Name_AR = "إضافة ملاحظة",
                             SchoolPermission = true
                         },
                         new
@@ -1128,8 +1262,10 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "View Notes",
+                            Description_AR = "عرض الملاحظات",
                             Key = "ViewNotes",
                             Name = "View Notes",
+                            Name_AR = "عرض الملاحظات",
                             SchoolPermission = true
                         },
                         new
@@ -1139,8 +1275,686 @@ namespace Mdaresna.Infrastructure.Migrations
                             AppPermission = false,
                             Deleted = false,
                             Description = "Edit Note",
+                            Description_AR = "تعديل الملاحظة",
                             Key = "EditNote",
                             Name = "Edit Note",
+                            Name_AR = "تعديل الملاحظة",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("a8704499-413d-4ff4-a3a2-122b684a0e17"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "View Permission Settings",
+                            Description_AR = "",
+                            Key = "ViewPermissionSettings",
+                            Name = "View Permission Settings",
+                            Name_AR = "",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("512d2ebf-dd4a-482b-8753-1252fe196511"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "View Payments Transaction",
+                            Description_AR = "",
+                            Key = "ViewPaymentsTransaction",
+                            Name = "View Payments Transaction",
+                            Name_AR = "",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("09756cb3-4363-4763-812a-13f1f8a3b693"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Remove User Role",
+                            Description_AR = "حذف صلاحة المستخدم",
+                            Key = "RemoveUserRole",
+                            Name = "Remove User Role",
+                            Name_AR = "حذف صلاحة المستخدم",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("26b6aad5-3434-4538-867e-165d70800fb9"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Manage School User Permissions",
+                            Description_AR = "إدارة صلاحيات مستخدمي المدرسة",
+                            Key = "ManageShoolUserPermissins",
+                            Name = "Manage School User Permissions",
+                            Name_AR = "إدارة صلاحيات مستخدمي المدرسة",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("cf67bebe-a01e-46e0-9b8e-1edc0cee2087"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Edit Relations",
+                            Description_AR = "تحرير العلاقات",
+                            Key = "EditRelations",
+                            Name = "Edit Relations",
+                            Name_AR = "تحرير العلاقات",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("b357214a-296e-4999-be38-2af4259d3096"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Delete School Year",
+                            Description_AR = "حذف السنة الدراسية",
+                            Key = "DeleteSchoolYear",
+                            Name = "Delete School Year",
+                            Name_AR = "حذف السنة الدراسية",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("913eeed8-4d9d-4778-a84d-3178b36fedbb"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Delete Relation Type",
+                            Description_AR = "حذف نوع العلاقة",
+                            Key = "DeleteRelationType",
+                            Name = "Delete Relation Type",
+                            Name_AR = "حذف نوع العلاقة",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("687a31c3-6d21-4f8b-9860-379b2a563758"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Delete Classroom",
+                            Description_AR = "حذف الفصل الدراسي",
+                            Key = "DeleteClassroom",
+                            Name = "Delete Classroom",
+                            Name_AR = "حذف الفصل الدراسي",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("f4c86ead-e913-4c5e-b1a5-3e17a647c216"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Create School Contact Type",
+                            Description_AR = "إنشاء نوع جهة اتصال للمدرسة",
+                            Key = "CreateSchoolContactType",
+                            Name = "Create School Contact Type",
+                            Name_AR = "إنشاء نوع جهة اتصال للمدرسة",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("5e48c040-34e8-4905-9b15-3f4069e39840"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Delete Security Group",
+                            Description_AR = "حذف مجموعة الأمان",
+                            Key = "DeleteSecurityGroup",
+                            Name = "Delete Security Group",
+                            Name_AR = "حذف مجموعة الأمان",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("cbcff607-eac1-45e8-81e7-4626a165a1b9"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Add New School Admin List",
+                            Description_AR = "إضافة قائمة مسؤولي المدارس",
+                            Key = "AddNewSchoolAdminList",
+                            Name = "Add New School Admin List",
+                            Name_AR = "إضافة قائمة مسؤولي المدارس",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("889bc51f-0624-4911-988d-4a86f1a4f011"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Activate Roles List",
+                            Description_AR = "تفعيل قائمة الأدوار",
+                            Key = "ActivateRolesList",
+                            Name = "Activate Roles List",
+                            Name_AR = "تفعيل قائمة الأدوار",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("21e7443f-566f-452e-a246-4e65260b16f4"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Add Application Employee",
+                            Description_AR = "إضافة موظف للتطبيق",
+                            Key = "AddApplicationEmployee",
+                            Name = "Add Application Employee",
+                            Name_AR = "إضافة موظف للتطبيق",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("d65974e4-239a-4683-8b07-5110270e04f6"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Add User Role",
+                            Description_AR = "إضافة صلاحية للمستخدم",
+                            Key = "AddUserRole",
+                            Name = "Add User Role",
+                            Name_AR = "إضافة صلاحية للمستخدم",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("77127635-8fe8-4451-ac9c-59c38ee02d4d"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Update Exam",
+                            Description_AR = "تحديث الاختبار",
+                            Key = "UpdateExam",
+                            Name = "Update Exam",
+                            Name_AR = "تحديث الاختبار",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("2989c158-ef37-40f8-bdf8-637c874f2f1e"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Add School Payment",
+                            Description_AR = "إضافة دفعة مدرسية",
+                            Key = "AddSchoolPayment",
+                            Name = "Add School Payment",
+                            Name_AR = "إضافة دفعة مدرسية",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("55f6b349-57d1-40d0-bb56-64c1592c2268"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Create Role",
+                            Description_AR = "إنشاء صلاحية",
+                            Key = "CreateRole",
+                            Name = "Create Role",
+                            Name_AR = "إنشاء صلاحية",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("2b656fc9-b90a-4b22-b882-672495224220"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Link Employee To Schoolw",
+                            Description_AR = "ربط الموظف بالمدرسة",
+                            Key = "LinkEmployeeToSchool",
+                            Name = "Link Employee To School",
+                            Name_AR = "ربط الموظف بالمدرسة",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("666f4016-4375-4ca0-ba48-6c1cab50f91a"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Delete Teacher",
+                            Description_AR = "حذف المعلم",
+                            Key = "DeleteTeacher",
+                            Name = "Delete Teacher",
+                            Name_AR = "حذف المعلم",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("d9bb6050-186d-4052-a3dc-6d33a84424ac"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Create Coin Type",
+                            Description_AR = "إنشاء نوع عملة",
+                            Key = "CreateCoinType",
+                            Name = "Create Coin Type",
+                            Name_AR = "إنشاء نوع عملة",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("c3da80d1-9288-4ebe-96e7-7210cbeeb1ca"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Delete Contact Type",
+                            Description_AR = "حذف نوع جهة الاتصال",
+                            Key = "DeleteContactType",
+                            Name = "Delete Contact Type",
+                            Name_AR = "حذف نوع جهة الاتصال",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("23a9e98e-ba77-48bb-8f92-73fae4df3245"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "View Employees List",
+                            Description_AR = "عرض قائمة الموظفين",
+                            Key = "ViewEmployeesList",
+                            Name = "View Employees List",
+                            Name_AR = "عرض قائمة الموظفين",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("af2eedf8-ee6d-464b-8551-743f6ef3d3b5"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Add School Post",
+                            Description_AR = "إضافة منشور مدرسي",
+                            Key = "AddSchoolPost",
+                            Name = "Add School Post",
+                            Name_AR = "إضافة منشور مدرسي",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("9d7ec7f9-0341-48a6-8db5-7486bca97497"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Delete Course",
+                            Description_AR = "حذف المادة الدراسة",
+                            Key = "DeleteCourse",
+                            Name = "Delete Course",
+                            Name_AR = "حذف المادة الدراسة",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("e291a793-6efa-40e1-878d-7c11095a6c65"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Delete Year Month",
+                            Description_AR = "حذف شهر الدراسي",
+                            Key = "DeleteYearMonth",
+                            Name = "Delete Year Month",
+                            Name_AR = "حذف شهر الدراسي",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("e9c02932-b613-45eb-9e71-7cb6204745d9"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Delete School",
+                            Description_AR = "حذف المدرسة",
+                            Key = "DeleteSchool",
+                            Name = "Delete School",
+                            Name_AR = "حذف المدرسة",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("daf8b889-ee84-45e2-9c59-8135cd5551a7"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Link Employee Class",
+                            Description_AR = "ربط الموظف بالفصل",
+                            Key = "LinkEmployeeClass",
+                            Name = "Link Employee Class",
+                            Name_AR = "ربط الموظف بالفصل",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("d330df2e-9b66-46a0-a64d-88b1d4f9519d"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Edit Coin Type",
+                            Description_AR = "تعديل نوع العملة",
+                            Key = "EditCoinType",
+                            Name = "Edit Coin Type",
+                            Name_AR = "تعديل نوع العملة",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("ac0c5e27-8f01-4b94-bef0-88feaae2043a"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "View Schools Admins List",
+                            Description_AR = "عرض قائمة مسؤولي المدارس",
+                            Key = "ViewSchoolsAdminsList",
+                            Name = "View Schools Admins List",
+                            Name_AR = "عرض قائمة مسؤولي المدارس",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("5ecbb154-8466-4ea1-8b66-8aa1e7d7853a"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Delete School Type",
+                            Description_AR = "حذف نوع المدرسة",
+                            Key = "DeleteSchoolType",
+                            Name = "Delete School Type",
+                            Name_AR = "حذف نوع المدرسة",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("006edbb6-657d-41cf-9e01-8ab9cf4cea69"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Remove School Payment",
+                            Description_AR = "إزالة دفعة مدرسية",
+                            Key = "RemoveSchoolPayment",
+                            Name = "Remove School Payment",
+                            Name_AR = "إزالة دفعة مدرسية",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("f76d6cd8-4a98-4eba-9d09-9204009d7839"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Update School Payment",
+                            Description_AR = "تحديث دفعة مدرسية",
+                            Key = "UpdateSchoolPayment",
+                            Name = "Update School Payment",
+                            Name_AR = "تحديث دفعة مدرسية",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("3992521c-f222-4323-8969-94f23987f157"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Delete Application Employee",
+                            Description_AR = "حذف موظف التطبيق",
+                            Key = "DeleteApplicationEmployee",
+                            Name = "Delete Application Employee",
+                            Name_AR = "حذف موظف التطبيق",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("19ea90dc-1ed5-4445-a238-9c95e2f37842"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Remove User Permission",
+                            Description_AR = "إزالة صلاحية المستخدم",
+                            Key = "RemoveUserPermission",
+                            Name = "Remove User Permission",
+                            Name_AR = "إزالة صلاحية المستخدم",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("fb4f053d-67fa-4ff2-b85f-a4bf8f385bce"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Remove Language From School",
+                            Description_AR = "إزالة اللغة من المدرسة",
+                            Key = "RemoveLanguageFromSchool",
+                            Name = "Remove Language From School",
+                            Name_AR = "إزالة اللغة من المدرسة",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("16b49575-3825-4489-9822-a64615fe8898"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Add Permissions To Role",
+                            Description_AR = "إضافة صلاحيات إلى مستوى الامان",
+                            Key = "AddPermissionsToRole",
+                            Name = "Add Permissions To Role",
+                            Name_AR = "إضافة صلاحيات إلى مستوى الامان",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("37fc9ece-b339-446e-beba-a81b71302266"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Delete Language",
+                            Description_AR = "حذف اللغة",
+                            Key = "DeleteLanguage",
+                            Name = "Delete Language",
+                            Name_AR = "حذف اللغة",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("ec2c9457-2184-4b45-b271-a90a461a816e"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "View School Payment Request",
+                            Description_AR = "عرض طلب دفعة مدرسية",
+                            Key = "ViewSchoolPaymentRequest",
+                            Name = "View School Payment Request",
+                            Name_AR = "عرض طلب دفعة مدرسية",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("e4c90ea7-7f44-4c81-82b7-b1ddd979b9cd"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "View School Action List",
+                            Description_AR = "عرض قائمة الإجراءات المدرسية",
+                            Key = "ViewSchoolActionList",
+                            Name = "View School Action List",
+                            Name_AR = "عرض قائمة الإجراءات المدرسية",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("8e296936-5161-4b61-885c-b520fe350c9a"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Delete School Employee",
+                            Description_AR = "حذف موظف المدرسة",
+                            Key = "DeleteSchoolEmployee",
+                            Name = "Delete School Employee",
+                            Name_AR = "حذف موظف المدرسة",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("cdc3c1c4-4598-44f9-904f-b5d19e31f328"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Delete Grade",
+                            Description_AR = "حذف المستوى الدراسي",
+                            Key = "DeleteGrade",
+                            Name = "Delete Grade",
+                            Name_AR = "حذف المستوى الدراسي",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("f6821a1f-cb86-445d-b7aa-b7224bd11b47"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Add Application Employees",
+                            Description_AR = "إضافة موظفين للتطبيق",
+                            Key = "AddApplicationEmployees",
+                            Name = "Add Application Employees",
+                            Name_AR = "إضافة موظفين للتطبيق",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("d0b2932f-717a-4ad7-83a8-c11f1806237d"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Edit Role",
+                            Description_AR = "تعديل مستوى الامان",
+                            Key = "EditRole",
+                            Name = "Edit Role",
+                            Name_AR = "تعديل مستوى الامان",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("c0fe2438-b76a-4bcb-9cde-d628b5c3deb6"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Add User Permission",
+                            Description_AR = "إضافة صلاحية للمستخدم",
+                            Key = "AddUserPermission",
+                            Name = "Add User Permission",
+                            Name_AR = "إضافة صلاحية للمستخدم",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("a1bd5ef1-6a55-4e1e-8bb8-da39344e4412"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Delete School Payment Request",
+                            Description_AR = "حذف طلب دفع المدرسة",
+                            Key = "DeleteSchoolPaymentRequest",
+                            Name = "Delete School Payment Request",
+                            Name_AR = "حذف طلب دفع المدرسة",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("27daf2ff-556d-4515-a41f-dead5699f5ab"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Create Relations",
+                            Description_AR = "إنشاء علاقات",
+                            Key = "CreateRelations",
+                            Name = "Create Relations",
+                            Name_AR = "إنشاء علاقات",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("de402af3-0c36-4204-aa5b-df56f8033580"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Remove Permissions From Role",
+                            Description_AR = "إزالة صلاحيات من مستوى الامان",
+                            Key = "RemovePermissionsToRole",
+                            Name = "Remove Permissions From Role",
+                            Name_AR = "إزالة صلاحيات من مستوى الامان",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("ebde1c53-4840-484f-ac23-df838e6282dc"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "View Payments Requests",
+                            Description_AR = "عرض طلبات الدفع",
+                            Key = "ViewPaymentsRequests",
+                            Name = "View Payments Requests",
+                            Name_AR = "عرض طلبات الدفع",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("132ec233-d6ef-4187-a780-e53c85d1babb"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Edit School Contact Type",
+                            Description_AR = "تعديل نوع جهة اتصال المدرسة",
+                            Key = "EditSchoolContactType",
+                            Name = "Edit School Contact Type",
+                            Name_AR = "تعديل نوع جهة اتصال المدرسة",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("061ac24b-3828-4360-833f-ef5865712e39"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Create Payment Type",
+                            Description_AR = "إنشاء نوع دفع",
+                            Key = "CreatePaymentType",
+                            Name = "Create Payment Type",
+                            Name_AR = "إنشاء نوع دفع",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("44c76680-9b72-48f9-bf3d-f113c4447331"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = true,
+                            Deleted = false,
+                            Description = "Manage Application Managers Permissions",
+                            Description_AR = "إدارة صلاحيات مديري التطبيق",
+                            Key = "ManageApplicationManagersPermissions",
+                            Name = "Manage Application Managers Permissions",
+                            Name_AR = "إدارة صلاحيات مديري التطبيق",
+                            SchoolPermission = false
+                        },
+                        new
+                        {
+                            Id = new Guid("ee6325a4-4bc4-4aa7-9944-f82c3b7a305a"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "View School Students List",
+                            Description_AR = "عرض قائمة طلاب المدرسة",
+                            Key = "ViewSchoolStudentsList",
+                            Name = "View School Students List",
+                            Name_AR = "عرض قائمة طلاب المدرسة",
                             SchoolPermission = true
                         });
                 });
@@ -1796,10 +2610,15 @@ namespace Mdaresna.Infrastructure.Migrations
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.Identity.UserRole", b =>
                 {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
 
                     b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("CreateDate")
@@ -1816,37 +2635,29 @@ namespace Mdaresna.Infrastructure.Migrations
                     b.Property<Guid?>("SchoolId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("UserId", "RoleId");
+                    b.HasKey("Id", "RoleId", "UserId");
 
                     b.HasIndex("RoleId");
 
                     b.HasIndex("SchoolId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("UserRoles");
 
                     b.HasData(
                         new
                         {
-                            UserId = new Guid("de36f342-fe3c-46c3-bdfc-bb3fcf2ec7e4"),
-                            RoleId = new Guid("228ae7f5-c704-4660-aeb0-0e1f43112ae1"),
-                            Deleted = false
-                        },
-                        new
-                        {
-                            UserId = new Guid("de36f342-fe3c-46c3-bdfc-bb3fcf2ec7e4"),
-                            RoleId = new Guid("92d00b28-9d25-4bd2-a587-6c22a3a07a92"),
-                            Deleted = false
-                        },
-                        new
-                        {
-                            UserId = new Guid("d4c7be15-c9b6-4d83-8516-aff52c94f963"),
+                            Id = new Guid("87c582e3-7fdc-4235-be0e-2663925bc9ee"),
                             RoleId = new Guid("4b8a99fe-b759-4c18-9500-8052c3d7ac73"),
+                            UserId = new Guid("d4c7be15-c9b6-4d83-8516-aff52c94f963"),
                             Deleted = false
                         },
                         new
                         {
-                            UserId = new Guid("d4c7be15-c9b6-4d83-8516-aff52c94f963"),
+                            Id = new Guid("a65cba57-baeb-42df-89f6-88ef7e3d2b66"),
                             RoleId = new Guid("92d00b28-9d25-4bd2-a587-6c22a3a07a92"),
+                            UserId = new Guid("d4c7be15-c9b6-4d83-8516-aff52c94f963"),
                             Deleted = false
                         });
                 });
@@ -3234,6 +4045,9 @@ namespace Mdaresna.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<bool>("DemoAccount")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
@@ -3257,6 +4071,10 @@ namespace Mdaresna.Infrastructure.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("LastModifyDate")
@@ -3309,10 +4127,12 @@ namespace Mdaresna.Infrastructure.Migrations
                             Id = new Guid("de36f342-fe3c-46c3-bdfc-bb3fcf2ec7e4"),
                             CreateDate = new DateTime(2024, 9, 27, 21, 6, 0, 252, DateTimeKind.Unspecified).AddTicks(9751),
                             Deleted = false,
+                            DemoAccount = true,
                             EmailConfirmed = false,
                             EncriptionKey = "UMvC6sSFY2ujmzh6A1aaK3QHEBS00QUa",
                             FirstName = "Ali",
                             ImageUrl = "",
+                            Language = "en",
                             LastModifyDate = new DateTime(2024, 9, 27, 21, 6, 0, 252, DateTimeKind.Unspecified).AddTicks(9751),
                             LastName = "Fath",
                             Password = "gNL9jSV6CPO827CIcQlRcgFHuqH5gmfAfn95jWLI9ec=",
@@ -3326,10 +4146,12 @@ namespace Mdaresna.Infrastructure.Migrations
                             Id = new Guid("d4c7be15-c9b6-4d83-8516-aff52c94f963"),
                             CreateDate = new DateTime(2024, 9, 27, 21, 6, 0, 252, DateTimeKind.Unspecified).AddTicks(9751),
                             Deleted = false,
+                            DemoAccount = true,
                             EmailConfirmed = false,
                             EncriptionKey = "S4qu2kt4eTBicZKp5inKySLYhcvTZUfu",
                             FirstName = "Ali",
                             ImageUrl = "",
+                            Language = "en",
                             LastModifyDate = new DateTime(2024, 9, 27, 21, 6, 0, 252, DateTimeKind.Unspecified).AddTicks(9751),
                             LastName = "Fath",
                             Password = "JA848ibn1deWJVFuHcsLXx7Bxo4NBelM0gF2tu9nwGI=",
@@ -3338,6 +4160,51 @@ namespace Mdaresna.Infrastructure.Migrations
                             UserName = "Ali",
                             UserType = 1
                         });
+                });
+
+            modelBuilder.Entity("Mdaresna.Doamin.Models.UserManagement.UserDevice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CreateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Deleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("DeviceId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FcmToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastModifyDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastSeen")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Platform")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SignalRConnectionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserDevices");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.CoinsManagement.PaymentTransaction", b =>
@@ -4078,6 +4945,17 @@ namespace Mdaresna.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("School");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Mdaresna.Doamin.Models.UserManagement.UserDevice", b =>
+                {
+                    b.HasOne("Mdaresna.Doamin.Models.UserManagement.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

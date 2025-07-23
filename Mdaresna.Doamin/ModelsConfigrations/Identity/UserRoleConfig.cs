@@ -13,8 +13,11 @@ namespace Mdaresna.Doamin.ModelsConfigrations.Identity
     {
         public void Configure(EntityTypeBuilder<UserRole> builder)
         {
-            builder.HasKey(r => new { r.UserId, r.RoleId});
-            
+            builder.HasKey(r => new {r.Id , r.RoleId, r.UserId});
+
+            builder
+                .Property(r => r.Id)
+                .HasDefaultValueSql("NEWID()");
 
 
             builder

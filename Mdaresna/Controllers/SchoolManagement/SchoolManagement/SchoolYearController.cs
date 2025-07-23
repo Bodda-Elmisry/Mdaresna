@@ -4,6 +4,8 @@ using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
+using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
+using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
@@ -15,16 +17,22 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         private readonly ISchoolYearCommandService schoolYearCommandService;
         private readonly ISchoolYearMonthQueryService schoolYearMonthQueryService;
         private readonly ISchoolYearMonthCommandService schoolYearMonthCommandService;
+        private readonly IStudentCommandService studentCommandService;
+        private readonly IStudentQueryService studentQueryService;
 
         public SchoolYearController(ISchoolYearQueryService schoolYearQueryService,
                                     ISchoolYearCommandService schoolYearCommandService,
                                     ISchoolYearMonthQueryService schoolYearMonthQueryService,
-                                    ISchoolYearMonthCommandService schoolYearMonthCommandService)
+                                    ISchoolYearMonthCommandService schoolYearMonthCommandService,
+                                    IStudentCommandService studentCommandService,
+                                    IStudentQueryService studentQueryService)
         {
             this.schoolYearQueryService = schoolYearQueryService;
             this.schoolYearCommandService = schoolYearCommandService;
             this.schoolYearMonthQueryService = schoolYearMonthQueryService;
             this.schoolYearMonthCommandService = schoolYearMonthCommandService;
+            this.studentCommandService = studentCommandService;
+            this.studentQueryService = studentQueryService;
         }
 
         [HttpPost("GetCurrentYear")]
@@ -116,8 +124,21 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 var updated = schoolYearCommandService.Update(year);
 
                 if (updated)
+                {
+
+                    var schoolStudents = await studentQueryService.GetStudentsBySchoolIdAsync(year.SchoolId, true);
+
+                    foreach(var student in schoolStudents)
+                    {
+                        student.IsPayed = false; // Reset payment status for all students in the school
+                        studentCommandService.Update(student);
+                    }
+
+
                     return Ok(year);
-                
+
+                }
+
                 return BadRequest("Error in Complete year");
             }
             catch (Exception ex)

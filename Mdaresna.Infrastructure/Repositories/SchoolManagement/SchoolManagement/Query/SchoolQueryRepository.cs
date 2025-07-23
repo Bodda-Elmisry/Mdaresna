@@ -32,18 +32,20 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             return await GetSchoolQuery().Where(s => s.SchoolAdminId == userId).OrderBy(s => s.SchoolTypeId).OrderBy(s => s.Name).ToListAsync();
         }
 
-        public async Task<IEnumerable<SchoolResultDTO>> GetUserSchools(Guid userId)
+        public async Task<IEnumerable<SchoolResultDTO>> GetUserSchools(Guid userId, bool? active)
         {
 
-            var tquery = from st in context.schoolTeachers
-                         join school in context.Schools on st.SchoolId equals school.Id
-                         where st.Deleted == false && (school.SchoolAdminId == userId || st.TeacherId == userId)
+            var tquery = from school in context.Schools
+                         join st in context.schoolTeachers on school.Id equals st.SchoolId into stGroup
+                         from st in stGroup.DefaultIfEmpty()
                          join schoolType in context.SchoolTypes on school.SchoolTypeId equals schoolType.Id into stTypeGroup
                          from schoolType in stTypeGroup.DefaultIfEmpty()
                          join coinType in context.CoinsTypes on school.CoinTypeId equals coinType.Id into ctGroup
                          from coinType in ctGroup.DefaultIfEmpty()
                          join admin in context.Users on school.SchoolAdminId equals admin.Id into adminGroup
                          from admin in adminGroup.DefaultIfEmpty()
+                         where school.Deleted == false && (school.SchoolAdminId == userId || st.TeacherId == userId)
+
                          select new SchoolResultDTO
                          {
                              Id = school.Id,
@@ -51,6 +53,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                              About = school.About,
                              Vesion = school.Vesion,
                              ImageUrl = school.ImageUrl,
+                             Active = school.Active,
                              SchoolTypeId = school.SchoolTypeId,
                              SchoolTypeName = schoolType != null ? schoolType.Name : null,
                              CoinTypeId = school.CoinTypeId,
@@ -60,15 +63,16 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                              SchoolAdminName = admin != null ? admin.FirstName + " " + admin.LastName : null
                          };
 
-            var equery = from se in context.SchoolEmployees
-                         join school in context.Schools on se.SchoolId equals school.Id
-                         where se.Deleted == false && (school.SchoolAdminId == userId || se.EmployeeId == userId)
+            var equery = from school in context.Schools
+                         join se in context.SchoolEmployees on school.Id equals se.SchoolId into schoolEmployees
+                         from se in schoolEmployees.DefaultIfEmpty()
                          join schoolType in context.SchoolTypes on school.SchoolTypeId equals schoolType.Id into stTypeGroup
                          from schoolType in stTypeGroup.DefaultIfEmpty()
                          join coinType in context.CoinsTypes on school.CoinTypeId equals coinType.Id into ctGroup
                          from coinType in ctGroup.DefaultIfEmpty()
                          join admin in context.Users on school.SchoolAdminId equals admin.Id into adminGroup
                          from admin in adminGroup.DefaultIfEmpty()
+                         where school.Deleted == false && (school.SchoolAdminId == userId || se.EmployeeId == userId)
                          select new SchoolResultDTO
                          {
                              Id = school.Id,
@@ -76,6 +80,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                              About = school.About,
                              Vesion = school.Vesion,
                              ImageUrl = school.ImageUrl,
+                             Active = school.Active,
                              SchoolTypeId = school.SchoolTypeId,
                              SchoolTypeName = schoolType != null ? schoolType.Name : null,
                              CoinTypeId = school.CoinTypeId,
@@ -88,6 +93,9 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             // Combine the two queries using Union
             var query = tquery.Union(equery).Distinct();
 
+            query = active != null ? query.Where(s => s.Active == active) : query;
+            
+            Console.WriteLine(query.ToQueryString()); // For debugging
             // Optional: Sort
             var result = await query
                 .OrderBy(s => s.SchoolTypeId)
@@ -130,6 +138,21 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             return await query.OrderBy(s => s.SchoolTypeId).OrderBy(s => s.Name)
                                    .Skip((pageNumber - 1) * pagesize)
                                    .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Guid>> GetSchoolUsersIds(Guid schoolId)
+        {
+            var employeesIdsQuery = context.SchoolEmployees.AsNoTracking()
+                                    .Where(e => e.SchoolId == schoolId && e.Deleted == false)
+                                    .Select(e => e.EmployeeId);
+
+            var teachersIdsQuery = context.schoolTeachers.AsNoTracking()
+                                   .Where(t=> t.SchoolId == schoolId && t.Deleted == false)
+                                   .Select(t=> t.TeacherId);
+
+            var query = employeesIdsQuery.Union(teachersIdsQuery);
+
+            return await query.ToListAsync();
         }
 
         private IQueryable<SchoolResultDTO> GetSchoolQuery()

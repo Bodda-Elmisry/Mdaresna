@@ -66,5 +66,9 @@ namespace Mdaresna.Doamin.Models.UserManagement
 
         public string? EmailConfirmationKey { get; set; }
 
+        public string Language { get; set; } = "en";
+
+        public bool DemoAccount { get; set; } = true;
+
     }
 }

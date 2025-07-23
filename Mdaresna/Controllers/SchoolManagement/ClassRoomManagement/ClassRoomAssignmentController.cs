@@ -1,15 +1,19 @@
-﻿using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
+﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.ClassRoomManagementDTO;
+using Mdaresna.Infrastructure.Factories;
 using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Query;
+using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
@@ -21,16 +25,22 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         private readonly IClassRoomAssignmentQueryService classRoomAssignmentQueryService;
         private readonly IClassRoomStudentAssignmentCommandService classRoomStudentAssignmentCommandService;
         private readonly IClassRoomStudentAssignmentQueryService classRoomStudentAssignmentQueryService;
+        private readonly INotificationFactory notificationFactory;
+        private readonly IClassroomTransactionsFactory classroomTransactionsFactory;
 
         public ClassRoomAssignmentController(IClassRoomAssignmentCommandService classRoomAssignmentCommandService,
                                              IClassRoomAssignmentQueryService classRoomAssignmentQueryService,
                                              IClassRoomStudentAssignmentCommandService classRoomStudentAssignmentCommandService,
-                                             IClassRoomStudentAssignmentQueryService classRoomStudentAssignmentQueryService)
+                                             IClassRoomStudentAssignmentQueryService classRoomStudentAssignmentQueryService,
+                                           INotificationFactory notificationFactory,
+                                           IClassroomTransactionsFactory classroomTransactionsFactory)
         {
             this.classRoomAssignmentCommandService = classRoomAssignmentCommandService;
             this.classRoomAssignmentQueryService = classRoomAssignmentQueryService;
             this.classRoomStudentAssignmentCommandService = classRoomStudentAssignmentCommandService;
             this.classRoomStudentAssignmentQueryService = classRoomStudentAssignmentQueryService;
+            this.notificationFactory = notificationFactory;
+            this.classroomTransactionsFactory = classroomTransactionsFactory;
         }
 
         [HttpPost("GetClassroomAssignmentsList")]
@@ -48,7 +58,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                                                                                               dTO.pageNumber);
                 return Ok(items);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -87,8 +97,27 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
 
                 var added = await classRoomAssignmentCommandService.Create(assingment, dTO.StudentIds);
 
-                if(added)
+                if (added)
+                {
+
+
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var transactionProvider = classroomTransactionsFactory.GetProvider(ClassroomTransactionProvidersEnum.Assignment);
+                    var devices = await transactionProvider.GetTransactionSTudentsParentsDevicesAsync(assingment.Id);
+                    
+                    if (devices.Count() > 0)
+                    {
+                        foreach (var devicesGroup in devices.GroupBy(d => d.StudentId))
+                        {
+                            var tokens = devicesGroup.Select(d => d.FcmTocken).ToList();
+                            var chieldName = devicesGroup.FirstOrDefault().StudentName;
+                            await notificationProvider.SendToMultiUsersAsync(tokens, "New Homework", $"New homework added to your chield {chieldName}");
+                        }
+
+                        
+                    }
                     return Ok(await classRoomAssignmentQueryService.GetClassRoomAssignmentById(assingment.Id));
+                }
 
                 return BadRequest("Error in creating assignment");
 

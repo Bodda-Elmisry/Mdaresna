@@ -5,5 +5,6 @@
         public int permissionsType { get; set; }
         public int PageNumber { get; set; }
         public string PermissionName { get; set; }
+        public Guid UserId { get; set; }
     }
 }

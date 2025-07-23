@@ -4,9 +4,11 @@ using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.ClassRoomManagementDTO;
 using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Query;
+using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
+using Mdaresna.Repository.IServices.UserManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection;
 
@@ -18,14 +20,20 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         private readonly IClassRoomQueryService classRoomQueryService;
         private readonly IClassRoomCommandService classRoomCommandService;
         private readonly IStudentQueryService studentQueryService;
+        private readonly INotificationFactory notificationFactory;
+        private readonly IUserDeviceQueryService userDeviceQueryService;
 
         public ClassRoomController(IClassRoomQueryService classRoomQueryService,
                                    IClassRoomCommandService classRoomCommandService,
-                                   IStudentQueryService studentQueryService)
+                                   IStudentQueryService studentQueryService,
+                                           INotificationFactory notificationFactory,
+                                           IUserDeviceQueryService userDeviceQueryService)
         {
             this.classRoomQueryService = classRoomQueryService;
             this.classRoomCommandService = classRoomCommandService;
             this.studentQueryService = studentQueryService;
+            this.notificationFactory = notificationFactory;
+            this.userDeviceQueryService = userDeviceQueryService;
         }
 
         [HttpPost("GetInitialData")]
@@ -110,7 +118,16 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                 classRoom.Active = false;
                 var Updated = classRoomCommandService.Update(classRoom);
                 if (Updated)
+                {
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var devices = await userDeviceQueryService.GetByUserIdAsync(classRoom.School.SchoolAdminId);
+                    if (devices.Count() > 0)
+                    {
+                        var tokens = devices.Select(d => d.FcmToken).ToList();
+                        await notificationProvider.SendToMultiUsersAsync(tokens, "Classroom Activation", $"Classroom {classRoom.Name} deactivated");
+                    }
                     return Ok(classRoom);
+                }
                 else
                     return BadRequest("Error In Deactivate Process...");
             }
@@ -129,7 +146,16 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                 classRoom.Active = true;
                 var Updated = classRoomCommandService.Update(classRoom);
                 if (Updated)
+                {
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var devices = await userDeviceQueryService.GetByUserIdAsync(classRoom.School.SchoolAdminId);
+                    if (devices.Count() > 0)
+                    {
+                        var tokens = devices.Select(d => d.FcmToken).ToList();
+                        await notificationProvider.SendToMultiUsersAsync(tokens, "Classroom Activation", $"Classroom {classRoom.Name} activated");
+                    }
                     return Ok(classRoom);
+                }
                 else
                     return BadRequest("Error In Activate Process...");
             }

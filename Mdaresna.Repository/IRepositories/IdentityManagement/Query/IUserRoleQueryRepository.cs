@@ -12,8 +12,10 @@ namespace Mdaresna.Repository.IRepositories.IdentityManagement.Query
     public interface IUserRoleQueryRepository : IBaseQueryRepository<UserRole>
     {
         Task<bool> CheckUserRole(UserRole userRole);
-        Task<UserRoleResultDTO?> GetUserRoleAsync(Guid userId, Guid roleId);
+        Task<UserRoleResultDTO?> GetUserRoleViewAsync(Guid userId, Guid roleId, Guid? schoolId);
+        Task<UserRole> GetUserRoleAsync(Guid userId, Guid roleId, Guid? schoolId);
         Task<IEnumerable<UserRoleResultDTO>> GetUserRolesAsync(Guid userId, Guid? schoolId);
+        Task<IEnumerable<UserRole>> GetUserRolesDataAsync(Guid userId, Guid? schoolId);
         Task<IEnumerable<UserRoleResultDTO>> GetRoleUsersAsync(Guid roleId, Guid? schoolId);
         Task<IEnumerable<UserRoleResultDTO>> GetSchoolsAdminsAsync();
 

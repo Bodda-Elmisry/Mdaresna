@@ -27,6 +27,11 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             return await context.userPermissions.FirstOrDefaultAsync(p=> p.UserId == UserId && p.SchoolId == schoolId && p.UserId == UserId && p.Deleted == false);
         }
 
+        public async Task<IEnumerable<UserPermission>?> GetUserPermissions(Guid schoolId, Guid UserId)
+        {
+            return await context.userPermissions.Where(p => p.UserId == UserId && p.SchoolId == schoolId && p.UserId == UserId && p.Deleted == false).ToListAsync();
+        }
+
         public async Task<IEnumerable<Permission>> GetUserPermissions(Guid UserId)
         {
             var query = from rp in context.RolePermissions
@@ -79,7 +84,11 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
                              SchoolName = s.Name,
                              permssionId = p.Id,
                              p.Key,
-                             p.Name
+                             p.Name,
+                             p.Name_AR,
+                             p.SchoolPermission,
+                             p.AppPermission,
+                             p.AllowedToMapToClassroom
                          };
 
             var query2 = from up in context.userPermissions
@@ -98,7 +107,11 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
                              SchoolName = s.Name,
                              permssionId = p.Id,
                              p.Key,
-                             p.Name
+                             p.Name,
+                             p.Name_AR,
+                             p.SchoolPermission,
+                             p.AppPermission,
+                             p.AllowedToMapToClassroom
                          };
 
 
@@ -123,7 +136,11 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
                 SchoolName = s.SchoolName,
                 PermissionId = s.permssionId,
                 PermissionKey = s.Key,
-                PermissionName = s.Name
+                PermissionName = s.Name,
+                PermissionName_AR = s.Name_AR,
+                AppPermission = s.AppPermission,
+                SchoolPermission = s.SchoolPermission,
+                AllowMapToClassroom = s.AllowedToMapToClassroom
             }).ToListAsync();
 
 

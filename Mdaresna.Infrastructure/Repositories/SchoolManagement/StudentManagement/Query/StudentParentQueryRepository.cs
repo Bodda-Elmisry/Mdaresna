@@ -30,6 +30,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
             if (relationId != null && relationId != Guid.Empty)
                 query = query.Where(p => p.RelationId == relationId);
 
+            Console.WriteLine(query.ToQueryString());
+
             return await query.ToListAsync();
 
         }

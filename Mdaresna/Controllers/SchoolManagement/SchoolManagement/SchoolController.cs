@@ -1,11 +1,14 @@
-﻿using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
+﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO;
+using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
+using Mdaresna.Repository.IServices.UserManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
@@ -18,18 +21,24 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         private readonly IClassRoomCommandService classRoomCommandService;
         private readonly IClassRoomQueryService classRoomQueryService;
         private readonly IStudentQueryService studentQueryService;
+        private readonly INotificationFactory notificationFactory;
+        private readonly IUserDeviceQueryService userDeviceQueryService;
 
         public SchoolController(ISchoolCommandService schoolCommandService, 
                                 ISchoolQueryService schoolQueryService,
                                 IClassRoomCommandService classRoomCommandService,
                                 IClassRoomQueryService classRoomQueryService,
-                                IStudentQueryService studentQueryService)
+                                IStudentQueryService studentQueryService,
+                                INotificationFactory notificationFactory,
+                                IUserDeviceQueryService userDeviceQueryService)
         {
             this.schoolCommandService = schoolCommandService;
             this.schoolQueryService = schoolQueryService;
             this.classRoomCommandService = classRoomCommandService;
             this.classRoomQueryService = classRoomQueryService;
             this.studentQueryService = studentQueryService;
+            this.notificationFactory = notificationFactory;
+            this.userDeviceQueryService = userDeviceQueryService;
         }
 
         [HttpPost("AddSchool")]
@@ -166,8 +175,23 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 school.Active = dTO.Active;
 
                 var updated = schoolCommandService.Update(school);
+                if (updated)
+                {
+                    var schoolUsersIds = await schoolQueryService.GetSchoolUsersIds(school.Id);
+                    var schoolUsersIdsList = schoolUsersIds.ToList();
+                    schoolUsersIdsList.Add(school.SchoolAdminId);
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var devices = await userDeviceQueryService.GetUsersDevicesAsync(schoolUsersIdsList);
+                    if (devices.Count() > 0)
+                    {
+                        var message = dTO.Active ? $"School '{school.Name}' activated" : $"School '{school.Name}' deactivated";
+                        var tokens = devices.Select(d => d.FcmToken).ToList();
+                        await notificationProvider.SendToMultiUsersAsync(tokens, "School Activation", message);
+                    }
+                    return Ok("Activation Changed");
+                }
 
-                return updated ? Ok("Activation Changed") : BadRequest("Error in Updating school");
+                return BadRequest("Error in Updating school");
             }
             catch (Exception ex)
             {
@@ -215,11 +239,11 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("GetUserSchools")]
-        public async Task<IActionResult> GetUserSchools([FromBody] UserIdDTO userIdDTO)
+        public async Task<IActionResult> GetUserSchools([FromBody] GetUserSchoolsDTO DTO)
         {
             try
             {
-                var schools = await schoolQueryService.GetUserSchools(userIdDTO.UserId);
+                var schools = await schoolQueryService.GetUserSchools(DTO.UserId, DTO.Active);
                 return Ok(schools);
             }
             catch (Exception ex)
@@ -233,7 +257,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
-                var schoolStudents = await studentQueryService.GetStudentsBySchoolIdAsync(dto.SchoolId, string.Empty, string.Empty);
+                var schoolStudents = await studentQueryService.GetStudentsBySchoolIdViewAsync(dto.SchoolId, string.Empty, string.Empty);
 
                 if(schoolStudents != null && schoolStudents.Count() > 0)
                     return BadRequest("There are students in this school, you can't delete it");
@@ -252,6 +276,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                     classRoomCommandService.Update(classRoom);
                 }
 
+                school.Deleted = true;
                 var deleted = schoolCommandService.Update(school);
 
                 return deleted ? Ok("School deleted") : BadRequest("Error in deleting school");

@@ -1,9 +1,11 @@
-﻿using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
+﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.SchoolManagementDTO.StudentManagementDTO;
 using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Query;
+using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
@@ -17,14 +19,23 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         private readonly IClassRoomStudentActivityQueryService classRoomStudentActivityQueryService;
         private readonly IClassRoomStudentActivityCommandService classRoomStudentActivityCommandService;
         private readonly IClassRoomActivityCommandService classRoomActivityCommandService;
+        private readonly IStudentQueryService studentQueryService;
+        private readonly INotificationFactory notificationFactory;
+        private readonly IStudentTransactionsFactory studentTransactionsFactory;
 
         public ClassRoomStudentActivityController(IClassRoomStudentActivityQueryService classRoomStudentActivityQueryService,
                                                   IClassRoomStudentActivityCommandService classRoomStudentActivityCommandService,
-                                                  IClassRoomActivityCommandService classRoomActivityCommandService)
+                                                  IClassRoomActivityCommandService classRoomActivityCommandService,
+                                                  IStudentQueryService studentQueryService,
+                                           INotificationFactory notificationFactory,
+                                           IStudentTransactionsFactory studentTransactionsFactory)
         {
             this.classRoomStudentActivityQueryService = classRoomStudentActivityQueryService;
             this.classRoomStudentActivityCommandService = classRoomStudentActivityCommandService;
             this.classRoomActivityCommandService = classRoomActivityCommandService;
+            this.studentQueryService = studentQueryService;
+            this.notificationFactory = notificationFactory;
+            this.studentTransactionsFactory = studentTransactionsFactory;
         }
 
         [HttpPost("GetStudentActivitiesList")]
@@ -86,7 +97,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 if (!actAdded)
                     return BadRequest("Error in adding student activity");
 
-                var studentActivity= new ClassRoomStudentActivity
+                var studentActivity = new ClassRoomStudentActivity
                 {
                     ActivityId = newActivity.Id,
                     StudentId = dto.StudentId,
@@ -98,6 +109,19 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 
                 if (!sAssAdded)
                     return BadRequest("Error in adding student Activity");
+                
+
+                var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Activity);
+                var studentIds = new List<Guid>();
+                studentIds.Add(dto.StudentId);
+                var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
+                if (devices.Count() > 0)
+                {
+                    var tokens = devices.Select(d => d.FcmTocken).ToList();
+                    var student = await studentQueryService.GetByIdAsync(dto.StudentId);
+                    await notificationProvider.SendToMultiUsersAsync(tokens, "New Activity", $"New activity added to your chield {student.FirstName} {student.LastName}");
+                }
 
                 return Ok(await classRoomStudentActivityQueryService.GetClassRoomStudentActivityViewAsync(studentActivity.StudentId, studentActivity.ActivityId));
 
@@ -149,7 +173,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 
                 return deleted ? Ok("Activity Deleted") : BadRequest("Error in deleting activity");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }

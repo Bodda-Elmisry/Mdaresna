@@ -14,6 +14,9 @@ namespace Mdaresna.Doamin.ModelsConfigrations.UserManagement
         public void Configure(EntityTypeBuilder<User> builder)
         {
             //builder
+            //    .Property(p => p.Language)
+            //    .HasDefaultValue("en");
+            //builder
             //    .Property(p => p.CreateDate)
             //    .HasDefaultValue(DateTime.Now);
 

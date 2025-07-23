@@ -1,4 +1,5 @@
 ﻿using Mdaresna.Doamin.DTOs.ClassRoomManagement;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.ClassRoomManagementDTO;
@@ -6,6 +7,7 @@ using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Comm
 using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Query;
+using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
@@ -22,16 +24,22 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         private readonly IClassRoomExamCommandService classRoomExamCommandService;
         private readonly IClassRoomStudentExamCommandService classRoomStudentExamCommandService;
         private readonly IClassRoomStudentExamQueryService classRoomStudentExamQueryService;
+        private readonly INotificationFactory notificationFactory;
+        private readonly IClassroomTransactionsFactory classroomTransactionsFactory;
 
         public ClassRoomExamController(IClassRoomExamQueryService classRoomExamQueryService,
                                        IClassRoomExamCommandService classRoomExamCommandService,
                                        IClassRoomStudentExamCommandService classRoomStudentExamCommandService,
-                                       IClassRoomStudentExamQueryService classRoomStudentExamQueryService)
+                                       IClassRoomStudentExamQueryService classRoomStudentExamQueryService,
+                                           INotificationFactory notificationFactory,
+                                           IClassroomTransactionsFactory classroomTransactionsFactory)
         {
             this.classRoomExamQueryService = classRoomExamQueryService;
             this.classRoomExamCommandService = classRoomExamCommandService;
             this.classRoomStudentExamCommandService = classRoomStudentExamCommandService;
             this.classRoomStudentExamQueryService = classRoomStudentExamQueryService;
+            this.notificationFactory = notificationFactory;
+            this.classroomTransactionsFactory = classroomTransactionsFactory;
         }
 
         [HttpPost("GetInitailData")]
@@ -106,7 +114,23 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                 var added = await classRoomExamCommandService.Create(exam, classRoomExamDTO.StudentsIds);
 
                 if (added)
-                    return Ok(await classRoomExamQueryService.GetExamByIdAsync (exam.Id));
+                {
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var transactionProvider = classroomTransactionsFactory.GetProvider(ClassroomTransactionProvidersEnum.Exam);
+                    var devices = await transactionProvider.GetTransactionSTudentsParentsDevicesAsync(exam.Id);
+                    if (devices.Count() > 0)
+                    {
+                        foreach (var devicesGroup in devices.GroupBy(d => d.StudentId))
+                        {
+                            var tokens = devicesGroup.Select(d => d.FcmTocken).ToList();
+                            var chieldName = devicesGroup.FirstOrDefault().StudentName;
+                            await notificationProvider.SendToMultiUsersAsync(tokens, "New Exam", $"New exam added to your chield {chieldName}");
+                        }
+                        //var tokens = devices.Select(d => d.FcmTocken).ToList();
+                        //await notificationProvider.SendToMultiUsersAsync(tokens, "New Exam", "New exam added to your chield");
+                    }
+                    return Ok(await classRoomExamQueryService.GetExamByIdAsync(exam.Id));
+                }
 
                 return BadRequest("Error in adding exam");
             }

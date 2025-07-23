@@ -12,8 +12,9 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query
     public interface ISchoolQueryService : IBaseQueryService<School>
     {
         Task<IEnumerable<SchoolResultDTO>> GetUserAdminSchools(Guid userId);
-        Task<IEnumerable<SchoolResultDTO>> GetUserSchools(Guid userId);
+        Task<IEnumerable<SchoolResultDTO>> GetUserSchools(Guid userId, bool? active = null);
         Task<SchoolResultDTO?> GetSchoolById(Guid schoolId);
         Task<IEnumerable<SchoolResultDTO>> GetSchoolsList(string? name, bool? active, Guid? schoolTypeId, Guid? coinTypeId, Guid? adminId, int pageNumber, bool? getNewSchools);
+        Task<IEnumerable<Guid>> GetSchoolUsersIds(Guid schoolId);
     }
 }

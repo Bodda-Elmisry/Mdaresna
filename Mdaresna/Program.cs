@@ -2,6 +2,7 @@ using Mdaresna.Doamin.DTOs.Common;
 using Mdaresna.Doamin.Helpers;
 using Mdaresna.Infrastructure.Configrations;
 using Mdaresna.Infrastructure.Data;
+using Mdaresna.Infrastructure.Hubs;
 using Mdaresna.Middlewares;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -61,6 +62,8 @@ namespace Mdaresna
             builder.Services.Configure<AppSettingDTO>(builder.Configuration.GetSection("AppSettings"));
 
             DependencyInjectionConfig.ConfigerRepositories(builder.Services);
+            DependencyInjectionConfig.ConfigerHubs(builder.Services);
+            DependencyInjectionConfig.ConfigerFactories(builder.Services);
             DependencyInjectionConfig.ConfigerServices(builder.Services);
 
             var app = builder.Build();
@@ -95,6 +98,8 @@ namespace Mdaresna
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
+
+            app.MapHub<NotificationHub>("/notificationHub");
 
             app.MapControllers();
 

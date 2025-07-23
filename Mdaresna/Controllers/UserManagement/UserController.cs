@@ -70,6 +70,33 @@ namespace Mdaresna.Controllers.UserManagement
             }
         }
 
+        [HttpPost("UpdateUserLanguage")]
+        public async Task<IActionResult> UpdateUserLanguage([FromBody] UpdateUserLanguageDTO dTO)
+        {
+            try
+            {
+                var user = await userQueryService.GetByIdAsync(dTO.UserId);
+
+                if (user == null)
+                {
+                    return BadRequest("There is no user to update");
+                }
+
+                user.Language = dTO.Language;
+
+                var updated = userCommandService.Update(user);
+
+                if (!updated)
+                    return BadRequest("Error in updating user");
+
+                return Ok("Language Updated");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("GetByPhoneNumber")]
         public async Task<IActionResult> GetUserByPhoneNumber([FromBody] PhoneDTO phoneDTO)
         {

@@ -33,6 +33,7 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Command
         {
             try
             {
+                entity.Id = DataGenerationHelper.GenerateRowId();
                 entity.CreateDate = DateTime.Now;
                 entity.LastModifyDate = DateTime.Now;
                 return commandRepository.Create(entity);

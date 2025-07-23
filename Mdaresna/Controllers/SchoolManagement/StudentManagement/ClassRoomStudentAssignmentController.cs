@@ -1,8 +1,10 @@
-﻿using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
+﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.SchoolManagementDTO.StudentManagementDTO;
 using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Query;
+using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
@@ -17,14 +19,23 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         private readonly IClassRoomStudentAssignmentQueryService classRoomStudentAssignmentQueryService;
         private readonly IClassRoomStudentAssignmentCommandService classRoomStudentAssignmentCommandService;
         private readonly IClassRoomAssignmentCommandService classRoomAssignmentCommandService;
+        private readonly IStudentQueryService studentQueryService;
+        private readonly INotificationFactory notificationFactory;
+        private readonly IStudentTransactionsFactory studentTransactionsFactory;
 
         public ClassRoomStudentAssignmentController(IClassRoomStudentAssignmentQueryService classRoomStudentAssignmentQueryService,
                                                     IClassRoomStudentAssignmentCommandService classRoomStudentAssignmentCommandService,
-                                                    IClassRoomAssignmentCommandService classRoomAssignmentCommandService)
+                                                    IClassRoomAssignmentCommandService classRoomAssignmentCommandService,
+                                                  IStudentQueryService studentQueryService,
+                                           INotificationFactory notificationFactory,
+                                           IStudentTransactionsFactory studentTransactionsFactory)
         {
             this.classRoomStudentAssignmentQueryService = classRoomStudentAssignmentQueryService;
             this.classRoomStudentAssignmentCommandService = classRoomStudentAssignmentCommandService;
             this.classRoomAssignmentCommandService = classRoomAssignmentCommandService;
+            this.studentQueryService = studentQueryService;
+            this.notificationFactory = notificationFactory;
+            this.studentTransactionsFactory = studentTransactionsFactory;
         }
 
         [HttpPost("GetStudentAssignmentsList")]
@@ -103,6 +114,18 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 
                 if(!sAssAdded)
                     return BadRequest("Error in adding student assignment");
+
+                var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Assignment);
+                var studentIds = new List<Guid>();
+                studentIds.Add(dto.StudentId);
+                var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
+                if (devices.Count() > 0)
+                {
+                    var tokens = devices.Select(d => d.FcmTocken).ToList();
+                    var student = await studentQueryService.GetByIdAsync(dto.StudentId);
+                    await notificationProvider.SendToMultiUsersAsync(tokens, "New Assignement", $"New assignement added to your chield {student.FirstName} {student.LastName}");
+                }
 
                 return Ok(await classRoomStudentAssignmentQueryService.GetClassRoomStudentAssignmentViewAsync(studentAssignment.StudentId, studentAssignment.AssignmentId));
 

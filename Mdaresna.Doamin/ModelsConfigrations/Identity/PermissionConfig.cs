@@ -17,6 +17,10 @@ namespace Mdaresna.Doamin.ModelsConfigrations.Identity
                 .Property(p => p.AllowedToMapToClassroom)
                 .HasDefaultValue(false);
 
+            builder
+                .Property(p => p.Name_AR)
+                .HasDefaultValue(string.Empty);
+
             //builder
             //    .Property(p => p.CreateDate)
             //    .HasDefaultValue(DateTime.Now);

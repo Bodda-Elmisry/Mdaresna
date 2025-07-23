@@ -1,6 +1,8 @@
-﻿using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
+﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.StudentManagementDTO;
+using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Microsoft.AspNetCore.Mvc;
@@ -12,12 +14,21 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
     {
         private readonly IStudentNoteQueryService studentNoteQueryService;
         private readonly IStudentNoteCommandService studentNoteCommandService;
+        private readonly IStudentQueryService studentQueryService;
+        private readonly INotificationFactory notificationFactory;
+        private readonly IStudentTransactionsFactory studentTransactionsFactory;
 
         public StudentNoteController(IStudentNoteQueryService studentNoteQueryService,
-                                     IStudentNoteCommandService studentNoteCommandService)
+                                     IStudentNoteCommandService studentNoteCommandService,
+                                           IStudentQueryService studentQueryService,
+                                           INotificationFactory notificationFactory,
+                                           IStudentTransactionsFactory studentTransactionsFactory)
         {
             this.studentNoteQueryService = studentNoteQueryService;
             this.studentNoteCommandService = studentNoteCommandService;
+            this.studentQueryService = studentQueryService;
+            this.notificationFactory = notificationFactory;
+            this.studentTransactionsFactory = studentTransactionsFactory;
         }
 
         [HttpPost("GetStudentNotesList")]
@@ -75,6 +86,18 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 
                 if (!added)
                     return BadRequest("Error in adding note");
+
+                var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Note);
+                var studentIds = new List<Guid>();
+                studentIds.Add(dTO.StudentId);
+                var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
+                if (devices.Count() > 0)
+                {
+                    var tokens = devices.Select(d => d.FcmTocken).ToList();
+                    var student = await studentQueryService.GetByIdAsync(dTO.StudentId);
+                    await notificationProvider.SendToMultiUsersAsync(tokens, "New Note", $"New note added to your chield {student.FirstName} {student.LastName}");
+                }
 
                 return Ok(await studentNoteQueryService.GetStudentNoteViewById(note.Id));
             }

@@ -1,8 +1,12 @@
-﻿using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
+﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
+using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.StudentManagementDTO;
+using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
+using Mdaresna.Repository.IServices.UserManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
@@ -12,12 +16,18 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
     {
         private readonly IStudentParentQueryService studentParentQueryService;
         private readonly IStudentParentCommandService studentParentCommandService;
+        private readonly INotificationFactory notificationFactory;
+        private readonly IUserDeviceQueryService userDeviceQueryService;
 
         public StudentParentController(IStudentParentQueryService studentParentQueryService,
-                                       IStudentParentCommandService studentParentCommandService)
+                                       IStudentParentCommandService studentParentCommandService,
+                                           INotificationFactory notificationFactory,
+                                           IUserDeviceQueryService userDeviceQueryService)
         {
             this.studentParentQueryService = studentParentQueryService;
             this.studentParentCommandService = studentParentCommandService;
+            this.notificationFactory = notificationFactory;
+            this.userDeviceQueryService = userDeviceQueryService;
         }
 
         [HttpPost("GetParentStudents")]
@@ -85,7 +95,18 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 var added = studentParentCommandService.Create(parentStudentN);
 
                 if (added)
-                    return Ok(await studentParentQueryService.GetstudentParentAsync(entity.ParentId, entity.StudentId));
+                {
+                    var addedRow = await studentParentQueryService.GetstudentParentAsync(entity.ParentId, entity.StudentId);
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var devices = await userDeviceQueryService.GetByUserIdAsync(entity.ParentId);
+                    if (devices.Count() > 0)
+                    {
+                        var tokens = devices.Select(d => d.FcmToken).ToList();
+                        await notificationProvider.SendToMultiUsersAsync(tokens, "Relation", $"Chield {addedRow.StudentName} added to you");
+                    }
+
+                    return Ok(addedRow);
+                }
 
                 return BadRequest("Error in creating relation");
 

@@ -285,7 +285,7 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
 
         private async Task<LoginResultDTO> GetUserInfo(User user, Guid? schoolId)
         {
-            var userSchools = await schoolQueryService.GetUserSchools(user.Id);
+            var userSchools = await schoolQueryService.GetUserSchools(user.Id, true);
             var firstSchool = schoolId ?? (userSchools.Any() ? userSchools.FirstOrDefault().Id : null);
             var permissions = await userPermissionQueryService.GetUserPermissionsView(user.Id, firstSchool == null ? null : firstSchool);
             var employee = await schoolEmployeeQueryService.IsExist(firstSchool ?? Guid.NewGuid(), user.Id);

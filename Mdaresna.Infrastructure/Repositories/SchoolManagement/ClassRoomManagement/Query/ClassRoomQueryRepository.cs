@@ -117,6 +117,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
 
                 var queryString = query.ToQueryString(); // For debugging
 
+                Console.WriteLine(queryString);
+
                 var result = await query
                     .Select(x => new ClassRoomResultDTO
                     {

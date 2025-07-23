@@ -100,6 +100,7 @@ namespace Mdaresna.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new RelationTypeConfig());
             modelBuilder.ApplyConfiguration(new SchoolUserConfig());
             modelBuilder.ApplyConfiguration(new UserConfig());
+            modelBuilder.ApplyConfiguration(new UserDeviceConfig());
         }
 
         private void ApplyCoinManagementConfigrations(ModelBuilder modelBuilder)
@@ -193,6 +194,7 @@ namespace Mdaresna.Infrastructure.Data
         #region User
 
         public DbSet<User> Users { get; set; }
+        public DbSet<UserDevice> UserDevices { get; set; }
         public DbSet<RelationType> relationTypes { get; set; }
         public DbSet<SchoolUser> SchoolUsers { get; set; }
 

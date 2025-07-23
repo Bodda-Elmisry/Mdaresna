@@ -26,7 +26,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
             this.context = context;
         }
 
-        public async Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAsync(Guid schoolId, string studentCode, string studentName)
+        public async Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdViewAsync(Guid schoolId, string studentCode, string studentName)
         {
             var query = context.Students.Where(s => s.SchoolId == schoolId && s.Deleted == false);
 
@@ -58,6 +58,18 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                 IsPayed = s.IsPayed
             }).OrderByDescending(s => s.BirthDate)
                 .ToListAsync();
+
+
+            return await result;
+        }
+
+        public async Task<IEnumerable<Student>> GetStudentsBySchoolIdAsync(Guid schoolId, bool? ispayed)
+        {
+            var query = context.Students.Where(s => s.SchoolId == schoolId && s.Deleted == false && s.Active == true);
+
+            query = ispayed.HasValue ? query.Where(s => s.IsPayed == ispayed.Value) : query;
+
+            var result = query.ToListAsync();
 
 
             return await result;

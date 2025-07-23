@@ -25,9 +25,10 @@ namespace Mdaresna.Repository.Helpers
                     provider.ProviderPassword,
                     provider.SenderName,
                     user.PhoneNumber,
-                    string.Format("Welcome to Altaly\n Your Key: {0}", user.PhoneConfirmationCode)
+                    string.Format("Welcome to Mdaresna\n Your Key: {0}", user.PhoneConfirmationCode)
                     );
 
+                Console.WriteLine($"SMS Url = {url}");
                 HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
 
                 HttpWebResponse resp = request.GetResponse() as HttpWebResponse;

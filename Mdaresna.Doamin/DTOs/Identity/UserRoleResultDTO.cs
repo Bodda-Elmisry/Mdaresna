@@ -18,5 +18,6 @@ namespace Mdaresna.Doamin.DTOs.Identity
         public string? RoleDescription { get; set; }
         public Guid? SchoolId { get; set; }
         public string? SchoolName { get; set; }
+        public int? ActiveSchoolsCount { get; set; }
     }
 }

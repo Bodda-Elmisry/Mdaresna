@@ -1,13 +1,18 @@
-﻿using Mdaresna.Doamin.DTOs.SchoolManagement;
+﻿using Mdaresna.Doamin.DTOs.Identity;
+using Mdaresna.Doamin.DTOs.SchoolManagement;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.DTOs.Common;
+using Mdaresna.Infrastructure.Services.IdentityManagement.Query;
+using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.IdentityManagement.Command;
 using Mdaresna.Repository.IServices.IdentityManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
+using Mdaresna.Repository.IServices.UserManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
@@ -19,22 +24,37 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         private readonly ISchoolTeacherQueryService schoolTeacherQueryService;
         private readonly IUserRoleCommandService userRoleCommandService;
         private readonly IUserRoleQueryService userRoleQueryService;
+        private readonly IUserPermissionQueryService userPermissionQueryService;
+        private readonly IUserPermissionCommandService userPermissionCommandService;
         private readonly IClassRoomTeacherCourseQueryService classRoomTeacherCourseQueryService;
         private readonly IClassRoomTeacherCourseCommandService classRoomTeacherCourseCommandService;
+        private readonly ISchoolQueryService schoolQueryService;
+        private readonly INotificationFactory notificationFactory;
+        private readonly IUserDeviceQueryService userDeviceQueryService;
 
         public SchoolTeacherController(ISchoolTeacherCommandService schoolTeacherCommandService,
                                        ISchoolTeacherQueryService schoolTeacherQueryService,
                                        IUserRoleCommandService userRoleCommandService,
                                        IUserRoleQueryService userRoleQueryService,
+                                       IUserPermissionQueryService userPermissionQueryService,
+                                       IUserPermissionCommandService userPermissionCommandService,
                                        IClassRoomTeacherCourseQueryService classRoomTeacherCourseQueryService,
-                                       IClassRoomTeacherCourseCommandService classRoomTeacherCourseCommandService)
+                                       IClassRoomTeacherCourseCommandService classRoomTeacherCourseCommandService,
+                                       ISchoolQueryService schoolQueryService,
+                                           INotificationFactory notificationFactory,
+                                           IUserDeviceQueryService userDeviceQueryService)
         {
             this.schoolTeacherCommandService = schoolTeacherCommandService;
             this.schoolTeacherQueryService = schoolTeacherQueryService;
             this.userRoleCommandService = userRoleCommandService;
             this.userRoleQueryService = userRoleQueryService;
+            this.userPermissionQueryService = userPermissionQueryService;
+            this.userPermissionCommandService = userPermissionCommandService;
             this.classRoomTeacherCourseQueryService = classRoomTeacherCourseQueryService;
             this.classRoomTeacherCourseCommandService = classRoomTeacherCourseCommandService;
+            this.schoolQueryService = schoolQueryService;
+            this.notificationFactory = notificationFactory;
+            this.userDeviceQueryService = userDeviceQueryService;
         }
 
         [HttpPost("AddSchoolTeacher")]
@@ -67,6 +87,15 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                         var roleadded = userRoleCommandService.Create(userrole);
                         if (!roleadded)
                             return BadRequest("Error in adding teacher role");
+                    }
+
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var devices = await userDeviceQueryService.GetByUserIdAsync(schoolTeacher.TeacherId);
+                    var school = await schoolQueryService.GetByIdAsync(schoolTeacher.SchoolId);
+                    if (devices.Count() > 0)
+                    {
+                        var tokens = devices.Select(d => d.FcmToken).ToList();
+                        await notificationProvider.SendToMultiUsersAsync(tokens, "School Role", $"Assigned as a teacher to school {school.Name}|{school.Id}");
                     }
                     return Ok(schoolTeacher);
                 }
@@ -113,10 +142,39 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                     SchoolId = schoolTeacher.SchoolId,
                     TeacherId = schoolTeacher.TeacherId
                 };
-
+                var techerRoles = await userRoleQueryService.GetUserRolesDataAsync(schoolTeacher.TeacherId, schoolTeacher.SchoolId);
+                var teacherPermissions = await userPermissionQueryService.GetUserPermissions(schoolTeacher.SchoolId, schoolTeacher.TeacherId);
                 var deleted = await schoolTeacherCommandService.DeleteAsync(sTeacher);
                 if (deleted)
+                {
+                    if (techerRoles != null && techerRoles.Count() > 0)
+                    {
+                        
+                        foreach (var role in techerRoles)
+                        {
+                            await userRoleCommandService.DeleteAsync(role);
+                        }
+                    }
+
+                    if(teacherPermissions != null && teacherPermissions.Count() > 0)
+                    {
+                        foreach (var permission in teacherPermissions)
+                        {
+                            await userPermissionCommandService.DeleteAsync(permission);
+                        }
+                        
+                    }
+
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var devices = await userDeviceQueryService.GetByUserIdAsync(schoolTeacher.TeacherId);
+                    var school = await schoolQueryService.GetByIdAsync(schoolTeacher.SchoolId);
+                    if (devices.Count() > 0)
+                    {
+                        var tokens = devices.Select(d => d.FcmToken).ToList();
+                        await notificationProvider.SendToMultiUsersAsync(tokens, "School Role", $"removed as a teacher from school {school.Name}|{school.Id}");
+                    }
                     return Ok("Teacher removed from school");
+                }
 
                 return BadRequest("Error in removing");
             }

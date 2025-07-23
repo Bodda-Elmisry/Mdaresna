@@ -1,19 +1,25 @@
 ﻿using Mdaresna.Doamin.DTOs.Identity;
 using Mdaresna.Doamin.DTOs.SchoolManagement;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO;
+using Mdaresna.Infrastructure.Services.IdentityManagement.Query;
 using Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Query;
+using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Query;
+using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.IdentityManagement.Command;
 using Mdaresna.Repository.IServices.IdentityManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
+using Mdaresna.Repository.IServices.UserManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
+using static Dapper.SqlMapper;
 
 namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 {
@@ -24,25 +30,40 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         private readonly ISchoolEmployeeQueryService schoolEmployeeQueryService;
         private readonly IUserRoleCommandService userRoleCommandService;
         private readonly IUserRoleQueryService userRoleQueryService;
+        private readonly IUserPermissionCommandService userPermissionCommandService;
+        private readonly IUserPermissionQueryService userPermissionQueryService;
         private readonly IRoleQueryService roleQueryService;
         private readonly IClassroomEmployeeCommandService classroomEmployeeCommandService;
         private readonly IClassroomEmployeeQueryService classroomEmployeeQueryService;
+        private readonly ISchoolQueryService schoolQueryService;
+        private readonly INotificationFactory notificationFactory;
+        private readonly IUserDeviceQueryService userDeviceQueryService;
 
         public SchoolEmployeeController(ISchoolEmployeeCommandService schoolEmployeeCommandService,
                                         ISchoolEmployeeQueryService schoolEmployeeQueryService,
                                         IUserRoleCommandService userRoleCommandService,
                                         IUserRoleQueryService userRoleQueryService,
+                                        IUserPermissionCommandService userPermissionCommandService,
+                                        IUserPermissionQueryService userPermissionQueryService,
                                         IRoleQueryService roleQueryService,
                                         IClassroomEmployeeCommandService classroomEmployeeCommandService,
-                                        IClassroomEmployeeQueryService classroomEmployeeQueryService)
+                                        IClassroomEmployeeQueryService classroomEmployeeQueryService,
+                                        ISchoolQueryService schoolQueryService,
+                                           INotificationFactory notificationFactory,
+                                           IUserDeviceQueryService userDeviceQueryService)
         {
             this.schoolEmployeeCommandService = schoolEmployeeCommandService;
             this.schoolEmployeeQueryService = schoolEmployeeQueryService;
             this.userRoleCommandService = userRoleCommandService;
             this.userRoleQueryService = userRoleQueryService;
+            this.userPermissionCommandService = userPermissionCommandService;
+            this.userPermissionQueryService = userPermissionQueryService;
             this.roleQueryService = roleQueryService;
             this.classroomEmployeeCommandService = classroomEmployeeCommandService;
             this.classroomEmployeeQueryService = classroomEmployeeQueryService;
+            this.schoolQueryService = schoolQueryService;
+            this.notificationFactory = notificationFactory;
+            this.userDeviceQueryService = userDeviceQueryService;
         }
 
         [HttpPost("AddSchoolEmployee")]
@@ -63,53 +84,16 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 var added = schoolEmployeeCommandService.Create(sEmployee);
                 if (added)
                 {
+                    //var addedRow = await schoolEmployeeQueryService.GetSchoolEmployeeByIdAsync(dto.SchoolId, dto.EmployeeId);
 
-                    //var userrole = new UserRole
-                    //{
-                    //    RoleId = dto.RoleId,
-                    //    UserId = dto.EmployeeId,
-                    //    SchoolId = dto.SchoolId
-                    //};
-                    //var teacherRoleAssignd = await userRoleQueryService.CheckRoleExist(userrole);
-                    //if (!teacherRoleAssignd)
-                    //{
-
-                    //    var roleadded = userRoleCommandService.Create(userrole);
-                    //    if (!roleadded)
-                    //        return BadRequest("Error in adding employee role");
-                    //}
-
-                    ////List<UserRoleDTO> roleIds = new List<UserRoleDTO>();
-                    ////foreach(var role in dto.RoleIds)
-                    ////{
-                    ////    var userrole = new UserRole
-                    ////    {
-                    ////        RoleId = role,
-                    ////        UserId = dto.EmployeeId,
-                    ////        SchoolId = dto.SchoolId
-                    ////    };
-                    ////    var teacherRoleAssignd = await userRoleQueryService.CheckRoleExist(userrole);
-                    ////    if (!teacherRoleAssignd)
-                    ////    {
-                    ////        var userRoleDTO = new UserRoleDTO
-                    ////        {
-                    ////            RoleId = role,
-                    ////            UserId = dto.EmployeeId,
-                    ////            SchoolId = dto.SchoolId
-                    ////        };
-                    ////        roleIds.Add(userRoleDTO);
-                    ////        //var roleadded = userRoleCommandService.Create(userrole);
-                    ////        //if (!roleadded)
-                    ////        //    return BadRequest("Error in adding employee role");
-                    ////    }
-                    ////}
-
-                    ////if (roleIds.Count() > 0)
-                    ////{
-                    ////    var roleadded = await userRoleCommandService.Create(roleIds);
-                    ////}
-
-
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var devices = await userDeviceQueryService.GetByUserIdAsync(dto.EmployeeId);
+                    var school = await schoolQueryService.GetByIdAsync(dto.SchoolId);
+                    if (devices.Count() > 0)
+                    {
+                        var tokens = devices.Select(d => d.FcmToken).ToList();
+                        await notificationProvider.SendToMultiUsersAsync(tokens, "School Role", $"Assigned as employee to new school {school.Name}|{school.Id}");
+                    }
 
                     return Ok(dto);
                 }
@@ -156,10 +140,39 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                     SchoolId = dto.SchoolId,
                     EmployeeId = dto.EmployeeId
                 };
-
+                var employeeRoles = await userRoleQueryService.GetUserRolesDataAsync(dto.EmployeeId, dto.SchoolId);
+                var employeePermissions = await userPermissionQueryService.GetUserPermissions(dto.SchoolId, dto.EmployeeId);
                 var deleted = await schoolEmployeeCommandService.DeleteAsync(sEmployee);
                 if (deleted)
+                {
+                    if (employeeRoles != null && employeeRoles.Count() > 0)
+                    {
+
+                        foreach (var role in employeeRoles)
+                        {
+                            await userRoleCommandService.DeleteAsync(role);
+                        }
+                    }
+
+                    if (employeePermissions != null && employeePermissions.Count() > 0)
+                    {
+                        foreach (var permission in employeePermissions)
+                        {
+                            await userPermissionCommandService.DeleteAsync(permission);
+                        }
+
+                    }
+
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var devices = await userDeviceQueryService.GetByUserIdAsync(dto.EmployeeId);
+                    var school = await schoolQueryService.GetByIdAsync(dto.SchoolId);
+                    if (devices.Count() > 0)
+                    {
+                        var tokens = devices.Select(d => d.FcmToken).ToList();
+                        await notificationProvider.SendToMultiUsersAsync(tokens, "School Role", $"removed as employee from school {school.Name}|{school.Id}");
+                    }
                     return Ok("Employee removed from school");
+                }
 
                 return BadRequest("Error in removing");
             }

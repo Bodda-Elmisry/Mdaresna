@@ -28,9 +28,14 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Qu
             this.studentQueryRepository = studentQueryRepository;
         }
 
-        public async Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAsync(Guid schoolId, string studentCode, string studentName)
+        public async Task<IEnumerable<Student>> GetStudentsBySchoolIdAsync(Guid schoolId, bool? ispayed)
         {
-            return await studentQueryRepository.GetStudentsBySchoolIdAsync(schoolId, studentCode, studentName);
+            return await studentQueryRepository.GetStudentsBySchoolIdAsync(schoolId, ispayed);
+        }
+
+        public async Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdViewAsync(Guid schoolId, string studentCode, string studentName)
+        {
+            return await studentQueryRepository.GetStudentsBySchoolIdViewAsync(schoolId, studentCode, studentName);
         }
 
         public async Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAndClassRoomIdAsync(Guid schoolId, Guid classroomId)

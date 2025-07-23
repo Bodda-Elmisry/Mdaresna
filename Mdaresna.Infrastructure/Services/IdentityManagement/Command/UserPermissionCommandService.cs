@@ -63,6 +63,18 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Command
             }
         }
 
+        public async Task<bool> DeleteAsync(IEnumerable<UserPermission> entities)
+        {
+            try
+            {
+                return await baseCommandBulkRepository.DeleteBulk(entities);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public bool Update(UserPermission entity)
         {
             try

@@ -1,9 +1,16 @@
 ﻿using Mdaresna.Doamin.DTOs.ClassRoomManagement;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
+using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.ClassRoomManagementDTO;
+using Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Query;
+using Mdaresna.Infrastructure.Services.UserManagement.Query;
+using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
+using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
+using Mdaresna.Repository.IServices.UserManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
@@ -13,12 +20,25 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
     {
         private readonly IClassRoomTeacherCourseQueryService classRoomTeacherCourseQueryService;
         private readonly IClassRoomTeacherCourseCommandService classRoomTeacherCourseCommandService;
+        private readonly IClassRoomQueryService classroomQueryService;
+        private readonly ISchoolQueryService schoolQueryService;
+        private readonly INotificationFactory notificationFactory;
+        private readonly IUserDeviceQueryService userDeviceQueryService;
+        private readonly IClassroomTransactionsFactory classroomTransactionsFactory;
 
         public ClassRoomTeacherCourseController(IClassRoomTeacherCourseQueryService classRoomTeacherCourseQueryService,
-                                                IClassRoomTeacherCourseCommandService classRoomTeacherCourseCommandService)
+                                                IClassRoomTeacherCourseCommandService classRoomTeacherCourseCommandService,
+                                                IClassRoomQueryService classroomQueryService,
+                                                ISchoolQueryService schoolQueryService,
+                                                INotificationFactory notificationFactory,
+                                                IUserDeviceQueryService userDeviceQueryService)
         {
             this.classRoomTeacherCourseQueryService = classRoomTeacherCourseQueryService;
             this.classRoomTeacherCourseCommandService = classRoomTeacherCourseCommandService;
+            this.classroomQueryService = classroomQueryService;
+            this.schoolQueryService = schoolQueryService;
+            this.notificationFactory = notificationFactory;
+            this.userDeviceQueryService = userDeviceQueryService;
         }
 
         [HttpPost("GetInitialData")]
@@ -114,11 +134,23 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                     CourseId = dto.CourseId,
                     ClassRoomId = dto.ClassRoomId,
                 };
-
                 var added = classRoomTeacherCourseCommandService.Create(row);
-
                 if (added)
+                {
+
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var devices = await userDeviceQueryService.GetByUserIdAsync(dto.TeacherId);
+                    var addedRow = await classRoomTeacherCourseQueryService.GetClassRoomIeacherCourseAsync(dto.TeacherId, dto.ClassRoomId, dto.CourseId);
+                    var classroom = await classroomQueryService.GetByIdAsync(dto.ClassRoomId);
+                    var school = await schoolQueryService.GetByIdAsync(classroom.SchoolId);
+                    if (devices.Count() > 0)
+                    {
+                        var tokens = devices.Select(d => d.FcmToken).ToList();
+                        await notificationProvider.SendToMultiUsersAsync(tokens, "School Role", $"Classroom {addedRow.ClassRoomName} in school {school.Name} added to you|{school.Id}");
+                    }
+
                     return Ok(await classRoomTeacherCourseQueryService.GetClassRoomIeacherCourseAsync(row.TeacherId, row.ClassRoomId, row.CourseId));
+                }
 
 
                 return BadRequest("Error in assining class course to teacher");
@@ -143,7 +175,19 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                 var deleted = await classRoomTeacherCourseCommandService.DeleteAsync(row);
 
                 if (deleted)
+                {
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var devices = await userDeviceQueryService.GetByUserIdAsync(dto.TeacherId);
+                    var classroom = await classroomQueryService.GetByIdAsync(dto.ClassRoomId);
+                    var school = await schoolQueryService.GetByIdAsync(classroom.SchoolId);
+                    if (devices.Count() > 0)
+                    {
+                        var tokens = devices.Select(d => d.FcmToken).ToList();
+                        await notificationProvider.SendToMultiUsersAsync(tokens, "School Role", $"Classroom {classroom.Name} in school {school.Name} removed from you|{school.Id}");
+                    }
+
                     return Ok("class room course teacher deleted");
+                }
 
 
                 return BadRequest("Error in deleting row");

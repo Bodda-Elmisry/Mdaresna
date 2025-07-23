@@ -13,6 +13,7 @@ namespace Mdaresna.Doamin.Models.Identity
 {
     public class UserRole : AuditBase
     {
+        public Guid Id { get; set; }
         public Guid UserId { get; set; }
 
         [ForeignKey(nameof(UserId))]

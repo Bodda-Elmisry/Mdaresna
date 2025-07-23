@@ -76,6 +76,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
 
             var query = teacherQuery.ToQueryString();
+            Console.WriteLine(query);
             var teachers = await teacherQuery.ToListAsync();
             return teachers;
                 

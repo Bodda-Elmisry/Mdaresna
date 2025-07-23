@@ -1,5 +1,6 @@
 ﻿using Mdaresna.Infrastructure.BServices.Common;
 using Mdaresna.Infrastructure.BServices.IdentityManagement;
+using Mdaresna.Infrastructure.Factories;
 using Mdaresna.Infrastructure.Repositories.AdminManagement.Command;
 using Mdaresna.Infrastructure.Repositories.AdminManagement.Query;
 using Mdaresna.Infrastructure.Repositories.Base;
@@ -16,6 +17,7 @@ using Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagement.Co
 using Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagement.Query;
 using Mdaresna.Infrastructure.Repositories.SettingsManagement.Command;
 using Mdaresna.Infrastructure.Repositories.SettingsManagement.Query;
+using Mdaresna.Infrastructure.Repositories.TransactionsManagement;
 using Mdaresna.Infrastructure.Repositories.UserManagement.Command;
 using Mdaresna.Infrastructure.Repositories.UserManagement.Query;
 using Mdaresna.Infrastructure.Services.AdminManagement.Command;
@@ -37,6 +39,7 @@ using Mdaresna.Infrastructure.Services.UserManagement.Command;
 using Mdaresna.Infrastructure.Services.UserManagement.Query;
 using Mdaresna.Repository.IBServices.Common;
 using Mdaresna.Repository.IBServices.IdentityManagement;
+using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IRepositories.AdminManagement.Command;
 using Mdaresna.Repository.IRepositories.AdminManagement.Query;
 using Mdaresna.Repository.IRepositories.Base;
@@ -53,6 +56,7 @@ using Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.Comma
 using Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.Query;
 using Mdaresna.Repository.IRepositories.SettingsManagement.Command;
 using Mdaresna.Repository.IRepositories.SettingsManagement.Query;
+using Mdaresna.Repository.IRepositories.TransactionsManagement;
 using Mdaresna.Repository.IRepositories.UserManagement.Command;
 using Mdaresna.Repository.IRepositories.UserManagement.Query;
 using Mdaresna.Repository.IServices.AdminManagement.Command;
@@ -251,6 +255,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(IRelationTypeCommandRepository), typeof(RelationTypeCommandRepository));
             services.AddScoped(typeof(ISchoolUserCommandRepository), typeof(SchoolUserCommandRepository));
             services.AddScoped(typeof(IUserCommandRepository), typeof(UserCommandRepository));
+            services.AddScoped(typeof(IUserDeviceCommandRepository), typeof(UserDeviceCommandRepository));
 
             #endregion
 
@@ -258,6 +263,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(IRelationTypeQueryRepository), typeof(RelationTypeQueryRepository));
             services.AddScoped(typeof(ISchoolUserQueryRepository), typeof(SchoolUserQueryRepository));
             services.AddScoped(typeof(IUserQueryRepository), typeof(UserQueryRepository));
+            services.AddScoped(typeof(IUserDeviceQueryRepository), typeof(UserDeviceQueryRepository));
 
             #endregion
         }
@@ -284,6 +290,38 @@ namespace Mdaresna.Infrastructure.Configrations
 
         #endregion
 
+        #region Hubs
+
+        public static void ConfigerHubs(IServiceCollection services)
+        {
+            services.AddSignalR();
+        }
+
+        #endregion
+
+        #region Factories
+
+        public static void ConfigerFactories(IServiceCollection services)
+        {
+            services.AddSingleton<INotificationService, FcmService>();
+            services.AddSingleton<FcmService>();
+            services.AddSingleton<NotificationHubService>();
+            services.AddSingleton<INotificationFactory, NotificationFactory>();
+            services.AddScoped<IClassroomTransactionManagerRepository, ClassroomActivityTransactionRepository>();
+            services.AddScoped<ClassroomActivityTransactionRepository>();
+            services.AddScoped<ClassroomAssignementTransactionRepository>();
+            services.AddScoped<ClassroomExamTransactionRepository>();
+            services.AddScoped<IClassroomTransactionsFactory, ClassroomTransactionsFactory>();
+            services.AddScoped<IStudentTransactionManagerRepository, StudentActivityTransactionRepository>();
+            services.AddScoped<StudentActivityTransactionRepository>();
+            services.AddScoped<StudentAssignementTransactionRepository>();
+            services.AddScoped<StudentExamTransactionRepository>();
+            services.AddScoped<StudentAttendanceTransactionRepository>();
+            services.AddScoped<StudentNoteTransactionRepository>();
+            services.AddScoped<IStudentTransactionsFactory, StudentTransactionsFactory>();
+        }
+
+        #endregion
 
         #region Services
 
@@ -473,6 +511,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(IRelationTypeCommandService), typeof(RelationTypeCommandService));
             services.AddScoped(typeof(ISchoolUserCommandService), typeof(SchoolUserCommandService));
             services.AddScoped(typeof(IUserCommandService), typeof(UserCommandService));
+            services.AddScoped(typeof(IUserDeviceCommandService), typeof(UserDeviceCommandService));
 
             #endregion
 
@@ -480,6 +519,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(IRelationTypeQueryService), typeof(RelationTypeQueryService));
             services.AddScoped(typeof(ISchoolUserQueryService), typeof(SchoolUserQueryService));
             services.AddScoped(typeof(IUserQueryService), typeof(UserQueryService));
+            services.AddScoped(typeof(IUserDeviceQueryService), typeof(UserDeviceQueryService));
 
             #endregion
         }
@@ -501,6 +541,7 @@ namespace Mdaresna.Infrastructure.Configrations
 
         private static void ConfigerCommonSer(IServiceCollection services)
         {
+            //services.AddScoped<IFcmService, FcmService>();
             services.AddScoped<IImageUploderService, ImageUploderService>();
         }
 
