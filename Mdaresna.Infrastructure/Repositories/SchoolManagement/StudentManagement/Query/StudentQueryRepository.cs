@@ -37,9 +37,14 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
 
             if (!string.IsNullOrEmpty(studentName))
             {
-                query = query.Where(q => (q.FirstName + " " + q.MiddelName + " " + q.LastName).Contains(studentName));
+                query = query.Where(q => EF.Functions.Like(
+    q.FirstName + " " + q.MiddelName + " " + q.LastName,
+    $"%{studentName}%"
+));
             }
 
+
+            Console.WriteLine(query.ToQueryString());
 
             var result = query.Select(s => new StudentResultDTO
             {
@@ -102,7 +107,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
             var student = await context.Students
                                 .Include(s => s.ClassRoom).Include(s => s.School)
                                 .FirstOrDefaultAsync(s => s.Id == studentId && s.Deleted == false);
-            return student == null ? null : 
+            return student == null ? null :
                 new StudentResultDTO
                 {
                     Id = student.Id,
@@ -124,7 +129,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
         public async Task<StudentResultDTO?> GetStudentByCodeAsync(string code)
         {
             var student = await context.Students
-                                .Include(s=> s.ClassRoom).Include(s => s.School)
+                                .Include(s => s.ClassRoom).Include(s => s.School)
                                 .FirstOrDefaultAsync(s => s.Code == code && s.Deleted == false);
             return student == null ? null :
                 new StudentResultDTO
@@ -148,11 +153,11 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
         public async Task<string> GetMaxStudebtCodeAsync(Guid schoolId)
         {
             var anyStudents = await context.Students.AnyAsync(s => s.SchoolId == schoolId && s.Deleted == false);
-            if(!anyStudents)
+            if (!anyStudents)
             {
                 return null;
             }
-            var student = await context.Students.OrderByDescending(s=> s.CreateDate).FirstOrDefaultAsync(s => s.SchoolId == schoolId && s.Deleted == false);
+            var student = await context.Students.OrderByDescending(s => s.CreateDate).FirstOrDefaultAsync(s => s.SchoolId == schoolId && s.Deleted == false);
 
             return student != null ? student.Code : string.Empty;
         }
