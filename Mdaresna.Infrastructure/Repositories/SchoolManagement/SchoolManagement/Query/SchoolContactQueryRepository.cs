@@ -27,18 +27,19 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             var result = await context.SchoolContacts.Include(c=> c.ContactType)
                 .Where(c => c.SchoolId == schoolId && c.Deleted == false)
                 .Select(c =>
-                                                                new SchoolContactResultDTO
-                                                                {
-                                                                    SchoolId = c.SchoolId,
-                                                                    Id = c.Id,
-                                                                    ContactTypeId = c.ContactTypeId,
-                                                                    SchoolContactValue = c.Value,
-                                                                    TypeDescription = c.ContactType.Description,
-                                                                    //TypeIcon = this.GetTypeIconeURL(c.ContactType.IconUrl),
-                                                                    TypeIcon = !string.IsNullOrEmpty(c.ContactType.IconUrl) ? $"{SettingsHelper.GetAppUrl()}/{c.ContactType.IconUrl.Replace("\\", "/")}" : string.Empty,
-                                                                    TypeName = c.ContactType.Name
-                                                                })
-                                        .ToListAsync();
+                         new SchoolContactResultDTO
+                         {
+                             SchoolId = c.SchoolId,
+                             Id = c.Id,
+                             ContactTypeId = c.ContactTypeId,
+                             SchoolContactValue = c.Value,
+                             TypeDescription = c.ContactType.Description,
+                             //TypeIcon = this.GetTypeIconeURL(c.ContactType.IconUrl),
+                             TypeIcon = !string.IsNullOrEmpty(c.ContactType.IconUrl) ? $"{SettingsHelper.GetAppUrl()}/{c.ContactType.IconUrl.Replace("\\", "/")}" : string.Empty,
+                              TypeName = c.ContactType.Name
+                          })
+                .OrderBy(c => c.TypeName)
+                .ToListAsync();
 
             return result;
         }
