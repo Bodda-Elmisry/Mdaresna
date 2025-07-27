@@ -848,9 +848,9 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Id = Guid.Parse("A8704499-413D-4FF4-A3A2-122B684A0E17"),
                     Key = "ViewPermissionSettings",
                     Name = "View Permission Settings",
-                    Name_AR = "",
+                    Name_AR = "عرض اعدادات الصلاحيات",
                     Description = "View Permission Settings",
-                    Description_AR = "",
+                    Description_AR = "عرض اعدادات الصلاحيات",
                     SchoolPermission = false,
                     AppPermission = true
                 },
@@ -859,9 +859,9 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Id = Guid.Parse("512D2EBF-DD4A-482B-8753-1252FE196511"),
                     Key = "ViewPaymentsTransaction",
                     Name = "View Payments Transaction",
-                    Name_AR = "",
+                    Name_AR = "عرض حركات الدفع",
                     Description = "View Payments Transaction",
-                    Description_AR = "",
+                    Description_AR = "عرض حركات الدفع",
                     SchoolPermission = false,
                     AppPermission = true
                 },
