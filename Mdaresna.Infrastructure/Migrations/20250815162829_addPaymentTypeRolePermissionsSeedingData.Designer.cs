@@ -4,6 +4,7 @@ using Mdaresna.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Mdaresna.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250815162829_addPaymentTypeRolePermissionsSeedingData")]
+    partial class addPaymentTypeRolePermissionsSeedingData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1995,32 +1998,6 @@ namespace Mdaresna.Infrastructure.Migrations
                             Name = "Update Payment Type",
                             Name_AR = "تعديل طريقة الدفع",
                             SchoolPermission = false
-                        },
-                        new
-                        {
-                            Id = new Guid("b96d60ad-e4db-4ce9-8ea8-c22d2ce8c544"),
-                            AllowedToMapToClassroom = false,
-                            AppPermission = true,
-                            Deleted = false,
-                            Description = "Delete Coin Type",
-                            Description_AR = "حذف نوع العمله",
-                            Key = "DeleteCoinType",
-                            Name = "Delete Coin Type",
-                            Name_AR = "حذف نوع العمله",
-                            SchoolPermission = false
-                        },
-                        new
-                        {
-                            Id = new Guid("fbadcd2d-c9c8-4164-bad1-667a586b54cc"),
-                            AllowedToMapToClassroom = false,
-                            AppPermission = true,
-                            Deleted = false,
-                            Description = "View Coin Types List",
-                            Description_AR = "عرض انواع العملات",
-                            Key = "ViewCoinTypesList",
-                            Name = "View Coin Types List",
-                            Name_AR = "عرض انواع العملات",
-                            SchoolPermission = false
                         });
                 });
 
@@ -2201,18 +2178,6 @@ namespace Mdaresna.Infrastructure.Migrations
                         {
                             RoleId = new Guid("228ae7f5-c704-4660-aeb0-0e1f43112ae1"),
                             PermissionId = new Guid("56d9a5b6-28a6-4e8d-ade6-54ad37c846bd"),
-                            Deleted = false
-                        },
-                        new
-                        {
-                            RoleId = new Guid("228ae7f5-c704-4660-aeb0-0e1f43112ae1"),
-                            PermissionId = new Guid("b96d60ad-e4db-4ce9-8ea8-c22d2ce8c544"),
-                            Deleted = false
-                        },
-                        new
-                        {
-                            RoleId = new Guid("228ae7f5-c704-4660-aeb0-0e1f43112ae1"),
-                            PermissionId = new Guid("fbadcd2d-c9c8-4164-bad1-667a586b54cc"),
                             Deleted = false
                         },
                         new

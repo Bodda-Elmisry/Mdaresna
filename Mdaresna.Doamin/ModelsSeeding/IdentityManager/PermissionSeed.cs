@@ -1414,6 +1414,61 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description_AR = "عرض قائمة طلاب المدرسة",
                     SchoolPermission = true,
                     AppPermission = false
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("0A0AB8A7-1D51-4B03-B10A-647A8F90EC24"),
+                    Key = "DeletePaymentType",
+                    Name = "Delete Payment Type",
+                    Name_AR = "حذف طريقة الدفع",
+                    Description = "Delete Payment Type",
+                    Description_AR = "حذف طريقة الدفع",
+                    SchoolPermission = false,
+                    AppPermission = true
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("9C8526E9-9119-43D8-A434-4C4828C8A5D9"),
+                    Key = "ViewPaymentTypesList",
+                    Name = "View Payment Types List",
+                    Name_AR = "عرض طرق الدفع",
+                    Description = "View Payment Types List",
+                    Description_AR = "عرض طرق الدفع",
+                    SchoolPermission = false,
+                    AppPermission = true
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("56D9A5B6-28A6-4E8D-ADE6-54AD37C846BD"),
+                    Key = "UpdatePaymentType",
+                    Name = "Update Payment Type",
+                    Name_AR = "تعديل طريقة الدفع",
+                    Description = "Update Payment Type",
+                    Description_AR = "تعديل طريقة الدفع",
+                    SchoolPermission = false,
+                    AppPermission = true
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("B96D60AD-E4DB-4CE9-8EA8-C22D2CE8C544"),
+                    Key = "DeleteCoinType",
+                    Name = "Delete Coin Type",
+                    Name_AR = "حذف نوع العمله",
+                    Description = "Delete Coin Type",
+                    Description_AR = "حذف نوع العمله",
+                    SchoolPermission = false,
+                    AppPermission = true
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("FBADCD2D-C9C8-4164-BAD1-667A586B54CC"),
+                    Key = "ViewCoinTypesList",
+                    Name = "View Coin Types List",
+                    Name_AR = "عرض انواع العملات",
+                    Description = "View Coin Types List",
+                    Description_AR = "عرض انواع العملات",
+                    SchoolPermission = false,
+                    AppPermission = true
                 }
 
                 );
