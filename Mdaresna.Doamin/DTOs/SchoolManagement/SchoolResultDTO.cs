@@ -27,5 +27,6 @@ namespace Mdaresna.Doamin.DTOs.SchoolManagement
         public int AvailableCoins { get; set; }
         public Guid SchoolAdminId { get; set; }
         public string SchoolAdminName { get; set; }
+        public IEnumerable<string> SchoolImages { get; set; }
     }
 }

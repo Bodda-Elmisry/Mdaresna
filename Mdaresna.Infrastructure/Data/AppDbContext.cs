@@ -116,6 +116,7 @@ namespace Mdaresna.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new ClassRoomConfig());
             modelBuilder.ApplyConfiguration(new ClassRoomLanguageConfig());
             modelBuilder.ApplyConfiguration(new SchoolConfig());
+            modelBuilder.ApplyConfiguration(new SchoolImageConfig());
             modelBuilder.ApplyConfiguration(new SchoolContactConfig());
             modelBuilder.ApplyConfiguration(new SchoolPostImageConfig());
             modelBuilder.ApplyConfiguration(new SchoolTypeConfig());
@@ -228,6 +229,7 @@ namespace Mdaresna.Infrastructure.Data
         public DbSet<SchoolPostImage> SchoolPostImages { get; set; }
         public DbSet<SchoolType> SchoolTypes { get; set; }
         public DbSet<School> Schools { get; set; }
+        public DbSet<SchoolImage> SchoolImages { get; set; }
         public DbSet<SchoolContactType> SchoolContactTypes { get; set; }
         public DbSet<SchoolContact> SchoolContacts { get; set; }
         public DbSet<SchoolYear> SchoolYears { get; set; }

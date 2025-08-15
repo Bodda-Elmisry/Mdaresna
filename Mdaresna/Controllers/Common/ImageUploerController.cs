@@ -37,7 +37,7 @@ namespace Mdaresna.Controllers.Common
 
                 var localPath = Directory.GetCurrentDirectory();
                 var directoryPathWithoutLocal = GetPathWithoutLocal(localPath, uploadImageDTO);
-                var fileName = string.Format("PI_{0}.{1}", uploadImageDTO.UserId.ToString(), ext); //uploadImageDTO.UserId.ToString() + "." + ext;
+                var fileName = string.Format("PI_{0}.{1}", Guid.NewGuid().ToString(), ext); //uploadImageDTO.UserId.ToString() + "." + ext;
 
                 var filePath = Path.Combine(localPath,
                                             directoryPathWithoutLocal,
@@ -65,6 +65,31 @@ namespace Mdaresna.Controllers.Common
                 if (uploader)
                     return Ok(Path.Combine(SettingsHelper.GetAppUrl(), directoryPathWithoutLocal, fileName));
                 return BadRequest("Error in uploade image");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("UploadImagesBulk")]
+        public async Task<IActionResult> UploadImagesBulk([FromForm] UploadImageBulkDTO dtos)
+        {
+            try
+            {
+                foreach(var model in dtos.Files)
+                {
+                    var dto = new UploadImageDTO
+                    {
+                        File = model,
+                        Type = dtos.Type,
+                        UserId = dtos.UserId
+                    };
+
+                    await UploadImage(dto);
+                }
+                
+                    return Ok();
             }
             catch (Exception ex)
             {

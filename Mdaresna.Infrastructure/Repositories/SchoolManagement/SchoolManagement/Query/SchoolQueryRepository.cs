@@ -60,7 +60,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                              CoinTypeName = coinType != null ? coinType.Name : null,
                              AvailableCoins = school.AvailableCoins,
                              SchoolAdminId = school.SchoolAdminId,
-                             SchoolAdminName = admin != null ? admin.FirstName + " " + admin.LastName : null
+                             SchoolAdminName = admin != null ? admin.FirstName + " " + admin.LastName : null,
+                             //SchoolImages = school.SchoolImages,
                          };
 
             var equery = from school in context.Schools
@@ -87,7 +88,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                              CoinTypeName = coinType != null ? coinType.Name : null,
                              AvailableCoins = school.AvailableCoins,
                              SchoolAdminId = school.SchoolAdminId,
-                             SchoolAdminName = admin != null ? admin.FirstName + " " + admin.LastName : null
+                             SchoolAdminName = admin != null ? admin.FirstName + " " + admin.LastName : null,
+                             //SchoolImages = school.SchoolImages
                          };
 
             // Combine the two queries using Union
@@ -135,6 +137,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
             var queryString = query.ToQueryString();
 
+
             return await query.OrderBy(s => s.SchoolTypeId).OrderBy(s => s.Name)
                                    .Skip((pageNumber - 1) * pagesize)
                                    .ToListAsync();
@@ -159,6 +162,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
         {
             var query = context.Schools
                        .Include(s => s.SchoolType).Include(s => s.SchoolAdmin).Include(s => s.CoinType)
+                       .Include(s=> s.SchoolImages)
                        .Where(s=> s.Deleted == false)
                        .Select(s => new SchoolResultDTO
                        {
@@ -174,7 +178,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                            CoinTypeName = s.CoinType.Name,
                            AvailableCoins = s.AvailableCoins,
                            SchoolAdminId = s.SchoolAdminId,
-                           SchoolAdminName = $"{s.SchoolAdmin.FirstName} {s.SchoolAdmin.LastName}"
+                           SchoolAdminName = $"{s.SchoolAdmin.FirstName} {s.SchoolAdmin.LastName}",
+                           SchoolImages = s.SchoolImages.Select(s=> $"{SettingsHelper.GetAppUrl()}/{s.ImagePath.Replace("\\", "/")}"),
                        });
 
             return query;

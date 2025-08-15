@@ -36,5 +36,7 @@ namespace Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement
 
         [ForeignKey(nameof(SchoolAdminId))]
         public virtual User SchoolAdmin { get; set; }
+
+        public ICollection<SchoolImage> SchoolImages { get; set; }
     }
 }

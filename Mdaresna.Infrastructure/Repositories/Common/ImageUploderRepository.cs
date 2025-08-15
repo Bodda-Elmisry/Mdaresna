@@ -1,4 +1,6 @@
-﻿using Mdaresna.Infrastructure.Data;
+﻿using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
+using Mdaresna.Infrastructure.Data;
+using Mdaresna.Infrastructure.Helpers;
 using Mdaresna.Repository.IRepositories.Common;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -72,14 +74,25 @@ namespace Mdaresna.Infrastructure.Repositories.Common
 
         private async Task<bool> UploadSchoolPersonalImage(Guid schoolId, string filePath)
         {
-            var school = await context.Schools.FirstOrDefaultAsync(s=> s.Id == schoolId);
+            //var school = await context.Schools.FirstOrDefaultAsync(s=> s.Id == schoolId);
 
-            if(school == null)
-                return false;
+            //if(school == null)
+            //    return false;
 
-            school.ImageUrl = filePath;
+            //school.ImageUrl = filePath;
 
+            //await context.SaveChangesAsync();
+
+            var schoolImage = new SchoolImage
+            {
+                Id = DataGenerationHelper.GenerateRowId(),
+                ImagePath = filePath,
+                SchoolId = schoolId,
+            };
+
+            context.SchoolImages.Add(schoolImage);
             await context.SaveChangesAsync();
+
             return true;
         }
 
