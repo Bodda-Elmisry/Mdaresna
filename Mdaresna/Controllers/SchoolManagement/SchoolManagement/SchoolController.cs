@@ -288,6 +288,22 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             }
         }
 
+        [HttpPost("RemoveSchoolImage")]
+        public async Task<IActionResult> RemoveSchoolImage([FromBody] ImagePathDTO dto)
+        {
+            try
+            {
+                var deleted = await schoolCommandService.DeleteSchoolImageByImageNameAsync(dto.ImagePath);
+
+                return deleted ? Ok("School image removed") : BadRequest("Error in removing school image");
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
     }
 }

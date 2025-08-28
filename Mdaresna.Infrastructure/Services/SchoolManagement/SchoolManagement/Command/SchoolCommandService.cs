@@ -1,6 +1,7 @@
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Infrastructure.Helpers;
 using Mdaresna.Repository.IRepositories.Base;
+using Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.Base;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using System;
@@ -15,12 +16,15 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Com
     {
         private readonly IBaseCommandRepository<School> commandRepository;
         private readonly IBaseSharedRepository<School> sharedRepository;
+        private readonly ISchoolCommandRepository schoolCommandRepository;
 
         public SchoolCommandService(IBaseCommandRepository<School> commandRepository,
-            IBaseSharedRepository<School> sharedRepository)
+            IBaseSharedRepository<School> sharedRepository,
+            ISchoolCommandRepository schoolCommandRepository)
         {
             this.commandRepository = commandRepository;
             this.sharedRepository = sharedRepository;
+            this.schoolCommandRepository = schoolCommandRepository;
         }
         public bool Create(School entity)
         {
@@ -48,6 +52,11 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Com
             {
                 throw ex;
             }
+        }
+
+        public async Task<bool> DeleteSchoolImageByImageNameAsync(string imageName)
+        {
+            return await schoolCommandRepository.DeleteSchoolImageByImageNameAsync(imageName);
         }
 
         public bool Update(School entity)

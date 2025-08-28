@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Co
 {
     public interface ISchoolCommandRepository : IBaseCommandRepository<School>
     {
+        Task<bool> DeleteSchoolImageByImageNameAsync(string imageName);
     }
 }

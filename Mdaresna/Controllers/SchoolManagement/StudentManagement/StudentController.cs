@@ -168,13 +168,19 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 if (updated)
                 {
                     var schoolAvailableCoins = 0;
+                    var school = await schoolQueryRepository.GetByIdAsync(studentDTO.SchoolId);
+
                     if (payedChanged)
                     {
-                        var school = await schoolQueryRepository.GetByIdAsync(studentDTO.SchoolId);
                         school.AvailableCoins--;
                         schoolCommandRepository.Update(school);
                         schoolAvailableCoins = school.AvailableCoins;
                     }
+                    else
+                    {
+                        schoolAvailableCoins = school.AvailableCoins;
+                    }
+
                     CreateStudentResultDTO resultDTO = new CreateStudentResultDTO
                     {
                         Student = student,
