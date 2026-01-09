@@ -66,6 +66,18 @@ namespace Mdaresna
             DependencyInjectionConfig.ConfigerFactories(builder.Services);
             DependencyInjectionConfig.ConfigerServices(builder.Services);
 
+            //builder.WebHost.ConfigureKestrel(options =>
+            //{
+            //    options.ListenAnyIP(80);
+
+            //    options.ListenAnyIP(443, listenOptions =>
+            //    {
+            //        listenOptions.UseHttps(
+            //            @"C:\certs\mdaresna_api_fullchain.pfx",
+            //            "Aly@1091010");
+            //    });
+            //});
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

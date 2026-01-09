@@ -113,10 +113,12 @@ namespace Mdaresna.Controllers.IdentityManagement
                 foreach(var up in dto.UserPermissions)
                 {
                     var userPermission = await userPermissionQueryService.GetUserPermissionByID(up.PermissionId, up.SchoolId, up.UserId);
+                    if (userPermission != null)
+                    {
+                        removed = await userPermissionCommandService.DeleteAsync(userPermission);
 
-                    removed = await userPermissionCommandService.DeleteAsync(userPermission);
-
-                    notRemoved = string.IsNullOrEmpty(notRemoved) ? up.PermissionId.ToString() : $", {up.PermissionId.ToString()}" ;
+                        notRemoved = string.IsNullOrEmpty(notRemoved) ? up.PermissionId.ToString() : $"{notRemoved}, {up.PermissionId.ToString()}";
+                    }
                 }
 
                 if (!string.IsNullOrEmpty(notRemoved))

@@ -49,6 +49,11 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             int pagesize = this.appSettings.PageSize != null ? this.appSettings.PageSize.Value : 30;
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             var query = _context.Permissions.Where(p => p.SchoolPermission == true && p.Deleted == false);
+
+            query = query.Where(p=> p.Id != Guid.Parse("219007EA-620E-4D96-8292-2D015EF68DB1") 
+                                 && p.Id != Guid.Parse("9301FC37-AE75-4EF6-B6FA-A656452E5A2E")
+                                 && p.Id != Guid.Parse("E9C02932-B613-45EB-9E71-7CB6204745D9"));    
+
             if (user.Language == "ar")
             {
                 query = !string.IsNullOrEmpty(permissionName) ? query.Where(p => p.Name_AR.Contains(permissionName)) : query;
@@ -69,6 +74,10 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             int pagesize = this.appSettings.PageSize != null ? this.appSettings.PageSize.Value : 30;
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             var query = _context.Permissions.Where(p => p.AppPermission == true && p.Deleted == false);
+
+            //query = query.Where(p => p.Id != Guid.Parse("219007EA-620E-4D96-8292-2D015EF68DB1")
+            //                    && p.Id != Guid.Parse("9301FC37-AE75-4EF6-B6FA-A656452E5A2E"));
+
             if (user.Language == "ar")
             {
                 query = !string.IsNullOrEmpty(permissionName) ? query.Where(p => p.Name_AR.Contains(permissionName)) : query;

@@ -60,6 +60,61 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
         }
 
+        public async Task<IEnumerable<SchoolPostReportsCountResultDTO>> GetPostsWithReportsCountAsync(string? schoolName, int? minReportsCount, int? maxReportsCount, int pageNumber)
+        {
+            int pagesize = this.appSettings.PageSize != null ? this.appSettings.PageSize.Value : 30;
+            pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+            var normalizedSchoolName = string.IsNullOrWhiteSpace(schoolName) ? null : schoolName.Trim();
+
+            var postsQuery = context.SchoolPosts
+                                    .Include(p => p.Poster)
+                                    .Include(p => p.School)
+                                    .Where(x => x.Deleted == false);
+
+            if (!string.IsNullOrEmpty(normalizedSchoolName))
+            {
+                postsQuery = postsQuery.Where(x => x.School.Name.Contains(normalizedSchoolName));
+            }
+
+            var postsWithReports = postsQuery
+                                    .GroupJoin(context.SchoolPostReports.Where(r => r.Deleted == false),
+                                               post => post.Id,
+                                               report => report.PostId,
+                                               (post, reports) => new
+                                               {
+                                                   Post = post,
+                                                   ReportsCount = reports.Count()
+                                               });
+
+            if (minReportsCount.HasValue)
+            {
+                postsWithReports = postsWithReports.Where(x => x.ReportsCount >= minReportsCount.Value);
+            }
+
+            if (maxReportsCount.HasValue)
+            {
+                postsWithReports = postsWithReports.Where(x => x.ReportsCount <= maxReportsCount.Value);
+            }
+
+            var result = await postsWithReports
+                .OrderByDescending(x => x.Post.LastModifyDate ?? x.Post.PostDate)
+                .Skip((pageNumber - 1) * pagesize)
+                .Take(pagesize)
+                .Select(x => new SchoolPostReportsCountResultDTO
+                {
+                    PostId = x.Post.Id,
+                    Content = x.Post.Content,
+                    PosterId = x.Post.PosterId,
+                    PosterName = $"{x.Post.Poster.FirstName} {x.Post.Poster.LastName}",
+                    SchoolId = x.Post.SchoolId,
+                    SchoolName = x.Post.School.Name,
+                    ReportsCount = x.ReportsCount,
+                    LastModifyDate = x.Post.LastModifyDate ?? x.Post.PostDate
+                }).ToListAsync();
+
+            return result;
+        }
+
         public async Task<PostResultDTO> GetPostWithImagesAsync(Guid postId)
         {
             

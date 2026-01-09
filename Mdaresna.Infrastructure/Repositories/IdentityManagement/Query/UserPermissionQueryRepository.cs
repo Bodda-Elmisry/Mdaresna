@@ -24,12 +24,34 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
 
         public async Task<UserPermission?> GetUserPermissionByID(Guid permissionId, Guid schoolId,Guid UserId)
         {
-            return await context.userPermissions.FirstOrDefaultAsync(p=> p.UserId == UserId && p.SchoolId == schoolId && p.UserId == UserId && p.Deleted == false);
+            return await context.userPermissions.FirstOrDefaultAsync(p=> p.UserId == UserId && p.SchoolId == schoolId && p.PermissionId == permissionId && p.Deleted == false);
         }
 
         public async Task<IEnumerable<UserPermission>?> GetUserPermissions(Guid schoolId, Guid UserId)
         {
             return await context.userPermissions.Where(p => p.UserId == UserId && p.SchoolId == schoolId && p.UserId == UserId && p.Deleted == false).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Guid>> GetPermissionUsersIds(Guid permissionId, Guid schoolId)
+        {
+            var usersFromRoleQuery = from ur in context.UserRoles
+                                     join rp in context.RolePermissions on ur.RoleId equals rp.RoleId
+                                     where rp.PermissionId == permissionId
+                                           && ur.SchoolId == schoolId
+                                           && ur.Deleted == false
+                                     select ur.UserId;
+
+            var usersFromUserPermissionQuery = from up in context.userPermissions
+                                               where up.PermissionId == permissionId
+                                                     && up.SchoolId == schoolId
+                                                     && up.Deleted == false
+                                               select up.UserId;
+
+            var combinedQuery = usersFromRoleQuery.Union(usersFromUserPermissionQuery).Distinct();
+
+            var result = await combinedQuery.ToListAsync();
+
+            return result;
         }
 
         public async Task<IEnumerable<Permission>> GetUserPermissions(Guid UserId)

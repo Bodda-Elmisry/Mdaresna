@@ -1,11 +1,15 @@
 ﻿using Mdaresna.Doamin.DTOs.StudentManagement;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.StudentManagementDTO;
+using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Query;
+using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
+using Mdaresna.Repository.IServices.UserManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics.SymbolStore;
 
@@ -18,16 +22,25 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         private readonly IStudentQueryService studentQueryService;
         private readonly ISchoolCommandRepository schoolCommandRepository;
         private readonly ISchoolQueryRepository schoolQueryRepository;
+        private readonly IUserDeviceQueryService userDeviceQueryService;
+        private readonly ISchoolQueryService schoolQueryService;
+        private readonly INotificationFactory notificationFactory;
 
         public StudentController(IStudentCommandService studentCommandService,
                                  IStudentQueryService studentQueryService,
                                  ISchoolCommandRepository schoolCommandRepository,
-                                 ISchoolQueryRepository schoolQueryRepository)
+                                 ISchoolQueryRepository schoolQueryRepository,
+                                 IUserDeviceQueryService userDeviceQueryService,
+                                 ISchoolQueryService schoolQueryService,
+                                 INotificationFactory notificationFactory)
         {
             this.studentCommandService = studentCommandService;
             this.studentQueryService = studentQueryService;
             this.schoolCommandRepository = schoolCommandRepository;
             this.schoolQueryRepository = schoolQueryRepository;
+            this.userDeviceQueryService = userDeviceQueryService;
+            this.schoolQueryService = schoolQueryService;
+            this.notificationFactory = notificationFactory;
         }
 
         [HttpPost("GetStudent")]
@@ -121,6 +134,16 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                         school.AvailableCoins--;
                         schoolCommandRepository.Update(school);
                         schoolAvailableCoins = school.AvailableCoins;
+
+
+
+                        var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                        var schoolAdminId = school.SchoolAdminId;
+                        var devices = await userDeviceQueryService.GetByUserIdAsync(schoolAdminId);
+                        var tokens = devices.Select(d => d.FcmToken).ToList();
+
+                        await notificationProvider.SendToMultiUsersAsync(tokens, "Balance Changed", $"Student payed in school{school.Name}|{schoolAvailableCoins}|{school.Id}");
+
                     }
                     CreateStudentResultDTO resultDTO = new CreateStudentResultDTO
                     {
@@ -175,6 +198,13 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                         school.AvailableCoins--;
                         schoolCommandRepository.Update(school);
                         schoolAvailableCoins = school.AvailableCoins;
+
+                        var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                        var schoolAdminId = school.SchoolAdminId;
+                        var devices = await userDeviceQueryService.GetByUserIdAsync(schoolAdminId);
+                        var tokens = devices.Select(d => d.FcmToken).ToList();
+
+                        await notificationProvider.SendToMultiUsersAsync(tokens, "Balance Changed", $"Student payed in school{school.Name}|{schoolAvailableCoins}|{school.Id}");
                     }
                     else
                     {
@@ -209,6 +239,18 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                     return BadRequest("Can't update student");
 
                 var payed = await studentCommandService.Pay(student);
+
+                if (payed.Payed)
+                {
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var school = await schoolQueryService.GetByIdAsync(student.SchoolId);
+                    var schoolAdminId = school.SchoolAdminId;
+                    var devices = await userDeviceQueryService.GetByUserIdAsync(schoolAdminId);
+                    var tokens = devices.Select(d => d.FcmToken).ToList();
+
+                    await notificationProvider.SendToMultiUsersAsync(tokens, "Balance Changed", $"Student payed in school{school.Name}|{payed.AvaialableCoins}|{school.Id}");
+
+                }
 
 
 

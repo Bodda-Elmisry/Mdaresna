@@ -1,10 +1,8 @@
 ﻿using Mdaresna.Doamin.DTOs.Common;
 using Mdaresna.Doamin.DTOs.SchoolManagement;
-using Mdaresna.Doamin.Helpers;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO;
-using Mdaresna.Infrastructure.BServices.Common;
 using Mdaresna.Repository.IBServices.Common;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
@@ -18,16 +16,22 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
     {
         private readonly ISchoolPostCommandService schoolPostCommandService;
         private readonly ISchoolPostQueryService schoolPostQueryService;
+        private readonly ISchoolPostReportCommandService schoolPostReportCommandService;
+        private readonly ISchoolPostReportQueryService schoolPostReportQueryService;
         private readonly IImageUploderService imageUploderService;
         private readonly AppSettingDTO appSettings;
 
         public SchoolPostController(ISchoolPostCommandService schoolPostCommandService,
                                     ISchoolPostQueryService schoolPostQueryService,
+                                    ISchoolPostReportCommandService schoolPostReportCommandService,
+                                    ISchoolPostReportQueryService schoolPostReportQueryService,
                                     IImageUploderService imageUploderService,
                                     IOptions<AppSettingDTO> appSettings)
         {
             this.schoolPostCommandService = schoolPostCommandService;
             this.schoolPostQueryService = schoolPostQueryService;
+            this.schoolPostReportCommandService = schoolPostReportCommandService;
+            this.schoolPostReportQueryService = schoolPostReportQueryService;
             this.imageUploderService = imageUploderService;
             this.appSettings = appSettings.Value;
         }
@@ -59,6 +63,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             }
 
             var result = await schoolPostCommandService.CreateAsync(schoolPost, postImages);
+            LogAddPost(post, postImages, result);
             if (result)
             {
                 return Ok("Post created successfully");
@@ -66,6 +71,57 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             else
             {
                 return StatusCode(500, "Internal server error");
+            }
+        }
+
+        [HttpPost("ReportPost")]
+        public IActionResult ReportPost([FromBody] AddSchoolPostReportDTO report)
+        {
+            if (report == null)
+            {
+                return BadRequest("Report cannot be null");
+            }
+
+            if (report.PostId == Guid.Empty || report.UserId == Guid.Empty)
+            {
+                return BadRequest("User ID and Post ID cannot be empty");
+            }
+
+            var postReport = new SchoolPostReport
+            {
+                PostId = report.PostId,
+                UserId = report.UserId,
+                Description = report.Description
+            };
+
+            var result = schoolPostReportCommandService.Create(postReport);
+            if (result)
+            {
+                return Ok("Report created successfully");
+            }
+
+            return StatusCode(500, "Internal server error");
+        }
+
+        private void LogAddPost(AddSchoolPostDTO post, List<string> postImages, bool result)
+        {
+            try
+            {
+                var logDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Logs", "SchoolPosts");
+                Directory.CreateDirectory(logDirectory);
+
+                var logFilePath = Path.Combine(logDirectory, $"school-posts-{DateTime.UtcNow:yyyyMMdd}.log");
+                var incomingImagesCount = post.Images?.Count() ?? 0;
+                var contentPreview = string.IsNullOrWhiteSpace(post.Content)
+                                        ? string.Empty
+                                        : post.Content.Length <= 200 ? post.Content : post.Content[..200];
+
+                var logEntry = $"[{DateTime.UtcNow:O}] SchoolId:{post.SchoolId}, PosterId:{post.PosterId}, IncomingImages:{incomingImagesCount}, SavedImages:{postImages.Count}, Result:{(result ? "Success" : "Failure")}, Content:\"{contentPreview}\"";
+
+                System.IO.File.AppendAllText(logFilePath, logEntry + Environment.NewLine);
+            }
+            catch
+            {
             }
         }
 
@@ -158,6 +214,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             {
                 return BadRequest("Post ID cannot be empty");
             }
+            var deleted = await schoolPostReportCommandService.DeletePostReportsByPostIdAsync(dTO.PostId);
+
             var post = await schoolPostQueryService.GetByIdAsync(dTO.PostId);
 
             var result = await schoolPostCommandService.DeleteAsync(post);
@@ -171,6 +229,53 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             }
 
 
+        }
+
+        [HttpDelete("DeletePostReports")]
+        public async Task<IActionResult> DeletePostReports([FromBody] SchoolPostIdDTO dTO)
+        {
+            if (dTO.PostId == Guid.Empty)
+            {
+                return BadRequest("Post ID cannot be empty");
+            }
+
+            var deleted = await schoolPostReportCommandService.DeletePostReportsByPostIdAsync(dTO.PostId);
+            if (deleted)
+            {
+                return Ok("Post reports deleted successfully");
+            }
+
+            return StatusCode(500, "Internal server error");
+        }
+
+        [HttpPost("GetPostsWithReportsCount")]
+        public async Task<IActionResult> GetPostsWithReportsCount([FromBody] SchoolPostReportsFilterDTO filter)
+        {
+            if (filter == null)
+            {
+                return BadRequest("Filter cannot be null");
+            }
+
+            if (filter.MinReportsCount.HasValue && filter.MaxReportsCount.HasValue && filter.MinReportsCount > filter.MaxReportsCount)
+            {
+                return BadRequest("Min reports count cannot be greater than max reports count");
+            }
+
+            var pageNumber = filter.PageNumber <= 0 ? 1 : filter.PageNumber;
+            var posts = await schoolPostQueryService.GetPostsWithReportsCountAsync(filter.SchoolName, filter.MinReportsCount, filter.MaxReportsCount, pageNumber);
+            return Ok(posts);
+        }
+
+        [HttpPost("GetReportsList")]
+        public async Task<IActionResult> GetReportsList([FromBody] SchoolIdDTO dTO)
+        {
+            if (dTO.SchoolId == Guid.Empty)
+            {
+                return BadRequest("School ID cannot be empty");
+            }
+
+            var reports = await schoolPostReportQueryService.GetSchoolPostReportsAsync(dTO.SchoolId);
+            return Ok(reports);
         }
     }
 }

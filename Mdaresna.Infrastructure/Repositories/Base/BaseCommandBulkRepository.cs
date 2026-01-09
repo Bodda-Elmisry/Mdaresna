@@ -1,4 +1,4 @@
-﻿using EFCore.BulkExtensions;
+using EFCore.BulkExtensions;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Repository.IRepositories.Base;
 using System;
@@ -29,10 +29,7 @@ namespace Mdaresna.Infrastructure.Repositories.Base
 
         public async Task<bool> DeleteBulk<T>(IEnumerable<T> entityList) where T : class
         {
-            await context.BulkDeleteAsync(entityList, BulkConfig =>
-            {
-                BulkConfig.IncludeGraph = true;
-            });
+            await context.BulkDeleteAsync(entityList);
             return true;
         }
     }

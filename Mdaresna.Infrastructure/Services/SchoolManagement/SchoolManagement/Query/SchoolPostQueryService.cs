@@ -33,6 +33,11 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Que
             return await schoolPostQueryRepository.GetPostWithImagesAsync(postId);
         }
 
+        public async Task<IEnumerable<SchoolPostReportsCountResultDTO>> GetPostsWithReportsCountAsync(string? schoolName, int? minReportsCount, int? maxReportsCount, int pageNumber)
+        {
+            return await schoolPostQueryRepository.GetPostsWithReportsCountAsync(schoolName, minReportsCount, maxReportsCount, pageNumber);
+        }
+
         public async Task<IEnumerable<PostResultDTO>> GetSchoolPostesWithImagesAsync(Guid schoolId, string searchText, int pageNumber)
         {
             return await schoolPostQueryRepository.GetSchoolPostesWithImagesAsync(schoolId, searchText, pageNumber);

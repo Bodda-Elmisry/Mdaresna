@@ -12,7 +12,7 @@ namespace Mdaresna.Infrastructure.Repositories.Base
 {
     public class BaseQueryRepository<T> : IBaseQueryRepository<T> where T : AuditBase
     {
-        private readonly AppDbContext context;
+        protected readonly AppDbContext context;
 
         public BaseQueryRepository(AppDbContext context)
         {

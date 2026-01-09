@@ -23,7 +23,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "Assign School Manager Permission To User",
                     Description_AR = "تعيين صلاحية مدير المدرسة للمستخدم",
                     SchoolPermission = false,
-                    AppPermission = true
+                    AppPermission = true,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -45,7 +46,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "View User Schools Drop Down",
                     Description_AR = "عرض قائمة المدارس للمستخدم",
                     SchoolPermission = false,
-                    AppPermission = true
+                    AppPermission = true,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -56,7 +58,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "school Admin",
                     Description_AR = "مدير المدرسة",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted = true
                 },
 
                 new Permission
@@ -80,7 +83,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "View School Setting Section",
                     Description_AR = "عرض قسم إعدادات المدرسة",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted = true
                 },
 
                 new Permission
@@ -103,7 +107,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "View Years Setting",
                     Description_AR = "عرض إعدادات السنوات",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -213,7 +218,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "Update School Contact",
                     Description_AR = "تحديث جهة اتصال المدرسة",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -290,7 +296,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "Add Multiple Grades",
                     Description_AR = "إضافة مستويات دراسية متعددة",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -312,7 +319,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "View Exams Setting",
                     Description_AR = "عرض إعدادات الامتحانات",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -334,7 +342,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "Add Multiple Exams",
                     Description_AR = "إضافة امتحانات متعددة",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -356,7 +365,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "View Classes Setting List",
                     Description_AR = "عرض قائمة إعدادات الفصول",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -378,7 +388,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "Add Multiple Classes",
                     Description_AR = "إضافة فصول دراسية متعددة",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -433,7 +444,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "Add Multiple Courses",
                     Description_AR = "إضافة مواد دراسية متعددة",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -466,7 +478,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "View Admin Aettings",
                     Description_AR = "عرض إعدادات المسؤولين",
                     SchoolPermission = false,
-                    AppPermission = true
+                    AppPermission = true,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -477,7 +490,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "Unlink Teacher To School",
                     Description_AR = "فك ارتباط المعلم بالمدرسة",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -499,7 +513,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "Unlink Teacher To Course & Class",
                     Description_AR = "فك ارتباط المعلم بالمادة الدراسية والفصل",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -521,7 +536,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "Assign Multiple Students To School",
                     Description_AR = "تعيين طلاب متعددين للمدرسة",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted =true
                 },
                 new Permission
                 {
@@ -565,7 +581,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "Add Current Year",
                     Description_AR = "إضافة سنة دراسية جديدة",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -609,7 +626,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "Update Month",
                     Description_AR = "تحديث الشهر الدراسي",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -631,7 +649,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "Change Month Activation",
                     Description_AR = "تغيير تفعيل الشهر الدراسي",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -653,7 +672,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "View Years List",
                     Description_AR = "عرض قائمة السنوات الدراسية",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -664,7 +684,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "View Childerns List",
                     Description_AR = "عرض قائمة الأطفال",
                     SchoolPermission = false,
-                    AppPermission = true
+                    AppPermission = true,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -675,7 +696,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "Attendance Action",
                     Description_AR = "إجراء الحضور والغياب",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -741,7 +763,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "View School Settings",
                     Description_AR = "عرض إعدادات المدرسة",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -874,7 +897,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "Remove User Role",
                     Description_AR = "حذف صلاحة المستخدم",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = true,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -973,7 +997,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "Activate Roles List",
                     Description_AR = "تفعيل قائمة الأدوار",
                     SchoolPermission = false,
-                    AppPermission = true
+                    AppPermission = true,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -995,7 +1020,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "Add User Role",
                     Description_AR = "إضافة صلاحية للمستخدم",
                     SchoolPermission = true,
-                    AppPermission = true
+                    AppPermission = true,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -1182,7 +1208,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "Remove School Payment",
                     Description_AR = "إزالة دفعة مدرسية",
                     SchoolPermission = true,
-                    AppPermission = false
+                    AppPermission = false,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -1215,7 +1242,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "Remove User Permission",
                     Description_AR = "إزالة صلاحية المستخدم",
                     SchoolPermission = false,
-                    AppPermission = true
+                    AppPermission = true,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -1270,7 +1298,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "View School Action List",
                     Description_AR = "عرض قائمة الإجراءات المدرسية",
                     SchoolPermission = false,
-                    AppPermission = true
+                    AppPermission = true,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -1325,7 +1354,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description = "Add User Permission",
                     Description_AR = "إضافة صلاحية للمستخدم",
                     SchoolPermission = false,
-                    AppPermission = true
+                    AppPermission = true,
+                    Deleted = true
                 },
                 new Permission
                 {
@@ -1469,6 +1499,39 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description_AR = "عرض انواع العملات",
                     SchoolPermission = false,
                     AppPermission = true
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("A44F8B6E-7B16-4497-9C4B-8E55EAF4E7D4"),
+                    Key = "ShowReportedPosts",
+                    Name = "Show Reported Posts",
+                    Name_AR = "Show Reported Posts",
+                    Description = "View reported school posts with report counts",
+                    Description_AR = "View reported school posts with report counts",
+                    SchoolPermission = false,
+                    AppPermission = true
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("8A01A316-9151-4BB7-8B0E-A87E5EE7E367"),
+                    Key = "DeletePost",
+                    Name = "Delete Post",
+                    Name_AR = "Delete Post",
+                    Description = "Delete school post",
+                    Description_AR = "Delete school post",
+                    SchoolPermission = false,
+                    AppPermission = true
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("5B4C93D4-22E3-4D89-BDB8-6B6EC2F7E840"),
+                    Key = "DeleteSchoolPost",
+                    Name = "Delete School Post",
+                    Name_AR = "Delete School Post",
+                    Description = "Delete school post (school manager)",
+                    Description_AR = "Delete school post (school manager)",
+                    SchoolPermission = true,
+                    AppPermission = false
                 }
 
                 );

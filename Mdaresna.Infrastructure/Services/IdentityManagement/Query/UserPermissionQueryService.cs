@@ -39,6 +39,11 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Query
             return await userPermissionQueryRepository.GetUserPermissions(schoolId, UserId);
         }
 
+        public async Task<IEnumerable<Guid>> GetPermissionUsersIds(Guid permissionId, Guid schoolId)
+        {
+            return await userPermissionQueryRepository.GetPermissionUsersIds(permissionId, schoolId);
+        }
+
         public async Task<IEnumerable<UserPermissionResultDTO>> GetUserPermissionsView(Guid userId, Guid? schoolID)
         {
             return await userPermissionQueryRepository.GetUserPermissionsView(userId, schoolID);

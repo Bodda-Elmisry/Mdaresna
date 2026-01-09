@@ -3,6 +3,7 @@ using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO;
 using Mdaresna.Repository.IFactories;
+using Mdaresna.Repository.IServices.IdentityManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
@@ -23,14 +24,18 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         private readonly IStudentQueryService studentQueryService;
         private readonly INotificationFactory notificationFactory;
         private readonly IUserDeviceQueryService userDeviceQueryService;
+        private readonly IUserRoleQueryService userRoleQueryService;
+        private readonly IUserPermissionQueryService userPermissionQueryService;
 
-        public SchoolController(ISchoolCommandService schoolCommandService, 
+        public SchoolController(ISchoolCommandService schoolCommandService,
                                 ISchoolQueryService schoolQueryService,
                                 IClassRoomCommandService classRoomCommandService,
                                 IClassRoomQueryService classRoomQueryService,
                                 IStudentQueryService studentQueryService,
                                 INotificationFactory notificationFactory,
-                                IUserDeviceQueryService userDeviceQueryService)
+                                IUserDeviceQueryService userDeviceQueryService,
+                                IUserRoleQueryService userRoleQueryService,
+                                IUserPermissionQueryService userPermissionQueryService)
         {
             this.schoolCommandService = schoolCommandService;
             this.schoolQueryService = schoolQueryService;
@@ -39,6 +44,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             this.studentQueryService = studentQueryService;
             this.notificationFactory = notificationFactory;
             this.userDeviceQueryService = userDeviceQueryService;
+            this.userRoleQueryService = userRoleQueryService;
+            this.userPermissionQueryService = userPermissionQueryService;
         }
 
         [HttpPost("AddSchool")]
@@ -60,7 +67,19 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 
                 var added = schoolCommandService.Create(newSchool);
                 if (added)
+                {
+                    var applicationAdmins = await userRoleQueryService.GetRoleUsersAsync(Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"), null);
+                    var managerIds = applicationAdmins.Select(a=> a.UserId).ToList();
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var devices = await userDeviceQueryService.GetUsersDevicesAsync(managerIds);
+                    if (devices.Count() > 0)
+                    {
+                        var message = $"School '{newSchool.Name}' added";
+                        var tokens = devices.Select(d => d.FcmToken).ToList();
+                        await notificationProvider.SendToMultiUsersAsync(tokens, "New School", message);
+                    }
                     return Ok(await schoolQueryService.GetSchoolById(newSchool.Id));
+                }
 
                 return BadRequest();
 
@@ -136,7 +155,20 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 
                 var updated = schoolCommandService.Update(school);
                 if (updated)
+                {
+                    var usersIds = await userPermissionQueryService.GetPermissionUsersIds(Guid.Parse("9DD22E15-9701-492B-AE20-985B8927F3BF"), school.Id);
+                    var userIdsList = usersIds.ToList();
+                    userIdsList.Add(school.SchoolAdminId);
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var devices = await userDeviceQueryService.GetUsersDevicesAsync(userIdsList);
+                    if (devices.Count() > 0)
+                    {
+                        var message = $"Balance changed in school '{school.Name}'";
+                        var tokens = devices.Select(d => d.FcmToken).ToList();
+                        await notificationProvider.SendToMultiUsersAsync(tokens, "Balance Changed", message);
+                    }
                     return Ok(await schoolQueryService.GetSchoolById(school.Id));
+                }
 
                 return BadRequest("Error in update school");
             }
@@ -154,7 +186,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 var result = await schoolQueryService.GetSchoolsList(dTO.Name, dTO.Active, dTO.SchoolTypeId, dTO.CoinTypeId, dTO.SchoolAdminId, dTO.PageNumber, dTO.NewSchools);
                 return Ok(result);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -259,7 +291,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             {
                 var schoolStudents = await studentQueryService.GetStudentsBySchoolIdViewAsync(dto.SchoolId, string.Empty, string.Empty);
 
-                if(schoolStudents != null && schoolStudents.Count() > 0)
+                if (schoolStudents != null && schoolStudents.Count() > 0)
                     return BadRequest("There are students in this school, you can't delete it");
 
                 var school = await schoolQueryService.GetByIdAsync(dto.SchoolId);
@@ -282,7 +314,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 return deleted ? Ok("School deleted") : BadRequest("Error in deleting school");
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }

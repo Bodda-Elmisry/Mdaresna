@@ -27,8 +27,8 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                                                   IClassRoomStudentActivityCommandService classRoomStudentActivityCommandService,
                                                   IClassRoomActivityCommandService classRoomActivityCommandService,
                                                   IStudentQueryService studentQueryService,
-                                           INotificationFactory notificationFactory,
-                                           IStudentTransactionsFactory studentTransactionsFactory)
+                                                  INotificationFactory notificationFactory,
+                                                  IStudentTransactionsFactory studentTransactionsFactory)
         {
             this.classRoomStudentActivityQueryService = classRoomStudentActivityQueryService;
             this.classRoomStudentActivityCommandService = classRoomStudentActivityCommandService;
