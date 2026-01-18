@@ -223,6 +223,18 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 },
                 new Permission
                 {
+                    Id = Guid.Parse("2F14A9B5-3270-4391-AB66-0B09A59C460D"),
+                    Key = "DeleteSchoolContact",
+                    Name = "Delete School Contact",
+                    Name_AR = "حذف جهة اتصال المدرسة",
+                    Description = "Delete School Contact",
+                    Description_AR = "حذف جهة اتصال المدرسة",
+                    SchoolPermission = true,
+                    AppPermission = false,
+                    Deleted = true
+                },
+                new Permission
+                {
                     Id = Guid.Parse("D512C1B3-DDE0-4646-98CC-2BE5C56C7150"),
                     Key = "ViewSchoolLanguagesSetting",
                     Name = "View School Languages Setting",

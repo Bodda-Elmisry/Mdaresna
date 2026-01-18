@@ -58,9 +58,9 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                                 ClassRoomName = c.ClassRoom.Name
                             });
 
-            query = (employeeId != Guid.Empty) ? query.Where(c => c.EmployeeId == employeeId) : query;
+            query = (employeeId != null && employeeId != Guid.Empty) ? query.Where(c => c.EmployeeId == employeeId) : query;
 
-            query = (roomId != null) ? query.Where(c => c.ClassRoomId == roomId) : query;
+            query = (roomId != null && roomId != Guid.Empty) ? query.Where(c => c.ClassRoomId == roomId) : query;
 
             return await query.OrderBy(c => c.ClassRoomId).ToListAsync();
         }

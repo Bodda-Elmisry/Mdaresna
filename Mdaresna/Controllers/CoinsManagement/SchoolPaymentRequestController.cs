@@ -1,10 +1,14 @@
-﻿using Mdaresna.Doamin.Models.CoinsManagement;
+﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Models.CoinsManagement;
 using Mdaresna.DTOs.CoinsManagementDTO;
 using Mdaresna.DTOs.Common;
+using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.CoinsManagement.Command;
 using Mdaresna.Repository.IServices.CoinsManagement.Query;
+using Mdaresna.Repository.IServices.IdentityManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
+using Mdaresna.Repository.IServices.UserManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers.CoinsManagement
@@ -18,13 +22,19 @@ namespace Mdaresna.Controllers.CoinsManagement
         private readonly ISchoolQueryService schoolQueryService;
         private readonly ISchoolCommandService schoolCommandService;
         private readonly ICoinTypeQueryService coinTypeQueryService;
+        private readonly IUserPermissionQueryService userPermissionQueryService;
+        private readonly INotificationFactory notificationFactory;
+        private readonly IUserDeviceQueryService userDeviceQueryService;
 
         public SchoolPaymentRequestController(ISchoolPaymentRequestCommandService schoolPaymentRequestCommandService,
                                               ISchoolPaymentRequestQueryService schoolPaymentRequestQueryService,
                                               IPaymentTransactionCommandService paymentTransactionCommandService,
                                               ISchoolQueryService schoolQueryService,
                                               ISchoolCommandService schoolCommandService,
-                                              ICoinTypeQueryService coinTypeQueryService)
+                                              ICoinTypeQueryService coinTypeQueryService,
+                                              IUserPermissionQueryService userPermissionQueryService,
+                                              INotificationFactory notificationFactory,
+                                              IUserDeviceQueryService userDeviceQueryService)
         {
             this.schoolPaymentRequestCommandService = schoolPaymentRequestCommandService;
             this.schoolPaymentRequestQueryService = schoolPaymentRequestQueryService;
@@ -32,6 +42,9 @@ namespace Mdaresna.Controllers.CoinsManagement
             this.schoolQueryService = schoolQueryService;
             this.schoolCommandService = schoolCommandService;
             this.coinTypeQueryService = coinTypeQueryService;
+            this.userPermissionQueryService = userPermissionQueryService;
+            this.notificationFactory = notificationFactory;
+            this.userDeviceQueryService = userDeviceQueryService;
         }
 
         [HttpPost("GetRequests")]
@@ -185,6 +198,18 @@ namespace Mdaresna.Controllers.CoinsManagement
                 if (!approved)
                     return BadRequest("Error in approving request");
 
+
+                var usersIds = await userPermissionQueryService.GetPermissionUsersIds(Guid.Parse("9DD22E15-9701-492B-AE20-985B8927F3BF"), school.Id);
+                var userIdsList = usersIds.ToList();
+                userIdsList.Add(school.SchoolAdminId);
+                var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                var devices = await userDeviceQueryService.GetUsersDevicesAsync(userIdsList);
+                if (devices.Count() > 0)
+                {
+                    var message = $"Balance changed in school '{school.Name}'|{school.AvailableCoins}|{school.Id}";
+                    var tokens = devices.Select(d => d.FcmToken).ToList();
+                    await notificationProvider.SendToMultiUsersAsync(tokens, "Balance Changed", message);
+                }
                 return Ok("Request approved");
 
             }

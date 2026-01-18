@@ -94,11 +94,11 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
             };
         }
 
-        public async Task<IEnumerable<ClassRoomTeacherCourseResultDTO>?> GetClassRoomIeacherCoursesAsync(Guid teacherId, Guid roomId)
+        public async Task<IEnumerable<ClassRoomTeacherCourseResultDTO>?> GetClassRoomIeacherCoursesAsync(Guid? teacherId, Guid roomId)
         {
-            var rows = await context.ClassRoomTeacherCourses
+            var query = context.ClassRoomTeacherCourses
                             .Include(c => c.Teacher).Include(c => c.ClassRoom).Include(c => c.Course)
-                            .Where(c => c.TeacherId == teacherId && c.ClassRoomId == roomId && c.Deleted == false)
+                            .Where(c => c.ClassRoomId == roomId && c.Deleted == false)
                             .Select(c => new ClassRoomTeacherCourseResultDTO
                             {
                                 TeacherId = c.TeacherId,
@@ -107,7 +107,11 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                                 ClassRoomName = c.ClassRoom.Name,
                                 CourseId = c.CourseId,
                                 CourseName = c.Course.Name
-                            }).ToListAsync();
+                            });
+
+            query = teacherId != null ? query.Where(c=> c.TeacherId == teacherId) : query;
+
+            var rows = await query.ToListAsync();
             return rows;
         }
 

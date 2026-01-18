@@ -20,6 +20,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
     {
         private readonly IStudentCommandService studentCommandService;
         private readonly IStudentQueryService studentQueryService;
+        private readonly IStudentParentQueryService studentParentQueryService;
         private readonly ISchoolCommandRepository schoolCommandRepository;
         private readonly ISchoolQueryRepository schoolQueryRepository;
         private readonly IUserDeviceQueryService userDeviceQueryService;
@@ -28,6 +29,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 
         public StudentController(IStudentCommandService studentCommandService,
                                  IStudentQueryService studentQueryService,
+                                 IStudentParentQueryService studentParentQueryService,
                                  ISchoolCommandRepository schoolCommandRepository,
                                  ISchoolQueryRepository schoolQueryRepository,
                                  IUserDeviceQueryService userDeviceQueryService,
@@ -36,6 +38,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         {
             this.studentCommandService = studentCommandService;
             this.studentQueryService = studentQueryService;
+            this.studentParentQueryService = studentParentQueryService;
             this.schoolCommandRepository = schoolCommandRepository;
             this.schoolQueryRepository = schoolQueryRepository;
             this.userDeviceQueryService = userDeviceQueryService;
@@ -278,6 +281,47 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 var deleted = studentCommandService.Update(student);
 
                 return deleted ? Ok("Student Deleted") : BadRequest("Error in delete student");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("ChangeStudentClassroom")]
+        public async Task<IActionResult> ChangeStudentClassroom([FromBody] ChangeStudentClassroomDTO dTO)
+        {
+            try
+            {
+                var student = await studentQueryService.GetByIdAsync(dTO.StudentId);
+
+                if (student == null)
+                    return BadRequest("Student Not Found");
+
+                student.ClassRoomId = dTO.ClassRoomId;
+
+                var updated = studentCommandService.Update(student);
+
+                if (updated)
+                {
+                    var parents = await studentParentQueryService.GetstudentParentsAsync(dTO.StudentId, null);
+                    var parentIds = parents.Select(p => p.ParentId).Distinct().ToList();
+
+                    if (parentIds.Count > 0)
+                    {
+                        var devices = await userDeviceQueryService.GetUsersDevicesAsync(parentIds);
+                        if (devices.Any())
+                        {
+                            var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                            var tokens = devices.Select(d => d.FcmToken).ToList();
+                            await notificationProvider.SendToMultiUsersAsync(tokens, "Classroom Changed", $"Your chield {student.FirstName} {student.LastName} classroom has been updated");
+                        }
+                    }
+
+                    return Ok(student);
+                }
+
+                return BadRequest("Error in update student classroom");
             }
             catch (Exception ex)
             {

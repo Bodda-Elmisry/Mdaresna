@@ -163,7 +163,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                     var devices = await userDeviceQueryService.GetUsersDevicesAsync(userIdsList);
                     if (devices.Count() > 0)
                     {
-                        var message = $"Balance changed in school '{school.Name}'";
+                        var message = $"Balance changed in school '{school.Name}'|{school.AvailableCoins}|{school.Id}";
                         var tokens = devices.Select(d => d.FcmToken).ToList();
                         await notificationProvider.SendToMultiUsersAsync(tokens, "Balance Changed", message);
                     }
@@ -247,8 +247,23 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 school.CoinTypeId = dTO.CoinTypeId;
 
                 var updated = schoolCommandService.Update(school);
+                if (updated)
+                {
+                    var schoolUsersIds = await schoolQueryService.GetSchoolUsersIds(school.Id);
+                    var schoolUsersIdsList = schoolUsersIds.ToList();
+                    schoolUsersIdsList.Add(school.SchoolAdminId);
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var devices = await userDeviceQueryService.GetUsersDevicesAsync(schoolUsersIdsList);
+                    if (devices.Count() > 0)
+                    {
+                        var message = $"School '{school.Name}' activated";
+                        var tokens = devices.Select(d => d.FcmToken).ToList();
+                        await notificationProvider.SendToMultiUsersAsync(tokens, "School Activation", message);
+                    }
+                    Ok("School activated");
+                }
 
-                return updated ? Ok("School activated") : BadRequest("Error in Updating school");
+                return BadRequest("Error in Updating school");
             }
             catch (Exception ex)
             {

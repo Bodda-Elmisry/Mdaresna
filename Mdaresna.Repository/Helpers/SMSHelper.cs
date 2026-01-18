@@ -1,17 +1,18 @@
-﻿using Azure;
 using Mdaresna.Doamin.Models.SettingsManagement;
 using Mdaresna.Doamin.Models.UserManagement;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Mdaresna.Repository.Helpers
 {
     public class SMSHelper
     {
+        private static readonly HttpClient httpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(8)
+        };
 
         public static async Task<string> SendConfirmationKey(SMSProvider provider, User user)
         {
@@ -29,19 +30,22 @@ namespace Mdaresna.Repository.Helpers
                     );
 
                 Console.WriteLine($"SMS Url = {url}");
-                HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-
-                HttpWebResponse resp = request.GetResponse() as HttpWebResponse;
-                StreamReader sr = new StreamReader(resp.GetResponseStream());
-                response = sr.ReadToEnd();
-                sr.Close();
-
+                response = await httpClient.GetStringAsync(url);
                 return response;
             }
-            catch(WebException we)
+            catch (TaskCanceledException)
             {
-                response = string.Format("SOMETHING WENT AWRY! STatus = {0} and Message = {1}", we.Status, we.InnerException.Message);
+                return "SOMETHING WENT AWRY! Status = Timeout";
+            }
+            catch (WebException we)
+            {
+                var message = we.InnerException?.Message ?? we.Message;
+                response = string.Format("SOMETHING WENT AWRY! Status = {0} and Message = {1}", we.Status, message);
                 return response;
+            }
+            catch (Exception ex)
+            {
+                return string.Format("SOMETHING WENT AWRY! Message = {0}", ex.Message);
             }
         }
 
