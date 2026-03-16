@@ -32,6 +32,7 @@ using Mdaresna.Doamin.ModelsConfigrations.AdminManagement;
 using Mdaresna.Doamin.ModelsSeeding.UserManagement;
 using Mdaresna.Doamin.Models.Base;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Mdaresna.Doamin.Models.SettingsManagement;
 
 namespace Mdaresna.Infrastructure.Data
 {
@@ -160,6 +161,7 @@ namespace Mdaresna.Infrastructure.Data
         {
             modelBuilder.ApplyConfiguration(new EmailProviderConfig());
             modelBuilder.ApplyConfiguration(new SMSProviderConfig());
+            modelBuilder.ApplyConfiguration(new SMSLogConfig());
         }
 
         private void ApplyIdentitySeeding(ModelBuilder modelBuilder)
@@ -275,6 +277,7 @@ namespace Mdaresna.Infrastructure.Data
 
         public DbSet<SMSProvider> SMSProviders { get; set; }
         public DbSet<EmailProvider> EmailProviders { get; set; }
+        public DbSet<SMSLog> SMSLogs { get; set; }
 
 
         #endregion

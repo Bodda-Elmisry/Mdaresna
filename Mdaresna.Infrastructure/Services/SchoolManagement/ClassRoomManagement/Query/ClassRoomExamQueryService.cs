@@ -24,10 +24,10 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.
             this.classRoomExamQueryRepository = classRoomExamQueryRepository;
         }
 
-        public async Task<IEnumerable<ClassRoomExamResultDTO>> GetExamsList(IEnumerable<Guid> months, DateTime? fromDate, DateTime? toDate, 
-                                                                      string weekDay, Guid? classRoomId, Guid? supervisorId, Guid? courseId, decimal? rate)
+        public async Task<IEnumerable<ClassRoomExamResultDTO>> GetExamsList(IEnumerable<Guid> months, DateTime? fromDate, DateTime? toDate,
+                                                                      string weekDay, Guid? classRoomId, Guid? supervisorId, Guid? courseId, decimal? rate, int pageNumber)
         {
-            return await classRoomExamQueryRepository.GetExamsList(months, fromDate, toDate, weekDay, classRoomId, supervisorId, courseId, rate);
+            return await classRoomExamQueryRepository.GetExamsList(months, fromDate, toDate, weekDay, classRoomId, supervisorId, courseId, rate, pageNumber);
         }
 
         public async Task<CreateClassRoomExamInitialDataDTO> GetInitialData(Guid schoolId)

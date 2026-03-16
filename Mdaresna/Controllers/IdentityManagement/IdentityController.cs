@@ -3,6 +3,8 @@ using Mdaresna.Doamin.Models.UserManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.IdentityDTO;
 using Mdaresna.Repository.IBServices.IdentityManagement;
+using Mdaresna.Repository.IServices.UserManagement.Command;
+using Mdaresna.Repository.IServices.UserManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 using System.Runtime.InteropServices;
 
@@ -12,10 +14,14 @@ namespace Mdaresna.Controllers.IdentityManagement
     public class IdentityController : Controller
     {
         private readonly IIdentityService identityService;
+        private readonly IUserCommandService userCommandService;
+        private readonly IUserQueryService userQueryService;
 
-        public IdentityController(IIdentityService identityService)
+        public IdentityController(IIdentityService identityService, IUserCommandService userCommandService, IUserQueryService userQueryService)
         {
             this.identityService = identityService;
+            this.userCommandService = userCommandService;
+            this.userQueryService = userQueryService;
         }
 
         [HttpPost("Register")]
@@ -138,6 +144,26 @@ namespace Mdaresna.Controllers.IdentityManagement
             {
                 var result = await identityService.Login(login.PhoneNumber, login.Password, login.SchoolId);
                 return result == null ? BadRequest("Wrong phone number or password") : Ok(result);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("DeleteAccount")]
+        public async Task<IActionResult> DeleteAccount([FromBody] UserIdDTO idDTO)
+        {
+            try
+            {
+                var user = await userQueryService.GetByIdAsync(idDTO.UserId);
+                if (user == null)
+                    return BadRequest("User not exist to delete");
+
+                user.Deleted = true;
+
+                var deleted = userCommandService.Update(user);
+                return deleted ? Ok("Account deleted") : BadRequest("Error in delete account");
             }
             catch(Exception ex)
             {

@@ -11,7 +11,6 @@ using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Mdaresna.Repository.IServices.UserManagement.Query;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics.SymbolStore;
 
 namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 {
@@ -224,6 +223,28 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                     
 
                 return BadRequest("Error in updating student");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("ChangeStudentActivation")]
+        public async Task<IActionResult> ChangeStudentActivation([FromBody] StudentActivationDTO studentActivationDTO)
+        {
+            try
+            {
+                var student = await studentQueryService.GetByIdAsync(studentActivationDTO.StudentId);
+
+                if (student == null)
+                    return BadRequest("Student Not Found");
+
+                student.Active = studentActivationDTO.IsActive;
+
+                var updated = studentCommandService.Update(student);
+
+                return updated ? Ok(student) : BadRequest("Error in updating student activation");
             }
             catch (Exception ex)
             {

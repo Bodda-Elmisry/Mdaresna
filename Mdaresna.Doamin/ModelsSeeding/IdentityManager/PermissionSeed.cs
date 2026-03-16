@@ -1544,6 +1544,28 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description_AR = "Delete school post (school manager)",
                     SchoolPermission = true,
                     AppPermission = false
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("C1F5A23E-3B9C-4E57-8AD8-1BBF2F7A2C4D"),
+                    Key = "ViewSMSLogs",
+                    Name = "View SMS Logs",
+                    Name_AR = "عرض سجل الرسائل",
+                    Description = "View SMS logs",
+                    Description_AR = "عرض سجل الرسائل",
+                    SchoolPermission = false,
+                    AppPermission = true
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("0C7C9F0E-8F3C-4F44-9D83-0C2E5B1C61F1"),
+                    Key = "ExportSMSLogs",
+                    Name = "Export SMS Logs",
+                    Name_AR = "تصدير سجل الرسائل",
+                    Description = "Export SMS logs",
+                    Description_AR = "تصدير سجل الرسائل",
+                    SchoolPermission = false,
+                    AppPermission = true
                 }
 
                 );

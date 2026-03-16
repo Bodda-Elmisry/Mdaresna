@@ -6,6 +6,7 @@ using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
 using Mdaresna.Repository.IRepositories.SchoolManagement.ClassRoomManagement.Query;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,16 +18,20 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
     public class ClassRoomExamQueryRepository : BaseQueryRepository<ClassRoomExam>, IClassRoomExamQueryRepository
     {
         private readonly AppDbContext context;
+        private readonly AppSettingDTO appSettings;
 
-        public ClassRoomExamQueryRepository(AppDbContext context) : base(context)
+        public ClassRoomExamQueryRepository(AppDbContext context, IOptions<AppSettingDTO> appSettings) : base(context)
         {
             this.context = context;
+            this.appSettings = appSettings.Value;
         }
 
         public async Task<IEnumerable<ClassRoomExamResultDTO>> GetExamsList(IEnumerable<Guid> months, DateTime? fromDate, DateTime? toDate,
                                                                       string weekDay, Guid? classRoomId, Guid? supervisorId,
-                                                                      Guid? courseId, decimal? rate)
+                                                                      Guid? courseId, decimal? rate, int pageNumber)
         {
+            var resolvedPageNumber = pageNumber > 0 ? pageNumber : 1;
+            var pageSize = appSettings.PageSize != null ? appSettings.PageSize.Value : 30;
             var query = context.ClassRoomExams.Where(c => c.Deleted == false);
 
             if(months != null && months.Count() > 0)
@@ -54,9 +59,11 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
             if (rate != null)
                 query = query.Where(e => e.Rate == rate);
 
-            var queryString = query.ToQueryString();
-
-            var result = await query.Select(e =>
+            var result = await query
+                .OrderByDescending(e => e.ExamDate)
+                .Skip((resolvedPageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(e =>
             new ClassRoomExamResultDTO
             {
                 Id = e.Id,

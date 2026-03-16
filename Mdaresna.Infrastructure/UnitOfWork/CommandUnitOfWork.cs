@@ -68,6 +68,7 @@ namespace Mdaresna.Infrastructure.UnitOfWork
         private IUserDeviceCommandRepository? _userDeviceCommandRepository;
         private ISMSProviderCommandRepository? _smsProviderCommandRepository;
         private IEmailProviderCommandRepository? _emailProviderCommandRepository;
+        private ISMSLogCommandRepository? _smsLogCommandRepository;
 
         public CommandUnitOfWork(AppDbContext context, IServiceProvider serviceProvider)
         {
@@ -215,6 +216,9 @@ namespace Mdaresna.Infrastructure.UnitOfWork
 
         public IEmailProviderCommandRepository EmailProviderCommandRepository => _emailProviderCommandRepository ??=
             _serviceProvider.GetRequiredService<IEmailProviderCommandRepository>();
+
+        public ISMSLogCommandRepository SMSLogCommandRepository => _smsLogCommandRepository ??=
+            _serviceProvider.GetRequiredService<ISMSLogCommandRepository>();
 
         public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
         {

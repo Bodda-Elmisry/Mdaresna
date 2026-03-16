@@ -279,12 +279,14 @@ namespace Mdaresna.Infrastructure.Configrations
             #region Command
             services.AddScoped(typeof(ISMSProviderCommandRepository), typeof(SMSProviderCommandRepository));
             services.AddScoped(typeof(IEmailProviderCommandRepository), typeof(EmailProviderCommandRepository));
+            services.AddScoped(typeof(ISMSLogCommandRepository), typeof(SMSLogCommandRepository));
 
             #endregion
 
             #region Query
             services.AddScoped(typeof(ISMSProviderQueryRepository), typeof(SMSProviderQueryRepository));
             services.AddScoped(typeof(IEmailProviderQueryRepository), typeof(EmailProviderQueryRepository));
+            services.AddScoped(typeof(ISMSLogQueryRepository), typeof(SMSLogQueryRepository));
 
             #endregion
         }
@@ -537,12 +539,14 @@ namespace Mdaresna.Infrastructure.Configrations
             #region Command
             services.AddScoped(typeof(ISMSProviderCommandService), typeof(SMSProviderCommandService));
             services.AddScoped(typeof(IEmailProviderCommandService), typeof(EmailProviderCommandService));
+            services.AddScoped(typeof(ISMSLogCommandService), typeof(SMSLogCommandService));
 
             #endregion
 
             #region Query
             services.AddScoped(typeof(ISMSProviderQueryService), typeof(SMSProviderQueryService));
             services.AddScoped(typeof(IEmailProviderQueryService), typeof(EmailProviderQueryService));
+            services.AddScoped(typeof(ISMSLogQueryService), typeof(SMSLogQueryService));
 
             #endregion
         }

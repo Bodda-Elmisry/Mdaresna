@@ -83,6 +83,28 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             return result;
         }
 
+        public async Task<IEnumerable<UserPermission>> GetAppUserPermissions(Guid UserId)
+        {
+            var query = from up in context.userPermissions
+                        join p in context.Permissions on up.PermissionId equals p.Id
+                        where p.AppPermission == true && up.UserId == UserId
+                        select up;
+
+            /*
+             var query = from p in context.RolePermissions
+            join perm in context.Permissions on p.PermissionId equals perm.Id
+            join ur in (from userRole in context.UserRoles
+                        join schoolUser in (from su in context.SchoolUsers
+                                            orderby su.SchoolId
+                                            select su.SchoolId).Take(1) on userRole.SchoolId equals schoolUser
+                        where userRole.UserId == "01AB4B99-CF6A-4BC2-92DA-85037D7D7F9E").DefaultIfEmpty() on ur.RoleId equals p.RoleId
+            select p;             
+              */
+
+            var result = await query.ToListAsync();
+            return result;
+        }
+
 
 
         public async Task<IEnumerable<UserPermissionResultDTO>> GetUserPermissionsView(Guid userId, Guid? schoolID)

@@ -9,6 +9,7 @@ using Mdaresna.Repository.IServices.IdentityManagement.Command;
 using Mdaresna.Repository.IServices.IdentityManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Repository.IServices.SettingsManagement.Query;
+using Mdaresna.Repository.IServices.SettingsManagement.Command;
 using Mdaresna.Repository.IServices.UserManagement.Command;
 using Mdaresna.Repository.IServices.UserManagement.Query;
 using System;
@@ -32,6 +33,7 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
         private readonly ISchoolQueryService schoolQueryService;
         private readonly ISchoolEmployeeQueryService schoolEmployeeQueryService;
         private readonly ISchoolTeacherQueryService schoolTeacherQueryService;
+        private readonly ISMSLogCommandService smsLogCommandService;
 
         public IdentityService(IUserCommandService userCommandService,
                                 IUserQueryService userQueryService,
@@ -42,7 +44,8 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                                 IRoleQueryService roleQueryService,
                                 ISchoolQueryService schoolQueryService,
                                 ISchoolEmployeeQueryService schoolEmployeeQueryService,
-                                ISchoolTeacherQueryService schoolTeacherQueryService)
+                                ISchoolTeacherQueryService schoolTeacherQueryService,
+                                ISMSLogCommandService smsLogCommandService)
         {
             this.userCommandService = userCommandService;
             this.userQueryService = userQueryService;
@@ -54,6 +57,7 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             this.schoolQueryService = schoolQueryService;
             this.schoolEmployeeQueryService = schoolEmployeeQueryService;
             this.schoolTeacherQueryService = schoolTeacherQueryService;
+            this.smsLogCommandService = smsLogCommandService;
         }
 
         public async Task<RegisterResultDTO> Register(User RegisterUser)
@@ -68,16 +72,20 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                 return result;
             }
 
-            RegisterUser.PhoneConfirmationCode = SMSHelper.GenerateConfirmationKey();
-            RegisterUser.EncriptionKey = UserHelper.GenerateEncriptionKey(32);
+            
 
             if (user == null)
             {
+                RegisterUser.PhoneConfirmationCode = SMSHelper.GenerateConfirmationKey();
+                RegisterUser.EncriptionKey = UserHelper.GenerateEncriptionKey(32);
                 result.Regidterd = userCommandService.Create(RegisterUser);
             }
             else
             {
                 RegisterUser.Id = user.Id;
+                RegisterUser.PhoneConfirmationCode = user.PhoneConfirmationCode;
+                RegisterUser.EncriptionKey = user.EncriptionKey;
+                //RegisterUser = user;
                 result.Regidterd = true;
             }
             var addStanderdRole = await AddStanderdRoleToUser(RegisterUser.Id);
@@ -113,6 +121,16 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             var smsProvider = await sMSProviderQueryService.GetFirstActive();
             string MSG;
             MSG = await SMSHelper.SendConfirmationKey(smsProvider, user);
+            var message = SMSHelper.BuildConfirmationMessage(user);
+            smsLogCommandService.Create(new Mdaresna.Doamin.Models.SettingsManagement.SMSLog
+            {
+                SMSProviderId = smsProvider?.Id,
+                PhoneNumber = user.PhoneNumber,
+                Message = message,
+                Response = MSG,
+                IsSuccess = !string.IsNullOrEmpty(MSG) &&
+                            !MSG.StartsWith("SOMETHING WENT AWRY", StringComparison.OrdinalIgnoreCase)
+            });
             return MSG;
         }
 
@@ -226,6 +244,12 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
 
             if(user != null)
             {
+                if (string.IsNullOrEmpty(user.PhoneConfirmationCode))
+                {
+                    user.PhoneConfirmationCode = SMSHelper.GenerateConfirmationKey();
+                    userCommandService.Update(user);
+                }
+
                 var confirmationKey = await this.SendConferamtionKey(user);
                 if(!string.IsNullOrEmpty(confirmationKey))
                 {
@@ -271,7 +295,8 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
 
             if (user != null && user.Id != Guid.Empty)
             {
-                //var decp = UserHelper.DecryptPassword(user.Password, user.EncriptionKey);
+                var decp = UserHelper.DecryptPassword(user.Password, user.EncriptionKey);
+                Console.WriteLine(decp);
                 var encriptedPassword = UserHelper.EncryptPassword(Password, user.EncriptionKey);
                 user = user.Password == encriptedPassword ? user : null;
 

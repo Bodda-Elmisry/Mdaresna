@@ -157,7 +157,7 @@ namespace Mdaresna.Controllers.IdentityManagement
             {
                 var userRoles = await userRoleQueryService.GetRoleUsersAsync(dto.RoleId, null);
                 if (userRoles != null)
-                    return BadRequest("Remove Users From Role First");
+                    return StatusCode(300,"Remove Users From Role First");
                 var role = new Role
                 {
                     Id = dto.RoleId,

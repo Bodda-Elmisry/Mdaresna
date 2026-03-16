@@ -28,6 +28,7 @@ namespace Mdaresna.Repository.IUnitOfWork
 
         ISMSProviderQueryRepository SMSProviderQueryRepository { get; }
         IEmailProviderQueryRepository EmailProviderQueryRepository { get; }
+        ISMSLogQueryRepository SMSLogQueryRepository { get; }
 
         IClassRoomStudentActivityQueryRepository ClassRoomStudentActivityQueryRepository { get; }
         IClassRoomStudentAssignmentQueryRepository ClassRoomStudentAssignmentQueryRepository { get; }

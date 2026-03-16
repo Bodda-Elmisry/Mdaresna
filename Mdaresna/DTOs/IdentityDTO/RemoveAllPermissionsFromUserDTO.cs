@@ -1,0 +1,8 @@
+﻿namespace Mdaresna.DTOs.IdentityDTO
+{
+    public class RemoveAllPermissionsFromUserDTO
+    {
+        public Guid UserId { get; set; }
+        public Guid? SchoolId { get; set; }
+    }
+}

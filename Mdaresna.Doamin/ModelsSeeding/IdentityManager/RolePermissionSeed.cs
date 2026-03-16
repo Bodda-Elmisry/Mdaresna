@@ -120,6 +120,18 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
                 PermissionId = Guid.Parse("8A01A316-9151-4BB7-8B0E-A87E5EE7E367")
             });
+
+            builder.HasData(new RolePermission
+            {
+                RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
+                PermissionId = Guid.Parse("C1F5A23E-3B9C-4E57-8AD8-1BBF2F7A2C4D")
+            });
+
+            builder.HasData(new RolePermission
+            {
+                RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
+                PermissionId = Guid.Parse("0C7C9F0E-8F3C-4F44-9D83-0C2E5B1C61F1")
+            });
         }
 
         private void InitStanderdPermissions(EntityTypeBuilder<RolePermission> builder)

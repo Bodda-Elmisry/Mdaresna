@@ -13,7 +13,7 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.ClassRoomManagement
     {
         Task<IEnumerable<ClassRoomExamResultDTO>> GetExamsList(IEnumerable<Guid> months, DateTime? fromDate, DateTime? toDate,
                                                                       string weekDay, Guid? classRoomId, Guid? supervisorId,
-                                                                      Guid? courseId, decimal? rate);
+                                                                      Guid? courseId, decimal? rate, int pageNumber);
 
         Task<CreateClassRoomExamInitialDataDTO> GetInitialData(Guid schoolId);
         Task<ClassRoomExamResultDTO?> GetExamByIdAsync(Guid examid);

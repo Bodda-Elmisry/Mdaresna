@@ -10,5 +10,6 @@
         public Guid? SupervisorId { get; set; }
         public Guid? CourseId { get; set; }
         public decimal? Rate { get; set; }
+        public int PageNumber { get; set; }
     }
 }

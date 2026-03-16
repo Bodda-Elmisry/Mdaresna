@@ -26,7 +26,7 @@ namespace Mdaresna.Repository.Helpers
                     provider.ProviderPassword,
                     provider.SenderName,
                     user.PhoneNumber,
-                    string.Format("Welcome to Mdaresna\n Your Key: {0}", user.PhoneConfirmationCode)
+                    BuildConfirmationMessage(user)
                     );
 
                 Console.WriteLine($"SMS Url = {url}");
@@ -63,6 +63,11 @@ namespace Mdaresna.Repository.Helpers
             }
 
             return key;
+        }
+
+        public static string BuildConfirmationMessage(User user)
+        {
+            return string.Format("Welcome to Mdaresna\n Your Key: {0}", user.PhoneConfirmationCode);
         }
     }
 }

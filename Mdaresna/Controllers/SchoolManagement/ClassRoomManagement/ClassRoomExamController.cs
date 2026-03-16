@@ -74,7 +74,8 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                                                                          classRoomExamsDTO.ClassRoomId,
                                                                          classRoomExamsDTO.SupervisorId,
                                                                          classRoomExamsDTO.CourseId,
-                                                                         classRoomExamsDTO.Rate);
+                                                                         classRoomExamsDTO.Rate,
+                                                                         classRoomExamsDTO.PageNumber);
 
                 return Ok(exams);
             }
