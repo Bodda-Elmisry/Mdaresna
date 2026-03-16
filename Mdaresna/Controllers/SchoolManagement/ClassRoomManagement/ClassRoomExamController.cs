@@ -1,6 +1,7 @@
 ﻿using Mdaresna.Doamin.DTOs.ClassRoomManagement;
 using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
+using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.ClassRoomManagementDTO;
 using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Command;
@@ -12,7 +13,9 @@ using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
+using Mdaresna.Repository.IUnitOfWork;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
@@ -26,13 +29,15 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         private readonly IClassRoomStudentExamQueryService classRoomStudentExamQueryService;
         private readonly INotificationFactory notificationFactory;
         private readonly IClassroomTransactionsFactory classroomTransactionsFactory;
+        private readonly ICommandUnitOfWork commandUnitOfWork;
 
         public ClassRoomExamController(IClassRoomExamQueryService classRoomExamQueryService,
                                        IClassRoomExamCommandService classRoomExamCommandService,
                                        IClassRoomStudentExamCommandService classRoomStudentExamCommandService,
                                        IClassRoomStudentExamQueryService classRoomStudentExamQueryService,
                                            INotificationFactory notificationFactory,
-                                           IClassroomTransactionsFactory classroomTransactionsFactory)
+                                           IClassroomTransactionsFactory classroomTransactionsFactory,
+                                           ICommandUnitOfWork commandUnitOfWork)
         {
             this.classRoomExamQueryService = classRoomExamQueryService;
             this.classRoomExamCommandService = classRoomExamCommandService;
@@ -40,6 +45,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
             this.classRoomStudentExamQueryService = classRoomStudentExamQueryService;
             this.notificationFactory = notificationFactory;
             this.classroomTransactionsFactory = classroomTransactionsFactory;
+            this.commandUnitOfWork = commandUnitOfWork;
         }
 
         [HttpPost("GetInitailData")]
@@ -144,10 +150,14 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         {
             try
             {
+                await commandUnitOfWork.BeginTransactionAsync();
                 var exam = await classRoomExamQueryService.GetByIdAsync(classRoomExamDTO.Id);
 
                 if (exam == null)
+                {
+                    await commandUnitOfWork.RollbackTransactionAsync();
                     return BadRequest("Can't fiend exam to update");
+                }
 
                 exam.ClassRoomId = classRoomExamDTO.ClassRoomId;
                 exam.CourseId = classRoomExamDTO.CourseId;
@@ -160,14 +170,44 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
 
                 var updated = classRoomExamCommandService.Update(exam);
 
-                if(updated)
-                    return Ok(await classRoomExamQueryService.GetExamByIdAsync(exam.Id));
+                if (!updated)
+                {
+                    await commandUnitOfWork.RollbackTransactionAsync();
+                    return BadRequest("Error in updating exam");
+                }
 
-                return BadRequest("Error in updating exam");
+                var studentIds = classRoomExamDTO.StudentsIds?.Distinct().ToList() ?? new List<Guid>();
+                var currentExams = await classRoomStudentExamQueryService.GetClassRoomStudentExamsListAsync(exam.Id);
+                var currentStudentIds = currentExams.Select(e => e.StudentId).ToHashSet();
+                var newStudentIds = studentIds.ToHashSet();
+
+                foreach (var studentId in studentIds.Where(id => !currentStudentIds.Contains(id)))
+                {
+                    var newExam = new ClassRoomStudentExam
+                    {
+                        StudentId = studentId,
+                        CreateDate = DateTime.Now,
+                        ExamId = exam.Id,
+                        IsAttend = false,
+                        TotalResult = null
+                    };
+
+                    classRoomStudentExamCommandService.Create(newExam);
+                }
+
+                foreach (var examStudent in currentExams.Where(e => !newStudentIds.Contains(e.StudentId)))
+                {
+                    examStudent.Deleted = true;
+                    classRoomStudentExamCommandService.Update(examStudent);
+                }
+
+                await commandUnitOfWork.CommitTransactionAsync();
+                return Ok(await classRoomExamQueryService.GetExamByIdAsync(exam.Id));
 
             }
             catch (Exception ex)
             {
+                await commandUnitOfWork.RollbackTransactionAsync();
                 return BadRequest(ex.Message);
             }
         }

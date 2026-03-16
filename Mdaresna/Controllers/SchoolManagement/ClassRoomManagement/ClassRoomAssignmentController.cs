@@ -1,5 +1,6 @@
 ﻿using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
+using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.ClassRoomManagementDTO;
 using Mdaresna.Infrastructure.Factories;
@@ -12,7 +13,9 @@ using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
+using Mdaresna.Repository.IUnitOfWork;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.Diagnostics;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -27,13 +30,15 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         private readonly IClassRoomStudentAssignmentQueryService classRoomStudentAssignmentQueryService;
         private readonly INotificationFactory notificationFactory;
         private readonly IClassroomTransactionsFactory classroomTransactionsFactory;
+        private readonly ICommandUnitOfWork commandUnitOfWork;
 
         public ClassRoomAssignmentController(IClassRoomAssignmentCommandService classRoomAssignmentCommandService,
                                              IClassRoomAssignmentQueryService classRoomAssignmentQueryService,
                                              IClassRoomStudentAssignmentCommandService classRoomStudentAssignmentCommandService,
                                              IClassRoomStudentAssignmentQueryService classRoomStudentAssignmentQueryService,
                                            INotificationFactory notificationFactory,
-                                           IClassroomTransactionsFactory classroomTransactionsFactory)
+                                           IClassroomTransactionsFactory classroomTransactionsFactory,
+                                           ICommandUnitOfWork commandUnitOfWork)
         {
             this.classRoomAssignmentCommandService = classRoomAssignmentCommandService;
             this.classRoomAssignmentQueryService = classRoomAssignmentQueryService;
@@ -41,6 +46,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
             this.classRoomStudentAssignmentQueryService = classRoomStudentAssignmentQueryService;
             this.notificationFactory = notificationFactory;
             this.classroomTransactionsFactory = classroomTransactionsFactory;
+            this.commandUnitOfWork = commandUnitOfWork;
         }
 
         [HttpPost("GetClassroomAssignmentsList")]
@@ -134,10 +140,14 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         {
             try
             {
+                await commandUnitOfWork.BeginTransactionAsync();
                 var assignemt = await classRoomAssignmentQueryService.GetByIdAsync(dTO.Id);
 
                 if (assignemt == null)
+                {
+                    await commandUnitOfWork.RollbackTransactionAsync();
                     return BadRequest("Can't fiend assignment to update");
+                }
 
                 assignemt.AssignmentDate = dTO.AssignmentDate;
                 assignemt.ClassRoomId = dTO.ClassRoomId;
@@ -149,14 +159,45 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
 
                 var updated = classRoomAssignmentCommandService.Update(assignemt);
 
-                if (updated)
-                    return Ok(await classRoomAssignmentQueryService.GetClassRoomAssignmentById(dTO.Id));
+                if (!updated)
+                {
+                    await commandUnitOfWork.RollbackTransactionAsync();
+                    return BadRequest("Error in updating assignment");
+                }
 
-                return BadRequest("Error in updating assignment");
+                var studentIds = dTO.StudentIds?.Distinct().ToList() ?? new List<Guid>();
+                var currentAssignments = await classRoomStudentAssignmentQueryService.GetStudentAssignmentsListAsync(dTO.Id);
+                var currentStudentIds = currentAssignments.Select(a => a.StudentId).ToHashSet();
+                var newStudentIds = studentIds.ToHashSet();
+
+                foreach (var studentId in studentIds.Where(id => !currentStudentIds.Contains(id)))
+                {
+                    var newAssignment = new ClassRoomStudentAssignment
+                    {
+                        StudentId = studentId,
+                        AssignmentId = dTO.Id,
+                        CreateDate = DateTime.Now,
+                        Result = 0,
+                        IsDelivered = null,
+                        DeliveredDate = null
+                    };
+
+                    classRoomStudentAssignmentCommandService.Create(newAssignment);
+                }
+
+                foreach (var assignmentStudent in currentAssignments.Where(a => !newStudentIds.Contains(a.StudentId)))
+                {
+                    assignmentStudent.Deleted = true;
+                    classRoomStudentAssignmentCommandService.Update(assignmentStudent);
+                }
+
+                await commandUnitOfWork.CommitTransactionAsync();
+                return Ok(await classRoomAssignmentQueryService.GetClassRoomAssignmentById(dTO.Id));
 
             }
             catch (Exception ex)
             {
+                await commandUnitOfWork.RollbackTransactionAsync();
                 return BadRequest(ex.Message);
             }
         }

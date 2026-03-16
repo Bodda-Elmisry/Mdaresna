@@ -37,6 +37,7 @@ using Mdaresna.Infrastructure.Services.SettingsManagement.Command;
 using Mdaresna.Infrastructure.Services.SettingsManagement.Query;
 using Mdaresna.Infrastructure.Services.UserManagement.Command;
 using Mdaresna.Infrastructure.Services.UserManagement.Query;
+using Mdaresna.Infrastructure.UnitOfWork;
 using Mdaresna.Repository.IBServices.Common;
 using Mdaresna.Repository.IBServices.IdentityManagement;
 using Mdaresna.Repository.IFactories;
@@ -76,6 +77,7 @@ using Mdaresna.Repository.IServices.SettingsManagement.Command;
 using Mdaresna.Repository.IServices.SettingsManagement.Query;
 using Mdaresna.Repository.IServices.UserManagement.Command;
 using Mdaresna.Repository.IServices.UserManagement.Query;
+using Mdaresna.Repository.IUnitOfWork;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -90,6 +92,8 @@ namespace Mdaresna.Infrastructure.Configrations
         #region Repositories
         public static void ConfigerRepositories(IServiceCollection services)
         {
+            services.AddScoped<IQueryUnitOfWork, QueryUnitOfWork>();
+            services.AddScoped<ICommandUnitOfWork, CommandUnitOfWork>();
             ConfigerBaseRepos(services);
             ConfigerAdminRepos(services);
             ConfigerCoinsManagementRepos(services);
