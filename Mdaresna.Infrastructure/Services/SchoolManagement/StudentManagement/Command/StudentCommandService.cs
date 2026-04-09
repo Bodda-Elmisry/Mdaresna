@@ -80,5 +80,17 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Co
                 throw ex;
             }
         }
+
+        public async Task<int> UpdateStudentsPayedToFalseAsync(IEnumerable<Guid>? schoolIds, bool allSchools)
+        {
+            try
+            {
+                return await studentCommandRepository.UpdateStudentsPayedToFalseAsync(schoolIds, allSchools);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }

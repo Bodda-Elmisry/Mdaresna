@@ -54,6 +54,29 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
             }
         }
 
+        public async Task<int> UpdateStudentsPayedToFalseAsync(IEnumerable<Guid>? schoolIds, bool allSchools)
+        {
+            try
+            {
+                var now = DateTime.Now;
+                var query = context.Students.Where(s => !s.Deleted);
+
+                if (!allSchools)
+                {
+                    var schoolIdsList = schoolIds?.Distinct().ToList() ?? new List<Guid>();
+                    query = query.Where(s => schoolIdsList.Contains(s.SchoolId));
+                }
+
+                return await query.ExecuteUpdateAsync(setters => setters
+                    .SetProperty(student => student.IsPayed, false)
+                    .SetProperty(student => student.LastModifyDate, now));
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
 
 
 

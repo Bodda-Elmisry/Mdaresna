@@ -294,3 +294,16 @@
 /Mdaresna/obj/Release/net8.0/PubTmp/Out/runtimes/win-x86/native/SqlServerSpatial160.dll
 /Mdaresna/obj/Release/net8.0/PubTmp/Out/zh-Hans/Microsoft.SqlServer.Types.resources.dll
 /Mdaresna/obj/Release/net8.0/PubTmp/Out/zh-Hant/Microsoft.SqlServer.Types.resources.dll
+
+# General generated files
+**/bin/
+**/obj/
+.vs/
+
+# Runtime-generated app content
+Mdaresna/Logs/
+Mdaresna/Images/
+
+# Local secrets
+firebase-service-account.json
+Mdaresna/firebase-service-account.json

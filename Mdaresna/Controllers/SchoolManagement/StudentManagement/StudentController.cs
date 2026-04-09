@@ -3,6 +3,7 @@ using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.StudentManagementDTO;
+using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Query;
@@ -10,6 +11,7 @@ using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Mdaresna.Repository.IServices.UserManagement.Query;
+using Mdaresna.Repository.IUnitOfWork;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
@@ -25,6 +27,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         private readonly IUserDeviceQueryService userDeviceQueryService;
         private readonly ISchoolQueryService schoolQueryService;
         private readonly INotificationFactory notificationFactory;
+        private readonly ICommandUnitOfWork commandUnitOfWork;
 
         public StudentController(IStudentCommandService studentCommandService,
                                  IStudentQueryService studentQueryService,
@@ -33,7 +36,8 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                                  ISchoolQueryRepository schoolQueryRepository,
                                  IUserDeviceQueryService userDeviceQueryService,
                                  ISchoolQueryService schoolQueryService,
-                                 INotificationFactory notificationFactory)
+                                 INotificationFactory notificationFactory,
+                                 ICommandUnitOfWork commandUnitOfWork)
         {
             this.studentCommandService = studentCommandService;
             this.studentQueryService = studentQueryService;
@@ -43,6 +47,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             this.userDeviceQueryService = userDeviceQueryService;
             this.schoolQueryService = schoolQueryService;
             this.notificationFactory = notificationFactory;
+            this.commandUnitOfWork = commandUnitOfWork;
         }
 
         [HttpPost("GetStudent")]
@@ -285,6 +290,30 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 return BadRequest(ex.Message);
             }
 
+        }
+
+        [HttpPost("UpdateStudentsPayedToFalse")]
+        public async Task<IActionResult> UpdateStudentsPayedToFalse([FromBody] UpdateStudentsPayedStatusDTO dTO)
+        {
+            try
+            {
+                if (dTO == null)
+                    return BadRequest("Request data is required");
+
+                if (!dTO.AllSchools && (dTO.SchoolIds == null || !dTO.SchoolIds.Any()))
+                    return BadRequest("Schools ids are required when all schools is false");
+
+                await commandUnitOfWork.BeginTransactionAsync();
+                var updatedStudentsCount = await studentCommandService.UpdateStudentsPayedToFalseAsync(dTO.SchoolIds, dTO.AllSchools);
+                await commandUnitOfWork.CommitTransactionAsync();
+
+                return Ok(updatedStudentsCount);
+            }
+            catch (Exception ex)
+            {
+                await commandUnitOfWork.RollbackTransactionAsync();
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost("SoftDeleteStudent")]

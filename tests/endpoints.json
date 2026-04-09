@@ -1,0 +1,10 @@
+{
+  "baseUrl": "http://localhost:5000",
+  "endpoints": [
+    { "method": "GET", "path": "/swagger/index.html" },
+    { "method": "GET", "path": "/WeatherForecast" },
+    { "method": "POST", "path": "/api/Identity/Register", "body": {} },
+    { "method": "POST", "path": "/api/Identity/Login", "body": { "PhoneNumber": "", "Password": "" } },
+    { "method": "POST", "path": "/api/Language/GetAll" }
+  ]
+}
