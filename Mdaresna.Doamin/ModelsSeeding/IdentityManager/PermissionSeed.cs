@@ -124,11 +124,11 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 new Permission
                 {
                     Id = Guid.Parse("DDA9E1F1-00A0-4A68-84E7-8E24B9A6C7F1"),
-                    Key = "StopSchoolsActivation",
-                    Name = "Stop Schools Activation",
-                    Name_AR = "إيقاف تفعيل المدارس",
-                    Description = "Stop Schools Activation",
-                    Description_AR = "إيقاف تفعيل المدارس",
+                    Key = "AllowCompleteSchoolYear",
+                    Name = "Allow Complete School Year",
+                    Name_AR = "السماح بإكمال السنة الدراسية",
+                    Description = "Allow Complete School Year",
+                    Description_AR = "السماح بإكمال السنة الدراسية",
                     SchoolPermission = false,
                     AppPermission = true
                 },

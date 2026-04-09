@@ -15,7 +15,7 @@ namespace Mdaresna.Infrastructure.Migrations
 IF NOT EXISTS (SELECT 1 FROM Permissions WHERE Id = 'DDA9E1F1-00A0-4A68-84E7-8E24B9A6C7F1')
 BEGIN
     INSERT INTO Permissions (Id, Name, Name_AR, [Key], Description, Description_AR, SchoolPermission, AppPermission, AllowedToMapToClassroom, CreateDate, LastModifyDate, Deleted)
-    VALUES ('DDA9E1F1-00A0-4A68-84E7-8E24B9A6C7F1', 'Stop Schools Activation', N'إيقاف تفعيل المدارس', 'StopSchoolsActivation', 'Stop Schools Activation', N'إيقاف تفعيل المدارس', 0, 1, 0, NULL, NULL, 0)
+    VALUES ('DDA9E1F1-00A0-4A68-84E7-8E24B9A6C7F1', 'Allow Complete School Year', N'السماح بإكمال السنة الدراسية', 'AllowCompleteSchoolYear', 'Allow Complete School Year', N'السماح بإكمال السنة الدراسية', 0, 1, 0, NULL, NULL, 0)
 END
 IF NOT EXISTS (SELECT 1 FROM RolePermissions WHERE PermissionId = 'DDA9E1F1-00A0-4A68-84E7-8E24B9A6C7F1' AND RoleId = '228AE7F5-C704-4660-AEB0-0E1F43112AE1')
 BEGIN

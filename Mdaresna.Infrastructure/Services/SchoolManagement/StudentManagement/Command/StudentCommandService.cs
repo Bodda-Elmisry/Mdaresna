@@ -81,11 +81,11 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Co
             }
         }
 
-        public async Task<int> UpdateStudentsPayedToFalseAsync(IEnumerable<Guid>? schoolIds, bool allSchools)
+        public async Task<int> CompleteSchoolsYearAsync(IEnumerable<Guid>? schoolIds, bool allSchools)
         {
             try
             {
-                return await studentCommandRepository.UpdateStudentsPayedToFalseAsync(schoolIds, allSchools);
+                return await studentCommandRepository.CompleteSchoolsYearAsync(schoolIds, allSchools);
             }
             catch (Exception ex)
             {

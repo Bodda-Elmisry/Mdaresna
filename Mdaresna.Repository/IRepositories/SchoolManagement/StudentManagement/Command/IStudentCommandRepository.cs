@@ -12,6 +12,6 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.C
     public interface IStudentCommandRepository : IBaseCommandRepository<Student>
     {
         Task<StudentPayResultDTO> Pay(Student student);
-        Task<int> UpdateStudentsPayedToFalseAsync(IEnumerable<Guid>? schoolIds, bool allSchools);
+        Task<int> CompleteSchoolsYearAsync(IEnumerable<Guid>? schoolIds, bool allSchools);
     }
 }

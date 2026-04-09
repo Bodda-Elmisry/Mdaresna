@@ -292,8 +292,8 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 
         }
 
-        [HttpPost("UpdateStudentsPayedToFalse")]
-        public async Task<IActionResult> UpdateStudentsPayedToFalse([FromBody] UpdateStudentsPayedStatusDTO dTO)
+        [HttpPost("CompleteSchoolsYear")]
+        public async Task<IActionResult> CompleteSchoolsYear([FromBody] CompleteSchoolsYearDTO dTO)
         {
             try
             {
@@ -304,7 +304,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                     return BadRequest("Schools ids are required when all schools is false");
 
                 await commandUnitOfWork.BeginTransactionAsync();
-                var updatedStudentsCount = await studentCommandService.UpdateStudentsPayedToFalseAsync(dTO.SchoolIds, dTO.AllSchools);
+                var updatedStudentsCount = await studentCommandService.CompleteSchoolsYearAsync(dTO.SchoolIds, dTO.AllSchools);
                 await commandUnitOfWork.CommitTransactionAsync();
 
                 return Ok(updatedStudentsCount);
