@@ -58,6 +58,12 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
             builder.HasData(new RolePermission
             {
                 RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
+                PermissionId = Guid.Parse("DDA9E1F1-00A0-4A68-84E7-8E24B9A6C7F1")
+            });
+
+            builder.HasData(new RolePermission
+            {
+                RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
                 PermissionId = Guid.Parse("71B6F158-82F2-4A48-9950-56DBB00EEC4E")
             });
 
