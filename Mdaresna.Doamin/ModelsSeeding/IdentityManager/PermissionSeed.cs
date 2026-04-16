@@ -147,10 +147,10 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 {
                     Id = Guid.Parse("8A48610D-C9FF-4FCE-95EB-3A4D8D633A9C"),
                     Key = "AssignCoinsToSchool",
-                    Name = "Assign Coins To School",
-                    Name_AR = "تعيين العملات للمدرسة",
-                    Description = "Assign Coins To School",
-                    Description_AR = "تعيين العملات للمدرسة",
+                    Name = "Assign system catogries To School",
+                    Name_AR = "تعيين فئة النظام للمدرسة",
+                    Description = "Assign system catogries To School",
+                    Description_AR = "تعيين فئة النظام للمدرسة",
                     SchoolPermission = false,
                     AppPermission = true
                 },
@@ -169,10 +169,10 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 {
                     Id = Guid.Parse("76BEFB0E-5EF7-4FE3-8E06-02D50C17C38B"),
                     Key = "ChangeSchoolCoinType",
-                    Name = "Change School Coin Type",
-                    Name_AR = "تغيير نوع عملة المدرسة",
-                    Description = "Change School Coin Type",
-                    Description_AR = "تغيير نوع عملة المدرسة",
+                    Name = "Change School system category Type",
+                    Name_AR = "تغيير نوع فئة النظام المدرسة",
+                    Description = "Change School system category Type",
+                    Description_AR = "تغيير نوع فئة النظام المدرسة",
                     SchoolPermission = false,
                     AppPermission = true
                 },
@@ -1105,10 +1105,10 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 {
                     Id = Guid.Parse("D9BB6050-186D-4052-A3DC-6D33A84424AC"),
                     Key = "CreateCoinType",
-                    Name = "Create Coin Type",
-                    Name_AR = "إنشاء نوع عملة",
-                    Description = "Create Coin Type",
-                    Description_AR = "إنشاء نوع عملة",
+                    Name = "Create system category Type",
+                    Name_AR = "إنشاء نوع فئة نظام",
+                    Description = "Create system category Type",
+                    Description_AR = "إنشاء نوع فئة نظام",
                     SchoolPermission = false,
                     AppPermission = true
                 },
@@ -1193,10 +1193,10 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 {
                     Id = Guid.Parse("D330DF2E-9B66-46A0-A64D-88B1D4F9519D"),
                     Key = "EditCoinType",
-                    Name = "Edit Coin Type",
-                    Name_AR = "تعديل نوع العملة",
-                    Description = "Edit Coin Type",
-                    Description_AR = "تعديل نوع العملة",
+                    Name = "Edit system category Type",
+                    Name_AR = "تعديل نوع فئة النظام",
+                    Description = "Edit system category Type",
+                    Description_AR = "تعديل نوع فئة النظام",
                     SchoolPermission = false,
                     AppPermission = true
                 },
@@ -1505,10 +1505,10 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 {
                     Id = Guid.Parse("B96D60AD-E4DB-4CE9-8EA8-C22D2CE8C544"),
                     Key = "DeleteCoinType",
-                    Name = "Delete Coin Type",
-                    Name_AR = "حذف نوع العمله",
-                    Description = "Delete Coin Type",
-                    Description_AR = "حذف نوع العمله",
+                    Name = "Delete system category Type",
+                    Name_AR = "حذف نوع فئة النظام",
+                    Description = "Delete system category Type",
+                    Description_AR = "حذف نوع فئة النظام",
                     SchoolPermission = false,
                     AppPermission = true
                 },
@@ -1516,10 +1516,10 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 {
                     Id = Guid.Parse("FBADCD2D-C9C8-4164-BAD1-667A586B54CC"),
                     Key = "ViewCoinTypesList",
-                    Name = "View Coin Types List",
-                    Name_AR = "عرض انواع العملات",
-                    Description = "View Coin Types List",
-                    Description_AR = "عرض انواع العملات",
+                    Name = "View system category Types List",
+                    Name_AR = "عرض انواع فئة النظام",
+                    Description = "View system category Types List",
+                    Description_AR = "عرض انواع فئة النظام",
                     SchoolPermission = false,
                     AppPermission = true
                 },

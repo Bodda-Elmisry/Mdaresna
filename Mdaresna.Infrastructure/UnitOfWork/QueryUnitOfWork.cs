@@ -65,6 +65,7 @@ namespace Mdaresna.Infrastructure.UnitOfWork
         private ISchoolUserQueryRepository? _schoolUserQueryRepository;
         private IUserQueryRepository? _userQueryRepository;
         private IUserDeviceQueryRepository? _userDeviceQueryRepository;
+        private IUserReportQueryRepository? _userReportQueryRepository;
 
         public QueryUnitOfWork(IServiceProvider serviceProvider)
         {
@@ -217,5 +218,8 @@ namespace Mdaresna.Infrastructure.UnitOfWork
 
         public IUserDeviceQueryRepository UserDeviceQueryRepository => _userDeviceQueryRepository ??=
             _serviceProvider.GetRequiredService<IUserDeviceQueryRepository>();
+
+        public IUserReportQueryRepository UserReportQueryRepository => _userReportQueryRepository ??=
+            _serviceProvider.GetRequiredService<IUserReportQueryRepository>();
     }
 }

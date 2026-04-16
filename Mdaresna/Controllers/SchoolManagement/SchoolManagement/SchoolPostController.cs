@@ -1,5 +1,7 @@
-﻿using Mdaresna.Doamin.DTOs.Common;
+using Mdaresna.Doamin.DTOs.Common;
 using Mdaresna.Doamin.DTOs.SchoolManagement;
+using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Helpers;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO;
@@ -21,12 +23,13 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         private readonly IImageUploderService imageUploderService;
         private readonly AppSettingDTO appSettings;
 
-        public SchoolPostController(ISchoolPostCommandService schoolPostCommandService,
-                                    ISchoolPostQueryService schoolPostQueryService,
-                                    ISchoolPostReportCommandService schoolPostReportCommandService,
-                                    ISchoolPostReportQueryService schoolPostReportQueryService,
-                                    IImageUploderService imageUploderService,
-                                    IOptions<AppSettingDTO> appSettings)
+        public SchoolPostController(
+            ISchoolPostCommandService schoolPostCommandService,
+            ISchoolPostQueryService schoolPostQueryService,
+            ISchoolPostReportCommandService schoolPostReportCommandService,
+            ISchoolPostReportQueryService schoolPostReportQueryService,
+            IImageUploderService imageUploderService,
+            IOptions<AppSettingDTO> appSettings)
         {
             this.schoolPostCommandService = schoolPostCommandService;
             this.schoolPostQueryService = schoolPostQueryService;
@@ -43,14 +46,32 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             {
                 return BadRequest("Post cannot be null");
             }
+
+            var moderationDecision = SchoolPostModerationHelper.Evaluate(
+                post.Content,
+                post.Images?.Any() == true);
+
+            if (!moderationDecision.AllowSubmission)
+            {
+                return Ok(new AddSchoolPostResultDTO
+                {
+                    Success = false,
+                    Status = moderationDecision.Status.ToString(),
+                    Message = moderationDecision.Message
+                });
+            }
+
             var schoolPost = new SchoolPost
             {
                 Content = post.Content,
                 PosterId = post.PosterId,
-                SchoolId = post.SchoolId
+                SchoolId = post.SchoolId,
+                ModerationStatus = moderationDecision.Status,
+                ModerationReason = moderationDecision.ReasonCode
             };
+
             var postImages = new List<string>();
-            if(post.Images != null)
+            if (post.Images != null)
             {
                 foreach (var file in post.Images)
                 {
@@ -66,12 +87,15 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             LogAddPost(post, postImages, result);
             if (result)
             {
-                return Ok("Post created successfully");
+                return Ok(new AddSchoolPostResultDTO
+                {
+                    Success = true,
+                    Status = moderationDecision.Status.ToString(),
+                    Message = moderationDecision.Message
+                });
             }
-            else
-            {
-                return StatusCode(500, "Internal server error");
-            }
+
+            return StatusCode(500, "Internal server error");
         }
 
         [HttpPost("ReportPost")]
@@ -129,7 +153,6 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
-
                 var fileParts = file.FileName.Split('.');
                 string ext = fileParts[fileParts.Length - 1];
 
@@ -138,15 +161,15 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 var directoryPathWithoutLocal = GetPathWithoutLocal(localPath);
                 var fileName = string.Format("PI_{0}.{1}", imageId, ext);
 
-                var filePath = Path.Combine(localPath,
-                                            directoryPathWithoutLocal,
-                                            fileName);
+                var filePath = Path.Combine(
+                    localPath,
+                    directoryPathWithoutLocal,
+                    fileName);
 
                 if (!Directory.Exists(Path.Combine(localPath, directoryPathWithoutLocal)))
                 {
                     Directory.CreateDirectory(Path.Combine(localPath, directoryPathWithoutLocal));
                 }
-
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
@@ -155,7 +178,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 
                 return Path.Combine(directoryPathWithoutLocal, fileName);
             }
-            catch (Exception ex)
+            catch
             {
                 return string.Empty;
             }
@@ -163,12 +186,10 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 
         private string GetPathWithoutLocal(string localPath)
         {
-
             var directoryPath = string.Empty;
-            directoryPath = Path.Combine(appSettings.ImagesPath,
-                                        "SchoolPostsImages"
-                                        );
-
+            directoryPath = Path.Combine(
+                appSettings.ImagesPath,
+                "SchoolPostsImages");
 
             return directoryPath;
         }
@@ -181,7 +202,11 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 return BadRequest("School ID cannot be empty");
             }
 
-            var post = await schoolPostQueryService.GetSchoolPostesWithImagesAsync(dTO.SchoolId, dTO.SerachText, dTO.PageNumber);
+            var post = await schoolPostQueryService.GetSchoolPostesWithImagesAsync(
+                dTO.SchoolId,
+                dTO.ViewerUserId,
+                dTO.SerachText,
+                dTO.PageNumber);
             if (post == null)
             {
                 return NotFound("Post not found");
@@ -214,21 +239,42 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             {
                 return BadRequest("Post ID cannot be empty");
             }
-            var deleted = await schoolPostReportCommandService.DeletePostReportsByPostIdAsync(dTO.PostId);
 
+            await schoolPostReportCommandService.DeletePostReportsByPostIdAsync(dTO.PostId);
             var post = await schoolPostQueryService.GetByIdAsync(dTO.PostId);
-
             var result = await schoolPostCommandService.DeleteAsync(post);
             if (result)
             {
                 return Ok("Post deleted successfully");
             }
-            else
+
+            return StatusCode(500, "Internal server error");
+        }
+
+        [HttpPost("ApprovePost")]
+        public async Task<IActionResult> ApprovePost([FromBody] SchoolPostIdDTO dTO)
+        {
+            if (dTO.PostId == Guid.Empty)
             {
-                return StatusCode(500, "Internal server error");
+                return BadRequest("Post ID cannot be empty");
             }
 
+            var post = await schoolPostQueryService.GetByIdAsync(dTO.PostId);
+            if (post == null || post.Deleted)
+            {
+                return NotFound("Post not found");
+            }
 
+            post.ModerationStatus = SchoolPostModerationStatusEnum.Approved;
+            post.ModerationReason = null;
+
+            var result = schoolPostCommandService.Update(post);
+            if (result)
+            {
+                return Ok("Post approved successfully");
+            }
+
+            return StatusCode(500, "Internal server error");
         }
 
         [HttpDelete("DeletePostReports")]
@@ -256,13 +302,19 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 return BadRequest("Filter cannot be null");
             }
 
-            if (filter.MinReportsCount.HasValue && filter.MaxReportsCount.HasValue && filter.MinReportsCount > filter.MaxReportsCount)
+            if (filter.MinReportsCount.HasValue &&
+                filter.MaxReportsCount.HasValue &&
+                filter.MinReportsCount > filter.MaxReportsCount)
             {
                 return BadRequest("Min reports count cannot be greater than max reports count");
             }
 
             var pageNumber = filter.PageNumber <= 0 ? 1 : filter.PageNumber;
-            var posts = await schoolPostQueryService.GetPostsWithReportsCountAsync(filter.SchoolName, filter.MinReportsCount, filter.MaxReportsCount, pageNumber);
+            var posts = await schoolPostQueryService.GetPostsWithReportsCountAsync(
+                filter.SchoolName,
+                filter.MinReportsCount,
+                filter.MaxReportsCount,
+                pageNumber);
             return Ok(posts);
         }
 

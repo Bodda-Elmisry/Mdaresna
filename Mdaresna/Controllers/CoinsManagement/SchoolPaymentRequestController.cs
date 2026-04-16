@@ -206,9 +206,9 @@ namespace Mdaresna.Controllers.CoinsManagement
                 var devices = await userDeviceQueryService.GetUsersDevicesAsync(userIdsList);
                 if (devices.Count() > 0)
                 {
-                    var message = $"Balance changed in school '{school.Name}'|{school.AvailableCoins}|{school.Id}";
+                    var message = $"Units changed in school '{school.Name}'|{school.AvailableCoins}|{school.Id}";
                     var tokens = devices.Select(d => d.FcmToken).ToList();
-                    await notificationProvider.SendToMultiUsersAsync(tokens, "Balance Changed", message);
+                    await notificationProvider.SendToMultiUsersAsync(tokens, "Units Changed", message);
                 }
                 return Ok("Request approved");
 

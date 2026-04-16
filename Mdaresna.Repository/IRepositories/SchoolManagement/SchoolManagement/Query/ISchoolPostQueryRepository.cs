@@ -11,7 +11,7 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Qu
 {
     public interface ISchoolPostQueryRepository : IBaseQueryRepository<SchoolPost>
     {
-        Task<IEnumerable<PostResultDTO>> GetSchoolPostesWithImagesAsync(Guid schoolId, string searchText, int pageNumber);
+        Task<IEnumerable<PostResultDTO>> GetSchoolPostesWithImagesAsync(Guid schoolId, Guid? viewerUserId, string searchText, int pageNumber);
         Task<PostResultDTO> GetPostWithImagesAsync(Guid postId);
         Task<IEnumerable<SchoolPostReportsCountResultDTO>> GetPostsWithReportsCountAsync(string? schoolName, int? minReportsCount, int? maxReportsCount, int pageNumber);
     }

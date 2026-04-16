@@ -68,5 +68,6 @@ namespace Mdaresna.Repository.IUnitOfWork
         ISchoolUserQueryRepository SchoolUserQueryRepository { get; }
         IUserQueryRepository UserQueryRepository { get; }
         IUserDeviceQueryRepository UserDeviceQueryRepository { get; }
+        IUserReportQueryRepository UserReportQueryRepository { get; }
     }
 }

@@ -12,5 +12,7 @@ namespace Mdaresna.Doamin.DTOs.SchoolManagement
         public string SchoolName { get; set; }
         public int ReportsCount { get; set; }
         public DateTime LastModifyDate { get; set; }
+        public string ModerationStatus { get; set; }
+        public string? ModerationReason { get; set; }
     }
 }

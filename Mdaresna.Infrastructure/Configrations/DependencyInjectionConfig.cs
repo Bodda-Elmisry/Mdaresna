@@ -262,6 +262,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(ISchoolUserCommandRepository), typeof(SchoolUserCommandRepository));
             services.AddScoped(typeof(IUserCommandRepository), typeof(UserCommandRepository));
             services.AddScoped(typeof(IUserDeviceCommandRepository), typeof(UserDeviceCommandRepository));
+            services.AddScoped(typeof(IUserReportCommandRepository), typeof(UserReportCommandRepository));
 
             #endregion
 
@@ -270,6 +271,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(ISchoolUserQueryRepository), typeof(SchoolUserQueryRepository));
             services.AddScoped(typeof(IUserQueryRepository), typeof(UserQueryRepository));
             services.AddScoped(typeof(IUserDeviceQueryRepository), typeof(UserDeviceQueryRepository));
+            services.AddScoped(typeof(IUserReportQueryRepository), typeof(UserReportQueryRepository));
 
             #endregion
         }
@@ -522,6 +524,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(ISchoolUserCommandService), typeof(SchoolUserCommandService));
             services.AddScoped(typeof(IUserCommandService), typeof(UserCommandService));
             services.AddScoped(typeof(IUserDeviceCommandService), typeof(UserDeviceCommandService));
+            services.AddScoped(typeof(IUserReportCommandService), typeof(UserReportCommandService));
 
             #endregion
 
@@ -530,6 +533,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(ISchoolUserQueryService), typeof(SchoolUserQueryService));
             services.AddScoped(typeof(IUserQueryService), typeof(UserQueryService));
             services.AddScoped(typeof(IUserDeviceQueryService), typeof(UserDeviceQueryService));
+            services.AddScoped(typeof(IUserReportQueryService), typeof(UserReportQueryService));
 
             #endregion
         }

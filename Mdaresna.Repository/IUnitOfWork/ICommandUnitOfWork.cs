@@ -65,6 +65,7 @@ namespace Mdaresna.Repository.IUnitOfWork
         ISchoolUserCommandRepository SchoolUserCommandRepository { get; }
         IUserCommandRepository UserCommandRepository { get; }
         IUserDeviceCommandRepository UserDeviceCommandRepository { get; }
+        IUserReportCommandRepository UserReportCommandRepository { get; }
 
         ISMSProviderCommandRepository SMSProviderCommandRepository { get; }
         IEmailProviderCommandRepository EmailProviderCommandRepository { get; }

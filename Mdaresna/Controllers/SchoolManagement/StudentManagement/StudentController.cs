@@ -149,7 +149,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                         var devices = await userDeviceQueryService.GetByUserIdAsync(schoolAdminId);
                         var tokens = devices.Select(d => d.FcmToken).ToList();
 
-                        await notificationProvider.SendToMultiUsersAsync(tokens, "Balance Changed", $"Student payed in school{school.Name}|{schoolAvailableCoins}|{school.Id}");
+                        await notificationProvider.SendToMultiUsersAsync(tokens, "Units Changed", $"Student available in school{school.Name}|{schoolAvailableCoins}|{school.Id}");
 
                     }
                     CreateStudentResultDTO resultDTO = new CreateStudentResultDTO
@@ -211,7 +211,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                         var devices = await userDeviceQueryService.GetByUserIdAsync(schoolAdminId);
                         var tokens = devices.Select(d => d.FcmToken).ToList();
 
-                        await notificationProvider.SendToMultiUsersAsync(tokens, "Balance Changed", $"Student payed in school{school.Name}|{schoolAvailableCoins}|{school.Id}");
+                        await notificationProvider.SendToMultiUsersAsync(tokens, "Units Changed", $"Student available in school{school.Name}|{schoolAvailableCoins}|{school.Id}");
                     }
                     else
                     {
@@ -277,7 +277,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                     var devices = await userDeviceQueryService.GetByUserIdAsync(schoolAdminId);
                     var tokens = devices.Select(d => d.FcmToken).ToList();
 
-                    await notificationProvider.SendToMultiUsersAsync(tokens, "Balance Changed", $"Student payed in school{school.Name}|{payed.AvaialableCoins}|{school.Id}");
+                    await notificationProvider.SendToMultiUsersAsync(tokens, "Units Changed", $"Student avilable in school{school.Name}|{payed.AvaialableCoins}|{school.Id}");
 
                 }
 

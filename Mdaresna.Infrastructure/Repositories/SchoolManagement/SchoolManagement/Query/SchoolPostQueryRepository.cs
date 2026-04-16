@@ -1,5 +1,6 @@
 using Mdaresna.Doamin.DTOs.Common;
 using Mdaresna.Doamin.DTOs.SchoolManagement;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Helpers;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Infrastructure.Data;
@@ -7,11 +8,6 @@ using Mdaresna.Infrastructure.Repositories.Base;
 using Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Query;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement.Query
 {
@@ -20,56 +16,86 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
         private readonly AppDbContext context;
         private readonly AppSettingDTO appSettings;
 
-        public SchoolPostQueryRepository(AppDbContext context, 
-                                         IOptions<AppSettingDTO> appSettings) : base(context)
+        public SchoolPostQueryRepository(
+            AppDbContext context,
+            IOptions<AppSettingDTO> appSettings) : base(context)
         {
             this.context = context;
             this.appSettings = appSettings.Value;
         }
 
-        public async Task<IEnumerable<PostResultDTO>> GetSchoolPostesWithImagesAsync(Guid schoolId, string searchText, int pageNumber)
+        public async Task<IEnumerable<PostResultDTO>> GetSchoolPostesWithImagesAsync(
+            Guid schoolId,
+            Guid? viewerUserId,
+            string searchText,
+            int pageNumber)
         {
-            int pagesize = this.appSettings.PageSize != null ? this.appSettings.PageSize.Value : 30;
+            int pageSize = appSettings.PageSize != null ? appSettings.PageSize.Value : 30;
             var query = context.SchoolPosts
                 .Include(p => p.Poster)
                 .Include(p => p.School)
-                .Where(x => x.SchoolId == schoolId && x.Deleted == false);
+                .Where(x =>
+                    x.SchoolId == schoolId &&
+                    x.Deleted == false &&
+                    x.ModerationStatus == SchoolPostModerationStatusEnum.Approved);
 
-            query = !string.IsNullOrEmpty(searchText) ? query.Where(x => x.Content.Contains(searchText) || x.Poster.FirstName.Contains(searchText) || x.Poster.LastName.Contains(searchText) || (x.Poster.FirstName + x.Poster.LastName).Contains(searchText.Replace(" ", ""))) : query;
-
-            
-            var result = await query.Select(p => new PostResultDTO
+            if (viewerUserId.HasValue && viewerUserId.Value != Guid.Empty)
             {
-                Id = p.Id,
-                Content = p.Content,
-                PosterId = p.PosterId,
-                PosterName = $"{p.Poster.FirstName} {p.Poster.LastName}",
-                LastModifyDate = p.LastModifyDate ?? p.PostDate,
-                Schoold = p.SchoolId,
-                SchoolName = p.School.Name
-            }).Skip((pageNumber - 1) * pagesize)
-                                  .Take(pagesize).ToListAsync();
+                query = query.Where(x => !context.UserBlocks.Any(b =>
+                    b.Deleted == false &&
+                    b.BlockerUserId == viewerUserId.Value &&
+                    b.BlockedUserId == x.PosterId));
+            }
+
+            if (!string.IsNullOrEmpty(searchText))
+            {
+                query = query.Where(x =>
+                    x.Content.Contains(searchText) ||
+                    x.Poster.FirstName.Contains(searchText) ||
+                    x.Poster.LastName.Contains(searchText) ||
+                    (x.Poster.FirstName + x.Poster.LastName).Contains(searchText.Replace(" ", "")));
+            }
+
+            var result = await query
+                .OrderByDescending(x => x.LastModifyDate ?? x.PostDate)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(p => new PostResultDTO
+                {
+                    Id = p.Id,
+                    Content = p.Content,
+                    PosterId = p.PosterId,
+                    PosterName = $"{p.Poster.FirstName} {p.Poster.LastName}",
+                    LastModifyDate = p.LastModifyDate ?? p.PostDate,
+                    Schoold = p.SchoolId,
+                    SchoolName = p.School.Name,
+                    ModerationStatus = p.ModerationStatus.ToString(),
+                    ModerationReason = p.ModerationReason
+                })
+                .ToListAsync();
 
             foreach (var post in result)
             {
-                post.Images = await getPostImages(post.Id);
+                post.Images = await GetPostImages(post.Id);
             }
 
-            return result.OrderByDescending(x => x.LastModifyDate);
-
-
+            return result;
         }
 
-        public async Task<IEnumerable<SchoolPostReportsCountResultDTO>> GetPostsWithReportsCountAsync(string? schoolName, int? minReportsCount, int? maxReportsCount, int pageNumber)
+        public async Task<IEnumerable<SchoolPostReportsCountResultDTO>> GetPostsWithReportsCountAsync(
+            string? schoolName,
+            int? minReportsCount,
+            int? maxReportsCount,
+            int pageNumber)
         {
-            int pagesize = this.appSettings.PageSize != null ? this.appSettings.PageSize.Value : 30;
+            int pageSize = appSettings.PageSize != null ? appSettings.PageSize.Value : 30;
             pageNumber = pageNumber <= 0 ? 1 : pageNumber;
             var normalizedSchoolName = string.IsNullOrWhiteSpace(schoolName) ? null : schoolName.Trim();
 
             var postsQuery = context.SchoolPosts
-                                    .Include(p => p.Poster)
-                                    .Include(p => p.School)
-                                    .Where(x => x.Deleted == false);
+                .Include(p => p.Poster)
+                .Include(p => p.School)
+                .Where(x => x.Deleted == false);
 
             if (!string.IsNullOrEmpty(normalizedSchoolName))
             {
@@ -77,14 +103,18 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             }
 
             var postsWithReports = postsQuery
-                                    .GroupJoin(context.SchoolPostReports.Where(r => r.Deleted == false),
-                                               post => post.Id,
-                                               report => report.PostId,
-                                               (post, reports) => new
-                                               {
-                                                   Post = post,
-                                                   ReportsCount = reports.Count()
-                                               });
+                .GroupJoin(
+                    context.SchoolPostReports.Where(r => r.Deleted == false),
+                    post => post.Id,
+                    report => report.PostId,
+                    (post, reports) => new
+                    {
+                        Post = post,
+                        ReportsCount = reports.Count()
+                    })
+                .Where(x =>
+                    x.ReportsCount > 0 ||
+                    x.Post.ModerationStatus != SchoolPostModerationStatusEnum.Approved);
 
             if (minReportsCount.HasValue)
             {
@@ -97,9 +127,10 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             }
 
             var result = await postsWithReports
-                .OrderByDescending(x => x.Post.LastModifyDate ?? x.Post.PostDate)
-                .Skip((pageNumber - 1) * pagesize)
-                .Take(pagesize)
+                .OrderBy(x => x.Post.ModerationStatus == SchoolPostModerationStatusEnum.PendingReview ? 0 : 1)
+                .ThenByDescending(x => x.Post.LastModifyDate ?? x.Post.PostDate)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .Select(x => new SchoolPostReportsCountResultDTO
                 {
                     PostId = x.Post.Id,
@@ -109,19 +140,29 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                     SchoolId = x.Post.SchoolId,
                     SchoolName = x.Post.School.Name,
                     ReportsCount = x.ReportsCount,
-                    LastModifyDate = x.Post.LastModifyDate ?? x.Post.PostDate
-                }).ToListAsync();
+                    LastModifyDate = x.Post.LastModifyDate ?? x.Post.PostDate,
+                    ModerationStatus = x.Post.ModerationStatus.ToString(),
+                    ModerationReason = x.Post.ModerationReason
+                })
+                .ToListAsync();
 
             return result;
         }
 
         public async Task<PostResultDTO> GetPostWithImagesAsync(Guid postId)
         {
-            
             var post = await context.SchoolPosts
-                .Include(p=> p.Poster)
+                .Include(p => p.Poster)
                 .Include(p => p.School)
-                .FirstOrDefaultAsync(x => x.Id == postId && x.Deleted == false);
+                .FirstOrDefaultAsync(x =>
+                    x.Id == postId &&
+                    x.Deleted == false &&
+                    x.ModerationStatus == SchoolPostModerationStatusEnum.Approved);
+
+            if (post == null)
+            {
+                return null;
+            }
 
             var result = new PostResultDTO
             {
@@ -131,25 +172,21 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                 PosterName = $"{post.Poster.FirstName} {post.Poster.LastName}",
                 Schoold = post.SchoolId,
                 SchoolName = post.School.Name,
-                LastModifyDate = post.LastModifyDate ?? post.PostDate
+                LastModifyDate = post.LastModifyDate ?? post.PostDate,
+                ModerationStatus = post.ModerationStatus.ToString(),
+                ModerationReason = post.ModerationReason
             };
-            
-            if (post != null)
-            {
-                result.Images = await getPostImages(postId);
-            }
 
+            result.Images = await GetPostImages(postId);
             return result;
         }
 
-        private async Task<IEnumerable<string>> getPostImages(Guid postId)
+        private async Task<IEnumerable<string>> GetPostImages(Guid postId)
         {
             return await context.SchoolPostImages
                 .Where(x => x.PostId == postId)
                 .Select(x => $"{SettingsHelper.GetAppUrl()}/{x.ImageUrl.Replace("\\", "/")}")
                 .ToListAsync();
         }
-
-
     }
 }

@@ -66,6 +66,7 @@ namespace Mdaresna.Infrastructure.UnitOfWork
         private ISchoolUserCommandRepository? _schoolUserCommandRepository;
         private IUserCommandRepository? _userCommandRepository;
         private IUserDeviceCommandRepository? _userDeviceCommandRepository;
+        private IUserReportCommandRepository? _userReportCommandRepository;
         private ISMSProviderCommandRepository? _smsProviderCommandRepository;
         private IEmailProviderCommandRepository? _emailProviderCommandRepository;
         private ISMSLogCommandRepository? _smsLogCommandRepository;
@@ -210,6 +211,9 @@ namespace Mdaresna.Infrastructure.UnitOfWork
 
         public IUserDeviceCommandRepository UserDeviceCommandRepository => _userDeviceCommandRepository ??=
             _serviceProvider.GetRequiredService<IUserDeviceCommandRepository>();
+
+        public IUserReportCommandRepository UserReportCommandRepository => _userReportCommandRepository ??=
+            _serviceProvider.GetRequiredService<IUserReportCommandRepository>();
 
         public ISMSProviderCommandRepository SMSProviderCommandRepository => _smsProviderCommandRepository ??=
             _serviceProvider.GetRequiredService<ISMSProviderCommandRepository>();

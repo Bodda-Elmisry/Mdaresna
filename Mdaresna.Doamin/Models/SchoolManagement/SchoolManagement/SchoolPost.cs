@@ -1,4 +1,5 @@
 ﻿using Mdaresna.Doamin.Models.Base;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.UserManagement;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,11 @@ namespace Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement
 
         [ForeignKey(nameof(SchoolId))]
         public School School { get; set; }
+
+        public SchoolPostModerationStatusEnum ModerationStatus { get; set; } =
+            SchoolPostModerationStatusEnum.Approved;
+
+        public string? ModerationReason { get; set; }
 
 
     }

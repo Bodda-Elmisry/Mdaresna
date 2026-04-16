@@ -17,6 +17,8 @@ namespace Mdaresna.Doamin.DTOs.SchoolManagement
         public Guid Schoold { get; set; }
         public string SchoolName { get; set; }
         public IEnumerable<string> Images { get; set; }
+        public string ModerationStatus { get; set; }
+        public string? ModerationReason { get; set; }
 
 
     }
