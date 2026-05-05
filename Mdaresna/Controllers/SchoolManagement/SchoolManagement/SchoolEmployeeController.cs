@@ -71,6 +71,14 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
+                var schoolManagerRole = await userRoleQueryService.GetUserRoleAsync(
+                    dto.EmployeeId,
+                    Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"),
+                    dto.SchoolId);
+
+                if (schoolManagerRole != null)
+                    return Conflict("School manager can't be assigned as employee");
+
                 var teacher = await schoolEmployeeQueryService.GetSchoolEmployeeByIdAsync(dto.SchoolId, dto.EmployeeId);
 
                 if (teacher != null)
@@ -135,6 +143,16 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
+                var employeeClassrooms = await classroomEmployeeQueryService.GetEmployeeClassroomsAsync(dto.EmployeeId, dto.SchoolId);
+
+                if (employeeClassrooms != null && employeeClassrooms.Count() > 0)
+                {
+                    foreach (var classroom in employeeClassrooms)
+                    {
+                        await classroomEmployeeCommandService.DeleteAsync(classroom);
+                    }
+                }
+
                 var sEmployee = new SchoolEmployee
                 {
                     SchoolId = dto.SchoolId,

@@ -85,5 +85,12 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
 
         }
 
+        public async Task<IEnumerable<SchoolTeacherCourse>> GetTeacherCoursesAsync(Guid teacherId, Guid schoolId)
+        {
+            return await context.schoolTeacherCourses
+                .Where(s => s.TeacherId == teacherId && s.SchoolId == schoolId && s.Deleted == false)
+                .ToListAsync();
+        }
+
     }
 }

@@ -5,8 +5,9 @@ using Mdaresna.DTOs.IdentityDTO;
 using Mdaresna.Repository.IBServices.IdentityManagement;
 using Mdaresna.Repository.IServices.UserManagement.Command;
 using Mdaresna.Repository.IServices.UserManagement.Query;
+using Mdaresna.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
-using System.Runtime.InteropServices;
+using Microsoft.EntityFrameworkCore;
 
 namespace Mdaresna.Controllers.IdentityManagement
 {
@@ -16,12 +17,17 @@ namespace Mdaresna.Controllers.IdentityManagement
         private readonly IIdentityService identityService;
         private readonly IUserCommandService userCommandService;
         private readonly IUserQueryService userQueryService;
+        private readonly AppDbContext context;
 
-        public IdentityController(IIdentityService identityService, IUserCommandService userCommandService, IUserQueryService userQueryService)
+        public IdentityController(IIdentityService identityService,
+                                  IUserCommandService userCommandService,
+                                  IUserQueryService userQueryService,
+                                  AppDbContext context)
         {
             this.identityService = identityService;
             this.userCommandService = userCommandService;
             this.userQueryService = userQueryService;
+            this.context = context;
         }
 
         [HttpPost("Register")]
@@ -159,6 +165,12 @@ namespace Mdaresna.Controllers.IdentityManagement
                 var user = await userQueryService.GetByIdAsync(idDTO.UserId);
                 if (user == null)
                     return BadRequest("User not exist to delete");
+
+                var isAdminForActiveSchools = await context.Schools
+                    .AnyAsync(s => s.SchoolAdminId == idDTO.UserId && s.Deleted == false);
+
+                if (isAdminForActiveSchools)
+                    return Conflict("Please delete schools before delete your account");
 
                 user.Deleted = true;
 

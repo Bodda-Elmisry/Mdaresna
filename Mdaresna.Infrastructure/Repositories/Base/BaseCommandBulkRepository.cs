@@ -9,13 +9,18 @@ using System.Threading.Tasks;
 
 namespace Mdaresna.Infrastructure.Repositories.Base
 {
-    public class BaseCommandBulkRepository<T> : IBaseCommandBulkRepository<T>
+    public class BaseCommandBulkRepository<T> : IBaseCommandBulkRepository<T> where T : class
     {
         private readonly AppDbContext context;
 
         public BaseCommandBulkRepository(AppDbContext context)
         {
             this.context = context;
+        }
+
+        public IQueryable<T> GetQuery()
+        {
+            return context.Set<T>().AsQueryable();
         }
 
         public async Task<bool> CreateBulk<T>(IEnumerable<T> entityList) where T : class

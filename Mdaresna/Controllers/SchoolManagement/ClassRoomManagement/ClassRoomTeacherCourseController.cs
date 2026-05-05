@@ -75,7 +75,10 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         {
             try
             {
-                var row = await classRoomTeacherCourseQueryService.GetClassRoomIeacherCourseAsync(dto.TeacherId,dto.ClassRoomId, dto.CourseId);
+                if (dto.CourseId == null)
+                    return BadRequest("CourseId is required");
+
+                var row = await classRoomTeacherCourseQueryService.GetClassRoomIeacherCourseAsync(dto.TeacherId,dto.ClassRoomId, dto.CourseId.Value);
 
 
                 return Ok(row);
@@ -166,8 +169,36 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         {
             try
             {
+                var classroom = await classroomQueryService.GetByIdAsync(dto.ClassRoomId);
+                if (classroom == null)
+                    return BadRequest("Can't find classroom");
 
-                var row = await classRoomTeacherCourseQueryService.GetByIdAsync(dto.TeacherId, dto.ClassRoomId, dto.CourseId);
+                var school = await schoolQueryService.GetByIdAsync(classroom.SchoolId);
+                var devices = await userDeviceQueryService.GetByUserIdAsync(dto.TeacherId);
+                var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+
+                if (dto.CourseId == null)
+                {
+                    var rows = await classRoomTeacherCourseQueryService.GetTeacherClassroomCoursesAsync(dto.TeacherId, dto.ClassRoomId);
+
+                    if (!rows.Any())
+                        return BadRequest("Can't fiend rows to delete");
+
+                    foreach (var teacherCourse in rows)
+                    {
+                        await classRoomTeacherCourseCommandService.DeleteAsync(teacherCourse);
+                    }
+
+                    if (devices.Count() > 0)
+                    {
+                        var tokens = devices.Select(d => d.FcmToken).ToList();
+                        await notificationProvider.SendToMultiUsersAsync(tokens, "School Role", $"Classroom {classroom.Name} in school {school.Name} removed from you|{school.Id}");
+                    }
+
+                    return Ok("class room teacher deleted");
+                }
+
+                var row = await classRoomTeacherCourseQueryService.GetByIdAsync(dto.TeacherId, dto.ClassRoomId, dto.CourseId.Value);
 
                 if(row == null)
                     return BadRequest("Can't fiend row to delete");
@@ -176,10 +207,6 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
 
                 if (deleted)
                 {
-                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
-                    var devices = await userDeviceQueryService.GetByUserIdAsync(dto.TeacherId);
-                    var classroom = await classroomQueryService.GetByIdAsync(dto.ClassRoomId);
-                    var school = await schoolQueryService.GetByIdAsync(classroom.SchoolId);
                     if (devices.Count() > 0)
                     {
                         var tokens = devices.Select(d => d.FcmToken).ToList();

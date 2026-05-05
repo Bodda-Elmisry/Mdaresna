@@ -13,6 +13,8 @@ namespace Mdaresna.Infrastructure.BServices.Common
 {
     public class FcmService : INotificationService
     {
+        private const string DefaultAndroidChannelId = "mdaresna_default";
+
         public FcmService()
         {
             if (FirebaseApp.DefaultInstance == null)
@@ -29,10 +31,24 @@ namespace Mdaresna.Infrastructure.BServices.Common
             var message = new Message
             {
                 Token = token,
+                Data = new Dictionary<string, string>
+                {
+                    ["title"] = title,
+                    ["body"] = body,
+                },
                 Notification = new Notification
                 {
                     Title = title,
                     Body = body
+                },
+                Android = new AndroidConfig
+                {
+                    Priority = Priority.High,
+                    Notification = new AndroidNotification
+                    {
+                        ChannelId = DefaultAndroidChannelId,
+                        Sound = "default",
+                    }
                 }
             };
 
@@ -44,16 +60,39 @@ namespace Mdaresna.Infrastructure.BServices.Common
             var message = new MulticastMessage
             {
                 Tokens = tokens,
+                Data = new Dictionary<string, string>
+                {
+                    ["title"] = title,
+                    ["body"] = body,
+                },
                 Notification = new Notification
                 {
                     Title = title,
                     Body = body
+                },
+                Android = new AndroidConfig
+                {
+                    Priority = Priority.High,
+                    Notification = new AndroidNotification
+                    {
+                        ChannelId = DefaultAndroidChannelId,
+                        Sound = "default",
+                    }
                 }
             };
 
             var result = await FirebaseMessaging.DefaultInstance.SendEachForMulticastAsync(message);
             Console.WriteLine("SuccessCount = " + result.SuccessCount.ToString());
             Console.WriteLine("FailureCount = " + result.FailureCount.ToString());
+
+            for (var i = 0; i < result.Responses.Count; i++)
+            {
+                if (!result.Responses[i].IsSuccess)
+                {
+                    Console.WriteLine(
+                        $"FCM send failed for token {tokens[i]}: {result.Responses[i].Exception?.Message}");
+                }
+            }
         }
     }
 }

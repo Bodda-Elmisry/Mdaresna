@@ -13,6 +13,6 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query
     {
         Task<IEnumerable<PostResultDTO>> GetSchoolPostesWithImagesAsync(Guid schoolId, Guid? viewerUserId, string searchText, int pageNumber);
         Task<PostResultDTO> GetPostWithImagesAsync(Guid postId);
-        Task<IEnumerable<SchoolPostReportsCountResultDTO>> GetPostsWithReportsCountAsync(string? schoolName, int? minReportsCount, int? maxReportsCount, int pageNumber);
+        Task<IEnumerable<SchoolPostReportsCountResultDTO>> GetPostsWithReportsCountAsync(Guid? schoolId, string? schoolName, int? minReportsCount, int? maxReportsCount, int pageNumber);
     }
 }

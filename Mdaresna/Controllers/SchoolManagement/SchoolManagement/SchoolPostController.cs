@@ -311,6 +311,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 
             var pageNumber = filter.PageNumber <= 0 ? 1 : filter.PageNumber;
             var posts = await schoolPostQueryService.GetPostsWithReportsCountAsync(
+                filter.SchoolId,
                 filter.SchoolName,
                 filter.MinReportsCount,
                 filter.MaxReportsCount,

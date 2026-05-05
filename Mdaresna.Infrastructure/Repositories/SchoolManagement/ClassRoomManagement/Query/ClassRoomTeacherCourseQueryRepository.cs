@@ -145,6 +145,14 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
             return await query.OrderBy(c => c.ClassRoomId).ToListAsync();
         }
 
+        public async Task<IEnumerable<ClassRoomTeacherCourse>> GetTeacherClassroomCoursesAsync(Guid teacherId, Guid roomId)
+        {
+            return await context.ClassRoomTeacherCourses
+                .Where(c => c.TeacherId == teacherId && c.ClassRoomId == roomId && c.Deleted == false)
+                .OrderBy(c => c.CourseId)
+                .ToListAsync();
+        }
+
         public async Task<ClassRoomTeacherCourse?> GetByIdAsync(Guid teacherId, Guid roomId, Guid courseId)
         {
             return await context.ClassRoomTeacherCourses.FirstOrDefaultAsync(c => c.TeacherId == teacherId &&

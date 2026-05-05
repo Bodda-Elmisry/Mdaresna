@@ -317,7 +317,7 @@ namespace Mdaresna.Controllers.UserManagement
                 }
 
                 var pageNumber = filter.PageNumber <= 0 ? 1 : filter.PageNumber;
-                var users = await userReportQueryService.GetUsersWithReportsCountAsync(filter.UserName, filter.MinReportsCount, filter.MaxReportsCount, pageNumber);
+                var users = await userReportQueryService.GetUsersWithReportsCountAsync(filter.SchoolId, filter.UserName, filter.MinReportsCount, filter.MaxReportsCount, pageNumber);
                 return Ok(users);
             }
             catch (Exception ex)

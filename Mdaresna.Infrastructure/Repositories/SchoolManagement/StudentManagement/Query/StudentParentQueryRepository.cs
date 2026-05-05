@@ -108,6 +108,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                                     CalssroomId = cr.Id,
                                     ClassroomName = cr.Name,
                                     WCSUrl = cr.WCSUrl,
+                                    IsPayed = s.IsPayed,
                                     GradeId = sg.Id,
                                     GradeName = sg.Name,
                                     ParentId = sp.ParentId,

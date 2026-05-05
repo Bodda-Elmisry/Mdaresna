@@ -4,6 +4,7 @@ using Mdaresna.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Mdaresna.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260503194948_AddReportedUsersPermissions")]
+    partial class AddReportedUsersPermissions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1001,11 +1004,11 @@ namespace Mdaresna.Infrastructure.Migrations
                             AllowedToMapToClassroom = false,
                             AppPermission = false,
                             Deleted = false,
-                            Description = "manage Year Monthes",
-                            Description_AR = "ادارة أشهر السنة الدراسية عرض, اضافة, تعديل وحذف",
+                            Description = "View Year Monthes",
+                            Description_AR = "عرض أشهر السنة الدراسية",
                             Key = "ViewYearMonthes",
-                            Name = "Manage Year Monthes",
-                            Name_AR = "ادارة أشهر السنة الدراسية عرض, اضافة, تعديل وحذف",
+                            Name = "View Year Monthes",
+                            Name_AR = "عرض أشهر السنة الدراسية",
                             SchoolPermission = true
                         },
                         new

@@ -18,12 +18,15 @@ namespace Mdaresna.Infrastructure.Repositories.Base
         {
             this.context = context;
         }
+
+        public IQueryable<T> GetQuery()
+        {
+            return context.Set<T>().Where(entity => !entity.Deleted);
+        }
+
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-            //return await context.Set<T>().ToListAsync();
-            return await context.Set<T>()
-            .Where(e => !e.Deleted)
-            .ToListAsync();
+            return await GetQuery().ToListAsync();
         }
 
         public async Task<T> GetByIdAsync(Guid id)

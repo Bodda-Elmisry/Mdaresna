@@ -14,5 +14,6 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query
         Task<IEnumerable<SchoolTeacherCourseResultDTO>> GetSchoolTeacherCourcesAsync(Guid schoolId, Guid teacherId);
         Task<SchoolTeacherCourseResultDTO?> GetSchoolTeacherCourceAsync(Guid schoolId, Guid teacherId, Guid courseId);
         Task<SchoolTeacherCourseInitialDTO> GetSchoolTeacherCourceInitialListsAsync(Guid schoolId);
+        Task<IEnumerable<SchoolTeacherCourse>> GetTeacherCoursesAsync(Guid teacherId, Guid schoolId);
     }
 }

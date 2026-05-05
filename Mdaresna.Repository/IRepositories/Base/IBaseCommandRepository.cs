@@ -8,6 +8,8 @@ namespace Mdaresna.Repository.IRepositories.Base
 {
     public interface IBaseCommandRepository<T>
     {
+        IQueryable<T> GetQuery();
+
         bool Create(T entity);
         bool Update(T entity);
         bool Delete(T entity);

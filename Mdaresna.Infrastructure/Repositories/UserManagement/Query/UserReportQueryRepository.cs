@@ -43,10 +43,38 @@ namespace Mdaresna.Infrastructure.Repositories.UserManagement.Query
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<UserReportsCountResultDTO>> GetUsersWithReportsCountAsync(string? userName, int? minReportsCount, int? maxReportsCount, int pageNumber)
+        public async Task<IEnumerable<UserReportsCountResultDTO>> GetUsersWithReportsCountAsync(Guid? schoolId, string? userName, int? minReportsCount, int? maxReportsCount, int pageNumber)
         {
             int pageSize = appSettings.PageSize ?? 30;
             var usersQuery = context.Users.Where(u => u.Deleted == false);
+
+            if (schoolId.HasValue)
+            {
+                var selectedSchoolId = schoolId.Value;
+                var schoolUserIds = context.SchoolUsers
+                    .Where(su => su.Deleted == false && su.SchoolId == selectedSchoolId)
+                    .Select(su => su.UserId)
+                    .Union(
+                        context.SchoolEmployees
+                            .Where(se => se.Deleted == false && se.SchoolId == selectedSchoolId)
+                            .Select(se => se.EmployeeId))
+                    .Union(
+                        context.schoolTeachers
+                            .Where(st => st.Deleted == false && st.SchoolId == selectedSchoolId)
+                            .Select(st => st.TeacherId))
+                    .Union(
+                        context.UserRoles
+                            .Where(ur => ur.Deleted == false && ur.SchoolId == selectedSchoolId)
+                            .Select(ur => ur.UserId))
+                    .Union(
+                        context.StudentParents
+                            .Where(sp => sp.Deleted == false &&
+                                         sp.Student.Deleted == false &&
+                                         sp.Student.SchoolId == selectedSchoolId)
+                            .Select(sp => sp.ParentId));
+
+                usersQuery = usersQuery.Where(u => schoolUserIds.Contains(u.Id));
+            }
 
             if (!string.IsNullOrWhiteSpace(userName))
             {

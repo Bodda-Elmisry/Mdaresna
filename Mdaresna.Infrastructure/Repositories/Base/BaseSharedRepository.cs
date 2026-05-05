@@ -18,6 +18,11 @@ namespace Mdaresna.Infrastructure.Repositories.Base
             this.context = context;
         }
 
+        public IQueryable<T> GetQuery()
+        {
+            return context.Set<T>().AsQueryable();
+        }
+
         public async Task<T> GetAsync(Guid id)
         {
             return await context.Set<T>().FindAsync(id);

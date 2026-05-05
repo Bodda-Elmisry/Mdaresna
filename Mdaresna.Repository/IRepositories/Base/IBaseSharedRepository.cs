@@ -8,6 +8,8 @@ namespace Mdaresna.Repository.IRepositories.Base
 {
     public interface IBaseSharedRepository<T>
     {
+        IQueryable<T> GetQuery();
+
         Task<bool> IsExistAsync(Guid id);
 
         Task<T> GetAsync(Guid id);

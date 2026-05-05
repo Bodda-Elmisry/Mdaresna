@@ -9,7 +9,7 @@ using Mdaresna.Repository.IRepositories.Base;
 
 namespace Mdaresna.Infrastructure.Repositories.Base
 {
-    public class BaseCommandRepository<T> : IBaseCommandRepository<T>
+    public class BaseCommandRepository<T> : IBaseCommandRepository<T> where T : class
     {
         private readonly AppDbContext context;
 
@@ -17,6 +17,12 @@ namespace Mdaresna.Infrastructure.Repositories.Base
         {
             this.context = context;
         }
+
+        public IQueryable<T> GetQuery()
+        {
+            return context.Set<T>().AsQueryable();
+        }
+
         public bool Create(T entity)
         {
             context.Add(entity);

@@ -61,18 +61,23 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 var attendenceCompleated = await studentAttendanceCommandService.AddClassRoomAttendance(attendanceDTO);
                 if (attendenceCompleated)
                 {
-                    foreach (var studentAttendance in attendanceDTO.StudentsAttenndaceList.Where(a=> !a.IsAttend).ToList())
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Attendance);
+
+                    foreach (var studentAttendance in attendanceDTO.StudentsAttenndaceList)
                     {
-                        var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
-                        var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Attendance);
                         var studentIds = new List<Guid>();
                         studentIds.Add(studentAttendance.StudentId);
                         var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
                         if (devices.Count() > 0)
                         {
-                            var tokens = devices.Select(d => d.FcmTocken).ToList();
+                            var tokens = devices.Select(d => d.FcmTocken).Distinct().ToList();
                             var student = await studentQueryService.GetByIdAsync(studentAttendance.StudentId);
-                            await notificationProvider.SendToMultiUsersAsync(tokens, "Attendance", $"Your chield {student.FirstName} {student.LastName} didn't attend");
+                            var message = studentAttendance.IsAttend
+                                ? $"Your chield {student.FirstName} {student.LastName} attended"
+                                : $"Your chield {student.FirstName} {student.LastName} didn't attend";
+
+                            await notificationProvider.SendToMultiUsersAsync(tokens, "Attendance", message);
                         }
                     }
                     return Ok("Attendence Compleated");

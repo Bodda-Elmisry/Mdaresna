@@ -24,14 +24,32 @@ namespace Mdaresna.Controllers.UserManagement
         {
             try
             {
-                if (await userDeviceQueryService.CheckIfUserFcmTokenExistAsync(dto.UserId, dto.FcmToken))
-                {
-                    return Ok("UserDevice created successfully");
-                }
-
                 if (dto == null)
                 {
                     return BadRequest("UserDevice cannot be null");
+                }
+
+                var existingDevice = await userDeviceQueryService.GetByDeviceIdAsync(dto.DeviceId);
+                if (existingDevice != null)
+                {
+                    existingDevice.UserId = dto.UserId;
+                    existingDevice.Platform = dto.Platform;
+                    existingDevice.FcmToken = dto.FcmToken;
+                    existingDevice.LastSeen = DateTime.UtcNow;
+                    existingDevice.Deleted = false;
+
+                    var updated = userDeviceCommandService.Update(existingDevice);
+                    if (updated)
+                    {
+                        return Ok("UserDevice created successfully");
+                    }
+
+                    return StatusCode(500, "Error updating UserDevice");
+                }
+
+                if (await userDeviceQueryService.CheckIfUserFcmTokenExistAsync(dto.UserId, dto.FcmToken))
+                {
+                    return Ok("UserDevice created successfully");
                 }
 
                 var device = new UserDevice
@@ -40,6 +58,7 @@ namespace Mdaresna.Controllers.UserManagement
                     DeviceId = dto.DeviceId,
                     Platform = dto.Platform,
                     FcmToken = dto.FcmToken,
+                    LastSeen = DateTime.UtcNow,
                 };
 
                 var result = userDeviceCommandService.Create(device);

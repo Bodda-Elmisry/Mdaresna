@@ -43,5 +43,10 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Que
             return await schoolTeacherCourseQueryRepository.GetSchoolTeacherCourceInitialListsAsync(schoolId);
         }
 
+        public async Task<IEnumerable<SchoolTeacherCourse>> GetTeacherCoursesAsync(Guid teacherId, Guid schoolId)
+        {
+            return await schoolTeacherCourseQueryRepository.GetTeacherCoursesAsync(teacherId, schoolId);
+        }
+
     }
 }

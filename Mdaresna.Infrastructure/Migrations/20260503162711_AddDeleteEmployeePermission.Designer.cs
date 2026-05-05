@@ -4,6 +4,7 @@ using Mdaresna.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Mdaresna.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260503162711_AddDeleteEmployeePermission")]
+    partial class AddDeleteEmployeePermission
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1001,11 +1004,11 @@ namespace Mdaresna.Infrastructure.Migrations
                             AllowedToMapToClassroom = false,
                             AppPermission = false,
                             Deleted = false,
-                            Description = "manage Year Monthes",
-                            Description_AR = "ادارة أشهر السنة الدراسية عرض, اضافة, تعديل وحذف",
+                            Description = "View Year Monthes",
+                            Description_AR = "عرض أشهر السنة الدراسية",
                             Key = "ViewYearMonthes",
-                            Name = "Manage Year Monthes",
-                            Name_AR = "ادارة أشهر السنة الدراسية عرض, اضافة, تعديل وحذف",
+                            Name = "View Year Monthes",
+                            Name_AR = "عرض أشهر السنة الدراسية",
                             SchoolPermission = true
                         },
                         new
@@ -2115,32 +2118,6 @@ namespace Mdaresna.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("4c1e2d42-8f6c-4b8a-9a80-6a8f6d034d5a"),
-                            AllowedToMapToClassroom = false,
-                            AppPermission = true,
-                            Deleted = false,
-                            Description = "View reported users with report counts",
-                            Description_AR = "عرض المستخدمين المبلغ عنهم مع عدد البلاغات",
-                            Key = "ShowReportedUsers",
-                            Name = "Show Reported Users",
-                            Name_AR = "عرض المستخدمين المبلغ عنهم",
-                            SchoolPermission = false
-                        },
-                        new
-                        {
-                            Id = new Guid("ea7e7a5d-64c0-4ae6-b8b1-70a7d7e4f66c"),
-                            AllowedToMapToClassroom = false,
-                            AppPermission = false,
-                            Deleted = false,
-                            Description = "View reported users for the selected school",
-                            Description_AR = "عرض المستخدمين المبلغ عنهم للمدرسة المحددة",
-                            Key = "ShowSchoolReportedUsers",
-                            Name = "Show School Reported Users",
-                            Name_AR = "عرض المستخدمين المبلغ عنهم للمدرسة",
-                            SchoolPermission = true
-                        },
-                        new
-                        {
                             Id = new Guid("c1f5a23e-3b9c-4e57-8ad8-1bbf2f7a2c4d"),
                             AllowedToMapToClassroom = false,
                             AppPermission = true,
@@ -2374,12 +2351,6 @@ namespace Mdaresna.Infrastructure.Migrations
                         {
                             RoleId = new Guid("228ae7f5-c704-4660-aeb0-0e1f43112ae1"),
                             PermissionId = new Guid("8a01a316-9151-4bb7-8b0e-a87e5ee7e367"),
-                            Deleted = false
-                        },
-                        new
-                        {
-                            RoleId = new Guid("228ae7f5-c704-4660-aeb0-0e1f43112ae1"),
-                            PermissionId = new Guid("4c1e2d42-8f6c-4b8a-9a80-6a8f6d034d5a"),
                             Deleted = false
                         },
                         new
@@ -2842,12 +2813,6 @@ namespace Mdaresna.Infrastructure.Migrations
                         {
                             RoleId = new Guid("4b8a99fe-b759-4c18-9500-8052c3d7ac73"),
                             PermissionId = new Guid("2e6d4d17-1e34-4f7d-a8d8-1e4b1c737bb4"),
-                            Deleted = false
-                        },
-                        new
-                        {
-                            RoleId = new Guid("4b8a99fe-b759-4c18-9500-8052c3d7ac73"),
-                            PermissionId = new Guid("ea7e7a5d-64c0-4ae6-b8b1-70a7d7e4f66c"),
                             Deleted = false
                         },
                         new

@@ -7,6 +7,6 @@ namespace Mdaresna.Repository.IRepositories.UserManagement.Query
     public interface IUserReportQueryRepository : IBaseQueryRepository<UserReport>
     {
         Task<IEnumerable<UserReportResultDTO>> GetUserReportsAsync(Guid reportedUserId);
-        Task<IEnumerable<UserReportsCountResultDTO>> GetUsersWithReportsCountAsync(string? userName, int? minReportsCount, int? maxReportsCount, int pageNumber);
+        Task<IEnumerable<UserReportsCountResultDTO>> GetUsersWithReportsCountAsync(Guid? schoolId, string? userName, int? minReportsCount, int? maxReportsCount, int pageNumber);
     }
 }

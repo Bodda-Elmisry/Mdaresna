@@ -130,6 +130,12 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
             builder.HasData(new RolePermission
             {
                 RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
+                PermissionId = Guid.Parse("4C1E2D42-8F6C-4B8A-9A80-6A8F6D034D5A")
+            });
+
+            builder.HasData(new RolePermission
+            {
+                RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
                 PermissionId = Guid.Parse("C1F5A23E-3B9C-4E57-8AD8-1BBF2F7A2C4D")
             });
 
@@ -454,6 +460,16 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
             builder.HasData(new RolePermission
             {
                 RoleId = Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"),
+                PermissionId = Guid.Parse("666F4016-4375-4CA0-BA48-6C1CAB50F91A")
+            });
+            builder.HasData(new RolePermission
+            {
+                RoleId = Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"),
+                PermissionId = Guid.Parse("5ED6B95D-CD84-4B2C-BEB8-88686933EA78")
+            });
+            builder.HasData(new RolePermission
+            {
+                RoleId = Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"),
                 PermissionId = Guid.Parse("DD0F56AD-6039-4A8B-9D26-EBD5ABE87E7D")
             });
             builder.HasData(new RolePermission
@@ -515,6 +531,17 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
             {
                 RoleId = Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"),
                 PermissionId = Guid.Parse("5B4C93D4-22E3-4D89-BDB8-6B6EC2F7E840")
+            });
+            builder.HasData(new RolePermission
+            {
+                RoleId = Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"),
+                PermissionId = Guid.Parse("2E6D4D17-1E34-4F7D-A8D8-1E4B1C737BB4")
+            });
+
+            builder.HasData(new RolePermission
+            {
+                RoleId = Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"),
+                PermissionId = Guid.Parse("EA7E7A5D-64C0-4AE6-B8B1-70A7D7E4F66C")
             });
         }
 

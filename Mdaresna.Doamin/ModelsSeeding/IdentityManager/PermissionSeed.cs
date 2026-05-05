@@ -622,10 +622,10 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 {
                     Id = Guid.Parse("69A0778B-A7A8-4E47-B8FD-D061428DBB95"),
                     Key = "ViewYearMonthes",
-                    Name = "View Year Monthes",
-                    Name_AR = "عرض أشهر السنة الدراسية",
-                    Description = "View Year Monthes",
-                    Description_AR = "عرض أشهر السنة الدراسية",
+                    Name = "Manage Year Monthes",
+                    Name_AR = "ادارة أشهر السنة الدراسية عرض, اضافة, تعديل وحذف",
+                    Description = "manage Year Monthes",
+                    Description_AR = "ادارة أشهر السنة الدراسية عرض, اضافة, تعديل وحذف",
                     SchoolPermission = true,
                     AppPermission = false
                 },
@@ -904,10 +904,10 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 {
                     Id = Guid.Parse("512D2EBF-DD4A-482B-8753-1252FE196511"),
                     Key = "ViewPaymentsTransaction",
-                    Name = "View Payments Transaction",
-                    Name_AR = "عرض حركات الدفع",
-                    Description = "View Payments Transaction",
-                    Description_AR = "عرض حركات الدفع",
+                    Name = "View Allocations Transaction",
+                    Name_AR = "عرض حركات التخصيص",
+                    Description = "View Allocations Transaction",
+                    Description_AR = "عرض حركات التخصيص",
                     SchoolPermission = false,
                     AppPermission = true
                 },
@@ -1061,10 +1061,10 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 {
                     Id = Guid.Parse("2989C158-EF37-40F8-BDF8-637C874F2F1E"),
                     Key = "AddSchoolPayment",
-                    Name = "Add School Payment",
-                    Name_AR = "إضافة دفعة مدرسية",
-                    Description = "Add School Payment",
-                    Description_AR = "إضافة دفعة مدرسية",
+                    Name = "Add School Allocation",
+                    Name_AR = "إضافة وحدات مدرسية",
+                    Description = "Add School Allocation",
+                    Description_AR = "إضافة وحدات مدرسية",
                     SchoolPermission = true,
                     AppPermission = false
                 },
@@ -1098,6 +1098,17 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name_AR = "حذف المعلم",
                     Description = "Delete Teacher",
                     Description_AR = "حذف المعلم",
+                    SchoolPermission = true,
+                    AppPermission = false
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("5ED6B95D-CD84-4B2C-BEB8-88686933EA78"),
+                    Key = "DeleteEmployee",
+                    Name = "Delete Employee",
+                    Name_AR = "حذف الموظف",
+                    Description = "Delete Employee",
+                    Description_AR = "حذف الموظف",
                     SchoolPermission = true,
                     AppPermission = false
                 },
@@ -1226,10 +1237,10 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 {
                     Id = Guid.Parse("006EDBB6-657D-41CF-9E01-8AB9CF4CEA69"),
                     Key = "RemoveSchoolPayment",
-                    Name = "Remove School Payment",
-                    Name_AR = "إزالة دفعة مدرسية",
-                    Description = "Remove School Payment",
-                    Description_AR = "إزالة دفعة مدرسية",
+                    Name = "Remove School Allocation",
+                    Name_AR = "إزالة وحدات مدرسية",
+                    Description = "Remove School Allocation",
+                    Description_AR = "إزالة وحدات مدرسية",
                     SchoolPermission = true,
                     AppPermission = false,
                     Deleted = true
@@ -1238,10 +1249,10 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 {
                     Id = Guid.Parse("F76D6CD8-4A98-4EBA-9D09-9204009D7839"),
                     Key = "UpdateSchoolPayment",
-                    Name = "Update School Payment",
-                    Name_AR = "تحديث دفعة مدرسية",
-                    Description = "Update School Payment",
-                    Description_AR = "تحديث دفعة مدرسية",
+                    Name = "Update School Allocation",
+                    Name_AR = "تحديث الوحدات المدرسية",
+                    Description = "Update School Allocation",
+                    Description_AR = "تحديث الوحدات المدرسية",
                     SchoolPermission = true,
                     AppPermission = false
                 },
@@ -1305,10 +1316,10 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 {
                     Id = Guid.Parse("EC2C9457-2184-4B45-B271-A90A461A816E"),
                     Key = "ViewSchoolPaymentRequest",
-                    Name = "View School Payment Request",
-                    Name_AR = "عرض طلب دفعة مدرسية",
-                    Description = "View School Payment Request",
-                    Description_AR = "عرض طلب دفعة مدرسية",
+                    Name = "View School Allocations Request",
+                    Name_AR = "عرض طلب الوحدات المدرسية",
+                    Description = "View School Allocations Request",
+                    Description_AR = "عرض طلب الوحدات المدرسية",
                     SchoolPermission = true,
                     AppPermission = false
                 },
@@ -1384,10 +1395,10 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 {
                     Id = Guid.Parse("A1BD5EF1-6A55-4E1E-8BB8-DA39344E4412"),
                     Key = "DeleteSchoolPaymentRequest",
-                    Name = "Delete School Payment Request",
-                    Name_AR = "حذف طلب دفع المدرسة",
-                    Description = "Delete School Payment Request",
-                    Description_AR = "حذف طلب دفع المدرسة",
+                    Name = "Delete School Allocations Request",
+                    Name_AR = "حذف طلب الوحدات المدرسة",
+                    Description = "Delete School Allocations Request",
+                    Description_AR = "حذف طلب الوحدات المدرسة",
                     SchoolPermission = true,
                     AppPermission = false
                 },
@@ -1417,10 +1428,10 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 {
                     Id = Guid.Parse("EBDE1C53-4840-484F-AC23-DF838E6282DC"),
                     Key = "ViewPaymentsRequests",
-                    Name = "View Payments Requests",
-                    Name_AR = "عرض طلبات الدفع",
-                    Description = "View Payments Requests",
-                    Description_AR = "عرض طلبات الدفع",
+                    Name = "View Allocations Requests",
+                    Name_AR = "عرض طلبات التخصيص",
+                    Description = "View Allocations Requests",
+                    Description_AR = "عرض طلبات التخصيص",
                     SchoolPermission = false,
                     AppPermission = true
                 },
@@ -1439,10 +1450,10 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 {
                     Id = Guid.Parse("061AC24B-3828-4360-833F-EF5865712E39"),
                     Key = "CreatePaymentType",
-                    Name = "Create Payment Type",
-                    Name_AR = "إنشاء نوع دفع",
-                    Description = "Create Payment Type",
-                    Description_AR = "إنشاء نوع دفع",
+                    Name = "Create Allocation Type",
+                    Name_AR = "إنشاء نوع تخصيص",
+                    Description = "Create Allocation Type",
+                    Description_AR = "إنشاء نوع تخصيص",
                     SchoolPermission = false,
                     AppPermission = true
                 },
@@ -1472,10 +1483,10 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 {
                     Id = Guid.Parse("0A0AB8A7-1D51-4B03-B10A-647A8F90EC24"),
                     Key = "DeletePaymentType",
-                    Name = "Delete Payment Type",
-                    Name_AR = "حذف طريقة الدفع",
-                    Description = "Delete Payment Type",
-                    Description_AR = "حذف طريقة الدفع",
+                    Name = "Delete Allocation Type",
+                    Name_AR = "حذف طريقة التهصيص",
+                    Description = "Delete Allocation Type",
+                    Description_AR = "حذف طريقة التخصيص",
                     SchoolPermission = false,
                     AppPermission = true
                 },
@@ -1483,10 +1494,10 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 {
                     Id = Guid.Parse("9C8526E9-9119-43D8-A434-4C4828C8A5D9"),
                     Key = "ViewPaymentTypesList",
-                    Name = "View Payment Types List",
-                    Name_AR = "عرض طرق الدفع",
-                    Description = "View Payment Types List",
-                    Description_AR = "عرض طرق الدفع",
+                    Name = "View Allocation Types List",
+                    Name_AR = "عرض طرق التخصيص",
+                    Description = "View Allocation Types List",
+                    Description_AR = "عرض طرق التخصيص",
                     SchoolPermission = false,
                     AppPermission = true
                 },
@@ -1494,10 +1505,10 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 {
                     Id = Guid.Parse("56D9A5B6-28A6-4E8D-ADE6-54AD37C846BD"),
                     Key = "UpdatePaymentType",
-                    Name = "Update Payment Type",
-                    Name_AR = "تعديل طريقة الدفع",
-                    Description = "Update Payment Type",
-                    Description_AR = "تعديل طريقة الدفع",
+                    Name = "Update Allocation Type",
+                    Name_AR = "تعديل طريقة التخصيص",
+                    Description = "Update Allocation Type",
+                    Description_AR = "تعديل طريقة التخصيص",
                     SchoolPermission = false,
                     AppPermission = true
                 },
@@ -1553,6 +1564,39 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Name_AR = "Delete School Post",
                     Description = "Delete school post (school manager)",
                     Description_AR = "Delete school post (school manager)",
+                    SchoolPermission = true,
+                    AppPermission = false
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("2E6D4D17-1E34-4F7D-A8D8-1E4B1C737BB4"),
+                    Key = "ShowSchoolReportedPosts",
+                    Name = "Show School Reported Posts",
+                    Name_AR = "عرض المنشورات المبلغ عنها للمدرسة",
+                    Description = "View reported posts for the selected school",
+                    Description_AR = "عرض المنشورات المبلغ عنها للمدرسة المحددة",
+                    SchoolPermission = true,
+                    AppPermission = false
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("4C1E2D42-8F6C-4B8A-9A80-6A8F6D034D5A"),
+                    Key = "ShowReportedUsers",
+                    Name = "Show Reported Users",
+                    Name_AR = "عرض المستخدمين المبلغ عنهم",
+                    Description = "View reported users with report counts",
+                    Description_AR = "عرض المستخدمين المبلغ عنهم مع عدد البلاغات",
+                    SchoolPermission = false,
+                    AppPermission = true
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("EA7E7A5D-64C0-4AE6-B8B1-70A7D7E4F66C"),
+                    Key = "ShowSchoolReportedUsers",
+                    Name = "Show School Reported Users",
+                    Name_AR = "عرض المستخدمين المبلغ عنهم للمدرسة",
+                    Description = "View reported users for the selected school",
+                    Description_AR = "عرض المستخدمين المبلغ عنهم للمدرسة المحددة",
                     SchoolPermission = true,
                     AppPermission = false
                 },

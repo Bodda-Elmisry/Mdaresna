@@ -28,6 +28,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         private readonly IUserPermissionCommandService userPermissionCommandService;
         private readonly IClassRoomTeacherCourseQueryService classRoomTeacherCourseQueryService;
         private readonly IClassRoomTeacherCourseCommandService classRoomTeacherCourseCommandService;
+        private readonly ISchoolTeacherCourseQueryService schoolTeacherCourseQueryService;
+        private readonly ISchoolTeacherCourseCommandService schoolTeacherCourseCommandService;
         private readonly ISchoolQueryService schoolQueryService;
         private readonly INotificationFactory notificationFactory;
         private readonly IUserDeviceQueryService userDeviceQueryService;
@@ -40,6 +42,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                                        IUserPermissionCommandService userPermissionCommandService,
                                        IClassRoomTeacherCourseQueryService classRoomTeacherCourseQueryService,
                                        IClassRoomTeacherCourseCommandService classRoomTeacherCourseCommandService,
+                                       ISchoolTeacherCourseQueryService schoolTeacherCourseQueryService,
+                                       ISchoolTeacherCourseCommandService schoolTeacherCourseCommandService,
                                        ISchoolQueryService schoolQueryService,
                                            INotificationFactory notificationFactory,
                                            IUserDeviceQueryService userDeviceQueryService)
@@ -52,6 +56,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             this.userPermissionCommandService = userPermissionCommandService;
             this.classRoomTeacherCourseQueryService = classRoomTeacherCourseQueryService;
             this.classRoomTeacherCourseCommandService = classRoomTeacherCourseCommandService;
+            this.schoolTeacherCourseQueryService = schoolTeacherCourseQueryService;
+            this.schoolTeacherCourseCommandService = schoolTeacherCourseCommandService;
             this.schoolQueryService = schoolQueryService;
             this.notificationFactory = notificationFactory;
             this.userDeviceQueryService = userDeviceQueryService;
@@ -62,6 +68,14 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
+                var schoolManagerRole = await userRoleQueryService.GetUserRoleAsync(
+                    schoolTeacher.TeacherId,
+                    Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"),
+                    schoolTeacher.SchoolId);
+
+                if (schoolManagerRole != null)
+                    return Conflict("School manager can't be assigned as teacher");
+
                 var teacher = await schoolTeacherQueryService.GetSchoolTeacherByIdAsync(schoolTeacher.SchoolId, schoolTeacher.TeacherId);
 
                 if (teacher != null)
@@ -137,6 +151,25 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
+                var teacherClassrooms = await classRoomTeacherCourseQueryService.GetTeacherClassroomsCoursesAsync(schoolTeacher.TeacherId, schoolTeacher.SchoolId);
+                var teacherCourses = await schoolTeacherCourseQueryService.GetTeacherCoursesAsync(schoolTeacher.TeacherId, schoolTeacher.SchoolId);
+
+                if (teacherClassrooms != null && teacherClassrooms.Any())
+                {
+                    foreach (var classroom in teacherClassrooms)
+                    {
+                        await classRoomTeacherCourseCommandService.DeleteAsync(classroom);
+                    }
+                }
+
+                if (teacherCourses.Any())
+                {
+                    foreach (var teacherCourse in teacherCourses)
+                    {
+                        await schoolTeacherCourseCommandService.DeleteAsync(teacherCourse);
+                    }
+                }
+
                 var sTeacher = new SchoolTeacher
                 {
                     SchoolId = schoolTeacher.SchoolId,
@@ -220,6 +253,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             {
 
                 var teacherClassrooms = await classRoomTeacherCourseQueryService.GetTeacherClassroomsCoursesAsync(dto.TeacherId, dto.SchoolId);
+                var teacherCourses = await schoolTeacherCourseQueryService.GetTeacherCoursesAsync(dto.TeacherId, dto.SchoolId);
 
                 var sTeacher = await schoolTeacherQueryService.GetSchoolTeacherByIdAsync(dto.SchoolId, dto.TeacherId);
                 if (sTeacher == null)
@@ -233,6 +267,14 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 
 
                         await classRoomTeacherCourseCommandService.DeleteAsync(classroom);
+                    }
+                }
+
+                if (teacherCourses.Any())
+                {
+                    foreach (var teacherCourse in teacherCourses)
+                    {
+                        await schoolTeacherCourseCommandService.DeleteAsync(teacherCourse);
                     }
                 }
 

@@ -23,9 +23,9 @@ namespace Mdaresna.Infrastructure.Services.UserManagement.Query
             return await userReportQueryRepository.GetUserReportsAsync(reportedUserId);
         }
 
-        public async Task<IEnumerable<UserReportsCountResultDTO>> GetUsersWithReportsCountAsync(string? userName, int? minReportsCount, int? maxReportsCount, int pageNumber)
+        public async Task<IEnumerable<UserReportsCountResultDTO>> GetUsersWithReportsCountAsync(Guid? schoolId, string? userName, int? minReportsCount, int? maxReportsCount, int pageNumber)
         {
-            return await userReportQueryRepository.GetUsersWithReportsCountAsync(userName, minReportsCount, maxReportsCount, pageNumber);
+            return await userReportQueryRepository.GetUsersWithReportsCountAsync(schoolId, userName, minReportsCount, maxReportsCount, pageNumber);
         }
     }
 }

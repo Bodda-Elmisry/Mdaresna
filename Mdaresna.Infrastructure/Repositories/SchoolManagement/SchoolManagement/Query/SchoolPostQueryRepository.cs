@@ -83,6 +83,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
         }
 
         public async Task<IEnumerable<SchoolPostReportsCountResultDTO>> GetPostsWithReportsCountAsync(
+            Guid? schoolId,
             string? schoolName,
             int? minReportsCount,
             int? maxReportsCount,
@@ -96,6 +97,11 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                 .Include(p => p.Poster)
                 .Include(p => p.School)
                 .Where(x => x.Deleted == false);
+
+            if (schoolId.HasValue && schoolId.Value != Guid.Empty)
+            {
+                postsQuery = postsQuery.Where(x => x.SchoolId == schoolId.Value);
+            }
 
             if (!string.IsNullOrEmpty(normalizedSchoolName))
             {
