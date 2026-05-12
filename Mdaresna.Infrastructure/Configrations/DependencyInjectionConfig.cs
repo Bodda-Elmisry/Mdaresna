@@ -20,6 +20,7 @@ using Mdaresna.Infrastructure.Repositories.SettingsManagement.Query;
 using Mdaresna.Infrastructure.Repositories.TransactionsManagement;
 using Mdaresna.Infrastructure.Repositories.UserManagement.Command;
 using Mdaresna.Infrastructure.Repositories.UserManagement.Query;
+using Mdaresna.Infrastructure.Services;
 using Mdaresna.Infrastructure.Services.AdminManagement.Command;
 using Mdaresna.Infrastructure.Services.AdminManagement.Query;
 using Mdaresna.Infrastructure.Services.Base;
@@ -60,6 +61,7 @@ using Mdaresna.Repository.IRepositories.SettingsManagement.Query;
 using Mdaresna.Repository.IRepositories.TransactionsManagement;
 using Mdaresna.Repository.IRepositories.UserManagement.Command;
 using Mdaresna.Repository.IRepositories.UserManagement.Query;
+using Mdaresna.Repository.IServices;
 using Mdaresna.Repository.IServices.AdminManagement.Command;
 using Mdaresna.Repository.IServices.AdminManagement.Query;
 using Mdaresna.Repository.IServices.Base;
@@ -559,6 +561,7 @@ namespace Mdaresna.Infrastructure.Configrations
         {
             //services.AddScoped<IFcmService, FcmService>();
             services.AddScoped<IImageUploderService, ImageUploderService>();
+            services.AddScoped<IReportingService, ReportingService>();
         }
 
         #endregion

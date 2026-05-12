@@ -74,7 +74,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 var schoolManagerRole = await userRoleQueryService.GetUserRoleAsync(
                     dto.EmployeeId,
                     Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"),
-                    dto.SchoolId);
+                    null);
 
                 if (schoolManagerRole != null)
                     return Conflict("School manager can't be assigned as employee");
