@@ -102,7 +102,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                     if (devices.Count() > 0)
                     {
                         var tokens = devices.Select(d => d.FcmToken).ToList();
-                        await notificationProvider.SendToMultiUsersAsync(tokens, "Relation", $"Chield {addedRow.StudentName} added to you");
+                        await notificationProvider.SendToMultiUsersAsync(tokens, "Relation", $"سعدنا انضمامك؛ تم ربط ملف الطالب {addedRow.StudentName} بحسابك بنجاح. نتمنى لكم رحلة متابعة ممتعة ومثمرة.");
                     }
 
                     return Ok(addedRow);

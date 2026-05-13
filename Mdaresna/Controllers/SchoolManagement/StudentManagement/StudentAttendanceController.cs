@@ -74,8 +74,8 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                             var tokens = devices.Select(d => d.FcmTocken).Distinct().ToList();
                             var student = await studentQueryService.GetByIdAsync(studentAttendance.StudentId);
                             var message = studentAttendance.IsAttend
-                                ? $"Your chield {student.FirstName} {student.LastName} attended"
-                                : $"Your chield {student.FirstName} {student.LastName} didn't attend";
+                                ? $"تم تسجيل حضور الطالب {student.FirstName} {student.LastName} في المدرسة. نتمنى له يوماً دراسياً مليئاً بالنشاط والتميز!"
+                                : $"نود إفادتكم بأن الطالب {student.FirstName} {student.LastName} غائب عن مقعده الدراسي اليوم. نأمل أن يكون المانع خيراً، مع تمنياتنا له بالسلامة.";
 
                             await notificationProvider.SendToMultiUsersAsync(tokens, "Attendance", message);
                         }

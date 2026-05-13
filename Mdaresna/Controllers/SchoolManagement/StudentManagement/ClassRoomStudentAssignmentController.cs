@@ -124,7 +124,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 {
                     var tokens = devices.Select(d => d.FcmTocken).ToList();
                     var student = await studentQueryService.GetByIdAsync(dto.StudentId);
-                    await notificationProvider.SendToMultiUsersAsync(tokens, "New Assignement", $"New assignement added to your chield {student.FirstName} {student.LastName}");
+                    await notificationProvider.SendToMultiUsersAsync(tokens, "New Assignement", $"مت إضافة واجب جديد لـ {student.FirstName} {student.LastName}. بلمسة من تشجيعكم ومتابعتكم، سيبدع بالتأكيد في إنجازه");
                 }
 
                 return Ok(await classRoomStudentAssignmentQueryService.GetClassRoomStudentAssignmentViewAsync(studentAssignment.StudentId, studentAssignment.AssignmentId));
@@ -153,6 +153,18 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 var updated = classRoomStudentAssignmentCommandService.Update(sAss);
                 if (!updated)
                     return BadRequest("Error in Updating");
+
+                var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Assignment);
+                var studentIds = new List<Guid>();
+                studentIds.Add(dto.StudentId);
+                var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
+                if (devices.Count() > 0)
+                {
+                    var tokens = devices.Select(d => d.FcmTocken).ToList();
+                    var student = await studentQueryService.GetByIdAsync(dto.StudentId);
+                    await notificationProvider.SendToMultiUsersAsync(tokens, "New Assignement", $"تم تقييم الواجب الخاص بـ {student.FirstName} {student.LastName}. يمكنك الآن الاطلاع على النتائج وملاحظات المعلم عبر التطبيق.");
+                }
 
                 return Ok(await classRoomStudentAssignmentQueryService.GetClassRoomStudentAssignmentViewAsync(sAss.StudentId, sAss.AssignmentId));
 

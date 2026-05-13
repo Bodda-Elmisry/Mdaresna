@@ -120,7 +120,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 {
                     var tokens = devices.Select(d => d.FcmTocken).ToList();
                     var student = await studentQueryService.GetByIdAsync(dto.StudentId);
-                    await notificationProvider.SendToMultiUsersAsync(tokens, "New Activity", $"New activity added to your chield {student.FirstName} {student.LastName}");
+                    await notificationProvider.SendToMultiUsersAsync(tokens, "New Activity", $"نشاط مدرسي جديد بانتظار {student.FirstName} {student.LastName}! تعرف على التفاصيل وشاركه الحماس عبر قسم الأنشطة.");
                 }
 
                 return Ok(await classRoomStudentActivityQueryService.GetClassRoomStudentActivityViewAsync(studentActivity.StudentId, studentActivity.ActivityId));
@@ -148,6 +148,19 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 var updated = classRoomStudentActivityCommandService.Update(sAct);
                 if (!updated)
                     return BadRequest("Error in Updating");
+
+
+                var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Activity);
+                var studentIds = new List<Guid>();
+                studentIds.Add(dto.StudentId);
+                var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
+                if (devices.Count() > 0)
+                {
+                    var tokens = devices.Select(d => d.FcmTocken).ToList();
+                    var student = await studentQueryService.GetByIdAsync(dto.StudentId);
+                    await notificationProvider.SendToMultiUsersAsync(tokens, "New Activity", $"تم رصد تقييم مشاركة {student.FirstName} {student.LastName} في النشاط. يمكنكم الآن رؤية التقييم والاحتفاء بتجربته الأخيرة.");
+                }
 
                 return Ok(await classRoomStudentActivityQueryService.GetClassRoomStudentActivityViewAsync(sAct.StudentId, sAct.ActivityId));
 

@@ -96,7 +96,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 {
                     var tokens = devices.Select(d => d.FcmTocken).ToList();
                     var student = await studentQueryService.GetByIdAsync(dTO.StudentId);
-                    await notificationProvider.SendToMultiUsersAsync(tokens, "New Note", $"New note added to your chield {student.FirstName} {student.LastName}");
+                    await notificationProvider.SendToMultiUsersAsync(tokens, "New Note", $"توجد ملاحظة جديدة بخصوص الطالب  {student.FirstName} {student.LastName}. يهمنا اطلاعكم عليها لنستمر معاً في دعم مسيرته التعليمية .");
                 }
 
                 return Ok(await studentNoteQueryService.GetStudentNoteViewById(note.Id));
