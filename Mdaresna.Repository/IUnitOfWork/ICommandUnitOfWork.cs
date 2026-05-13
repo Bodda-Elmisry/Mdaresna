@@ -55,6 +55,7 @@ namespace Mdaresna.Repository.IUnitOfWork
         IClassRoomStudentActivityCommandRepository ClassRoomStudentActivityCommandRepository { get; }
         IClassRoomStudentAssignmentCommandRepository ClassRoomStudentAssignmentCommandRepository { get; }
         IClassRoomStudentExamCommandRepository ClassRoomStudentExamCommandRepository { get; }
+        IStudentAbsencePermitCommandRepository StudentAbsencePermitCommandRepository { get; }
         IStudentAttendanceCommandRepository StudentAttendanceCommandRepository { get; }
         IStudentCommandRepository StudentCommandRepository { get; }
         IStudentExamRateCommandRepository StudentExamRateCommandRepository { get; }

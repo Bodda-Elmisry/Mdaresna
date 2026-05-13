@@ -33,6 +33,7 @@ namespace Mdaresna.Infrastructure.UnitOfWork
         private IClassRoomStudentActivityQueryRepository? _classRoomStudentActivityQueryRepository;
         private IClassRoomStudentAssignmentQueryRepository? _classRoomStudentAssignmentQueryRepository;
         private IClassRoomStudentExamQueryRepository? _classRoomStudentExamQueryRepository;
+        private IStudentAbsencePermitQueryRepository? _studentAbsencePermitQueryRepository;
         private IStudentAttendanceQueryRepository? _studentAttendanceQueryRepository;
         private IStudentExamRateQueryRepository? _studentExamRateQueryRepository;
         private IStudentNoteQueryRepository? _studentNoteQueryRepository;
@@ -122,6 +123,9 @@ namespace Mdaresna.Infrastructure.UnitOfWork
 
         public IClassRoomStudentExamQueryRepository ClassRoomStudentExamQueryRepository => _classRoomStudentExamQueryRepository ??=
             _serviceProvider.GetRequiredService<IClassRoomStudentExamQueryRepository>();
+
+        public IStudentAbsencePermitQueryRepository StudentAbsencePermitQueryRepository => _studentAbsencePermitQueryRepository ??=
+            _serviceProvider.GetRequiredService<IStudentAbsencePermitQueryRepository>();
 
         public IStudentAttendanceQueryRepository StudentAttendanceQueryRepository => _studentAttendanceQueryRepository ??=
             _serviceProvider.GetRequiredService<IStudentAttendanceQueryRepository>();

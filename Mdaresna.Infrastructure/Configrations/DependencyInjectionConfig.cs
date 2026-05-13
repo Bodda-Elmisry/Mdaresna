@@ -236,6 +236,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(IClassRoomStudentActivityCommandRepository), typeof(ClassRoomStudentActivityCommandRepository));
             services.AddScoped(typeof(IClassRoomStudentAssignmentCommandRepository), typeof(ClassRoomStudentAssignmentCommandRepository));
             services.AddScoped(typeof(IClassRoomStudentExamCommandRepository), typeof(ClassRoomStudentExamCommandRepository));
+            services.AddScoped(typeof(IStudentAbsencePermitCommandRepository), typeof(StudentAbsencePermitCommandRepository));
             services.AddScoped(typeof(IStudentAttendanceCommandRepository), typeof(StudentAttendanceCommandRepository));
             services.AddScoped(typeof(IStudentCommandRepository), typeof(StudentCommandRepository));
             services.AddScoped(typeof(IStudentExamRateCommandRepository), typeof(StudentExamRateCommandRepository));
@@ -248,6 +249,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(IClassRoomStudentActivityQueryRepository), typeof(ClassRoomStudentActivityQueryRepository));
             services.AddScoped(typeof(IClassRoomStudentAssignmentQueryRepository), typeof(ClassRoomStudentAssignmentQueryRepository));
             services.AddScoped(typeof(IClassRoomStudentExamQueryRepository), typeof(ClassRoomStudentExamQueryRepository));
+            services.AddScoped(typeof(IStudentAbsencePermitQueryRepository), typeof(StudentAbsencePermitQueryRepository));
             services.AddScoped(typeof(IStudentAttendanceQueryRepository), typeof(StudentAttendanceQueryRepository));
             services.AddScoped(typeof(IStudentExamRateQueryRepository), typeof(StudentExamRateQueryRepository));
             services.AddScoped(typeof(IStudentNoteQueryRepository), typeof(StudentNoteQueryRepository));
@@ -498,6 +500,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(IClassRoomStudentActivityCommandService), typeof(ClassRoomStudentActivityCommandService));
             services.AddScoped(typeof(IClassRoomStudentAssignmentCommandService), typeof(ClassRoomStudentAssignmentCommandService));
             services.AddScoped(typeof(IClassRoomStudentExamCommandService), typeof(ClassRoomStudentExamCommandService));
+            services.AddScoped(typeof(IStudentAbsencePermitCommandService), typeof(StudentAbsencePermitCommandService));
             services.AddScoped(typeof(IStudentAttendanceCommandService), typeof(StudentAttendanceCommandService));
             services.AddScoped(typeof(IStudentCommandService), typeof(StudentCommandService));
             services.AddScoped(typeof(IStudentExamRateCommandService), typeof(StudentExamRateCommandService));
@@ -510,6 +513,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(IClassRoomStudentActivityQueryService), typeof(ClassRoomStudentActivityQueryService));
             services.AddScoped(typeof(IClassRoomStudentAssignmentQueryService), typeof(ClassRoomStudentAssignmentQueryService));
             services.AddScoped(typeof(IClassRoomStudentExamQueryService), typeof(ClassRoomStudentExamQueryService));
+            services.AddScoped(typeof(IStudentAbsencePermitQueryService), typeof(StudentAbsencePermitQueryService));
             services.AddScoped(typeof(IStudentAttendanceQueryService), typeof(StudentAttendanceQueryService));
             services.AddScoped(typeof(IStudentExamRateQueryService), typeof(StudentExamRateQueryService));
             services.AddScoped(typeof(IStudentNoteQueryService), typeof(StudentNoteQueryService));

@@ -35,6 +35,11 @@ namespace Mdaresna.Infrastructure.Services
                 Request.StudentId,
                 weekStart,
                 weekEndExclusive);
+            var studentAbsencePermitFlatQuery = ReportingServiceHelper.GetStudentAbsencePermitQuery(
+                unitOfWork,
+                Request.StudentId,
+                weekStart,
+                weekEndExclusive);
             var studentAssignmentFlatQuery = ReportingServiceHelper.GetStudentAssignmentQuery(
                 unitOfWork,
                 Request.StudentId,
@@ -66,6 +71,8 @@ namespace Mdaresna.Infrastructure.Services
                 where student.Id == Request.StudentId
                 join attendance in studentAttendanceFlatQuery on student.Id equals attendance.StudentId into attendances
                 from attendance in attendances.DefaultIfEmpty()
+                join permit in studentAbsencePermitFlatQuery on student.Id equals permit.StudentId into permits
+                from permit in permits.DefaultIfEmpty()
                 join assignment in studentAssignmentFlatQuery on student.Id equals assignment.StudentId into assignments
                 from assignment in assignments.DefaultIfEmpty()
                 join exam in studentExamFlatQuery on student.Id equals exam.StudentId into exams
@@ -85,6 +92,8 @@ namespace Mdaresna.Infrastructure.Services
                     AttendanceDate = attendance != null ? attendance.AttendanceDate : null,
                     AttendanceWeekDay = attendance != null ? attendance.AttendanceWeekDay : null,
                     AttendanceIsAttend = attendance != null ? attendance.AttendanceIsAttend : null,
+                    AbsencePermitDate = permit != null ? permit.PermitDate : null,
+                    AbsencePermitReason = permit != null ? permit.PermitReason : null,
                     AssignmentId = assignment != null ? assignment.AssignmentId : null,
                     AssignmentDate = assignment != null ? assignment.AssignmentDate : null,
                     AssignmentWeekDay = assignment != null ? assignment.AssignmentWeekDay : null,
@@ -150,12 +159,22 @@ namespace Mdaresna.Infrastructure.Services
                     q => q.Key,
                     q => q.First());
 
+            var permitByDate = rows
+                .Where(q => q.AbsencePermitDate.HasValue)
+                .GroupBy(q => q.AbsencePermitDate!.Value.Date)
+                .ToDictionary(
+                    q => q.Key,
+                    q => q.First());
+
             reportResult.AttendanceReport = Enumerable.Range(0, 7)
                 .Select(offset =>
                 {
                     var currentDate = weekStart.AddDays(offset);
                     var weekDate = currentDate.ToString("dd/MM/yyyy");
                     var hasAttendance = attendanceByDate.TryGetValue(currentDate.Date, out var attendanceValue);
+                    var hasPermit = permitByDate.TryGetValue(currentDate.Date, out var permitValue);
+                    var isAttend = hasAttendance && (attendanceValue!.AttendanceIsAttend ?? false);
+                    var isAbsencePermit = !isAttend && hasPermit;
 
                     return new StudentAttendanceWeeklyReportResponseDTO
                     {
@@ -163,8 +182,15 @@ namespace Mdaresna.Infrastructure.Services
                         WeekDay = hasAttendance
                             ? attendanceValue!.AttendanceWeekDay ?? currentDate.DayOfWeek.ToString()
                             : currentDate.DayOfWeek.ToString(),
-                        IsAttend = hasAttendance && (attendanceValue!.AttendanceIsAttend ?? false),
-                        IsExcption = false
+                        IsAttend = isAttend,
+                        IsExcption = isAbsencePermit,
+                        IsAbsencePermit = isAbsencePermit,
+                        AbsencePermitReason = isAbsencePermit ? permitValue!.AbsencePermitReason : null,
+                        AttendanceStatus = isAttend
+                            ? "Present"
+                            : isAbsencePermit
+                                ? "Permit"
+                                : "Absent"
                     };
                 })
                 .ToList();
@@ -281,6 +307,8 @@ namespace Mdaresna.Infrastructure.Services
             public DateTime? AttendanceDate { get; set; }
             public string? AttendanceWeekDay { get; set; }
             public bool? AttendanceIsAttend { get; set; }
+            public DateTime? AbsencePermitDate { get; set; }
+            public string? AbsencePermitReason { get; set; }
             public Guid? AssignmentId { get; set; }
             public DateTime? AssignmentDate { get; set; }
             public string? AssignmentWeekDay { get; set; }

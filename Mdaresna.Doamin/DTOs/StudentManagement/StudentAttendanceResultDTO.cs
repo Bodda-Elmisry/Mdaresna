@@ -22,5 +22,8 @@ namespace Mdaresna.Doamin.DTOs.StudentManagement
         public DateTime Date { get; set; }
         public string WeekDay { get; set; }
         public bool IsAttend { get; set; }
+        public bool IsAbsencePermit { get; set; }
+        public string? AbsencePermitReason { get; set; }
+        public string AttendanceStatus { get; set; } = string.Empty;
     }
 }

@@ -33,6 +33,7 @@ namespace Mdaresna.Repository.IUnitOfWork
         IClassRoomStudentActivityQueryRepository ClassRoomStudentActivityQueryRepository { get; }
         IClassRoomStudentAssignmentQueryRepository ClassRoomStudentAssignmentQueryRepository { get; }
         IClassRoomStudentExamQueryRepository ClassRoomStudentExamQueryRepository { get; }
+        IStudentAbsencePermitQueryRepository StudentAbsencePermitQueryRepository { get; }
         IStudentAttendanceQueryRepository StudentAttendanceQueryRepository { get; }
         IStudentExamRateQueryRepository StudentExamRateQueryRepository { get; }
         IStudentNoteQueryRepository StudentNoteQueryRepository { get; }

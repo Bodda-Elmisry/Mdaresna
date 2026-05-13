@@ -27,6 +27,27 @@ namespace Mdaresna.Infrastructure.Helpers
                 });
         }
 
+        public static IQueryable<StudentAbsencePermitFlatQueryResult> GetStudentAbsencePermitQuery(
+            IQueryUnitOfWork unitOfWork,
+            Guid studentId,
+            DateTime weekStart,
+            DateTime weekEndExclusive)
+        {
+            return unitOfWork.StudentAbsencePermitQueryRepository
+                .GetQuery()
+                .Where(q =>
+                    q.StudentId == studentId &&
+                    q.Date >= weekStart &&
+                    q.Date < weekEndExclusive)
+                .AsNoTracking()
+                .Select(q => new StudentAbsencePermitFlatQueryResult
+                {
+                    StudentId = q.StudentId,
+                    PermitDate = q.Date,
+                    PermitReason = q.Reason
+                });
+        }
+
         public static IQueryable<StudentAssignmentFlatQueryResult> GetStudentAssignmentQuery(
             IQueryUnitOfWork unitOfWork,
             Guid studentId,
@@ -176,6 +197,13 @@ namespace Mdaresna.Infrastructure.Helpers
             public DateTime AttendanceDate { get; set; }
             public string? AttendanceWeekDay { get; set; }
             public bool AttendanceIsAttend { get; set; }
+        }
+
+        internal sealed class StudentAbsencePermitFlatQueryResult
+        {
+            public Guid StudentId { get; set; }
+            public DateTime PermitDate { get; set; }
+            public string? PermitReason { get; set; }
         }
 
         internal sealed class StudentAssignmentFlatQueryResult
