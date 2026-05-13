@@ -383,7 +383,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         private async Task<string> GenerateCode(Guid schoolId)
         {
             var result = "ST";
-            var lastcode = await studentQueryService.GetMaxStudebtCodeAsync(schoolId);
+            var lastcode = await studentQueryService.GetMaxStudentCodeAsync(schoolId);
             if (lastcode == null)
                 result += "0000000001";
             else

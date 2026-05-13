@@ -17,6 +17,6 @@ namespace Mdaresna.Repository.IRepositories.SchoolManagement.StudentManagement.Q
         Task<StudentResultDTO?> GetStudentByCodeAsync(string code);
         Task<IEnumerable<StudentResultDTO>> GetStudentsBySchoolIdAndClassRoomIdAsync(Guid schoolId, Guid classroomId);
 
-        public Task<string> GetMaxStudebtCodeAsync(Guid schoolId);
+        public Task<string> GetMaxStudentCodeAsync(Guid schoolId);
     }
 }

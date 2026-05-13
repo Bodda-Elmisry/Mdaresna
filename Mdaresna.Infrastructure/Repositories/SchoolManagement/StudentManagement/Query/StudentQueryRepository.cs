@@ -150,14 +150,14 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                 };
         }
 
-        public async Task<string> GetMaxStudebtCodeAsync(Guid schoolId)
+        public async Task<string> GetMaxStudentCodeAsync(Guid schoolId)
         {
-            var anyStudents = await context.Students.AnyAsync(s => s.SchoolId == schoolId && s.Deleted == false);
+            var anyStudents = await context.Students.AnyAsync(s => s.Deleted == false);
             if (!anyStudents)
             {
                 return null;
             }
-            var student = await context.Students.OrderByDescending(s => s.CreateDate).FirstOrDefaultAsync(s => s.SchoolId == schoolId && s.Deleted == false);
+            var student = await context.Students.OrderByDescending(s => s.CreateDate).FirstOrDefaultAsync(s => s.Deleted == false);
 
             return student != null ? student.Code : string.Empty;
         }

@@ -53,9 +53,9 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Qu
             return await studentQueryRepository.GetStudentByCodeAsync(code);
         }
 
-        public async Task<string> GetMaxStudebtCodeAsync(Guid schoolId)
+        public async Task<string> GetMaxStudentCodeAsync(Guid schoolId)
         {
-            return await studentQueryRepository.GetMaxStudebtCodeAsync(schoolId);
+            return await studentQueryRepository.GetMaxStudentCodeAsync(schoolId);
         }
     }
 }
