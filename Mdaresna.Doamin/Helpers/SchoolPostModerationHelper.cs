@@ -57,17 +57,24 @@ namespace Mdaresna.Doamin.Helpers
                     Message = "This post includes blocked language and could not be submitted."
                 };
             }
-
-            if (hasImages)
+            
+            return new SchoolPostModerationDecision
             {
-                return new SchoolPostModerationDecision
-                {
-                    AllowSubmission = true,
-                    Status = SchoolPostModerationStatusEnum.PendingReview,
-                    ReasonCode = "media_requires_review",
-                    Message = "Your post was submitted for moderation and will appear after review."
-                };
-            }
+                AllowSubmission = true,
+                Status = SchoolPostModerationStatusEnum.PendingReview,
+                ReasonCode = "media_requires_review",
+                Message = "Your post was submitted for moderation and will appear after review."
+            };
+            //if (hasImages)
+            //{
+            //    return new SchoolPostModerationDecision
+            //    {
+            //        AllowSubmission = true,
+            //        Status = SchoolPostModerationStatusEnum.PendingReview,
+            //        ReasonCode = "media_requires_review",
+            //        Message = "Your post was submitted for moderation and will appear after review."
+            //    };
+            //}
 
             return new SchoolPostModerationDecision
             {

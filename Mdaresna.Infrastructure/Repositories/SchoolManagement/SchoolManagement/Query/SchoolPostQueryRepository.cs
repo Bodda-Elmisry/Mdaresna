@@ -93,34 +93,54 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             pageNumber = pageNumber <= 0 ? 1 : pageNumber;
             var normalizedSchoolName = string.IsNullOrWhiteSpace(schoolName) ? null : schoolName.Trim();
 
-            var postsQuery = context.SchoolPosts
-                .Include(p => p.Poster)
-                .Include(p => p.School)
-                .Where(x => x.Deleted == false);
+            var reportsCountQuery = context.SchoolPostReports
+                .AsNoTracking()
+                .Where(report => report.Deleted == false)
+                .GroupBy(report => report.PostId)
+                .Select(group => new
+                {
+                    PostId = group.Key,
+                    ReportsCount = group.Count()
+                });
+
+            var postsWithReports =
+                from post in context.SchoolPosts.AsNoTracking()
+                join reportsCount in reportsCountQuery
+                    on post.Id equals reportsCount.PostId into reportsCounts
+                from reportsCount in reportsCounts.DefaultIfEmpty()
+                join poster in context.Users.AsNoTracking()
+                    on post.PosterId equals poster.Id
+                join school in context.Schools.AsNoTracking()
+                    on post.SchoolId equals school.Id
+                where post.Deleted == false
+                select new
+                {
+                    PostId = post.Id,
+                    post.Content,
+                    post.PosterId,
+                    post.SchoolId,
+                    SchoolName = school.Name,
+                    post.ModerationStatus,
+                    post.ModerationReason,
+                    LastModifyDate = post.LastModifyDate ?? post.PostDate,
+                    ReportsCount = (int?)reportsCount.ReportsCount ?? 0,
+                    PosterFirstName = poster.FirstName,
+                    PosterLastName = poster.LastName
+                };
 
             if (schoolId.HasValue && schoolId.Value != Guid.Empty)
             {
-                postsQuery = postsQuery.Where(x => x.SchoolId == schoolId.Value);
+                postsWithReports = postsWithReports.Where(x => x.SchoolId == schoolId.Value);
             }
 
             if (!string.IsNullOrEmpty(normalizedSchoolName))
             {
-                postsQuery = postsQuery.Where(x => x.School.Name.Contains(normalizedSchoolName));
+                postsWithReports = postsWithReports.Where(x => x.SchoolName.Contains(normalizedSchoolName));
             }
 
-            var postsWithReports = postsQuery
-                .GroupJoin(
-                    context.SchoolPostReports.Where(r => r.Deleted == false),
-                    post => post.Id,
-                    report => report.PostId,
-                    (post, reports) => new
-                    {
-                        Post = post,
-                        ReportsCount = reports.Count()
-                    })
-                .Where(x =>
-                    x.ReportsCount > 0 ||
-                    x.Post.ModerationStatus != SchoolPostModerationStatusEnum.Approved);
+            postsWithReports = postsWithReports.Where(x =>
+                x.ReportsCount > 0 ||
+                x.ModerationStatus != SchoolPostModerationStatusEnum.Approved);
 
             if (minReportsCount.HasValue)
             {
@@ -132,25 +152,28 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                 postsWithReports = postsWithReports.Where(x => x.ReportsCount <= maxReportsCount.Value);
             }
 
-            var result = await postsWithReports
-                .OrderBy(x => x.Post.ModerationStatus == SchoolPostModerationStatusEnum.PendingReview ? 0 : 1)
-                .ThenByDescending(x => x.Post.LastModifyDate ?? x.Post.PostDate)
+            var rows = await postsWithReports
+                .OrderBy(x => x.ModerationStatus)
+                .ThenBy(x => x.LastModifyDate)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
+                .ToListAsync();
+
+            var result = rows
                 .Select(x => new SchoolPostReportsCountResultDTO
                 {
-                    PostId = x.Post.Id,
-                    Content = x.Post.Content,
-                    PosterId = x.Post.PosterId,
-                    PosterName = $"{x.Post.Poster.FirstName} {x.Post.Poster.LastName}",
-                    SchoolId = x.Post.SchoolId,
-                    SchoolName = x.Post.School.Name,
+                    PostId = x.PostId,
+                    Content = x.Content,
+                    PosterId = x.PosterId,
+                    PosterName = $"{x.PosterFirstName} {x.PosterLastName}",
+                    SchoolId = x.SchoolId,
+                    SchoolName = x.SchoolName,
                     ReportsCount = x.ReportsCount,
-                    LastModifyDate = x.Post.LastModifyDate ?? x.Post.PostDate,
-                    ModerationStatus = x.Post.ModerationStatus.ToString(),
-                    ModerationReason = x.Post.ModerationReason
+                    LastModifyDate = x.LastModifyDate,
+                    ModerationStatus = x.ModerationStatus.ToString(),
+                    ModerationReason = x.ModerationReason
                 })
-                .ToListAsync();
+                .ToList();
 
             return result;
         }

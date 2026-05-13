@@ -1539,9 +1539,9 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Id = Guid.Parse("A44F8B6E-7B16-4497-9C4B-8E55EAF4E7D4"),
                     Key = "ShowReportedPosts",
                     Name = "Show Reported Posts",
-                    Name_AR = "Show Reported Posts",
+                    Name_AR = "عرض المنشورات المبلغ عنها",
                     Description = "View reported school posts with report counts",
-                    Description_AR = "View reported school posts with report counts",
+                    Description_AR = "عرض منشورات المدارس المبلغ عنها مع عدد البلاغات",
                     SchoolPermission = false,
                     AppPermission = true
                 },
@@ -1550,9 +1550,9 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Id = Guid.Parse("8A01A316-9151-4BB7-8B0E-A87E5EE7E367"),
                     Key = "DeletePost",
                     Name = "Delete Post",
-                    Name_AR = "Delete Post",
+                    Name_AR = "خذف المنشور",
                     Description = "Delete school post",
-                    Description_AR = "Delete school post",
+                    Description_AR = "حذف منشور المدرسه",
                     SchoolPermission = false,
                     AppPermission = true
                 },
@@ -1561,9 +1561,20 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Id = Guid.Parse("5B4C93D4-22E3-4D89-BDB8-6B6EC2F7E840"),
                     Key = "DeleteSchoolPost",
                     Name = "Delete School Post",
-                    Name_AR = "Delete School Post",
-                    Description = "Delete school post (school manager)",
-                    Description_AR = "Delete school post (school manager)",
+                    Name_AR = "حذف منشورات المدرسه",
+                    Description = "Delete school post",
+                    Description_AR = "حذف منشور المدرسه",
+                    SchoolPermission = true,
+                    AppPermission = false
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("99542671-E575-43F7-9C67-5290D9CF4578"),
+                    Key = "ApproveSchoolPost",
+                    Name = "Approve School Post",
+                    Name_AR = "الموافقه على المنشورات",
+                    Description = "Approve school post",
+                    Description_AR = "الموافقه على منشورات المدرسه",
                     SchoolPermission = true,
                     AppPermission = false
                 },
