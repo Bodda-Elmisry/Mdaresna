@@ -63,6 +63,8 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             {
                 query = !string.IsNullOrEmpty(permissionName) ? query.Where(p => p.Name.Contains(permissionName)) : query;
             }
+            Console.WriteLine(query.ToQueryString());
+
             return await query.OrderBy(p => p.Name)
                                   .Skip((pageNumber - 1) * pagesize)
                                   .Take(pagesize).ToListAsync();

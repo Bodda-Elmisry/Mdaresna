@@ -28,18 +28,15 @@ namespace Mdaresna.Infrastructure.BServices.Common
 
         public async Task SendAsync(string token, string title, string body)
         {
+            var payload = CreateNotificationPayload(title, body);
             var message = new Message
             {
                 Token = token,
-                Data = new Dictionary<string, string>
-                {
-                    ["title"] = title,
-                    ["body"] = body,
-                },
+                Data = CreateDataPayload(title, payload),
                 Notification = new Notification
                 {
                     Title = title,
-                    Body = body
+                    Body = payload.DisplayBody
                 },
                 Android = new AndroidConfig
                 {
@@ -57,18 +54,15 @@ namespace Mdaresna.Infrastructure.BServices.Common
 
         public async Task SendToMultiUsersAsync(List<string> tokens, string title, string body)
         {
+            var payload = CreateNotificationPayload(title, body);
             var message = new MulticastMessage
             {
                 Tokens = tokens,
-                Data = new Dictionary<string, string>
-                {
-                    ["title"] = title,
-                    ["body"] = body,
-                },
+                Data = CreateDataPayload(title, payload),
                 Notification = new Notification
                 {
                     Title = title,
-                    Body = body
+                    Body = payload.DisplayBody
                 },
                 Android = new AndroidConfig
                 {
@@ -93,6 +87,76 @@ namespace Mdaresna.Infrastructure.BServices.Common
                         $"FCM send failed for token {tokens[i]}: {result.Responses[i].Exception?.Message}");
                 }
             }
+        }
+
+        private static Dictionary<string, string> CreateDataPayload(
+            string title,
+            NotificationPayload payload)
+        {
+            return new Dictionary<string, string>
+            {
+                ["title"] = title,
+                ["body"] = payload.DisplayBody,
+                ["rawBody"] = payload.RawBody,
+                ["schoolId"] = payload.SchoolId,
+                ["schoolBalance"] = payload.SchoolBalance,
+            };
+        }
+
+        private static NotificationPayload CreateNotificationPayload(string title, string body)
+        {
+            var payload = new NotificationPayload
+            {
+                DisplayBody = body,
+                RawBody = body,
+            };
+
+            if (string.IsNullOrWhiteSpace(body) || !body.Contains('|'))
+            {
+                return payload;
+            }
+
+            var bodyParts = body.Split('|');
+            if (bodyParts.Length < 2)
+            {
+                return payload;
+            }
+
+            var schoolIdCandidate = bodyParts[^1].Trim();
+            if (!Guid.TryParse(schoolIdCandidate, out _))
+            {
+                return payload;
+            }
+
+            payload.SchoolId = schoolIdCandidate;
+            var hasBalance =
+                title.Contains("Units Changed", StringComparison.OrdinalIgnoreCase) &&
+                bodyParts.Length > 2;
+
+            if (hasBalance)
+            {
+                payload.SchoolBalance = bodyParts[^2].Trim();
+                payload.DisplayBody = string.Join("|", bodyParts.Take(bodyParts.Length - 2)).Trim();
+            }
+            else
+            {
+                payload.DisplayBody = string.Join("|", bodyParts.Take(bodyParts.Length - 1)).Trim();
+            }
+
+            if (string.IsNullOrWhiteSpace(payload.DisplayBody))
+            {
+                payload.DisplayBody = body;
+            }
+
+            return payload;
+        }
+
+        private sealed class NotificationPayload
+        {
+            public string DisplayBody { get; set; } = string.Empty;
+            public string RawBody { get; set; } = string.Empty;
+            public string SchoolId { get; set; } = string.Empty;
+            public string SchoolBalance { get; set; } = string.Empty;
         }
     }
 }

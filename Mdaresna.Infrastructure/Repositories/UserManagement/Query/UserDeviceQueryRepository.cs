@@ -3,11 +3,6 @@ using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
 using Mdaresna.Repository.IRepositories.UserManagement.Query;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mdaresna.Infrastructure.Repositories.UserManagement.Query
 {
@@ -37,7 +32,7 @@ namespace Mdaresna.Infrastructure.Repositories.UserManagement.Query
         public async Task<IEnumerable<UserDevice>> GetByUserIdAsync(Guid userId)
         {
             return await context.UserDevices
-                .Where(ud => ud.UserId == userId).ToListAsync();
+                .Where(ud => ud.UserId == userId).Distinct().ToListAsync();
         }
 
         public async Task<IEnumerable<UserDevice>> GetUsersDevicesAsync(IEnumerable<Guid> userIds)
