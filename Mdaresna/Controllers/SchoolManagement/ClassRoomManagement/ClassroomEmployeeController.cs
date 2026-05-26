@@ -1,8 +1,6 @@
 ﻿using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.ClassRoomManagementDTO;
-using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Command;
-using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Microsoft.AspNetCore.Mvc;

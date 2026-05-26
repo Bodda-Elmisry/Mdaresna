@@ -1,10 +1,7 @@
 ﻿using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
-using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.ClassRoomManagementDTO;
-using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Command;
-using Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
@@ -21,22 +18,20 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         private readonly IClassRoomActivityCommandService classRoomActivityCommandService;
         private readonly IClassRoomStudentActivityQueryService classRoomStudentActivityQueryService;
         private readonly IClassRoomStudentActivityCommandService classRoomStudentActivityCommandService;
-        private readonly INotificationFactory notificationFactory;
-        private readonly IClassroomTransactionsFactory classroomTransactionsFactory;
+        //private readonly INotificationFactory notificationFactory;
+        //private readonly IClassroomTransactionsFactory classroomTransactionsFactory;
 
         public ClassRoomActivityController(IClassRoomActivityQueryService classRoomActivityQueryService,
                                            IClassRoomActivityCommandService classRoomActivityCommandService,
                                            IClassRoomStudentActivityQueryService classRoomStudentActivityQueryService,
-                                           IClassRoomStudentActivityCommandService classRoomStudentActivityCommandService,
-                                           INotificationFactory notificationFactory,
-                                           IClassroomTransactionsFactory classroomTransactionsFactory)
+                                           IClassRoomStudentActivityCommandService classRoomStudentActivityCommandService)
         {
             this.classRoomActivityQueryService = classRoomActivityQueryService;
             this.classRoomActivityCommandService = classRoomActivityCommandService;
             this.classRoomStudentActivityQueryService = classRoomStudentActivityQueryService;
             this.classRoomStudentActivityCommandService = classRoomStudentActivityCommandService;
-            this.notificationFactory = notificationFactory;
-            this.classroomTransactionsFactory = classroomTransactionsFactory;
+            //this.notificationFactory = notificationFactory;
+            //this.classroomTransactionsFactory = classroomTransactionsFactory;
         }
 
         [HttpPost("GetClassroomActivitysList")]
@@ -95,20 +90,20 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
 
                 if (added)
                 {
-                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
-                    var transactionProvider = classroomTransactionsFactory.GetProvider(ClassroomTransactionProvidersEnum.Activity);
-                    var devices = await transactionProvider.GetTransactionSTudentsParentsDevicesAsync(activity.Id);
-                    if (devices.Count() > 0)
-                    {
-                        foreach (var devicesGroup in devices.GroupBy(d => d.StudentId))
-                        {
-                            var tokens = devicesGroup.Select(d => d.FcmTocken).ToList();
-                            var chieldName = devicesGroup.FirstOrDefault().StudentName;
-                            await notificationProvider.SendToMultiUsersAsync(tokens, "New Activity", $"New activity added to your chield {chieldName}");
-                        }
-                        //var tokens = devices.Select(d => d.FcmTocken).ToList();
-                        //await notificationProvider.SendToMultiUsersAsync(tokens, "New Activity", "New activity added to your chield");
-                    }
+                    //var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    //var transactionProvider = classroomTransactionsFactory.GetProvider(ClassroomTransactionProvidersEnum.Activity);
+                    //var devices = await transactionProvider.GetTransactionSTudentsParentsDevicesAsync(activity.Id);
+                    //if (devices.Count() > 0)
+                    //{
+                    //    foreach (var devicesGroup in devices.GroupBy(d => d.StudentId))
+                    //    {
+                    //        var tokens = devicesGroup.Select(d => d.FcmTocken).ToList();
+                    //        var chieldName = devicesGroup.FirstOrDefault().StudentName;
+                    //        await notificationProvider.SendToMultiUsersAsync(tokens, "New Activity", $"New activity added to your chield {chieldName}");
+                    //    }
+                    //    //var tokens = devices.Select(d => d.FcmTocken).ToList();
+                    //    //await notificationProvider.SendToMultiUsersAsync(tokens, "New Activity", "New activity added to your chield");
+                    //}
 
                     return Ok(await classRoomActivityQueryService.GetClassRoomActivityById(activity.Id));
                 }
