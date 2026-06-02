@@ -59,12 +59,26 @@ namespace Mdaresna
                             ServiceLifetime.Scoped
                     );
 
+
+            builder.Services.AddDbContext<AppMainDbContext>(options =>
+                    options.UseSqlServer(
+                                builder.Configuration.GetConnectionString("MainConnection")
+                            //sqlServerOptions =>
+                            //{
+                            //    sqlServerOptions.EnableRetryOnFailure();
+                            //}
+                            ).EnableSensitiveDataLogging().LogTo(Console.WriteLine, LogLevel.Information),
+                            ServiceLifetime.Scoped
+                    );
             builder.Services.Configure<AppSettingDTO>(builder.Configuration.GetSection("AppSettings"));
+
+
 
             DependencyInjectionConfig.ConfigerRepositories(builder.Services);
             DependencyInjectionConfig.ConfigerHubs(builder.Services);
             DependencyInjectionConfig.ConfigerFactories(builder.Services);
             DependencyInjectionConfig.ConfigerServices(builder.Services);
+            DependencyInjectionConfig.ConfigerMainDB(builder.Services);
 
             //builder.WebHost.ConfigureKestrel(options =>
             //{

@@ -1,6 +1,8 @@
 ﻿using Mdaresna.Infrastructure.BServices.Common;
 using Mdaresna.Infrastructure.BServices.IdentityManagement;
 using Mdaresna.Infrastructure.Factories;
+using Mdaresna.Infrastructure.MainDB.Repositories;
+using Mdaresna.Infrastructure.MainDB.UnitOfWorks;
 using Mdaresna.Infrastructure.Repositories.AdminManagement.Command;
 using Mdaresna.Infrastructure.Repositories.AdminManagement.Query;
 using Mdaresna.Infrastructure.Repositories.Base;
@@ -80,6 +82,8 @@ using Mdaresna.Repository.IServices.SettingsManagement.Query;
 using Mdaresna.Repository.IServices.UserManagement.Command;
 using Mdaresna.Repository.IServices.UserManagement.Query;
 using Mdaresna.Repository.IUnitOfWork;
+using Mdaresna.Repository.MainDB.IRepositories;
+using Mdaresna.Repository.MainDB.IUnitOfWorks;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -106,6 +110,13 @@ namespace Mdaresna.Infrastructure.Configrations
             ConfigerUserManagementRepos(services);
             ConfigerSettingsManagementRepos(services);
             ConfigerCommonRepos(services);
+            ConfigerMainDb(services);
+        }
+
+        public static void ConfigerMainDB(IServiceCollection services)
+        {
+            
+            ConfigerMainDb(services);
         }
 
         private static void ConfigerBaseRepos(IServiceCollection services)
@@ -300,6 +311,12 @@ namespace Mdaresna.Infrastructure.Configrations
         private static void ConfigerCommonRepos(IServiceCollection services)
         {
             services.AddScoped<IImageUploderRepository, ImageUploderRepository>();
+        }
+
+        private static void ConfigerMainDb(IServiceCollection services)
+        {
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddScoped<IMainUnitOfWork, MainUnitOfWork>();
         }
 
         #endregion

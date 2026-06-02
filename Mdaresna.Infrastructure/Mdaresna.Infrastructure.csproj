@@ -27,4 +27,8 @@
     <ProjectReference Include="..\Mdaresna.Repository\Mdaresna.Repository.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="MainDB\DTOs\" />
+  </ItemGroup>
+
 </Project>

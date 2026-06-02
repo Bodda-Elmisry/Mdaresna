@@ -10,4 +10,8 @@
     <ProjectReference Include="..\Mdaresna.Doamin\Mdaresna.Doamin.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="MainDB\IServices\" />
+  </ItemGroup>
+
 </Project>
