@@ -1,14 +1,10 @@
 using Mdaresna.Doamin.DTOs.SchoolManagement;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Repositories.Base;
 using Mdaresna.Repository.IRepositories.SchoolManagement.SchoolManagement.Query;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement.Query
 {
@@ -31,7 +27,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                     YearId = m.YearId,
                     Name = m.Name,
                     Description = m.Description,
-                    IsActive = m.IsActive
+                    IsActive = m.IsActive,
+                    ReportStatus = m.ReportStatus
                 });
 
             if (isActive != null)
@@ -41,6 +38,27 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                 resultQuery = resultQuery.Where(m => m.Name.Contains(name));
 
             return await resultQuery.ToListAsync();
+        }
+
+        public async Task<IEnumerable<SchoolYearMonthResultDTO>> GetMonthsWithoutReportsAsync(Guid yearId)
+        {
+            return await context.SchoolYearMonths
+                .AsNoTracking()
+                .Where(month =>
+                    month.YearId == yearId &&
+                    month.Deleted == false &&
+                    (month.ReportStatus == ReportStatusEnum.NotCreated ||
+                     month.ReportStatus == ReportStatusEnum.Returned))
+                .Select(month => new SchoolYearMonthResultDTO
+                {
+                    Id = month.Id,
+                    YearId = month.YearId,
+                    Name = month.Name,
+                    Description = month.Description,
+                    IsActive = month.IsActive,
+                    ReportStatus = month.ReportStatus
+                })
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<SchoolYearMonth>> GetYearMonthesAsync(Guid yearId)
@@ -61,7 +79,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                 Name = row.Name,
                 Description = row.Description,
                 IsActive = row.IsActive,
-                YearId = row.YearId
+                YearId = row.YearId,
+                ReportStatus = row.ReportStatus
             };
 
         }

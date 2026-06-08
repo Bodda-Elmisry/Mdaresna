@@ -6,5 +6,6 @@ public enum ReportStatusEnum
     Requested = 2,
     Pendnig = 3,
     InReview = 4,
-    Published = 5
+    Published = 5,
+    Returned = 6
 }

@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Infrastructure.Helpers;
 using Mdaresna.Repository.IRepositories.Base;
@@ -29,6 +30,11 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Com
                 entity.Id = DataGenerationHelper.GenerateRowId();
                 entity.CreateDate = DateTime.Now;
                 entity.LastModifyDate = DateTime.Now;
+                if (entity.ReportStatus == default)
+                {
+                    entity.ReportStatus = ReportStatusEnum.NotCreated;
+                }
+
                 return commandRepository.Create(entity);
             }
             catch (Exception ex)

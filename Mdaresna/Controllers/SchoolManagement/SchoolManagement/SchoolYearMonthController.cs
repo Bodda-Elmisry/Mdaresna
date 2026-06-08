@@ -53,6 +53,20 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             }
         }
 
+        [HttpPost("GetMonthsWithoutReports")]
+        public async Task<IActionResult> GetMonthsWithoutReports([FromBody] YearIdDTO yearId)
+        {
+            try
+            {
+                var result = await schoolYearMonthQueryService.GetMonthsWithoutReportsAsync(yearId.SchoolYearId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("CreateYearMonth")]
         public IActionResult CreateSchoolYearMonths([FromBody] CreateSchoolYearMonthDTO SchoolYearMonth)
         {
@@ -75,7 +89,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                         Name = month.Name,
                         Description = month.Description,
                         IsActive = month.IsActive,
-                        YearId = month.YearId
+                        YearId = month.YearId,
+                        ReportStatus = month.ReportStatus
                     });
 
                 return BadRequest("Eror in create Month");
@@ -111,7 +126,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                         Name = month.Name,
                         Description = month.Description,
                         IsActive = month.IsActive,
-                        YearId = month.YearId
+                        YearId = month.YearId,
+                        ReportStatus = month.ReportStatus
                     });
 
                 return BadRequest("Error in update month");
@@ -145,7 +161,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                         Name = month.Name,
                         Description = month.Description,
                         IsActive = month.IsActive,
-                        YearId = month.YearId
+                        YearId = month.YearId,
+                        ReportStatus = month.ReportStatus
                     });
 
                 return BadRequest("Error in activate month");
@@ -177,7 +194,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                         Name = month.Name,
                         Description = month.Description,
                         IsActive = month.IsActive,
-                        YearId = month.YearId
+                        YearId = month.YearId,
+                        ReportStatus = month.ReportStatus
                     });
 
                 return BadRequest("Error in deactivate month");

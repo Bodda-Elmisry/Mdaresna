@@ -38,5 +38,10 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Que
         {
             return await schoolYearMonthQueryRepository.GetYearMonthesAsync(yearId);
         }
+
+        public async Task<IEnumerable<SchoolYearMonthResultDTO>> GetMonthsWithoutReportsAsync(Guid yearId)
+        {
+            return await schoolYearMonthQueryRepository.GetMonthsWithoutReportsAsync(yearId);
+        }
     }
 }

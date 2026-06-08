@@ -13,6 +13,7 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query
     {
         Task<IEnumerable<SchoolYearMonthResultDTO>> GetYearMonthesAsync(Guid yearId, bool? isActive, string name);
         Task<IEnumerable<SchoolYearMonth>> GetYearMonthesAsync(Guid yearId);
+        Task<IEnumerable<SchoolYearMonthResultDTO>> GetMonthsWithoutReportsAsync(Guid yearId);
         Task<SchoolYearMonthResultDTO?> GetYearMonthAsync(Guid monthId);
     }
 }

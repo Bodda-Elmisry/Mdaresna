@@ -1,4 +1,5 @@
-﻿using System;
+using Mdaresna.Doamin.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,5 +14,6 @@ namespace Mdaresna.Doamin.DTOs.SchoolManagement
         public string? Description { get; set; }
         public bool IsActive { get; set; }
         public Guid YearId { get; set; }
+        public ReportStatusEnum ReportStatus { get; set; }
     }
 }
