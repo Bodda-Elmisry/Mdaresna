@@ -71,6 +71,7 @@ namespace Mdaresna.Infrastructure.UnitOfWork
         private ISMSProviderCommandRepository? _smsProviderCommandRepository;
         private IEmailProviderCommandRepository? _emailProviderCommandRepository;
         private ISMSLogCommandRepository? _smsLogCommandRepository;
+        private IReportQueueCommandRepository? _reportQueueCommandRepository;
 
         public CommandUnitOfWork(AppDbContext context, IServiceProvider serviceProvider)
         {
@@ -227,6 +228,9 @@ namespace Mdaresna.Infrastructure.UnitOfWork
 
         public ISMSLogCommandRepository SMSLogCommandRepository => _smsLogCommandRepository ??=
             _serviceProvider.GetRequiredService<ISMSLogCommandRepository>();
+
+        public IReportQueueCommandRepository ReportQueueCommandRepository => _reportQueueCommandRepository ??=
+            _serviceProvider.GetRequiredService<IReportQueueCommandRepository>();
 
         public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
         {

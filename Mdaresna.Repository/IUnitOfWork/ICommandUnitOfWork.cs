@@ -71,6 +71,7 @@ namespace Mdaresna.Repository.IUnitOfWork
         ISMSProviderCommandRepository SMSProviderCommandRepository { get; }
         IEmailProviderCommandRepository EmailProviderCommandRepository { get; }
         ISMSLogCommandRepository SMSLogCommandRepository { get; }
+        IReportQueueCommandRepository ReportQueueCommandRepository { get; }
 
         Task BeginTransactionAsync(CancellationToken cancellationToken = default);
         Task CommitTransactionAsync(CancellationToken cancellationToken = default);

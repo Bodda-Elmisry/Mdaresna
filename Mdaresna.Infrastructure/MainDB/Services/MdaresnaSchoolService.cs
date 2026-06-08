@@ -36,6 +36,11 @@ internal class MdaresnaSchoolService : IMdaresnaSchoolService
         return true;
     }
 
+    public async Task<IReadOnlyList<MdaresnaSchool>> GetActiveSchools()
+    {
+        return await unitOfWork.MdaresnaSchool.Query().Where(s=> s.IsActive && !s.Deleted).ToListAsync();
+    }
+
     public async Task<bool> CreateSchoolAsync(Guid schoolId, string schoolName, List<CreateSchoolServiceDTO> schoolServicesList)
     {
         await unitOfWork.BeginTransactionAsync();

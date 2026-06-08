@@ -3915,6 +3915,11 @@ namespace Mdaresna.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("ReportStatus")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
                     b.Property<Guid>("YearId")
                         .HasColumnType("uniqueidentifier");
 
@@ -4346,6 +4351,90 @@ namespace Mdaresna.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("EmailProviders");
+                });
+
+            modelBuilder.Entity("Mdaresna.Doamin.Models.SettingsManagement.ReportQueue", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("AffectedRows")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("ClassroomId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Errors")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("FromDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("GradeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("MonthId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ReportType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RetryCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<Guid?>("ReviewdById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SchoolId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime>("ToDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("WeekName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClassroomId");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("GradeId");
+
+                    b.HasIndex("MonthId");
+
+                    b.HasIndex("ReviewdById");
+
+                    b.HasIndex("SchoolId");
+
+                    b.ToTable("ReportQueues");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SettingsManagement.SMSLog", b =>
@@ -5536,6 +5625,53 @@ namespace Mdaresna.Infrastructure.Migrations
                     b.Navigation("Relation");
 
                     b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("Mdaresna.Doamin.Models.SettingsManagement.ReportQueue", b =>
+                {
+                    b.HasOne("Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement.ClassRoom", "Classroom")
+                        .WithMany()
+                        .HasForeignKey("ClassroomId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Doamin.Models.UserManagement.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.SchoolGrade", "Grade")
+                        .WithMany()
+                        .HasForeignKey("GradeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.SchoolYearMonth", "Month")
+                        .WithMany()
+                        .HasForeignKey("MonthId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Doamin.Models.UserManagement.User", "ReviewdBy")
+                        .WithMany()
+                        .HasForeignKey("ReviewdById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.School", "School")
+                        .WithMany()
+                        .HasForeignKey("SchoolId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Classroom");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Grade");
+
+                    b.Navigation("Month");
+
+                    b.Navigation("ReviewdBy");
+
+                    b.Navigation("School");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SettingsManagement.SMSLog", b =>

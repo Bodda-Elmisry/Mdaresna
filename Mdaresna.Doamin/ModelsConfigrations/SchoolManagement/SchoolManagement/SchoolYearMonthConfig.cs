@@ -1,11 +1,7 @@
-﻿using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
+﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.SchoolManagement
 {
@@ -13,6 +9,10 @@ namespace Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.SchoolManagement
     {
         public void Configure(EntityTypeBuilder<SchoolYearMonth> builder)
         {
+            builder.Property(e => e.ReportStatus)
+                .IsRequired()
+                .HasDefaultValue(ReportStatusEnum.NotCreated);
+
             builder
                 .HasOne(e => e.Year)
                 .WithMany()

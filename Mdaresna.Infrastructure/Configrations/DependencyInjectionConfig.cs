@@ -1,7 +1,10 @@
 ﻿using Mdaresna.Infrastructure.BServices.Common;
 using Mdaresna.Infrastructure.BServices.IdentityManagement;
+using Mdaresna.Infrastructure.BServices.ReportingManagement;
 using Mdaresna.Infrastructure.Factories;
+using Mdaresna.Infrastructure.MainDB.Factories;
 using Mdaresna.Infrastructure.MainDB.Repositories;
+using Mdaresna.Infrastructure.MainDB.Services;
 using Mdaresna.Infrastructure.MainDB.UnitOfWorks;
 using Mdaresna.Infrastructure.Repositories.AdminManagement.Command;
 using Mdaresna.Infrastructure.Repositories.AdminManagement.Query;
@@ -19,6 +22,7 @@ using Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagement.Co
 using Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagement.Query;
 using Mdaresna.Infrastructure.Repositories.SettingsManagement.Command;
 using Mdaresna.Infrastructure.Repositories.SettingsManagement.Query;
+using Mdaresna.Infrastructure.ReportingDB.Factories;
 using Mdaresna.Infrastructure.Repositories.TransactionsManagement;
 using Mdaresna.Infrastructure.Repositories.UserManagement.Command;
 using Mdaresna.Infrastructure.Repositories.UserManagement.Query;
@@ -43,6 +47,7 @@ using Mdaresna.Infrastructure.Services.UserManagement.Query;
 using Mdaresna.Infrastructure.UnitOfWork;
 using Mdaresna.Repository.IBServices.Common;
 using Mdaresna.Repository.IBServices.IdentityManagement;
+using Mdaresna.Repository.IBServices.ReportingManagement;
 using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IRepositories.AdminManagement.Command;
 using Mdaresna.Repository.IRepositories.AdminManagement.Query;
@@ -82,8 +87,11 @@ using Mdaresna.Repository.IServices.SettingsManagement.Query;
 using Mdaresna.Repository.IServices.UserManagement.Command;
 using Mdaresna.Repository.IServices.UserManagement.Query;
 using Mdaresna.Repository.IUnitOfWork;
+using Mdaresna.Repository.MainDB.IFactories;
 using Mdaresna.Repository.MainDB.IRepositories;
+using Mdaresna.Repository.MainDB.IServices;
 using Mdaresna.Repository.MainDB.IUnitOfWorks;
+using Mdaresna.Repository.ReportingDB.IFactories;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -297,6 +305,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(ISMSProviderCommandRepository), typeof(SMSProviderCommandRepository));
             services.AddScoped(typeof(IEmailProviderCommandRepository), typeof(EmailProviderCommandRepository));
             services.AddScoped(typeof(ISMSLogCommandRepository), typeof(SMSLogCommandRepository));
+            services.AddScoped(typeof(IReportQueueCommandRepository), typeof(ReportQueueCommandRepository));
 
             #endregion
 
@@ -304,6 +313,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(ISMSProviderQueryRepository), typeof(SMSProviderQueryRepository));
             services.AddScoped(typeof(IEmailProviderQueryRepository), typeof(EmailProviderQueryRepository));
             services.AddScoped(typeof(ISMSLogQueryRepository), typeof(SMSLogQueryRepository));
+            services.AddScoped(typeof(IReportQueueQueryRepository), typeof(ReportQueueQueryRepository));
 
             #endregion
         }
@@ -316,7 +326,13 @@ namespace Mdaresna.Infrastructure.Configrations
         private static void ConfigerMainDb(IServiceCollection services)
         {
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddScoped<DBSQLServerService>();
+            services.AddScoped<DBPostGreSQLService>();
+            services.AddScoped<IDBFactory, DBFactory>();
             services.AddScoped<IMainUnitOfWork, MainUnitOfWork>();
+            services.AddScoped<IMdaresnaSchoolService, MdaresnaSchoolService>();
+            services.AddScoped<IStudentReportFactory, StudentReportFactory>();
+            services.AddScoped<IReportingUnitOfWorkFactory, ReportingUnitOfWorkFactory>();
         }
 
         #endregion
@@ -567,6 +583,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(ISMSProviderCommandService), typeof(SMSProviderCommandService));
             services.AddScoped(typeof(IEmailProviderCommandService), typeof(EmailProviderCommandService));
             services.AddScoped(typeof(ISMSLogCommandService), typeof(SMSLogCommandService));
+            services.AddScoped(typeof(IReportQueueCommandService), typeof(ReportQueueCommandService));
 
             #endregion
 
@@ -574,6 +591,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(ISMSProviderQueryService), typeof(SMSProviderQueryService));
             services.AddScoped(typeof(IEmailProviderQueryService), typeof(EmailProviderQueryService));
             services.AddScoped(typeof(ISMSLogQueryService), typeof(SMSLogQueryService));
+            services.AddScoped(typeof(IReportQueueQueryService), typeof(ReportQueueQueryService));
 
             #endregion
         }
@@ -583,6 +601,7 @@ namespace Mdaresna.Infrastructure.Configrations
             //services.AddScoped<IFcmService, FcmService>();
             services.AddScoped<IImageUploderService, ImageUploderService>();
             services.AddScoped<IReportingService, ReportingService>();
+            //services.AddScoped<IStudentReportGenerator, StudentMonthelyReportGenerator>();
         }
 
         #endregion

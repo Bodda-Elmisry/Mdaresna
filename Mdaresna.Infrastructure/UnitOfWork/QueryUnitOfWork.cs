@@ -30,6 +30,7 @@ namespace Mdaresna.Infrastructure.UnitOfWork
         private ISMSProviderQueryRepository? _smsProviderQueryRepository;
         private IEmailProviderQueryRepository? _emailProviderQueryRepository;
         private ISMSLogQueryRepository? _smsLogQueryRepository;
+        private IReportQueueQueryRepository? _reportQueueQueryRepository;
         private IClassRoomStudentActivityQueryRepository? _classRoomStudentActivityQueryRepository;
         private IClassRoomStudentAssignmentQueryRepository? _classRoomStudentAssignmentQueryRepository;
         private IClassRoomStudentExamQueryRepository? _classRoomStudentExamQueryRepository;
@@ -114,6 +115,9 @@ namespace Mdaresna.Infrastructure.UnitOfWork
 
         public ISMSLogQueryRepository SMSLogQueryRepository => _smsLogQueryRepository ??=
             _serviceProvider.GetRequiredService<ISMSLogQueryRepository>();
+
+        public IReportQueueQueryRepository ReportQueueQueryRepository => _reportQueueQueryRepository ??=
+            _serviceProvider.GetRequiredService<IReportQueueQueryRepository>();
 
         public IClassRoomStudentActivityQueryRepository ClassRoomStudentActivityQueryRepository => _classRoomStudentActivityQueryRepository ??=
             _serviceProvider.GetRequiredService<IClassRoomStudentActivityQueryRepository>();

@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.Base;
+﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Models.Base;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -19,6 +20,6 @@ namespace Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement
         public Guid SchoolId { get; set; }
 
         [ForeignKey(nameof(SchoolId))]
-        public School School { get; set; }
+        public School School { get; set; } = new();
     }
 }

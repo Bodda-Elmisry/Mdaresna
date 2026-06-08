@@ -18,5 +18,7 @@ namespace Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO
         public Guid SchoolTypeId { get; set; }
 
         public Guid SchoolAdminId { get; set; }
+
+        public List<Guid>? ServiceIds { get; set; }
     }
 }

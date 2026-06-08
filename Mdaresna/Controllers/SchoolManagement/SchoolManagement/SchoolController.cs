@@ -10,6 +10,8 @@ using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Mdaresna.Repository.IServices.UserManagement.Query;
+using Mdaresna.Repository.MainDB.DTOs;
+using Mdaresna.Repository.MainDB.IServices;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
@@ -26,6 +28,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         private readonly IUserDeviceQueryService userDeviceQueryService;
         private readonly IUserRoleQueryService userRoleQueryService;
         private readonly IUserPermissionQueryService userPermissionQueryService;
+        private readonly IMdaresnaSchoolService mdaresnaSchoolService;
 
         public SchoolController(ISchoolCommandService schoolCommandService,
                                 ISchoolQueryService schoolQueryService,
@@ -35,7 +38,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                                 INotificationFactory notificationFactory,
                                 IUserDeviceQueryService userDeviceQueryService,
                                 IUserRoleQueryService userRoleQueryService,
-                                IUserPermissionQueryService userPermissionQueryService)
+                                IUserPermissionQueryService userPermissionQueryService,
+                                IMdaresnaSchoolService mdaresnaSchoolService)
         {
             this.schoolCommandService = schoolCommandService;
             this.schoolQueryService = schoolQueryService;
@@ -46,6 +50,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             this.userDeviceQueryService = userDeviceQueryService;
             this.userRoleQueryService = userRoleQueryService;
             this.userPermissionQueryService = userPermissionQueryService;
+            this.mdaresnaSchoolService = mdaresnaSchoolService;
         }
 
         [HttpPost("AddSchool")]
@@ -68,6 +73,19 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 var added = schoolCommandService.Create(newSchool);
                 if (added)
                 {
+                    if (School.ServiceIds?.Count > 0)
+                    {
+                        var schoolServices = School.ServiceIds
+                            .Distinct()
+                            .Select(serviceId => new CreateSchoolServiceDTO(serviceId))
+                            .ToList();
+
+                        await mdaresnaSchoolService.CreateSchoolAsync(
+                            newSchool.Id,
+                            newSchool.Name,
+                            schoolServices);
+                    }
+
                     var applicationAdmins = await userRoleQueryService.GetRoleUsersAsync(Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"), null);
                     var managerIds = applicationAdmins.Select(a=> a.UserId).ToList();
                     var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);

@@ -1,4 +1,5 @@
-﻿using Mdaresna.Doamin.Models.Base;
+﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Models.Base;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -17,6 +18,8 @@ namespace Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement
         public Guid YearId { get; set; }
 
         [ForeignKey(nameof(YearId))]
-        public SchoolYear Year { get; set; }
+        public SchoolYear Year { get; set; } = new();
+
+        public ReportStatusEnum ReportStatus { get; set; }
     }
 }

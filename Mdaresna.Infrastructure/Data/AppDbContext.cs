@@ -154,6 +154,7 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration(new EmailProviderConfig());
         modelBuilder.ApplyConfiguration(new SMSProviderConfig());
         modelBuilder.ApplyConfiguration(new SMSLogConfig());
+        modelBuilder.ApplyConfiguration(new ReportQueueConfig());
     }
 
     private void ApplyIdentitySeeding(ModelBuilder modelBuilder)
@@ -273,6 +274,7 @@ public class AppDbContext : DbContext
     public DbSet<SMSProvider> SMSProviders { get; set; }
     public DbSet<EmailProvider> EmailProviders { get; set; }
     public DbSet<SMSLog> SMSLogs { get; set; }
+    public DbSet<ReportQueue> ReportQueues { get; set; }
 
 
     #endregion

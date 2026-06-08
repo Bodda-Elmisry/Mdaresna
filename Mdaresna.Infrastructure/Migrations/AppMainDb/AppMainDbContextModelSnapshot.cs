@@ -76,7 +76,7 @@ namespace Mdaresna.Infrastructure.Migrations.AppMainDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("Schools");
+                    b.ToTable("Schools", (string)null);
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.MainDB.Models.MdaresnaSchoolService", b =>
@@ -118,7 +118,7 @@ namespace Mdaresna.Infrastructure.Migrations.AppMainDb
 
                     b.HasIndex("ServiceId");
 
-                    b.ToTable("SchoolServices");
+                    b.ToTable("SchoolServices", (string)null);
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.MainDB.Models.MdaresnaService", b =>
@@ -165,7 +165,7 @@ namespace Mdaresna.Infrastructure.Migrations.AppMainDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("Services");
+                    b.ToTable("Services", (string)null);
 
                     b.HasData(
                         new
