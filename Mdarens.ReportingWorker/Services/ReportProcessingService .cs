@@ -1,5 +1,7 @@
 using Mdarens.ReportingWorker.Factories;
 using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Models.SettingsManagement;
+using Mdaresna.Infrastructure.Data;
 using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.MainDB.IFactories;
 using Mdaresna.Repository.MainDB.IServices;
@@ -11,6 +13,8 @@ namespace Mdarens.ReportingWorker.Services;
 public class ReportProcessingService : IReportProcessingService
 {
     private static readonly Guid ReportingServiceId = Guid.Parse("8488E63B-FD78-43BF-800B-03412C372DB5");
+    private const string ReviewMonthReportPermissionKey = "ReviewSchoolMonthReport";
+    private const string ReviewNotificationTitle = "تقرير شهري";
 
     private readonly IWorkerJobSettingsService settingsService;
     private readonly IMdaresnaSchoolService schoolConnectionService;
@@ -18,6 +22,7 @@ public class ReportProcessingService : IReportProcessingService
     private readonly IStudentReportFactory studentReportFactory;
     private readonly IDBFactory dbFactory;
     private readonly IMainUnitOfWork mainUnitOfWork;
+    private readonly INotificationFactory notificationFactory;
     private readonly ILogger<ReportProcessingService> logger;
 
     public ReportProcessingService(
@@ -27,6 +32,7 @@ public class ReportProcessingService : IReportProcessingService
         IStudentReportFactory studentReportFactory,
         IDBFactory dbFactory,
         IMainUnitOfWork mainUnitOfWork,
+        INotificationFactory notificationFactory,
         ILogger<ReportProcessingService> logger)
     {
         this.settingsService = settingsService;
@@ -35,6 +41,7 @@ public class ReportProcessingService : IReportProcessingService
         this.studentReportFactory = studentReportFactory;
         this.dbFactory = dbFactory;
         this.mainUnitOfWork = mainUnitOfWork;
+        this.notificationFactory = notificationFactory;
         this.logger = logger;
     }
 
@@ -110,6 +117,8 @@ public class ReportProcessingService : IReportProcessingService
 
             foreach (var item in pendingItems)
             {
+                var reportGenerated = false;
+
                 try
                 {
                     item.Status = ReportQueueStatusEnum.Processing;
@@ -127,6 +136,7 @@ public class ReportProcessingService : IReportProcessingService
                     item.CompletedAt = DateTime.UtcNow;
                     item.AffectedRows = affectedRows;
                     item.Errors = null;
+                    reportGenerated = true;
                 }
                 catch (Exception ex)
                 {
@@ -141,10 +151,142 @@ public class ReportProcessingService : IReportProcessingService
                 }
 
                 await dbContext.SaveChangesAsync(cancellationToken);
+
+                if (reportGenerated)
+                {
+                    await SendReviewNotificationAsync(dbContext, item, cancellationToken);
+                }
+
                 remainingItems--;
             }
         }
 
         await settingsService.MarkRunCompletedAsync("ProcessPendingReports", cancellationToken);
+    }
+
+    private async Task SendReviewNotificationAsync(
+        AppDbContext dbContext,
+        ReportQueue reportQueue,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var tokens = await GetReviewMonthReportEmployeeTokensAsync(
+                dbContext,
+                reportQueue.SchoolId,
+                cancellationToken);
+
+            if (tokens.Count == 0)
+            {
+                logger.LogInformation(
+                    "No employee devices found for review month report notification. ReportQueueId: {ReportQueueId}",
+                    reportQueue.Id);
+                return;
+            }
+
+            var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+            var message = BuildReviewNotificationMessage(reportQueue);
+
+            await notificationProvider.SendToMultiUsersAsync(tokens, ReviewNotificationTitle, message);
+
+            logger.LogInformation(
+                "Sent review month report notification for report queue {ReportQueueId} to {TokenCount} device(s).",
+                reportQueue.Id,
+                tokens.Count);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Failed to send review month report notification for report queue {ReportQueueId}.",
+                reportQueue.Id);
+        }
+    }
+
+    private async Task<List<string>> GetReviewMonthReportEmployeeTokensAsync(
+        AppDbContext dbContext,
+        Guid schoolId,
+        CancellationToken cancellationToken)
+    {
+        var permissionId = await dbContext.Permissions
+            .AsNoTracking()
+            .Where(permission =>
+                permission.Key == ReviewMonthReportPermissionKey &&
+                permission.Deleted == false)
+            .Select(permission => permission.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (permissionId == Guid.Empty)
+        {
+            logger.LogWarning(
+                "Permission {PermissionKey} was not found. Review month report notifications will not be sent.",
+                ReviewMonthReportPermissionKey);
+            return new List<string>();
+        }
+
+        var usersFromRoleQuery =
+            from userRole in dbContext.UserRoles.AsNoTracking()
+            join rolePermission in dbContext.RolePermissions.AsNoTracking()
+                on userRole.RoleId equals rolePermission.RoleId
+            where
+                userRole.SchoolId == schoolId &&
+                userRole.Deleted == false &&
+                rolePermission.PermissionId == permissionId &&
+                rolePermission.Deleted == false
+            select userRole.UserId;
+
+        var usersFromUserPermissionQuery =
+            from userPermission in dbContext.userPermissions.AsNoTracking()
+            where
+                userPermission.SchoolId == schoolId &&
+                userPermission.PermissionId == permissionId &&
+                userPermission.Deleted == false
+            select userPermission.UserId;
+
+        var reviewerUserIds = usersFromRoleQuery
+            .Union(usersFromUserPermissionQuery)
+            .Distinct();
+
+        var tokens = await (
+            from schoolEmployee in dbContext.SchoolEmployees.AsNoTracking()
+            join userDevice in dbContext.UserDevices.AsNoTracking()
+                on schoolEmployee.EmployeeId equals userDevice.UserId
+            where
+                schoolEmployee.SchoolId == schoolId &&
+                schoolEmployee.Deleted == false &&
+                reviewerUserIds.Contains(schoolEmployee.EmployeeId) &&
+                userDevice.Deleted == false &&
+                userDevice.FcmToken != null &&
+                userDevice.FcmToken != string.Empty
+            select userDevice.FcmToken)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        return tokens;
+    }
+
+    private static string BuildReviewNotificationMessage(ReportQueue reportQueue)
+    {
+        var monthName = !string.IsNullOrWhiteSpace(reportQueue.Month?.Name)
+            ? reportQueue.Month.Name
+            : reportQueue.FromDate.ToString("MMMM yyyy");
+
+        var message = $"تم انشاء تقارير شهر {monthName} للمدرسه {reportQueue.School.Name}";
+
+        if (!string.IsNullOrWhiteSpace(reportQueue.Grade?.Name))
+        {
+            message += $" للمرحلة الدراسه {reportQueue.Grade.Name}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(reportQueue.Classroom?.Name))
+        {
+            message += $" للفصل {reportQueue.Classroom.Name}";
+        }
+
+        return message;
     }
 }
