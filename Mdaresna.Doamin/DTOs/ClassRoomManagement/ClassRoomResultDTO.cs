@@ -16,18 +16,18 @@ namespace Mdaresna.Doamin.DTOs.ClassRoomManagement
     {
         public Guid Id { get; set; }
 
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         public int maxOfStudents { get; set; }
         public Guid SupervisorId { get; set; }
-        public string SupervisorName { get; set; }
+        public string SupervisorName { get; set; } = string.Empty;
         public bool Active { get; set; }
-        public string WCSUrl { get; set; }
+        public string WCSUrl { get; set; } = string.Empty;
         public Guid SchoolId { get; set; }
-        public string SchoolName { get; set; }
+        public string SchoolName { get; set; } = string.Empty;
         public Guid LanguageId { get; set; }
-        public string LanguageName { get; set; }
+        public string LanguageName { get; set; } = string.Empty;
         public Guid GradeId { get; set; }
-        public string Gradename { get; set; }
+        public string Gradename { get; set; } = string.Empty;
         public ClassRoomGenderEnum Gender { get; set; }
     }
 }

@@ -9,10 +9,6 @@ namespace Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.SchoolManagement
     {
         public void Configure(EntityTypeBuilder<SchoolYearMonth> builder)
         {
-            builder.Property(e => e.ReportStatus)
-                .IsRequired()
-                .HasDefaultValue(ReportStatusEnum.NotCreated);
-
             builder
                 .HasOne(e => e.Year)
                 .WithMany()

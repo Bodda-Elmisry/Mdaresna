@@ -14,12 +14,15 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
     {
         private readonly ISchoolYearMonthQueryService schoolYearMonthQueryService;
         private readonly ISchoolYearMonthCommandService schoolYearMonthCommandService;
+        private readonly Mdaresna.Repository.IServices.SettingsManagement.Command.IReportQueueCommandService reportQueueCommandService;
 
         public SchoolYearMonthController(ISchoolYearMonthQueryService schoolYearMonthQueryService,
-                                         ISchoolYearMonthCommandService schoolYearMonthCommandService)
+                                         ISchoolYearMonthCommandService schoolYearMonthCommandService,
+                                         Mdaresna.Repository.IServices.SettingsManagement.Command.IReportQueueCommandService reportQueueCommandService)
         {
             this.schoolYearMonthQueryService = schoolYearMonthQueryService;
             this.schoolYearMonthCommandService = schoolYearMonthCommandService;
+            this.reportQueueCommandService = reportQueueCommandService;
         }
 
         [HttpPost("GetYearMonth")]
@@ -67,6 +70,36 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             }
         }
 
+        [HttpPost("RequestMonthReport")]
+        public async Task<IActionResult> RequestMonthReport([FromBody] Mdaresna.Doamin.DTOs.SettingsManagement.RequestMonthReportCommandDTO command)
+        {
+            try
+            {
+                var result = await reportQueueCommandService.RequestMonthReportAsync(command);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("PublishReportQueue")]
+        public async Task<IActionResult> PublishReportQueue(
+            [FromBody] Mdaresna.Doamin.DTOs.SettingsManagement.PublishReportQueueCommandDTO command,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var result = await reportQueueCommandService.PublishReportQueueAsync(command, cancellationToken);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("CreateYearMonth")]
         public IActionResult CreateSchoolYearMonths([FromBody] CreateSchoolYearMonthDTO SchoolYearMonth)
         {
@@ -89,8 +122,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                         Name = month.Name,
                         Description = month.Description,
                         IsActive = month.IsActive,
-                        YearId = month.YearId,
-                        ReportStatus = month.ReportStatus
+                        YearId = month.YearId
                     });
 
                 return BadRequest("Eror in create Month");
@@ -126,8 +158,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                         Name = month.Name,
                         Description = month.Description,
                         IsActive = month.IsActive,
-                        YearId = month.YearId,
-                        ReportStatus = month.ReportStatus
+                        YearId = month.YearId
                     });
 
                 return BadRequest("Error in update month");
@@ -161,8 +192,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                         Name = month.Name,
                         Description = month.Description,
                         IsActive = month.IsActive,
-                        YearId = month.YearId,
-                        ReportStatus = month.ReportStatus
+                        YearId = month.YearId
                     });
 
                 return BadRequest("Error in activate month");
@@ -194,8 +224,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                         Name = month.Name,
                         Description = month.Description,
                         IsActive = month.IsActive,
-                        YearId = month.YearId,
-                        ReportStatus = month.ReportStatus
+                        YearId = month.YearId
                     });
 
                 return BadRequest("Error in deactivate month");

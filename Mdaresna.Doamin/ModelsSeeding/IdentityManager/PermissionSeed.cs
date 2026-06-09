@@ -620,6 +620,28 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 },
                 new Permission
                 {
+                    Id = Guid.Parse("3F72084D-F56B-46EB-AB36-A0CD5956F55B"),
+                    Key = "CreateSchoolMonthReport",
+                    Name = "Create School Month Report",
+                    Name_AR = "إنشاء تقرير شهري للمدرسة",
+                    Description = "Create school monthly report",
+                    Description_AR = "إنشاء تقرير شهري للمدرسة",
+                    SchoolPermission = true,
+                    AppPermission = false
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("5F3FF85F-D4BB-46BE-B0E6-942C10A87B4A"),
+                    Key = "ReviewSchoolMonthReport",
+                    Name = "Review School Month Report",
+                    Name_AR = "مراجعة التقرير الشهري للمدرسة",
+                    Description = "Review school monthly report",
+                    Description_AR = "مراجعة التقرير الشهري للمدرسة",
+                    SchoolPermission = true,
+                    AppPermission = false
+                },
+                new Permission
+                {
                     Id = Guid.Parse("69A0778B-A7A8-4E47-B8FD-D061428DBB95"),
                     Key = "ViewYearMonthes",
                     Name = "Manage Year Monthes",

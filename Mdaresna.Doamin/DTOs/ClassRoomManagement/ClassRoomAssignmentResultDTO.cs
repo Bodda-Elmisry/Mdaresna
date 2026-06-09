@@ -14,14 +14,14 @@ namespace Mdaresna.Doamin.DTOs.ClassRoomManagement
     {
         public Guid Id { get; set; }
         public DateTime AssignmentDate { get; set; }
-        public string WeekDay { get; set; }
-        public string Details { get; set; }
+        public string WeekDay { get; set; } = string.Empty;
+        public string Details { get; set; } = string.Empty;
         public Guid CourseId { get; set; }
-        public string CourseName { get; set; }
+        public string CourseName { get; set; } = string.Empty;
         public Guid ClassRoomId { get; set; }
-        public string ClassRoomName { get; set; }
+        public string ClassRoomName { get; set; } = string.Empty;
         public Guid SupervisorId { get; set; }
-        public string SupervisorName { get; set; }
+        public string SupervisorName { get; set; } = string.Empty;
         public decimal Rate { get; set; }
         public DateTime? CreateDate { get; set; }
         public DateTime? LastModifyDate { get; set; }

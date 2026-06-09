@@ -30,10 +30,7 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Com
                 entity.Id = DataGenerationHelper.GenerateRowId();
                 entity.CreateDate = DateTime.Now;
                 entity.LastModifyDate = DateTime.Now;
-                if (entity.ReportStatus == default)
-                {
-                    entity.ReportStatus = ReportStatusEnum.NotCreated;
-                }
+                
 
                 return commandRepository.Create(entity);
             }

@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.DTOs.SettingsManagement;
 using Mdaresna.Doamin.Models.SettingsManagement;
 using Mdaresna.Repository.IServices.Base;
 
@@ -10,5 +11,11 @@ namespace Mdaresna.Repository.IServices.SettingsManagement.Command
         Task<bool> MarkCompletedAsync(Guid id, int? affectedRows = null, string? notes = null);
 
         Task<bool> MarkFailedAsync(Guid id, string errors, int? affectedRows = null, string? notes = null);
+
+        Task<RequestMonthReportResponseDTO> RequestMonthReportAsync(RequestMonthReportCommandDTO command);
+
+        Task<PublishReportQueueResponseDTO> PublishReportQueueAsync(
+            PublishReportQueueCommandDTO command,
+            CancellationToken cancellationToken = default);
     }
 }

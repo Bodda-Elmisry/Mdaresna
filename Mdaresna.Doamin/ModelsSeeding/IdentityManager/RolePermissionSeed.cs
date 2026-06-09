@@ -190,6 +190,16 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
             builder.HasData(new RolePermission
             {
                 RoleId = Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"),
+                PermissionId = Guid.Parse("3F72084D-F56B-46EB-AB36-A0CD5956F55B")
+            });
+            builder.HasData(new RolePermission
+            {
+                RoleId = Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"),
+                PermissionId = Guid.Parse("5F3FF85F-D4BB-46BE-B0E6-942C10A87B4A")
+            });
+            builder.HasData(new RolePermission
+            {
+                RoleId = Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"),
                 PermissionId = Guid.Parse("A4A93CEB-21F9-4400-9444-0D94CF895BEB")
             });
             builder.HasData(new RolePermission

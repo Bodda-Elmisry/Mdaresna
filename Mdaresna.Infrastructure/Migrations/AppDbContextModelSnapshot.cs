@@ -997,6 +997,32 @@ namespace Mdaresna.Infrastructure.Migrations
                         },
                         new
                         {
+                            Id = new Guid("3f72084d-f56b-46eb-ab36-a0cd5956f55b"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Create school monthly report",
+                            Description_AR = "إنشاء تقرير شهري للمدرسة",
+                            Key = "CreateSchoolMonthReport",
+                            Name = "Create School Month Report",
+                            Name_AR = "إنشاء تقرير شهري للمدرسة",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
+                            Id = new Guid("5f3ff85f-d4bb-46be-b0e6-942c10a87b4a"),
+                            AllowedToMapToClassroom = false,
+                            AppPermission = false,
+                            Deleted = false,
+                            Description = "Review school monthly report",
+                            Description_AR = "مراجعة التقرير الشهري للمدرسة",
+                            Key = "ReviewSchoolMonthReport",
+                            Name = "Review School Month Report",
+                            Name_AR = "مراجعة التقرير الشهري للمدرسة",
+                            SchoolPermission = true
+                        },
+                        new
+                        {
                             Id = new Guid("69a0778b-a7a8-4e47-b8fd-d061428dbb95"),
                             AllowedToMapToClassroom = false,
                             AppPermission = false,
@@ -2435,6 +2461,18 @@ namespace Mdaresna.Infrastructure.Migrations
                         {
                             RoleId = new Guid("4b8a99fe-b759-4c18-9500-8052c3d7ac73"),
                             PermissionId = new Guid("32d821bb-0c50-4721-9034-097019632c05"),
+                            Deleted = false
+                        },
+                        new
+                        {
+                            RoleId = new Guid("4b8a99fe-b759-4c18-9500-8052c3d7ac73"),
+                            PermissionId = new Guid("3f72084d-f56b-46eb-ab36-a0cd5956f55b"),
+                            Deleted = false
+                        },
+                        new
+                        {
+                            RoleId = new Guid("4b8a99fe-b759-4c18-9500-8052c3d7ac73"),
+                            PermissionId = new Guid("5f3ff85f-d4bb-46be-b0e6-942c10a87b4a"),
                             Deleted = false
                         },
                         new

@@ -9,10 +9,10 @@ namespace Mdaresna.Doamin.DTOs.ClassRoomManagement
     public class ClassRoomTeacherCourseResultDTO
     {
         public Guid TeacherId { get; set; }
-        public string TeacherName { get; set; }
+        public string TeacherName { get; set; } = string.Empty;
         public Guid CourseId { get; set; }
-        public string CourseName { get; set; }
+        public string CourseName { get; set; } = string.Empty;
         public Guid ClassRoomId { get; set; }
-        public string ClassRoomName { get; set; }
+        public string ClassRoomName { get; set; } = string.Empty;
     }
 }

@@ -27,8 +27,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                     YearId = m.YearId,
                     Name = m.Name,
                     Description = m.Description,
-                    IsActive = m.IsActive,
-                    ReportStatus = m.ReportStatus
+                    IsActive = m.IsActive
                 });
 
             if (isActive != null)
@@ -46,17 +45,14 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                 .AsNoTracking()
                 .Where(month =>
                     month.YearId == yearId &&
-                    month.Deleted == false &&
-                    (month.ReportStatus == ReportStatusEnum.NotCreated ||
-                     month.ReportStatus == ReportStatusEnum.Returned))
+                    month.Deleted == false)
                 .Select(month => new SchoolYearMonthResultDTO
                 {
                     Id = month.Id,
                     YearId = month.YearId,
                     Name = month.Name,
                     Description = month.Description,
-                    IsActive = month.IsActive,
-                    ReportStatus = month.ReportStatus
+                    IsActive = month.IsActive
                 })
                 .ToListAsync();
         }
@@ -79,8 +75,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                 Name = row.Name,
                 Description = row.Description,
                 IsActive = row.IsActive,
-                YearId = row.YearId,
-                ReportStatus = row.ReportStatus
+                YearId = row.YearId
             };
 
         }
