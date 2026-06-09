@@ -372,6 +372,71 @@ namespace Mdaresna.Infrastructure.Services.SettingsManagement.Command
             };
         }
 
+        public async Task<FailReportQueueResponseDTO> FailReportQueueAsync(
+            FailReportQueueCommandDTO command,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(command);
+
+            if (command.ReportQueueId == Guid.Empty)
+            {
+                throw new ArgumentException("Report queue id is required.", nameof(command));
+            }
+
+            var reason = command.Reason.Trim();
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                throw new ArgumentException("Fail reason is required.", nameof(command));
+            }
+
+            var queue = await context.ReportQueues
+                .FirstOrDefaultAsync(item => item.Id == command.ReportQueueId, cancellationToken)
+                ?? throw new InvalidOperationException("Report queue was not found.");
+
+            if (queue.Status == ReportQueueStatusEnum.Published)
+            {
+                throw new InvalidOperationException("Published report queues cannot be failed.");
+            }
+
+            if (queue.Status != ReportQueueStatusEnum.PendingReview &&
+                queue.Status != ReportQueueStatusEnum.Failed)
+            {
+                throw new InvalidOperationException("Only pending review or failed report queues can be failed.");
+            }
+
+            var reviewerId = command.GetReviewerId();
+            if (reviewerId.HasValue)
+            {
+                var reviewerExists = await context.Users
+                    .AsNoTracking()
+                    .AnyAsync(user => user.Id == reviewerId.Value && user.Deleted == false, cancellationToken);
+
+                if (!reviewerExists)
+                {
+                    throw new InvalidOperationException("Reviewer user was not found.");
+                }
+            }
+
+            var failedAt = DateTime.UtcNow;
+            queue.Status = ReportQueueStatusEnum.Failed;
+            queue.CompletedAt = failedAt;
+            queue.ReviewdById = reviewerId;
+            queue.Notes = AppendQueueNote(queue.Notes, reason);
+
+            await context.SaveChangesAsync(cancellationToken);
+
+            return new FailReportQueueResponseDTO
+            {
+                ReportQueueId = queue.Id,
+                SchoolId = queue.SchoolId,
+                MonthId = queue.MonthId,
+                Status = queue.Status,
+                FailedById = reviewerId,
+                FailedAt = failedAt,
+                Notes = queue.Notes ?? string.Empty
+            };
+        }
+
         private async Task<string> GetReportingConnectionStringAsync(
             Guid schoolId,
             CancellationToken cancellationToken)
@@ -599,6 +664,17 @@ namespace Mdaresna.Infrastructure.Services.SettingsManagement.Command
             }
 
             return queue.FromDate.ToString("MMMM yyyy", CultureInfo.GetCultureInfo("ar-EG"));
+        }
+
+        private static string AppendQueueNote(string? existingNotes, string reason)
+        {
+            var normalizedReason = reason.Trim();
+            if (string.IsNullOrWhiteSpace(existingNotes))
+            {
+                return normalizedReason;
+            }
+
+            return $"{existingNotes.TrimEnd()}{Environment.NewLine}{normalizedReason}";
         }
 
         private sealed class StudentParentNotificationTarget

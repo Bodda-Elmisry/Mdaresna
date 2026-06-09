@@ -100,6 +100,22 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             }
         }
 
+        [HttpPost("FailReportQueue")]
+        public async Task<IActionResult> FailReportQueue(
+            [FromBody] Mdaresna.Doamin.DTOs.SettingsManagement.FailReportQueueCommandDTO command,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var result = await reportQueueCommandService.FailReportQueueAsync(command, cancellationToken);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("CreateYearMonth")]
         public IActionResult CreateSchoolYearMonths([FromBody] CreateSchoolYearMonthDTO SchoolYearMonth)
         {

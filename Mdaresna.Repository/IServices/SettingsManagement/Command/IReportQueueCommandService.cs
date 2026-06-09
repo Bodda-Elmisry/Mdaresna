@@ -17,5 +17,9 @@ namespace Mdaresna.Repository.IServices.SettingsManagement.Command
         Task<PublishReportQueueResponseDTO> PublishReportQueueAsync(
             PublishReportQueueCommandDTO command,
             CancellationToken cancellationToken = default);
+
+        Task<FailReportQueueResponseDTO> FailReportQueueAsync(
+            FailReportQueueCommandDTO command,
+            CancellationToken cancellationToken = default);
     }
 }
