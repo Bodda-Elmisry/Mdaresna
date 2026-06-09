@@ -14,6 +14,7 @@ namespace Mdaresna.Doamin.DTOs.SchoolManagement
         public string? Description { get; set; }
         public bool IsActive { get; set; }
         public Guid YearId { get; set; }
-        
+        public ReportStatusEnum? ReportStatus { get; set; }
+        public Guid? ReportQueueId { get; set; }
     }
 }
