@@ -1,5 +1,6 @@
 using Mdaresna.Doamin.DTOs.SettingsManagement;
 using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Models.ReportingManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Doamin.Models.SettingsManagement;
@@ -326,19 +327,19 @@ namespace Mdaresna.Infrastructure.Services.SettingsManagement.Command
             var reportingConnectionString = await GetReportingConnectionStringAsync(
                 queue.SchoolId,
                 cancellationToken);
-            var reportStudentIds = await GetPublishedQueueStudentIdsAsync(
+            var activationResult = await ActivatePublishedStudentReportsAsync(
                 queue,
                 reportingConnectionString,
                 cancellationToken);
 
-            if (reportStudentIds.Count == 0)
+            if (activationResult.StudentIds.Count == 0)
             {
                 throw new InvalidOperationException("No generated student reports were found for this queue.");
             }
 
             var targets = await GetStudentParentNotificationTargetsAsync(
                 queue,
-                reportStudentIds,
+                activationResult.StudentIds,
                 cancellationToken);
 
             var publishedAt = DateTime.UtcNow;
@@ -363,8 +364,8 @@ namespace Mdaresna.Infrastructure.Services.SettingsManagement.Command
                 Status = queue.Status,
                 PublishedAt = publishedAt,
                 PublishedById = publisherId,
-                ReportsCount = reportStudentIds.Count,
-                StudentsCount = targets.Select(item => item.StudentId).Distinct().Count(),
+                ReportsCount = activationResult.ReportsCount,
+                StudentsCount = activationResult.StudentIds.Count,
                 ParentsCount = targets.Select(item => item.ParentId).Distinct().Count(),
                 NotificationsAttempted = notificationResult.Attempted,
                 NotificationsFailed = notificationResult.Failed
@@ -392,63 +393,79 @@ namespace Mdaresna.Infrastructure.Services.SettingsManagement.Command
                 reportingService.DBPort);
         }
 
-        private async Task<IReadOnlyList<Guid>> GetPublishedQueueStudentIdsAsync(
+        private async Task<PublishedStudentReportActivationResult> ActivatePublishedStudentReportsAsync(
             ReportQueue queue,
             string reportingConnectionString,
             CancellationToken cancellationToken)
         {
+            if (!queue.StartedAt.HasValue || !queue.CompletedAt.HasValue)
+            {
+                throw new InvalidOperationException("Report queue generation timestamps are required before publishing.");
+            }
+
+            var scopedStudentIds = await GetQueueScopeStudentIdsAsync(queue, cancellationToken);
+            if (scopedStudentIds.Count == 0)
+            {
+                return PublishedStudentReportActivationResult.Empty;
+            }
+
             await using var reportContext = SchoolReportDBContext.Create(reportingConnectionString);
 
-            var reportsQuery = reportContext.StudentReports
-                .AsNoTracking()
-                .Where(report =>
-                    report.SchoolId == queue.SchoolId &&
-                    report.ReportType == queue.ReportType &&
-                    report.IsActive);
-
-            reportsQuery = queue.MonthId.HasValue
-                ? reportsQuery.Where(report => report.MonthId == queue.MonthId.Value)
-                : reportsQuery.Where(report => report.MonthId == null);
-
-            reportsQuery = string.IsNullOrWhiteSpace(queue.WeekName)
-                ? reportsQuery.Where(report => report.WeekName == null || report.WeekName == string.Empty)
-                : reportsQuery.Where(report => report.WeekName == queue.WeekName);
-
-            if (queue.StartedAt.HasValue)
-            {
-                reportsQuery = reportsQuery.Where(report => report.CreatedAt >= queue.StartedAt.Value);
-            }
-
-            if (queue.CompletedAt.HasValue)
-            {
-                reportsQuery = reportsQuery.Where(report => report.CreatedAt <= queue.CompletedAt.Value);
-            }
-
-            var studentIds = await reportsQuery
-                .Select(report => report.StudentId)
-                .Distinct()
+            var monthReports = await ApplyReportQueueIdentityFilter(
+                    reportContext.StudentReports,
+                    queue)
                 .ToListAsync(cancellationToken);
 
-            return await FilterStudentIdsToQueueScopeAsync(
-                queue,
-                studentIds,
-                cancellationToken);
-        }
-
-        private async Task<IReadOnlyList<Guid>> FilterStudentIdsToQueueScopeAsync(
-            ReportQueue queue,
-            IReadOnlyCollection<Guid> studentIds,
-            CancellationToken cancellationToken)
-        {
-            if (studentIds.Count == 0)
+            if (monthReports.Count == 0)
             {
-                return Array.Empty<Guid>();
+                return PublishedStudentReportActivationResult.Empty;
             }
 
+            var scopedStudentIdSet = scopedStudentIds.ToHashSet();
+            var scopedReports = monthReports
+                .Where(report => scopedStudentIdSet.Contains(report.StudentId))
+                .ToList();
+
+            var currentReports = scopedReports
+                .Where(report =>
+                    report.CreatedAt >= queue.StartedAt.Value &&
+                    report.CreatedAt <= queue.CompletedAt.Value)
+                .ToList();
+
+            if (currentReports.Count == 0)
+            {
+                return PublishedStudentReportActivationResult.Empty;
+            }
+
+            foreach (var report in scopedReports)
+            {
+                report.IsActive = false;
+            }
+
+            foreach (var report in currentReports)
+            {
+                report.IsActive = true;
+            }
+
+            await reportContext.SaveChangesAsync(cancellationToken);
+
+            return new PublishedStudentReportActivationResult
+            {
+                StudentIds = currentReports
+                    .Select(report => report.StudentId)
+                    .Distinct()
+                    .ToList(),
+                ReportsCount = currentReports.Count
+            };
+        }
+
+        private async Task<IReadOnlyList<Guid>> GetQueueScopeStudentIdsAsync(
+            ReportQueue queue,
+            CancellationToken cancellationToken)
+        {
             var studentsQuery = context.Students
                 .AsNoTracking()
                 .Where(student =>
-                    studentIds.Contains(student.Id) &&
                     student.SchoolId == queue.SchoolId &&
                     student.Deleted == false);
 
@@ -469,6 +486,25 @@ namespace Mdaresna.Infrastructure.Services.SettingsManagement.Command
                 .Select(student => student.Id)
                 .Distinct()
                 .ToListAsync(cancellationToken);
+        }
+
+        private static IQueryable<StudentReport> ApplyReportQueueIdentityFilter(
+            IQueryable<StudentReport> reportsQuery,
+            ReportQueue queue)
+        {
+            reportsQuery = reportsQuery.Where(report =>
+                report.SchoolId == queue.SchoolId &&
+                report.ReportType == queue.ReportType);
+
+            reportsQuery = queue.MonthId.HasValue
+                ? reportsQuery.Where(report => report.MonthId == queue.MonthId.Value)
+                : reportsQuery.Where(report => report.MonthId == null);
+
+            reportsQuery = string.IsNullOrWhiteSpace(queue.WeekName)
+                ? reportsQuery.Where(report => report.WeekName == null || report.WeekName == string.Empty)
+                : reportsQuery.Where(report => report.WeekName == queue.WeekName);
+
+            return reportsQuery;
         }
 
         private async Task<IReadOnlyList<StudentParentNotificationTarget>> GetStudentParentNotificationTargetsAsync(
@@ -574,6 +610,19 @@ namespace Mdaresna.Infrastructure.Services.SettingsManagement.Command
             public Guid ParentId { get; set; }
 
             public string FcmToken { get; set; } = string.Empty;
+        }
+
+        private sealed class PublishedStudentReportActivationResult
+        {
+            public static PublishedStudentReportActivationResult Empty { get; } = new()
+            {
+                StudentIds = Array.Empty<Guid>(),
+                ReportsCount = 0
+            };
+
+            public IReadOnlyList<Guid> StudentIds { get; set; } = Array.Empty<Guid>();
+
+            public int ReportsCount { get; set; }
         }
     }
 }
