@@ -19,6 +19,15 @@ public class StudentReportConfig : IEntityTypeConfiguration<StudentReport>
         builder.Property(e => e.StudentId)
             .IsRequired();
 
+        builder.Property(e => e.ReportQueueId)
+            .IsRequired(false);
+
+        builder.Property(e => e.GradeId)
+            .IsRequired(false);
+
+        builder.Property(e => e.ClassRoomId)
+            .IsRequired(false);
+
         builder.Property(e => e.MonthId)
             .IsRequired(false);
 
@@ -47,6 +56,12 @@ public class StudentReportConfig : IEntityTypeConfiguration<StudentReport>
         builder.Property(e => e.ReportType)
             .IsRequired()
             .HasDefaultValue(StudentReportTypesEnum.Monthly);
+
+        builder.HasIndex(e => e.ReportQueueId);
+
+        builder.HasIndex(e => e.GradeId);
+
+        builder.HasIndex(e => e.ClassRoomId);
 
         builder.HasCheckConstraint(
             "CK_StudentReports_ReportDeatils_IsJson",

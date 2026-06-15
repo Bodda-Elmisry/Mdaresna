@@ -1,8 +1,8 @@
 using Mdaresna.Doamin.Enums;
 
-namespace Mdaresna.Doamin.Models.ReportingManagement;
+namespace Mdaresna.Doamin.DTOs.ReportingDTOs;
 
-public class StudentReport
+public class StudentReportResultDTO
 {
     public Guid Id { get; set; }
 

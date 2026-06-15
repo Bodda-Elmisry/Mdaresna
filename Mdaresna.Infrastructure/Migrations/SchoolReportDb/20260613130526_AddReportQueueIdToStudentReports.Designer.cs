@@ -4,6 +4,7 @@ using Mdaresna.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Mdaresna.Infrastructure.Migrations.SchoolReportDb
 {
     [DbContext(typeof(SchoolReportDBContext))]
-    partial class SchoolReportDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260613130526_AddReportQueueIdToStudentReports")]
+    partial class AddReportQueueIdToStudentReports
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -28,17 +31,11 @@ namespace Mdaresna.Infrastructure.Migrations.SchoolReportDb
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("ClassRoomId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasColumnName("CeratedAt")
                         .HasDefaultValueSql("SYSUTCDATETIME()");
-
-                    b.Property<Guid?>("GradeId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -77,10 +74,6 @@ namespace Mdaresna.Infrastructure.Migrations.SchoolReportDb
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ClassRoomId");
-
-                    b.HasIndex("GradeId");
 
                     b.HasIndex("ReportQueueId");
 

@@ -18,7 +18,7 @@ namespace Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement
         public Guid YearId { get; set; }
 
         [ForeignKey(nameof(YearId))]
-        public SchoolYear Year { get; set; } = new();
+        public SchoolYear Year { get; set; }
 
         //public ReportStatusEnum ReportStatus { get; set; }
     }

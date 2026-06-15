@@ -91,6 +91,7 @@ internal class StudentMonthelyReportGenerator : IStudentReportGenerator
             queue.ToDate,
             queue.GradeId,
             queue.ClassroomId,
+            queue.Id,
             queue.MonthId,
             queue.WeekName,
             queue.ReportType,
@@ -117,6 +118,7 @@ internal class StudentMonthelyReportGenerator : IStudentReportGenerator
             toDate,
             gradeId: null,
             classRoomId: null,
+            reportQueueId: null,
             monthId: null,
             weekName: null,
             reportType: StudentReportTypesEnum.Monthly,
@@ -137,6 +139,7 @@ internal class StudentMonthelyReportGenerator : IStudentReportGenerator
         DateTime toDate,
         Guid? gradeId,
         Guid? classRoomId,
+        Guid? reportQueueId,
         Guid? monthId,
         string? weekName,
         StudentReportTypesEnum reportType,
@@ -198,6 +201,7 @@ internal class StudentMonthelyReportGenerator : IStudentReportGenerator
 
         return await SaveReportRowsAsync(
             reportRows,
+            reportQueueId,
             monthId,
             weekName,
             reportType,
@@ -279,6 +283,7 @@ internal class StudentMonthelyReportGenerator : IStudentReportGenerator
                 StudentName = row.StudentName.Trim(),
                 SchoolId = row.SchoolId,
                 SchoolName = row.SchoolName,
+                GradeId = row.GradeId,
                 ClassRoomId = row.ClassRoomId,
                 ClassRoomName = row.ClassRoomName,
                 CourseId = row.CourseId,
@@ -660,6 +665,7 @@ internal class StudentMonthelyReportGenerator : IStudentReportGenerator
                     StudentName = row.StudentName,
                     SchoolId = row.SchoolId,
                     SchoolName = row.SchoolName,
+                    GradeId = row.GradeId,
                     ClassRoomId = row.ClassRoomId,
                     ClassRoomName = row.ClassRoomName,
                     CourseId = row.CourseId,
@@ -686,9 +692,12 @@ internal class StudentMonthelyReportGenerator : IStudentReportGenerator
     /// Business: this method is the persistence boundary for the reporting worker. Each final
     /// row is saved as one <see cref="StudentReport"/> record, and the full row value is stored
     /// as JSON in <see cref="StudentReport.ReportDetails"/> for later review or publishing.
+    /// When the report was created from a queue, the queue id is stored on every row so publish,
+    /// review, and retry flows can identify exactly which request produced the rows.
     /// </remarks>
     private async Task<int> SaveReportRowsAsync(
         IReadOnlyCollection<StudentMonthlyEvaluationReportRow> reportRows,
+        Guid? reportQueueId,
         Guid? monthId,
         string? weekName,
         StudentReportTypesEnum reportType,
@@ -708,6 +717,7 @@ internal class StudentMonthelyReportGenerator : IStudentReportGenerator
 
         var studentReports = CreateStudentReports(
             reportRows,
+            reportQueueId,
             monthId,
             weekName,
             reportType);
@@ -732,10 +742,12 @@ internal class StudentMonthelyReportGenerator : IStudentReportGenerator
     /// </summary>
     /// <remarks>
     /// Business: the report table stores the searchable report identity columns separately and
-    /// keeps the complete calculated course row as JSON in ReportDetails.
+    /// keeps the complete calculated course row as JSON in ReportDetails. ReportQueueId links
+    /// generated rows back to the reporting request that created them.
     /// </remarks>
     private static IReadOnlyList<StudentReport> CreateStudentReports(
         IReadOnlyCollection<StudentMonthlyEvaluationReportRow> reportRows,
+        Guid? reportQueueId,
         Guid? monthId,
         string? weekName,
         StudentReportTypesEnum reportType)
@@ -748,6 +760,9 @@ internal class StudentMonthelyReportGenerator : IStudentReportGenerator
                 Id = Guid.NewGuid(),
                 SchoolId = row.SchoolId,
                 StudentId = row.StudentId,
+                ReportQueueId = reportQueueId,
+                GradeId = row.GradeId,
+                ClassRoomId = row.ClassRoomId,
                 MonthId = monthId,
                 WeekName = weekName,
                 ReportDetails = JsonSerializer.Serialize(row, ReportJsonOptions),

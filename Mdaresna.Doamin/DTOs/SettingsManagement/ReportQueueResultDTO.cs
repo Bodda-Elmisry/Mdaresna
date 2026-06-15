@@ -1,37 +1,58 @@
-﻿using Mdaresna.Doamin.Enums;
-using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
-using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
-using Mdaresna.Doamin.Models.UserManagement;
+using Mdaresna.Doamin.Enums;
 
-namespace Mdaresna.Doamin.Models.SettingsManagement;
+namespace Mdaresna.Doamin.DTOs.SettingsManagement;
 
-public class ReportQueue
+public class ReportQueueResultDTO
 {
     public Guid Id { get; set; }
-    public Guid SchoolId { get; set; }
-    public School School { get; set; } = null!;
-    public Guid? GradeId { get; set; }
-    public SchoolGrade? Grade { get; set; }
-    public Guid? ClassroomId { get; set; }
-    public ClassRoom? Classroom { get; set; }
-    public DateTime FromDate { get; set; }
-    public DateTime ToDate { get; set; }
-    public Guid? MonthId { get; set; }
-    public SchoolYearMonth? Month { get; set; }
-    public string? WeekName { get; set; }
-    public StudentReportTypesEnum ReportType { get; set; }
-    public ReportQueueStatusEnum Status { get; set; }
-    public Guid CreatedById { get; set; }
-    public User CreatedBy { get; set; } = null!;
-    public DateTime CreatedAt { get; set; }
-    public DateTime? StartedAt { get; set; }
-    public DateTime? CompletedAt { get; set; }
-    public Guid? ReviewdById { get; set; }
-    public User? ReviewdBy { get; set; }
-    public DateTime? PublishedAt { get; set; }
-    public string? Errors { get; set; }
-    public int? AffectedRows { get; set; }
-    public int RetryCount { get; set; }
-    public string? Notes { get; set; }
 
+    public Guid SchoolId { get; set; }
+
+    public string SchoolName { get; set; } = string.Empty;
+
+    public Guid? GradeId { get; set; }
+
+    public string? GradeName { get; set; }
+
+    public Guid? ClassroomId { get; set; }
+
+    public string? ClassroomName { get; set; }
+
+    public DateTime FromDate { get; set; }
+
+    public DateTime ToDate { get; set; }
+
+    public Guid? MonthId { get; set; }
+
+    public string? MonthName { get; set; }
+
+    public string? WeekName { get; set; }
+
+    public StudentReportTypesEnum ReportType { get; set; }
+
+    public ReportQueueStatusEnum Status { get; set; }
+
+    public Guid CreatedById { get; set; }
+
+    public string CreatedByName { get; set; } = string.Empty;
+
+    public DateTime CreatedAt { get; set; }
+
+    public DateTime? StartedAt { get; set; }
+
+    public DateTime? CompletedAt { get; set; }
+
+    public Guid? ReviewdById { get; set; }
+
+    public string? ReviewdByName { get; set; }
+
+    public DateTime? PublishedAt { get; set; }
+
+    public string? Errors { get; set; }
+
+    public int? AffectedRows { get; set; }
+
+    public int RetryCount { get; set; }
+
+    public string? Notes { get; set; }
 }

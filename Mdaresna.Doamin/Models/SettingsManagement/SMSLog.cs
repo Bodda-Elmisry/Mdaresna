@@ -1,5 +1,4 @@
 using Mdaresna.Doamin.Models.Base;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Mdaresna.Doamin.Models.SettingsManagement

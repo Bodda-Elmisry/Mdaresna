@@ -184,7 +184,7 @@ namespace Mdaresna.Infrastructure.Services.SettingsManagement.Command
                 .FirstOrDefaultAsync(item => item.Id == requestedById && item.Deleted == false)
                 ?? throw new InvalidOperationException("Requested by user was not found.");
 
-            var grade = new SchoolGrade();
+            SchoolGrade? grade = null;
 
             if (command.GradeId.HasValue)
             {
@@ -206,7 +206,7 @@ namespace Mdaresna.Infrastructure.Services.SettingsManagement.Command
             }
 
 
-            var classroom = new ClassRoom();
+            ClassRoom? classroom = null;
             
             if(command.ClassroomId.HasValue)
             {
@@ -220,7 +220,7 @@ namespace Mdaresna.Infrastructure.Services.SettingsManagement.Command
                     throw new InvalidOperationException("Classroom was not found.");
                 }
 
-                else if (!command.ClassroomId.HasValue)
+                else
                 {
                     var isMonthGrageReported = await context.ReportQueues.AnyAsync(e => e.SchoolId == command.SchoolId && e.MonthId == command.MonthId && e.GradeId == command.GradeId && e.ClassroomId == command.ClassroomId && e.Status != ReportQueueStatusEnum.Failed && e.Status != ReportQueueStatusEnum.Published);
                     if (isMonthGrageReported)
@@ -233,51 +233,61 @@ namespace Mdaresna.Infrastructure.Services.SettingsManagement.Command
 
         public async Task<RequestMonthReportResponseDTO> RequestMonthReportAsync(RequestMonthReportCommandDTO command)
         {
-            var validateionResponse = await ValidateRequestMonthReportAsync(command);
-            var requestedAt = DateTime.UtcNow;
-            var reportQueue = new ReportQueue
-            {
-                Id = DataGenerationHelper.GenerateRowId(),
-                SchoolId = command.SchoolId,
-                GradeId = command.GradeId,
-                ClassroomId = command.ClassroomId,
-                FromDate = command.FromDate.Date,
-                ToDate = command.ToDate.Date,
-                MonthId = command.MonthId,
-                ReportType = StudentReportTypesEnum.Monthly,
-                Status = ReportQueueStatusEnum.Queued,
-                CreatedById = validateionResponse.requestedBy.Id,
-                CreatedAt = requestedAt,
-                RetryCount = 0,
-                StartedAt = null,
-                CompletedAt = null,
-                Errors = null
-            };
-
             await using var transaction = await context.Database.BeginTransactionAsync();
-
-            context.ReportQueues.Add(reportQueue);
-
-
-            await context.SaveChangesAsync();
-            await transaction.CommitAsync();
-
-            return new RequestMonthReportResponseDTO
+            try
             {
-                SchoolId = validateionResponse.school.Id,
-                SchoolName = validateionResponse.school.Name,
-                GradeId = validateionResponse.grade?.Id,
-                GradeName = validateionResponse.grade?.Name,
-                ClassroomId = validateionResponse.classroom?.Id,
-                ClassroomName = validateionResponse.classroom?.Name,
-                MonthId = validateionResponse.month.Id,
-                MonthName = validateionResponse.month.Name,
-                FromDate = reportQueue.FromDate,
-                ToDate = reportQueue.ToDate,
-                RequestedById = validateionResponse.requestedBy.Id,
-                RequestedByName = GetUserFullName(validateionResponse.requestedBy.FirstName, validateionResponse.requestedBy.LastName),
-                RequestedAt = reportQueue.CreatedAt
-            };
+                var validateionResponse = await ValidateRequestMonthReportAsync(command);
+                var requestedAt = DateTime.UtcNow;
+                var reportQueue = new ReportQueue
+                {
+                    Id = DataGenerationHelper.GenerateRowId(),
+                    SchoolId = command.SchoolId,
+                    GradeId = command.GradeId,
+                    ClassroomId = command.ClassroomId,
+                    FromDate = command.FromDate.Date,
+                    ToDate = command.ToDate.Date,
+                    MonthId = command.MonthId,
+                    ReportType = StudentReportTypesEnum.Monthly,
+                    Status = ReportQueueStatusEnum.Queued,
+                    CreatedById = validateionResponse.requestedBy.Id,
+                    CreatedAt = requestedAt,
+                    RetryCount = 0,
+                    StartedAt = null,
+                    CompletedAt = null,
+                    Errors = null
+                };
+
+                
+
+                context.ReportQueues.Add(reportQueue);
+
+
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return new RequestMonthReportResponseDTO
+                {
+                    SchoolId = validateionResponse.school.Id,
+                    SchoolName = validateionResponse.school.Name,
+                    GradeId = validateionResponse.grade?.Id,
+                    GradeName = validateionResponse.grade?.Name,
+                    ClassroomId = validateionResponse.classroom?.Id,
+                    ClassroomName = validateionResponse.classroom?.Name,
+                    MonthId = validateionResponse.month.Id,
+                    MonthName = validateionResponse.month.Name,
+                    FromDate = reportQueue.FromDate,
+                    ToDate = reportQueue.ToDate,
+                    RequestedById = validateionResponse.requestedBy.Id,
+                    RequestedByName = GetUserFullName(validateionResponse.requestedBy.FirstName, validateionResponse.requestedBy.LastName),
+                    RequestedAt = reportQueue.CreatedAt
+                };
+            }
+            catch(Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw ex;
+            }
+            
         }
 
         private static string GetUserFullName(string firstName, string lastName)
@@ -492,10 +502,18 @@ namespace Mdaresna.Infrastructure.Services.SettingsManagement.Command
                 .ToList();
 
             var currentReports = scopedReports
-                .Where(report =>
-                    report.CreatedAt >= queue.StartedAt.Value &&
-                    report.CreatedAt <= queue.CompletedAt.Value)
+                .Where(report => report.ReportQueueId == queue.Id)
                 .ToList();
+
+            if (currentReports.Count == 0)
+            {
+                currentReports = scopedReports
+                    .Where(report =>
+                        !report.ReportQueueId.HasValue &&
+                        report.CreatedAt >= queue.StartedAt.Value &&
+                        report.CreatedAt <= queue.CompletedAt.Value)
+                    .ToList();
+            }
 
             if (currentReports.Count == 0)
             {

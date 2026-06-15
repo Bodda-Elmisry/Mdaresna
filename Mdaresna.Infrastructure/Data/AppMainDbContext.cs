@@ -7,7 +7,7 @@ namespace Mdaresna.Infrastructure.Data;
 
 public class AppMainDbContext : DbContext
 {
-    public AppMainDbContext(DbContextOptions options) : base(options)
+    public AppMainDbContext(DbContextOptions<AppMainDbContext> options) : base(options)
     {
         
     }
