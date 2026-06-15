@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.StudentManagementDTO;
@@ -87,16 +87,30 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 if (!added)
                     return BadRequest("Error in adding note");
 
-                var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
-                var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Note);
-                var studentIds = new List<Guid>();
-                studentIds.Add(dTO.StudentId);
-                var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
-                if (devices.Count() > 0)
+                try
                 {
-                    var tokens = devices.Select(d => d.FcmTocken).ToList();
-                    var student = await studentQueryService.GetByIdAsync(dTO.StudentId);
-                    await notificationProvider.SendToMultiUsersAsync(tokens, "New Note", $"توجد ملاحظة جديدة بخصوص الطالب  {student.FirstName} {student.LastName}. يهمنا اطلاعكم عليها لنستمر معاً في دعم مسيرته التعليمية .");
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Note);
+                    var studentIds = new List<Guid> { dTO.StudentId };
+                    var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
+                    if (devices != null && devices.Any())
+                    {
+                        var tokens = devices
+                            .Select(d => d.FcmTocken)
+                            .Where(t => !string.IsNullOrWhiteSpace(t))
+                            .Distinct()
+                            .ToList();
+
+                        if (tokens.Any())
+                        {
+                            var student = await studentQueryService.GetByIdAsync(dTO.StudentId);
+                            await notificationProvider.SendToMultiUsersAsync(tokens, "ملاحظة جديدة", $"توجد ملاحظة جديدة بخصوص الطالب {student.FirstName} {student.LastName}. يهمنا اطلاعكم عليها لنستمر معاً في دعم مسيرته التعليمية.|Type=Note|TargetId={note.Id}|StudentId={dTO.StudentId}");
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    // Ignore notification failures so the API request is not aborted
                 }
 
                 return Ok(await studentNoteQueryService.GetStudentNoteViewById(note.Id));

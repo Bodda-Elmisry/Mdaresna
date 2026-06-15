@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.DTOs.Identity;
+using Mdaresna.Doamin.DTOs.Identity;
 using Mdaresna.Doamin.DTOs.SchoolManagement;
 using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.Identity;
@@ -17,9 +17,14 @@ using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Repository.IServices.UserManagement.Query;
+using Mdaresna.Repository.IUnitOfWork;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using static Dapper.SqlMapper;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 {
@@ -38,6 +43,10 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         private readonly ISchoolQueryService schoolQueryService;
         private readonly INotificationFactory notificationFactory;
         private readonly IUserDeviceQueryService userDeviceQueryService;
+        private readonly ICommandUnitOfWork commandUnitOfWork;
+        private readonly IClassRoomQueryService classRoomQueryService;
+        private readonly IUserPermissionSchoolClassRoomQueryService userPermissionSchoolClassRoomQueryService;
+        private readonly IUserPermissionSchoolClassRoomCommandService userPermissionSchoolClassRoomCommandService;
 
         public SchoolEmployeeController(ISchoolEmployeeCommandService schoolEmployeeCommandService,
                                         ISchoolEmployeeQueryService schoolEmployeeQueryService,
@@ -49,8 +58,12 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                                         IClassroomEmployeeCommandService classroomEmployeeCommandService,
                                         IClassroomEmployeeQueryService classroomEmployeeQueryService,
                                         ISchoolQueryService schoolQueryService,
-                                           INotificationFactory notificationFactory,
-                                           IUserDeviceQueryService userDeviceQueryService)
+                                        INotificationFactory notificationFactory,
+                                        IUserDeviceQueryService userDeviceQueryService,
+                                        ICommandUnitOfWork commandUnitOfWork,
+                                        IClassRoomQueryService classRoomQueryService,
+                                        IUserPermissionSchoolClassRoomQueryService userPermissionSchoolClassRoomQueryService,
+                                        IUserPermissionSchoolClassRoomCommandService userPermissionSchoolClassRoomCommandService)
         {
             this.schoolEmployeeCommandService = schoolEmployeeCommandService;
             this.schoolEmployeeQueryService = schoolEmployeeQueryService;
@@ -64,6 +77,10 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             this.schoolQueryService = schoolQueryService;
             this.notificationFactory = notificationFactory;
             this.userDeviceQueryService = userDeviceQueryService;
+            this.commandUnitOfWork = commandUnitOfWork;
+            this.classRoomQueryService = classRoomQueryService;
+            this.userPermissionSchoolClassRoomQueryService = userPermissionSchoolClassRoomQueryService;
+            this.userPermissionSchoolClassRoomCommandService = userPermissionSchoolClassRoomCommandService;
         }
 
         [HttpPost("AddSchoolEmployee")]
@@ -143,6 +160,14 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
+                var supervisedClassrooms = await classRoomQueryService.GetBySchoolIdAndSupervisorIdAsync(dto.SchoolId, dto.EmployeeId);
+                if (supervisedClassrooms != null && supervisedClassrooms.Any())
+                {
+                    return Conflict("Cannot remove employee because they are a supervisor for one or more classrooms. Please reassign the supervisor for these classrooms first.");
+                }
+
+                await commandUnitOfWork.BeginTransactionAsync();
+
                 var employeeClassrooms = await classroomEmployeeQueryService.GetEmployeeClassroomsAsync(dto.EmployeeId, dto.SchoolId);
 
                 if (employeeClassrooms != null && employeeClassrooms.Count() > 0)
@@ -160,12 +185,13 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 };
                 var employeeRoles = await userRoleQueryService.GetUserRolesDataAsync(dto.EmployeeId, dto.SchoolId);
                 var employeePermissions = await userPermissionQueryService.GetUserPermissions(dto.SchoolId, dto.EmployeeId);
+                var classRoomPermissions = await userPermissionSchoolClassRoomQueryService.GetUserPermissionsBySchoolAsync(dto.EmployeeId, dto.SchoolId);
+
                 var deleted = await schoolEmployeeCommandService.DeleteAsync(sEmployee);
                 if (deleted)
                 {
                     if (employeeRoles != null && employeeRoles.Count() > 0)
                     {
-
                         foreach (var role in employeeRoles)
                         {
                             await userRoleCommandService.DeleteAsync(role);
@@ -178,8 +204,17 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                         {
                             await userPermissionCommandService.DeleteAsync(permission);
                         }
-
                     }
+
+                    if (classRoomPermissions != null && classRoomPermissions.Any())
+                    {
+                        foreach (var permission in classRoomPermissions)
+                        {
+                            await userPermissionSchoolClassRoomCommandService.DeleteAsync(permission);
+                        }
+                    }
+
+                    await commandUnitOfWork.CommitTransactionAsync();
 
                     var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
                     var devices = await userDeviceQueryService.GetByUserIdAsync(dto.EmployeeId);
@@ -192,10 +227,12 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                     return Ok("Employee removed from school");
                 }
 
+                await commandUnitOfWork.RollbackTransactionAsync();
                 return BadRequest("Error in removing");
             }
             catch (Exception ex)
             {
+                await commandUnitOfWork.RollbackTransactionAsync();
                 return BadRequest(ex.Message);
             }
         }
@@ -234,41 +271,55 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
+                var supervisedClassrooms = await classRoomQueryService.GetBySchoolIdAndSupervisorIdAsync(dto.SchoolId, dto.EmployeeId);
+                if (supervisedClassrooms != null && supervisedClassrooms.Any())
+                {
+                    return Conflict("Cannot remove employee because they are a supervisor for one or more classrooms. Please reassign the supervisor for these classrooms first.");
+                }
+
+                await commandUnitOfWork.BeginTransactionAsync();
 
                 var employeeClassrooms = await classroomEmployeeQueryService.GetEmployeeClassroomsAsync(dto.EmployeeId, dto.SchoolId);
 
                 var sEmployee = await schoolEmployeeQueryService.GetSchoolEmployeeByIdAsync(dto.SchoolId, dto.EmployeeId);
                 if (sEmployee == null)
+                {
+                    await commandUnitOfWork.RollbackTransactionAsync();
                     return BadRequest("Can't find employee to delete");
+                }
 
                 if (employeeClassrooms != null && employeeClassrooms.Count() > 0)
                 {
-
                     foreach (var classroom in employeeClassrooms)
                     {
-
-
                         await classroomEmployeeCommandService.DeleteAsync(classroom);
+                    }
+                }
+
+                var classRoomPermissions = await userPermissionSchoolClassRoomQueryService.GetUserPermissionsBySchoolAsync(dto.EmployeeId, dto.SchoolId);
+                if (classRoomPermissions != null && classRoomPermissions.Any())
+                {
+                    foreach (var permission in classRoomPermissions)
+                    {
+                        await userPermissionSchoolClassRoomCommandService.DeleteAsync(permission);
                     }
                 }
 
                 var deleted = await schoolEmployeeCommandService.DeleteAsync(sEmployee);
                 if (deleted)
+                {
+                    await commandUnitOfWork.CommitTransactionAsync();
                     return Ok("Employee removed from school");
+                }
 
+                await commandUnitOfWork.RollbackTransactionAsync();
                 return BadRequest("Error in removing Employee");
             }
             catch (Exception ex)
             {
+                await commandUnitOfWork.RollbackTransactionAsync();
                 return BadRequest(ex.Message);
             }
-
-
-
-
-
-
-
         }
     }
 }

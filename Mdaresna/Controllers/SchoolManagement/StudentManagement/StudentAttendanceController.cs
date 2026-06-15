@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.DTOs.StudentManagement;
+using Mdaresna.Doamin.DTOs.StudentManagement;
 using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.SchoolManagementDTO.StudentManagementDTO;
@@ -61,24 +61,46 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 var attendenceCompleated = await studentAttendanceCommandService.AddClassRoomAttendance(attendanceDTO);
                 if (attendenceCompleated)
                 {
-                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
-                    var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Attendance);
-
-                    foreach (var studentAttendance in attendanceDTO.StudentsAttenndaceList)
+                    try
                     {
-                        var studentIds = new List<Guid>();
-                        studentIds.Add(studentAttendance.StudentId);
-                        var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
-                        if (devices.Count() > 0)
-                        {
-                            var tokens = devices.Select(d => d.FcmTocken).Distinct().ToList();
-                            var student = await studentQueryService.GetByIdAsync(studentAttendance.StudentId);
-                            var message = studentAttendance.IsAttend
-                                ? $"تم تسجيل حضور الطالب {student.FirstName} {student.LastName} في المدرسة. نتمنى له يوماً دراسياً مليئاً بالنشاط والتميز!"
-                                : $"نود إفادتكم بأن الطالب {student.FirstName} {student.LastName} غائب عن مقعده الدراسي اليوم. نأمل أن يكون المانع خيراً، مع تمنياتنا له بالسلامة.";
+                        var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                        var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Attendance);
 
-                            await notificationProvider.SendToMultiUsersAsync(tokens, "Attendance", message);
+                        foreach (var studentAttendance in attendanceDTO.StudentsAttenndaceList)
+                        {
+                            try
+                            {
+                                var studentIds = new List<Guid> { studentAttendance.StudentId };
+                                var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
+                                if (devices != null && devices.Any())
+                                {
+                                    var tokens = devices
+                                        .Select(d => d.FcmTocken)
+                                        .Where(t => !string.IsNullOrWhiteSpace(t))
+                                        .Distinct()
+                                        .ToList();
+
+                                    if (tokens.Any())
+                                    {
+                                        var student = await studentQueryService.GetByIdAsync(studentAttendance.StudentId);
+                                        var messageText = studentAttendance.IsAttend
+                                            ? $"تم تسجيل حضور الطالب {student.FirstName} {student.LastName} في المدرسة. نتمنى له يوماً دراسياً مليئاً بالنشاط والتميز!"
+                                            : $"نود إفادتكم بأن الطالب {student.FirstName} {student.LastName} غائب عن مقعده الدراسي اليوم. نأمل أن يكون المانع خيراً، مع تمنياتنا له بالسلامة.";
+
+                                        var message = $"{messageText} | Type=Attendance | StudentId={studentAttendance.StudentId} | ClassRoomId={attendanceDTO.ClassRoomId}";
+                                        await notificationProvider.SendToMultiUsersAsync(tokens, "تسجيل الحضور", message);
+                                    }
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                // Ignore failure for individual student notification
+                            }
                         }
+                    }
+                    catch (Exception)
+                    {
+                        // Ignore notification failures so the API request is not aborted
                     }
                     return Ok("Attendence Compleated");
                 }

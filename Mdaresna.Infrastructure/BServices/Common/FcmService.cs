@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -100,6 +100,10 @@ namespace Mdaresna.Infrastructure.BServices.Common
                 ["rawBody"] = payload.RawBody,
                 ["schoolId"] = payload.SchoolId,
                 ["schoolBalance"] = payload.SchoolBalance,
+                ["targetType"] = payload.TargetType,
+                ["targetId"] = payload.TargetId,
+                ["studentId"] = payload.StudentId,
+                ["classRoomId"] = payload.ClassRoomId,
             };
         }
 
@@ -116,31 +120,67 @@ namespace Mdaresna.Infrastructure.BServices.Common
                 return payload;
             }
 
-            var bodyParts = body.Split('|');
+            var bodyParts = body.Split('|').Select(p => p.Trim()).ToArray();
             if (bodyParts.Length < 2)
             {
                 return payload;
             }
 
-            var schoolIdCandidate = bodyParts[^1].Trim();
-            if (!Guid.TryParse(schoolIdCandidate, out _))
-            {
-                return payload;
-            }
+            payload.DisplayBody = bodyParts[0];
+            var hasKeyValuePairs = bodyParts.Skip(1).Any(p => p.Contains('='));
 
-            payload.SchoolId = schoolIdCandidate;
-            var hasBalance =
-                title.Contains("Units Changed", StringComparison.OrdinalIgnoreCase) &&
-                bodyParts.Length > 2;
-
-            if (hasBalance)
+            if (hasKeyValuePairs)
             {
-                payload.SchoolBalance = bodyParts[^2].Trim();
-                payload.DisplayBody = string.Join("|", bodyParts.Take(bodyParts.Length - 2)).Trim();
+                foreach (var part in bodyParts.Skip(1))
+                {
+                    var kv = part.Split('=');
+                    if (kv.Length == 2)
+                    {
+                        var key = kv[0].Trim().ToLower();
+                        var val = kv[1].Trim();
+
+                        switch (key)
+                        {
+                            case "type":
+                                payload.TargetType = val;
+                                break;
+                            case "targetid":
+                                payload.TargetId = val;
+                                break;
+                            case "studentid":
+                                payload.StudentId = val;
+                                break;
+                            case "classroomid":
+                                payload.ClassRoomId = val;
+                                break;
+                            case "schoolid":
+                                payload.SchoolId = val;
+                                break;
+                        }
+                    }
+                }
             }
             else
             {
-                payload.DisplayBody = string.Join("|", bodyParts.Take(bodyParts.Length - 1)).Trim();
+                // Legacy fallback parser
+                var schoolIdCandidate = bodyParts[^1];
+                if (Guid.TryParse(schoolIdCandidate, out _))
+                {
+                    payload.SchoolId = schoolIdCandidate;
+                    var hasBalance =
+                        title.Contains("Units Changed", StringComparison.OrdinalIgnoreCase) &&
+                        bodyParts.Length > 2;
+
+                    if (hasBalance)
+                    {
+                        payload.SchoolBalance = bodyParts[^2];
+                        payload.DisplayBody = string.Join("|", bodyParts.Take(bodyParts.Length - 2)).Trim();
+                    }
+                    else
+                    {
+                        payload.DisplayBody = string.Join("|", bodyParts.Take(bodyParts.Length - 1)).Trim();
+                    }
+                }
             }
 
             if (string.IsNullOrWhiteSpace(payload.DisplayBody))
@@ -157,6 +197,10 @@ namespace Mdaresna.Infrastructure.BServices.Common
             public string RawBody { get; set; } = string.Empty;
             public string SchoolId { get; set; } = string.Empty;
             public string SchoolBalance { get; set; } = string.Empty;
+            public string TargetType { get; set; } = string.Empty;
+            public string TargetId { get; set; } = string.Empty;
+            public string StudentId { get; set; } = string.Empty;
+            public string ClassRoomId { get; set; } = string.Empty;
         }
     }
 }

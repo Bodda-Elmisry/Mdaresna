@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.Common;
@@ -20,24 +20,24 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         private readonly IClassRoomAssignmentQueryService classRoomAssignmentQueryService;
         private readonly IClassRoomStudentAssignmentCommandService classRoomStudentAssignmentCommandService;
         private readonly IClassRoomStudentAssignmentQueryService classRoomStudentAssignmentQueryService;
-        //private readonly INotificationFactory notificationFactory;
-        //private readonly IClassroomTransactionsFactory classroomTransactionsFactory;
+        private readonly INotificationFactory notificationFactory;
+        private readonly IClassroomTransactionsFactory classroomTransactionsFactory;
         private readonly ICommandUnitOfWork commandUnitOfWork;
 
         public ClassRoomAssignmentController(IClassRoomAssignmentCommandService classRoomAssignmentCommandService,
                                              IClassRoomAssignmentQueryService classRoomAssignmentQueryService,
                                              IClassRoomStudentAssignmentCommandService classRoomStudentAssignmentCommandService,
                                              IClassRoomStudentAssignmentQueryService classRoomStudentAssignmentQueryService,
-                                           //INotificationFactory notificationFactory,
-                                           //IClassroomTransactionsFactory classroomTransactionsFactory,
-                                           ICommandUnitOfWork commandUnitOfWork)
+                                             INotificationFactory notificationFactory,
+                                             IClassroomTransactionsFactory classroomTransactionsFactory,
+                                             ICommandUnitOfWork commandUnitOfWork)
         {
             this.classRoomAssignmentCommandService = classRoomAssignmentCommandService;
             this.classRoomAssignmentQueryService = classRoomAssignmentQueryService;
             this.classRoomStudentAssignmentCommandService = classRoomStudentAssignmentCommandService;
             this.classRoomStudentAssignmentQueryService = classRoomStudentAssignmentQueryService;
-            //this.notificationFactory = notificationFactory;
-            //this.classroomTransactionsFactory = classroomTransactionsFactory;
+            this.notificationFactory = notificationFactory;
+            this.classroomTransactionsFactory = classroomTransactionsFactory;
             this.commandUnitOfWork = commandUnitOfWork;
         }
 
@@ -82,6 +82,13 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         {
             try
             {
+                if (dTO.StudentIds == null || !dTO.StudentIds.Any())
+                {
+                    return BadRequest("Student list cannot be empty. At least one student must be specified.");
+                }
+
+                await commandUnitOfWork.BeginTransactionAsync();
+
                 var assingment = new ClassRoomAssignment
                 {
                     AssignmentDate = dTO.AssignmentDate,
@@ -97,32 +104,46 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
 
                 if (added)
                 {
+                    await commandUnitOfWork.CommitTransactionAsync();
 
+                    try
+                    {
+                        var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                        var transactionProvider = classroomTransactionsFactory.GetProvider(ClassroomTransactionProvidersEnum.Assignment);
+                        var devices = await transactionProvider.GetTransactionSTudentsParentsDevicesAsync(assingment.Id);
+                        if (devices != null && devices.Any())
+                        {
+                            foreach (var devicesGroup in devices.GroupBy(d => d.StudentId))
+                            {
+                                var tokens = devicesGroup
+                                    .Select(d => d.FcmTocken)
+                                    .Where(t => !string.IsNullOrWhiteSpace(t))
+                                    .Distinct()
+                                    .ToList();
 
-                    //var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
-                    //var transactionProvider = classroomTransactionsFactory.GetProvider(ClassroomTransactionProvidersEnum.Assignment);
-                    //var devices = await transactionProvider.GetTransactionSTudentsParentsDevicesAsync(assingment.Id);
-                    
-                    //if (devices.Count() > 0)
-                    //{
-                    //    foreach (var devicesGroup in devices.GroupBy(d => d.StudentId))
-                    //    {
-                    //        var tokens = devicesGroup.Select(d => d.FcmTocken).ToList();
-                    //        var chieldName = devicesGroup.FirstOrDefault().StudentName;
-                    //        await notificationProvider.SendToMultiUsersAsync(tokens, "New Homework", $"New homework added to your chield {chieldName}");
-                    //    }
+                                if (tokens.Any())
+                                {
+                                    var childName = devicesGroup.FirstOrDefault()?.StudentName ?? "";
+                                    var message = $"تمت إضافة واجب جديد لـ {childName}. بلمسة من تشجيعكم ومتابعتكم، سيبدع بالتأكيد في إنجازه. | Type=Assignment | TargetId={assingment.Id} | ClassRoomId={assingment.ClassRoomId}";
+                                    await notificationProvider.SendToMultiUsersAsync(tokens, "واجب مدرسي جديد", message);
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        // Ignore notification failures so the API request is not aborted
+                    }
 
-                        
-                    //}
                     return Ok(await classRoomAssignmentQueryService.GetClassRoomAssignmentById(assingment.Id));
                 }
 
+                await commandUnitOfWork.RollbackTransactionAsync();
                 return BadRequest("Error in creating assignment");
-
-
             }
             catch (Exception ex)
             {
+                await commandUnitOfWork.RollbackTransactionAsync();
                 return BadRequest(ex.Message);
             }
         }

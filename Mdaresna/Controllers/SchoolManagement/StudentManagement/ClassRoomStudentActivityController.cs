@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.SchoolManagementDTO.StudentManagementDTO;
@@ -111,16 +111,31 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                     return BadRequest("Error in adding student Activity");
                 
 
-                var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
-                var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Activity);
-                var studentIds = new List<Guid>();
-                studentIds.Add(dto.StudentId);
-                var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
-                if (devices.Count() > 0)
+                try
                 {
-                    var tokens = devices.Select(d => d.FcmTocken).ToList();
-                    var student = await studentQueryService.GetByIdAsync(dto.StudentId);
-                    await notificationProvider.SendToMultiUsersAsync(tokens, "New Activity", $"نشاط مدرسي جديد بانتظار {student.FirstName} {student.LastName}! تعرف على التفاصيل وشاركه الحماس عبر قسم الأنشطة.");
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Activity);
+                    var studentIds = new List<Guid> { dto.StudentId };
+                    var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
+                    if (devices != null && devices.Any())
+                    {
+                        var tokens = devices
+                            .Select(d => d.FcmTocken)
+                            .Where(t => !string.IsNullOrWhiteSpace(t))
+                            .Distinct()
+                            .ToList();
+
+                        if (tokens.Any())
+                        {
+                            var student = await studentQueryService.GetByIdAsync(dto.StudentId);
+                            var message = $"نشاط مدرسي جديد بانتظار {student.FirstName} {student.LastName}! تعرف على التفاصيل وشاركه الحماس عبر قسم الأنشطة. | Type=Activity | TargetId={studentActivity.ActivityId} | StudentId={dto.StudentId} | ClassRoomId={dto.ClassRoomId}";
+                            await notificationProvider.SendToMultiUsersAsync(tokens, "نشاط مدرسي جديد", message);
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    // Ignore notification failures so the API request is not aborted
                 }
 
                 return Ok(await classRoomStudentActivityQueryService.GetClassRoomStudentActivityViewAsync(studentActivity.StudentId, studentActivity.ActivityId));
@@ -150,16 +165,33 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                     return BadRequest("Error in Updating");
 
 
-                var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
-                var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Activity);
-                var studentIds = new List<Guid>();
-                studentIds.Add(dto.StudentId);
-                var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
-                if (devices.Count() > 0)
+                try
                 {
-                    var tokens = devices.Select(d => d.FcmTocken).ToList();
-                    var student = await studentQueryService.GetByIdAsync(dto.StudentId);
-                    await notificationProvider.SendToMultiUsersAsync(tokens, "New Activity", $"تم رصد تقييم مشاركة {student.FirstName} {student.LastName} في النشاط. يمكنكم الآن رؤية التقييم والاحتفاء بتجربته الأخيرة.");
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Activity);
+                    var studentIds = new List<Guid> { dto.StudentId };
+                    var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
+                    if (devices != null && devices.Any())
+                    {
+                        var tokens = devices
+                            .Select(d => d.FcmTocken)
+                            .Where(t => !string.IsNullOrWhiteSpace(t))
+                            .Distinct()
+                            .ToList();
+
+                        if (tokens.Any())
+                        {
+                            var student = await studentQueryService.GetByIdAsync(dto.StudentId);
+                            var viewDto = await classRoomStudentActivityQueryService.GetClassRoomStudentActivityViewAsync(sAct.StudentId, sAct.ActivityId);
+                            var classRoomId = viewDto?.ClassRoomId ?? Guid.Empty;
+                            var message = $"تم رصد تقييم مشاركة {student.FirstName} {student.LastName} في النشاط. يمكنكم الآن رؤية التقييم والاحتفاء بتجربته الأخيرة. | Type=Activity | TargetId={sAct.ActivityId} | StudentId={dto.StudentId} | ClassRoomId={classRoomId}";
+                            await notificationProvider.SendToMultiUsersAsync(tokens, "تقييم نشاط مدرسي", message);
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    // Ignore notification failures so the API request is not aborted
                 }
 
                 return Ok(await classRoomStudentActivityQueryService.GetClassRoomStudentActivityViewAsync(sAct.StudentId, sAct.ActivityId));

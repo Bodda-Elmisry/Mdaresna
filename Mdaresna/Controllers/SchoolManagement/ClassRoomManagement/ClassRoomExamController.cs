@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.Common;
@@ -20,24 +20,24 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         private readonly IClassRoomExamCommandService classRoomExamCommandService;
         private readonly IClassRoomStudentExamCommandService classRoomStudentExamCommandService;
         private readonly IClassRoomStudentExamQueryService classRoomStudentExamQueryService;
-        //private readonly INotificationFactory notificationFactory;
-        //private readonly IClassroomTransactionsFactory classroomTransactionsFactory;
+        private readonly INotificationFactory notificationFactory;
+        private readonly IClassroomTransactionsFactory classroomTransactionsFactory;
         private readonly ICommandUnitOfWork commandUnitOfWork;
 
         public ClassRoomExamController(IClassRoomExamQueryService classRoomExamQueryService,
                                        IClassRoomExamCommandService classRoomExamCommandService,
                                        IClassRoomStudentExamCommandService classRoomStudentExamCommandService,
                                        IClassRoomStudentExamQueryService classRoomStudentExamQueryService,
-                                           //INotificationFactory notificationFactory,
-                                           //IClassroomTransactionsFactory classroomTransactionsFactory,
-                                           ICommandUnitOfWork commandUnitOfWork)
+                                       INotificationFactory notificationFactory,
+                                       IClassroomTransactionsFactory classroomTransactionsFactory,
+                                       ICommandUnitOfWork commandUnitOfWork)
         {
             this.classRoomExamQueryService = classRoomExamQueryService;
             this.classRoomExamCommandService = classRoomExamCommandService;
             this.classRoomStudentExamCommandService = classRoomStudentExamCommandService;
             this.classRoomStudentExamQueryService = classRoomStudentExamQueryService;
-            //this.notificationFactory = notificationFactory;
-            //this.classroomTransactionsFactory = classroomTransactionsFactory;
+            this.notificationFactory = notificationFactory;
+            this.classroomTransactionsFactory = classroomTransactionsFactory;
             this.commandUnitOfWork = commandUnitOfWork;
         }
 
@@ -115,20 +115,35 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
 
                 if (added)
                 {
-                    //var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
-                    //var transactionProvider = classroomTransactionsFactory.GetProvider(ClassroomTransactionProvidersEnum.Exam);
-                    //var devices = await transactionProvider.GetTransactionSTudentsParentsDevicesAsync(exam.Id);
-                    //if (devices.Count() > 0)
-                    //{
-                    //    foreach (var devicesGroup in devices.GroupBy(d => d.StudentId))
-                    //    {
-                    //        var tokens = devicesGroup.Select(d => d.FcmTocken).ToList();
-                    //        var chieldName = devicesGroup.FirstOrDefault().StudentName;
-                    //        await notificationProvider.SendToMultiUsersAsync(tokens, "New Exam", $"New exam added to your chield {chieldName}");
-                    //    }
-                    //    //var tokens = devices.Select(d => d.FcmTocken).ToList();
-                    //    //await notificationProvider.SendToMultiUsersAsync(tokens, "New Exam", "New exam added to your chield");
-                    //}
+                    try
+                    {
+                        var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                        var transactionProvider = classroomTransactionsFactory.GetProvider(ClassroomTransactionProvidersEnum.Exam);
+                        var devices = await transactionProvider.GetTransactionSTudentsParentsDevicesAsync(exam.Id);
+                        if (devices != null && devices.Any())
+                        {
+                            foreach (var devicesGroup in devices.GroupBy(d => d.StudentId))
+                            {
+                                var tokens = devicesGroup
+                                    .Select(d => d.FcmTocken)
+                                    .Where(t => !string.IsNullOrWhiteSpace(t))
+                                    .Distinct()
+                                    .ToList();
+
+                                if (tokens.Any())
+                                {
+                                    var childName = devicesGroup.FirstOrDefault()?.StudentName ?? "";
+                                    var message = $"تم تحديد موعد اختبار جديد لـ {childName}. دعواتنا وتوجيهاتكم هي سر نجاحهم وتفوقهم. | Type=Exam | TargetId={exam.Id} | ClassRoomId={exam.ClassRoomId}";
+                                    await notificationProvider.SendToMultiUsersAsync(tokens, "اختبار جديد", message);
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        // Ignore notification failures so the API request is not aborted
+                    }
+
                     return Ok(await classRoomExamQueryService.GetExamByIdAsync(exam.Id));
                 }
 

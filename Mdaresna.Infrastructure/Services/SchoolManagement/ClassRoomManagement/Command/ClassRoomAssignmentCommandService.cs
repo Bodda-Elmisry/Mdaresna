@@ -52,7 +52,7 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.ClassRoomManagement.
 
                 var created = commandRepository.Create(entity);
 
-                if (created && studentsList != null)
+                if (created && studentsList != null && studentsList.Any())
                 {
                     var studentsObjects = studentsList.Select(s => new ClassRoomStudentAssignment
                     {

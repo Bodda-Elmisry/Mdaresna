@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.SchoolManagementDTO.StudentManagementDTO;
@@ -104,16 +104,33 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 if (!studentAdded)
                     return BadRequest("Errro in adding student exam");
 
-                var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
-                var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Exam);
-                var studentIds = new List<Guid>();
-                studentIds.Add(dto.StudentId);
-                var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
-                if (devices.Count() > 0)
+                try
                 {
-                    var tokens = devices.Select(d => d.FcmTocken).ToList();
-                    var student = await studentQueryService.GetByIdAsync(dto.StudentId);
-                    await notificationProvider.SendToMultiUsersAsync(tokens, "New Exam", $"تمت إضافة اختبار جديد لـ {student.FirstName} {student.LastName}. تفاصيل المادة والموعد جاهزة للاطلاع.. كل التوفيق والنجاح له ");
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Exam);
+                    var studentIds = new List<Guid> { dto.StudentId };
+                    var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
+                    if (devices != null && devices.Any())
+                    {
+                        var tokens = devices
+                            .Select(d => d.FcmTocken)
+                            .Where(t => !string.IsNullOrWhiteSpace(t))
+                            .Distinct()
+                            .ToList();
+
+                        if (tokens.Any())
+                        {
+                            var student = await studentQueryService.GetByIdAsync(dto.StudentId);
+                            var viewDto = await classRoomStudentExamQueryService.GetClassRoomStudentExamViewAsync(studentExam.StudentId, studentExam.ExamId);
+                            var classRoomId = viewDto?.ClassRoomId ?? Guid.Empty;
+                            var message = $"تمت إضافة اختبار جديد لـ {student.FirstName} {student.LastName}. تفاصيل المادة والموعد جاهزة للاطلاع.. كل التوفيق والنجاح له | Type=Exam | TargetId={studentExam.ExamId} | StudentId={dto.StudentId} | ClassRoomId={classRoomId}";
+                            await notificationProvider.SendToMultiUsersAsync(tokens, "اختبار جديد", message);
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    // Ignore notification failures so the API request is not aborted
                 }
 
                 return Ok(await classRoomStudentExamQueryService.GetClassRoomStudentExamViewAsync(studentExam.StudentId, studentExam.ExamId));
@@ -168,16 +185,33 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 if (!updated) 
                     return BadRequest("Error in updating student exam");
 
-                var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
-                var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Exam);
-                var studentIds = new List<Guid>();
-                studentIds.Add(dto.StudentId);
-                var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
-                if (devices.Count() > 0)
+                try
                 {
-                    var tokens = devices.Select(d => d.FcmTocken).ToList();
-                    var student = await studentQueryService.GetByIdAsync(dto.StudentId);
-                    await notificationProvider.SendToMultiUsersAsync(tokens, "New Exam", $"ظهرت الآن نتائج اختبار {student.FirstName} {student.LastName} . تفضل بالاطلاع عليها لمتابعة تطوره الدراسي المستمر");
+                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                    var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Exam);
+                    var studentIds = new List<Guid> { dto.StudentId };
+                    var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
+                    if (devices != null && devices.Any())
+                    {
+                        var tokens = devices
+                            .Select(d => d.FcmTocken)
+                            .Where(t => !string.IsNullOrWhiteSpace(t))
+                            .Distinct()
+                            .ToList();
+
+                        if (tokens.Any())
+                        {
+                            var student = await studentQueryService.GetByIdAsync(dto.StudentId);
+                            var viewDto = await classRoomStudentExamQueryService.GetClassRoomStudentExamViewAsync(dto.StudentId, dto.ExamId);
+                            var classRoomId = viewDto?.ClassRoomId ?? Guid.Empty;
+                            var message = $"ظهرت الآن نتائج اختبار {student.FirstName} {student.LastName} . تفضل بالاطلاع عليها لمتابعة تطوره الدراسي المستمر | Type=Exam | TargetId={dto.ExamId} | StudentId={dto.StudentId} | ClassRoomId={classRoomId}";
+                            await notificationProvider.SendToMultiUsersAsync(tokens, "نتائج اختبار", message);
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    // Ignore notification failures so the API request is not aborted
                 }
 
                 return Ok(await classRoomStudentExamQueryService.GetClassRoomStudentExamViewAsync(dto.StudentId, dto.ExamId));
