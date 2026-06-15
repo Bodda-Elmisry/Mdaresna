@@ -6,9 +6,12 @@ using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Mdaresna.Middlewares;
 
 namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 {
+    [Authorize]
     [Route("StudentNote")]
     public class StudentNoteController : Controller
     {
@@ -67,6 +70,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             }
         }
 
+        [PermissionAuthorize("AddNote")]
         [HttpPost("CreateStudentNote")]
         public async Task<IActionResult> CreateStudentNote([FromBody] CreateStudentNoteDTO dTO)
         {
@@ -121,6 +125,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             }
         }
 
+        [PermissionAuthorize("EditNote")]
         [HttpPost("UpdateStudentNote")]
         public async Task<IActionResult> UpadteStudentNote([FromBody] UpdateStudentNoteDTO dTO)
         {

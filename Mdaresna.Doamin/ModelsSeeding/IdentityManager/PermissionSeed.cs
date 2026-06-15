@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Models.Identity;
+using Mdaresna.Doamin.Models.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -1654,6 +1654,17 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description_AR = "تصدير سجل الرسائل",
                     SchoolPermission = false,
                     AppPermission = true
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("E593CD01-0FF3-4AE1-9DF6-61E9D7C23F5D"),
+                    Key = "ApproveAbsencePermit",
+                    Name = "Approve Student Absence Permit",
+                    Name_AR = "الموافقة على أعذار غياب الطلاب",
+                    Description = "Approve or reject student absence permits submitted by parents",
+                    Description_AR = "الموافقة أو رفض أعذار غياب الطلاب المقدمة من أولياء الأمور",
+                    SchoolPermission = true,
+                    AppPermission = false
                 }
 
                 );

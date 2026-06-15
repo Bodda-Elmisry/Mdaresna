@@ -13,6 +13,7 @@ public class SchoolReportDBContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new StudentReportConfig());
+        modelBuilder.RegisterUtcTimeZoneConverters();
     }
 
     public DbSet<StudentReport> StudentReports { get; set; }
@@ -76,4 +77,29 @@ public class SchoolReportDBContext : DbContext
         await using var context = Create(connectionString);
         await context.Database.MigrateAsync(cancellationToken);
     }
+
+    public override int SaveChanges()
+    {
+        this.ConvertAllDatesToUtc();
+        return base.SaveChanges();
+    }
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        this.ConvertAllDatesToUtc();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        this.ConvertAllDatesToUtc();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        this.ConvertAllDatesToUtc();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
 }
+

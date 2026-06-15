@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.DTOs.Identity;
+using Mdaresna.Doamin.DTOs.Identity;
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Doamin.Models.UserManagement;
 using Mdaresna.DTOs.IdentityDTO;
@@ -18,6 +18,10 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Mdaresna.Infrastructure.BServices.IdentityManagement
 {
@@ -34,6 +38,7 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
         private readonly ISchoolEmployeeQueryService schoolEmployeeQueryService;
         private readonly ISchoolTeacherQueryService schoolTeacherQueryService;
         private readonly ISMSLogCommandService smsLogCommandService;
+        private readonly IConfiguration configuration;
 
         public IdentityService(IUserCommandService userCommandService,
                                 IUserQueryService userQueryService,
@@ -45,7 +50,8 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                                 ISchoolQueryService schoolQueryService,
                                 ISchoolEmployeeQueryService schoolEmployeeQueryService,
                                 ISchoolTeacherQueryService schoolTeacherQueryService,
-                                ISMSLogCommandService smsLogCommandService)
+                                ISMSLogCommandService smsLogCommandService,
+                                IConfiguration configuration)
         {
             this.userCommandService = userCommandService;
             this.userQueryService = userQueryService;
@@ -58,6 +64,7 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             this.schoolEmployeeQueryService = schoolEmployeeQueryService;
             this.schoolTeacherQueryService = schoolTeacherQueryService;
             this.smsLogCommandService = smsLogCommandService;
+            this.configuration = configuration;
         }
 
         public async Task<RegisterResultDTO> Register(User RegisterUser)
@@ -65,31 +72,40 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             var result = new RegisterResultDTO { MSG = string.Empty };
 
             var user = await userQueryService.GetUserByPhoneNumber(RegisterUser.PhoneNumber);
-            if (user != null && !string.IsNullOrEmpty(user.Password))
+            if (user != null)
             {
-                result.MSG = "User Already Exist";
-                result.Regidterd = false;
-                return result;
+                if (user.PhoneConfirmed)
+                {
+                    result.MSG = "User Already Exist. Please login or request a password change.";
+                    result.Regidterd = false;
+                    return result;
+                }
+                else
+                {
+                    // User exists but phone is not confirmed. Generate a new OTP and update.
+                    user.PhoneConfirmationCode = SMSHelper.GenerateConfirmationKey();
+                    userCommandService.Update(user);
+
+                    RegisterUser.Id = user.Id;
+                    RegisterUser.PhoneConfirmationCode = user.PhoneConfirmationCode;
+                    RegisterUser.EncriptionKey = user.EncriptionKey;
+                    result.Regidterd = true;
+                }
             }
-
-            
-
-            if (user == null)
+            else
             {
+                // New user
                 RegisterUser.PhoneConfirmationCode = SMSHelper.GenerateConfirmationKey();
                 RegisterUser.EncriptionKey = UserHelper.GenerateEncriptionKey(32);
                 result.Regidterd = userCommandService.Create(RegisterUser);
             }
-            else
+
+            if (result.Regidterd)
             {
-                RegisterUser.Id = user.Id;
-                RegisterUser.PhoneConfirmationCode = user.PhoneConfirmationCode;
-                RegisterUser.EncriptionKey = user.EncriptionKey;
-                //RegisterUser = user;
-                result.Regidterd = true;
+                var addStanderdRole = await AddStanderdRoleToUser(RegisterUser.Id);
+                result.MSG = await SendConferamtionKey(RegisterUser);
             }
-            var addStanderdRole = await AddStanderdRoleToUser(RegisterUser.Id);
-            result.MSG = await SendConferamtionKey(RegisterUser);
+
             return result;
         }
 
@@ -316,17 +332,53 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             var employee = await schoolEmployeeQueryService.IsExist(firstSchool ?? Guid.NewGuid(), user.Id);
             var teacher = await schoolTeacherQueryService.isExist(firstSchool ?? Guid.NewGuid(), user.Id);
 
+            // Generate JWT Token
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwtSection = configuration.GetSection("Jwt");
+            var keyBytes = Encoding.UTF8.GetBytes(jwtSection["Key"] ?? "MdaresnaAPISecretKeyMustBeVeryLong32Chars!");
+
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName ?? string.Empty),
+                new Claim(ClaimTypes.MobilePhone, user.PhoneNumber ?? string.Empty),
+                new Claim("user_type", ((int)user.UserType).ToString()),
+            };
+
+            if (firstSchool != null)
+            {
+                claims.Add(new Claim("school_id", firstSchool.ToString()));
+            }
+
+            foreach (var perm in permissions)
+            {
+                var val = perm.PermissionKey;
+                if (perm.Classrooms != null && perm.Classrooms.Any())
+                {
+                    val += ":" + string.Join(",", perm.Classrooms);
+                }
+                claims.Add(new Claim("permissions", val));
+            }
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddMinutes(double.TryParse(jwtSection["DurationInMinutes"], out var min) ? min : 1440),
+                Issuer = jwtSection["Issuer"],
+                Audience = jwtSection["Audience"],
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(keyBytes), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var tokenObj = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(tokenObj);
+
             return new LoginResultDTO
             {
                 LogedinUser = user,
-                Permissions = permissions.Select(x => new PermissionClasseroomsResultDTO
-                {
-                    PermissionKey = x.PermissionKey,
-                    Classrooms = x.Classrooms
-                }),
                 Schools = userSchools,
                 IsEmployee = employee,
-                IsTeacher = teacher
+                IsTeacher = teacher,
+                Token = tokenString
             };
 
         }

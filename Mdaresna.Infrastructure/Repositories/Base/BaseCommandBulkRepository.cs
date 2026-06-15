@@ -25,6 +25,11 @@ namespace Mdaresna.Infrastructure.Repositories.Base
 
         public async Task<bool> CreateBulk<T>(IEnumerable<T> entityList) where T : class
         {
+            foreach (var entity in entityList)
+            {
+                DbContextExtensions.ConvertEntityDatesToUtc(entity, isCreate: true);
+            }
+
             await context.BulkInsertAsync(entityList, BulkConfig =>
             {
                 BulkConfig.IncludeGraph = true;

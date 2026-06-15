@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Mdaresna.Doamin.Enums;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
@@ -557,6 +557,7 @@ internal class StudentMonthelyReportGenerator : IStudentReportGenerator
             .AsNoTracking()
             .Where(permit =>
                 !permit.Deleted &&
+                permit.Status == Mdaresna.Doamin.Enums.AbsencePermitStatusEnum.Approved &&
                 permit.Student.SchoolId == schoolId &&
                 permit.ClassRoom.SchoolId == schoolId &&
                 permit.Date >= fromDate &&

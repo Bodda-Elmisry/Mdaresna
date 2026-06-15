@@ -7,6 +7,9 @@ using Mdaresna.Middlewares;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Serilog;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Mdaresna
 {
@@ -35,6 +38,28 @@ namespace Mdaresna
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            var jwtSection = builder.Configuration.GetSection("Jwt");
+            var keyBytes = Encoding.UTF8.GetBytes(jwtSection["Key"] ?? "MdaresnaAPISecretKeyMustBeVeryLong32Chars!");
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSection["Issuer"],
+                    ValidAudience = jwtSection["Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
 
             builder.Services.AddCors(oprions =>
             {
@@ -71,8 +96,7 @@ namespace Mdaresna
                             ServiceLifetime.Scoped
                     );
             builder.Services.Configure<AppSettingDTO>(builder.Configuration.GetSection("AppSettings"));
-
-
+            builder.Services.AddMemoryCache();
 
             DependencyInjectionConfig.ConfigerRepositories(builder.Services);
             DependencyInjectionConfig.ConfigerHubs(builder.Services);
@@ -104,6 +128,7 @@ namespace Mdaresna
             //app.UseSerilogRequestLogging();
 
             app.UseMiddleware<SetAppUrlMiddleware>();
+            app.UseMiddleware<VpnBlockingMiddleware>();
 
             app.UseStaticFiles(new StaticFileOptions
             {
@@ -122,6 +147,8 @@ namespace Mdaresna
 
 
             app.UseHttpsRedirection();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

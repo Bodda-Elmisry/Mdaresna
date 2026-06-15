@@ -4,6 +4,7 @@ using Mdaresna.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Mdaresna.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260615213732_AddAbsencePermitApproval")]
+    partial class AddAbsencePermitApproval
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,7 +52,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Languages", (string)null);
+                    b.ToTable("Languages");
 
                     b.HasData(
                         new
@@ -102,7 +105,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CoinsTypes", (string)null);
+                    b.ToTable("CoinsTypes");
 
                     b.HasData(
                         new
@@ -162,7 +165,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SchoolRequestId");
 
-                    b.ToTable("PaymentTransactions", (string)null);
+                    b.ToTable("PaymentTransactions");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.CoinsManagement.PaymentType", b =>
@@ -195,7 +198,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PaymentTypes", (string)null);
+                    b.ToTable("PaymentTypes");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.CoinsManagement.SchoolPaymentRequest", b =>
@@ -248,7 +251,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SchoolId");
 
-                    b.ToTable("SchoolPaymentRequests", (string)null);
+                    b.ToTable("SchoolPaymentRequests");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.Identity.Permission", b =>
@@ -303,7 +306,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Permissions", (string)null);
+                    b.ToTable("Permissions");
 
                     b.HasData(
                         new
@@ -2255,7 +2258,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("Roles");
 
                     b.HasData(
                         new
@@ -2323,7 +2326,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("PermissionId");
 
-                    b.ToTable("RolePermissions", (string)null);
+                    b.ToTable("RolePermissions");
 
                     b.HasData(
                         new
@@ -2962,7 +2965,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SchoolId");
 
-                    b.ToTable("userPermissions", (string)null);
+                    b.ToTable("userPermissions");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.Identity.UserPermissionSchoolClassRoom", b =>
@@ -2991,7 +2994,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("PermissionId");
 
-                    b.ToTable("userPermissionSchoolClassRooms", (string)null);
+                    b.ToTable("userPermissionSchoolClassRooms");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.Identity.UserRole", b =>
@@ -3029,7 +3032,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserRoles", (string)null);
+                    b.ToTable("UserRoles");
 
                     b.HasData(
                         new
@@ -3107,7 +3110,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SupervisorId");
 
-                    b.ToTable("ClassRooms", (string)null);
+                    b.ToTable("ClassRooms");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement.ClassRoomActivity", b =>
@@ -3159,7 +3162,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SupervisorId");
 
-                    b.ToTable("ClassRoomActivities", (string)null);
+                    b.ToTable("ClassRoomActivities");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement.ClassRoomAssignment", b =>
@@ -3211,7 +3214,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SupervisorId");
 
-                    b.ToTable("ClassRoomAssignments", (string)null);
+                    b.ToTable("ClassRoomAssignments");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement.ClassRoomExam", b =>
@@ -3268,7 +3271,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SupervisorId");
 
-                    b.ToTable("ClassRoomExams", (string)null);
+                    b.ToTable("ClassRoomExams");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement.ClassRoomTeacherCourse", b =>
@@ -3299,7 +3302,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.ToTable("ClassRoomTeacherCourses", (string)null);
+                    b.ToTable("ClassRoomTeacherCourses");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement.ClassroomEmployee", b =>
@@ -3325,7 +3328,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("ClassRoomId");
 
-                    b.ToTable("ClassroomEmployees", (string)null);
+                    b.ToTable("ClassroomEmployees");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.ClassRoomLanguage", b =>
@@ -3351,7 +3354,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("LanguageId");
 
-                    b.ToTable("ClassRoomLanguages", (string)null);
+                    b.ToTable("ClassRoomLanguages");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.School", b =>
@@ -3411,7 +3414,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SchoolTypeId");
 
-                    b.ToTable("Schools", (string)null);
+                    b.ToTable("Schools");
 
                     b.HasData(
                         new
@@ -3466,7 +3469,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SchoolId");
 
-                    b.ToTable("SchoolContacts", (string)null);
+                    b.ToTable("SchoolContacts");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.SchoolContactType", b =>
@@ -3499,7 +3502,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SchoolContactTypes", (string)null);
+                    b.ToTable("SchoolContactTypes");
 
                     b.HasData(
                         new
@@ -3571,7 +3574,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SchoolId");
 
-                    b.ToTable("SchoolCourses", (string)null);
+                    b.ToTable("SchoolCourses");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.SchoolEmployee", b =>
@@ -3597,7 +3600,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("SchoolEmployees", (string)null);
+                    b.ToTable("SchoolEmployees");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.SchoolExamRateHeader", b =>
@@ -3635,7 +3638,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SchoolId");
 
-                    b.ToTable("SchoolExamRateHeaders", (string)null);
+                    b.ToTable("SchoolExamRateHeaders");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.SchoolGrade", b =>
@@ -3670,7 +3673,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SchoolId");
 
-                    b.ToTable("SchoolGrades", (string)null);
+                    b.ToTable("SchoolGrades");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.SchoolImage", b =>
@@ -3690,7 +3693,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SchoolId");
 
-                    b.ToTable("SchoolImages", (string)null);
+                    b.ToTable("SchoolImages");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.SchoolPost", b =>
@@ -3736,7 +3739,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SchoolId");
 
-                    b.ToTable("SchoolPosts", (string)null);
+                    b.ToTable("SchoolPosts");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.SchoolPostImage", b =>
@@ -3767,7 +3770,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("SchoolPostImages", (string)null);
+                    b.ToTable("SchoolPostImages");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.SchoolPostReport", b =>
@@ -3803,7 +3806,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("SchoolPostReports", (string)null);
+                    b.ToTable("SchoolPostReports");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.SchoolTeacher", b =>
@@ -3829,7 +3832,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("TeacherId");
 
-                    b.ToTable("schoolTeachers", (string)null);
+                    b.ToTable("schoolTeachers");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.SchoolTeacherCourse", b =>
@@ -3860,7 +3863,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("TeacherId");
 
-                    b.ToTable("schoolTeacherCourses", (string)null);
+                    b.ToTable("schoolTeacherCourses");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.SchoolType", b =>
@@ -3891,7 +3894,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SchoolTypes", (string)null);
+                    b.ToTable("SchoolTypes");
 
                     b.HasData(
                         new
@@ -3941,7 +3944,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SchoolId");
 
-                    b.ToTable("SchoolYears", (string)null);
+                    b.ToTable("SchoolYears");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement.SchoolYearMonth", b =>
@@ -3979,7 +3982,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("YearId");
 
-                    b.ToTable("SchoolYearMonths", (string)null);
+                    b.ToTable("SchoolYearMonths");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.StudentManagement.ClassRoomStudentActivity", b =>
@@ -4011,7 +4014,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("ActivityId");
 
-                    b.ToTable("ClassRoomStudentActivities", (string)null);
+                    b.ToTable("ClassRoomStudentActivities");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.StudentManagement.ClassRoomStudentAssignment", b =>
@@ -4046,7 +4049,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("AssignmentId");
 
-                    b.ToTable("ClassRoomStudentAssignments", (string)null);
+                    b.ToTable("ClassRoomStudentAssignments");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.StudentManagement.ClassRoomStudentExam", b =>
@@ -4078,7 +4081,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("ExamId");
 
-                    b.ToTable("ClassRoomStudentExams", (string)null);
+                    b.ToTable("ClassRoomStudentExams");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.StudentManagement.Student", b =>
@@ -4143,7 +4146,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SchoolId");
 
-                    b.ToTable("Students", (string)null);
+                    b.ToTable("Students");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.StudentManagement.StudentAbsencePermit", b =>
@@ -4201,7 +4204,7 @@ namespace Mdaresna.Infrastructure.Migrations
                         .IsUnique()
                         .HasFilter("[Deleted] = 0");
 
-                    b.ToTable("StudentAbsencePermits", (string)null);
+                    b.ToTable("StudentAbsencePermits");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.StudentManagement.StudentAttendance", b =>
@@ -4249,7 +4252,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SupervisorId");
 
-                    b.ToTable("StudentAttendances", (string)null);
+                    b.ToTable("StudentAttendances");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.StudentManagement.StudentExamRate", b =>
@@ -4283,7 +4286,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("RateHeaderId");
 
-                    b.ToTable("studentExamRates", (string)null);
+                    b.ToTable("studentExamRates");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.StudentManagement.StudentNote", b =>
@@ -4332,7 +4335,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SupervisorId");
 
-                    b.ToTable("studentNotes", (string)null);
+                    b.ToTable("studentNotes");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SchoolManagement.StudentManagement.StudentParent", b =>
@@ -4363,7 +4366,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("RelationId");
 
-                    b.ToTable("StudentParents", (string)null);
+                    b.ToTable("StudentParents");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SettingsManagement.EmailProvider", b =>
@@ -4414,7 +4417,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EmailProviders", (string)null);
+                    b.ToTable("EmailProviders");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SettingsManagement.ReportQueue", b =>
@@ -4498,7 +4501,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SchoolId");
 
-                    b.ToTable("ReportQueues", (string)null);
+                    b.ToTable("ReportQueues");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SettingsManagement.SMSLog", b =>
@@ -4541,7 +4544,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SMSProviderId");
 
-                    b.ToTable("SMSLogs", (string)null);
+                    b.ToTable("SMSLogs");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.SettingsManagement.SMSProvider", b =>
@@ -4591,7 +4594,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SMSProviders", (string)null);
+                    b.ToTable("SMSProviders");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.UserManagement.RelationType", b =>
@@ -4618,7 +4621,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("relationTypes", (string)null);
+                    b.ToTable("relationTypes");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.UserManagement.SchoolUser", b =>
@@ -4647,7 +4650,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("SchoolId");
 
-                    b.ToTable("SchoolUsers", (string)null);
+                    b.ToTable("SchoolUsers");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.UserManagement.User", b =>
@@ -4753,7 +4756,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
 
                     b.HasData(
                         new
@@ -4826,7 +4829,7 @@ namespace Mdaresna.Infrastructure.Migrations
                     b.HasIndex("BlockerUserId", "BlockedUserId")
                         .IsUnique();
 
-                    b.ToTable("UserBlocks", (string)null);
+                    b.ToTable("UserBlocks");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.UserManagement.UserDevice", b =>
@@ -4871,7 +4874,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserDevices", (string)null);
+                    b.ToTable("UserDevices");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.UserManagement.UserReport", b =>
@@ -4907,7 +4910,7 @@ namespace Mdaresna.Infrastructure.Migrations
 
                     b.HasIndex("ReporterUserId");
 
-                    b.ToTable("UserReports", (string)null);
+                    b.ToTable("UserReports");
                 });
 
             modelBuilder.Entity("Mdaresna.Doamin.Models.CoinsManagement.PaymentTransaction", b =>

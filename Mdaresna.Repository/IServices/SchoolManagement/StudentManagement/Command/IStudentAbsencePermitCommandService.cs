@@ -8,5 +8,6 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Comma
     {
         Task<string> CreateAbsencePermitAsync(AddStudentAbsencePermitDTO permitDTO);
         Task<bool> SoftDeleteAbsencePermitAsync(Guid permitId, Guid parentId);
+        Task<string> ReviewAbsencePermitAsync(ReviewStudentAbsencePermitDTO reviewDTO);
     }
 }

@@ -59,7 +59,13 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                     ClassRoomId = p.ClassRoomId,
                     ClassRoomName = p.ClassRoom != null ? p.ClassRoom.Name : string.Empty,
                     Date = p.Date,
-                    Reason = p.Reason
+                    Reason = p.Reason,
+                    Status = p.Status,
+                    ReviewedById = p.ReviewedById,
+                    ReviewedByName = p.ReviewedBy != null
+                        ? $"{p.ReviewedBy.FirstName} {p.ReviewedBy.MiddelName} {p.ReviewedBy.LastName}"
+                        : string.Empty,
+                    SupervisorNotes = p.SupervisorNotes
                 });
 
             if (studentId != null && studentId != Guid.Empty)

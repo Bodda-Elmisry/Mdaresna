@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.DTOs.Identity;
+using Mdaresna.Doamin.DTOs.Identity;
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Repository.IRepositories.Base;
 using System;
@@ -15,6 +15,7 @@ namespace Mdaresna.Repository.IRepositories.IdentityManagement.Query
         Task<IEnumerable<UserPermission>> GetAppUserPermissions(Guid UserId);
         Task<IEnumerable<UserPermission>?> GetUserPermissions(Guid schoolId, Guid UserId);
         Task<IEnumerable<Guid>> GetPermissionUsersIds(Guid permissionId, Guid schoolId);
+        Task<IEnumerable<Guid>> GetPermissionUsersIdsByPermissionKey(string permissionKey, Guid schoolId);
         Task<IEnumerable<UserPermissionResultDTO>> GetUserPermissionsView(Guid userId, Guid? schoolID);
         Task<UserPermission?> GetUserPermissionByID(Guid permissionId, Guid schoolId, Guid UserId);
     }

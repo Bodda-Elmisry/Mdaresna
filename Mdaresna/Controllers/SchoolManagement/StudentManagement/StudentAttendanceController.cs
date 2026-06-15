@@ -8,9 +8,12 @@ using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Mdaresna.Middlewares;
 
 namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 {
+    [Authorize]
     [Route("Attendance")]
     public class StudentAttendanceController : Controller
     {
@@ -53,6 +56,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             }
         }
 
+        [PermissionAuthorize("AddAttendance")]
         [HttpPost("SaveAttendance")]
         public async Task<IActionResult> AddClassRoomAttendence([FromBody] AddClassRoomAttendanceDTO attendanceDTO)
         {

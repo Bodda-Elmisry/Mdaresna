@@ -10,9 +10,12 @@ using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Mdaresna.Repository.IUnitOfWork;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Mdaresna.Middlewares;
 
 namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
 {
+    [Authorize]
     [Route("ClassRoomAssignment")]
     public class ClassRoomAssignmentController : Controller
     {
@@ -77,6 +80,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
             }
         }
 
+        [PermissionAuthorize("AddHomework")]
         [HttpPost("CreateClassRoomAssignment")]
         public async Task<IActionResult> CreateClassRoomAssignment([FromBody] CreateClassRoomAssignmentDTO dTO)
         {
@@ -148,6 +152,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
             }
         }
 
+        [PermissionAuthorize("UpdateHomework")]
         [HttpPost("UpdateClassRoomAssignment")]
         public async Task<IActionResult> UpdateClassRoomAssignment([FromBody] UpdateClassRoomAssignmentDTO dTO)
         {

@@ -8,9 +8,12 @@ using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Mdaresna.Middlewares;
 
 namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
 {
+    [Authorize]
     [Route("ClassRoomActivity")]
     public class ClassRoomActivityController : Controller
     {
@@ -72,6 +75,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
             }
         }
 
+        [PermissionAuthorize("AddActivity")]
         [HttpPost("CreateClassRoomActivity")]
         public async Task<IActionResult> CreateClassRoomAssignement([FromBody] CreateClassRoomActivityDTO dTO)
         {
@@ -134,6 +138,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
             }
         }
 
+        [PermissionAuthorize("UpdateActivity")]
         [HttpPost("UpdateClassRoomActivity")]
         public async Task<IActionResult> UpdateClassRoomAssignement([FromBody] UpdateClassRoomActivityDTO dTO)
         {

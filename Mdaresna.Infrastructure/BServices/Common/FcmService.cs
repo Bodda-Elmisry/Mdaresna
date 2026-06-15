@@ -8,6 +8,8 @@ using FirebaseAdmin.Messaging;
 using Google.Apis.Auth.OAuth2;
 using Mdaresna.Repository.IBServices.Common;
 using Microsoft.AspNetCore.Builder.Extensions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Mdaresna.Infrastructure.BServices.Common
 {
@@ -15,8 +17,12 @@ namespace Mdaresna.Infrastructure.BServices.Common
     {
         private const string DefaultAndroidChannelId = "mdaresna_default";
 
-        public FcmService()
+        private readonly IServiceProvider _serviceProvider;
+
+        public FcmService(IServiceProvider serviceProvider)
         {
+            _serviceProvider = serviceProvider;
+
             if (FirebaseApp.DefaultInstance == null)
             {
                 FirebaseApp.Create(new AppOptions
@@ -49,7 +55,39 @@ namespace Mdaresna.Infrastructure.BServices.Common
                 }
             };
 
-            await FirebaseMessaging.DefaultInstance.SendAsync(message);
+            try
+            {
+                await FirebaseMessaging.DefaultInstance.SendAsync(message);
+            }
+            catch (FirebaseMessagingException exception)
+            {
+                Console.WriteLine($"FCM send failed for token {token}: {exception.Message}");
+                if (exception.MessagingErrorCode == MessagingErrorCode.Unregistered || exception.MessagingErrorCode == MessagingErrorCode.InvalidArgument)
+                {
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            using (var scope = _serviceProvider.CreateScope())
+                            {
+                                var dbContext = scope.ServiceProvider.GetRequiredService<Mdaresna.Infrastructure.Data.AppDbContext>();
+                                var userDevice = await dbContext.UserDevices.FirstOrDefaultAsync(d => d.FcmToken == token);
+                                if (userDevice != null)
+                                {
+                                    dbContext.UserDevices.Remove(userDevice);
+                                    await dbContext.SaveChangesAsync();
+                                    Console.WriteLine($"Deleted invalid FCM token {token} from database.");
+                                }
+                            }
+                        }
+                        catch (Exception dbEx)
+                        {
+                            Console.WriteLine($"Failed to delete invalid FCM token {token} from DB: {dbEx.Message}");
+                        }
+                    });
+                }
+                throw;
+            }
         }
 
         public async Task SendToMultiUsersAsync(List<string> tokens, string title, string body)
@@ -83,8 +121,34 @@ namespace Mdaresna.Infrastructure.BServices.Common
             {
                 if (!result.Responses[i].IsSuccess)
                 {
-                    Console.WriteLine(
-                        $"FCM send failed for token {tokens[i]}: {result.Responses[i].Exception?.Message}");
+                    var token = tokens[i];
+                    var exception = result.Responses[i].Exception;
+                    Console.WriteLine($"FCM send failed for token {token}: {exception?.Message}");
+
+                    if (exception != null && (exception.MessagingErrorCode == MessagingErrorCode.Unregistered || exception.MessagingErrorCode == MessagingErrorCode.InvalidArgument))
+                    {
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                using (var scope = _serviceProvider.CreateScope())
+                                {
+                                    var dbContext = scope.ServiceProvider.GetRequiredService<Mdaresna.Infrastructure.Data.AppDbContext>();
+                                    var userDevice = await dbContext.UserDevices.FirstOrDefaultAsync(d => d.FcmToken == token);
+                                    if (userDevice != null)
+                                    {
+                                        dbContext.UserDevices.Remove(userDevice);
+                                        await dbContext.SaveChangesAsync();
+                                        Console.WriteLine($"Deleted invalid FCM token {token} from database.");
+                                    }
+                                }
+                            }
+                            catch (Exception dbEx)
+                            {
+                                Console.WriteLine($"Failed to delete invalid FCM token {token} from DB: {dbEx.Message}");
+                            }
+                        });
+                    }
                 }
             }
         }

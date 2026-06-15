@@ -1,3 +1,5 @@
+using Mdaresna.Doamin.Enums;
+
 namespace Mdaresna.Doamin.DTOs.StudentManagement
 {
     public class StudentAbsencePermitResultDTO
@@ -11,5 +13,9 @@ namespace Mdaresna.Doamin.DTOs.StudentManagement
         public string ClassRoomName { get; set; } = string.Empty;
         public DateTime Date { get; set; }
         public string? Reason { get; set; }
+        public AbsencePermitStatusEnum Status { get; set; }
+        public Guid? ReviewedById { get; set; }
+        public string ReviewedByName { get; set; } = string.Empty;
+        public string? SupervisorNotes { get; set; }
     }
 }

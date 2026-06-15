@@ -94,7 +94,8 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Co
                 Date = permitDate,
                 Reason = string.IsNullOrWhiteSpace(permitDTO.Reason)
                     ? null
-                    : permitDTO.Reason.Trim()
+                    : permitDTO.Reason.Trim(),
+                Status = Mdaresna.Doamin.Enums.AbsencePermitStatusEnum.Pending
             };
 
             return Create(permit) ? PermitCreated : "Error";
@@ -111,6 +112,24 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Co
             permit.Deleted = true;
             permit.LastModifyDate = DateTime.Now;
             return commandRepository.Update(permit);
+        }
+
+        public async Task<string> ReviewAbsencePermitAsync(ReviewStudentAbsencePermitDTO reviewDTO)
+        {
+            var permit = await sharedRepository.GetAsync(reviewDTO.StudentAbsencePermitId);
+            if (permit == null || permit.Deleted)
+            {
+                return "Absence Permit Not Found";
+            }
+
+            permit.Status = reviewDTO.Status;
+            permit.ReviewedById = reviewDTO.ReviewerId;
+            permit.SupervisorNotes = string.IsNullOrWhiteSpace(reviewDTO.SupervisorNotes)
+                ? null
+                : reviewDTO.SupervisorNotes.Trim();
+            permit.LastModifyDate = DateTime.Now;
+
+            return commandRepository.Update(permit) ? "Absence Permit Reviewed" : "Error";
         }
     }
 }

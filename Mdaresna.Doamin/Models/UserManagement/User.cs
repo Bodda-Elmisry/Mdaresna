@@ -1,6 +1,7 @@
-﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.Base;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Mdaresna.Doamin.Models.UserManagement
 {
@@ -29,8 +30,10 @@ namespace Mdaresna.Doamin.Models.UserManagement
         public string? PhoneConfirmationCode { get; set; }
 
         [MaxLength(800)]
+        [JsonIgnore]
         public string Password { get; set; }
 
+        [JsonIgnore]
         public string EncriptionKey { get; set; }
 
         public string? ImageUrl { get; set; }

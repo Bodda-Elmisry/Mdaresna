@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Models.Identity;
+using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.IdentityDTO;
 using Mdaresna.Repository.IServices.IdentityManagement.Command;
@@ -30,7 +30,7 @@ namespace Mdaresna.Controllers.IdentityManagement
             {
                 var ignoredRoles = new List<Guid>();
                 ignoredRoles.Add(Guid.Parse("92D00B28-9D25-4BD2-A587-6C22A3A07A92")); //Standerd
-                //ignoredRoles.Add(Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73")); //school manager
+                ignoredRoles.Add(Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73")); //school manager
                 //ignoredRoles.Add(Guid.Parse("10620C5F-37FE-4D18-996F-915ECE8893F1")); //school teacher
                 var roles = await roleQueryService.GetRolesAsync(dTO.Type, dTO.Name, dTO.Activation, dTO.Description, ignoredRoles);
 

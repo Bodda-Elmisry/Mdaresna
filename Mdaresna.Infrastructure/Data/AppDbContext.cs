@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Models.AdminManagement;
+using Mdaresna.Doamin.Models.AdminManagement;
 using Mdaresna.Doamin.Models.Base;
 using Mdaresna.Doamin.Models.CoinsManagement;
 using Mdaresna.Doamin.Models.Identity;
@@ -67,6 +67,9 @@ public class AppDbContext : DbContext
 
 
         #endregion
+
+
+        modelBuilder.RegisterUtcTimeZoneConverters();
     }
 
     private void ApplyAdminConfigrations(ModelBuilder modelBuilder)
@@ -279,10 +282,28 @@ public class AppDbContext : DbContext
 
     #endregion
 
+    public override int SaveChanges()
+    {
+        this.ConvertAllDatesToUtc();
+        return base.SaveChanges();
+    }
 
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        this.ConvertAllDatesToUtc();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
 
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        this.ConvertAllDatesToUtc();
+        return base.SaveChangesAsync(cancellationToken);
+    }
 
-
-
-
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        this.ConvertAllDatesToUtc();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
 }
+

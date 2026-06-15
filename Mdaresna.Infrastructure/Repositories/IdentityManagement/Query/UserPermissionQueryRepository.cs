@@ -54,6 +54,18 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             return result;
         }
 
+        public async Task<IEnumerable<Guid>> GetPermissionUsersIdsByPermissionKey(string permissionKey, Guid schoolId)
+        {
+            var permission = await context.Permissions
+                .FirstOrDefaultAsync(p => p.Key == permissionKey && p.Deleted == false);
+            if (permission == null)
+            {
+                return Enumerable.Empty<Guid>();
+            }
+
+            return await GetPermissionUsersIds(permission.Id, schoolId);
+        }
+
         public async Task<IEnumerable<Permission>> GetUserPermissions(Guid UserId)
         {
             var query = from rp in context.RolePermissions
@@ -109,6 +121,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
 
         public async Task<IEnumerable<UserPermissionResultDTO>> GetUserPermissionsView(Guid userId, Guid? schoolID)
         {
+
             var query1 = from ur in context.UserRoles
                          join u in context.Users on ur.UserId equals u.Id
                          join r in context.Roles on ur.RoleId equals r.Id
@@ -116,7 +129,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
                          from s in schoolsGroup.DefaultIfEmpty() // left outer join
                          join rp in context.RolePermissions on ur.RoleId equals rp.RoleId
                          join p in context.Permissions on rp.PermissionId equals p.Id
-                         where u.Id == userId && ur.Deleted == false
+                         where u.Id == userId && ur.Deleted == false && (ur.SchoolId == null || (s != null && s.Active == true))
                          select new
                          {
                              UserId = u.Id,
@@ -139,7 +152,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
                          join u in context.Users on up.UserId equals u.Id
                          join s in context.Schools on up.SchoolId equals s.Id
                          join p in context.Permissions on up.PermissionId equals p.Id
-                         where u.Id == userId && up.Deleted == false
+                         where u.Id == userId && up.Deleted == false && s.Active == true
                          select new
                          {
                              UserId = u.Id,

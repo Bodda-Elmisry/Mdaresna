@@ -30,6 +30,12 @@ namespace Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.StudentManagement
                 .HasOne(e => e.ClassRoom)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder
+                .HasOne(e => e.ReviewedBy)
+                .WithMany()
+                .HasForeignKey(e => e.ReviewedById)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

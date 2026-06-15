@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Models.Identity;
+using Mdaresna.Doamin.Models.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -557,6 +557,12 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
             {
                 RoleId = Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"),
                 PermissionId = Guid.Parse("EA7E7A5D-64C0-4AE6-B8B1-70A7D7E4F66C")
+            });
+
+            builder.HasData(new RolePermission
+            {
+                RoleId = Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"),
+                PermissionId = Guid.Parse("E593CD01-0FF3-4AE1-9DF6-61E9D7C23F5D")
             });
         }
 

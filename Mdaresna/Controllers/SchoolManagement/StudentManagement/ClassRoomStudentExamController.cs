@@ -7,9 +7,12 @@ using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Mdaresna.Middlewares;
 
 namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 {
+    [Authorize]
     [Route("ClassRoomStudentExam")]
     public class ClassRoomStudentExamController : Controller
     {
@@ -69,6 +72,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             }
         }
 
+        [PermissionAuthorize("AddExam")]
         [HttpPost("AddStudentExam")]
         public async Task<IActionResult> AddStudentExam([FromBody] CreateClassRoomStudentExamDTO dto)
         {
@@ -167,6 +171,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             }
         }
 
+        [PermissionAuthorize("RateExam")]
         [HttpPost("UpdateStudentExam")]
         public async Task<IActionResult> UpdateStudentExam([FromBody] UpdateClassRoomStudentExamDTO dto)
         {

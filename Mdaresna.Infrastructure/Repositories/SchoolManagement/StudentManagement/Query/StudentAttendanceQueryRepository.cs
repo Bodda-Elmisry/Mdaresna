@@ -37,7 +37,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
 
             var activePermits = context.StudentAbsencePermits
                 .AsNoTracking()
-                .Where(p => !p.Deleted);
+                .Where(p => !p.Deleted && p.Status == Mdaresna.Doamin.Enums.AbsencePermitStatusEnum.Approved);
 
             var attendanceQuery =
                 from attendance in context.StudentAttendances.AsNoTracking()
