@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.DTOs.Identity;
+using Mdaresna.Doamin.DTOs.Identity;
 using Mdaresna.Doamin.DTOs.SchoolManagement;
 using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.Identity;
@@ -13,7 +13,12 @@ using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Repository.IServices.UserManagement.Query;
+using Mdaresna.Repository.IUnitOfWork;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 {
@@ -33,6 +38,10 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         private readonly ISchoolQueryService schoolQueryService;
         private readonly INotificationFactory notificationFactory;
         private readonly IUserDeviceQueryService userDeviceQueryService;
+        private readonly ICommandUnitOfWork commandUnitOfWork;
+        private readonly IClassRoomQueryService classRoomQueryService;
+        private readonly IUserPermissionSchoolClassRoomQueryService userPermissionSchoolClassRoomQueryService;
+        private readonly IUserPermissionSchoolClassRoomCommandService userPermissionSchoolClassRoomCommandService;
 
         public SchoolTeacherController(ISchoolTeacherCommandService schoolTeacherCommandService,
                                        ISchoolTeacherQueryService schoolTeacherQueryService,
@@ -45,8 +54,12 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                                        ISchoolTeacherCourseQueryService schoolTeacherCourseQueryService,
                                        ISchoolTeacherCourseCommandService schoolTeacherCourseCommandService,
                                        ISchoolQueryService schoolQueryService,
-                                           INotificationFactory notificationFactory,
-                                           IUserDeviceQueryService userDeviceQueryService)
+                                       INotificationFactory notificationFactory,
+                                       IUserDeviceQueryService userDeviceQueryService,
+                                       ICommandUnitOfWork commandUnitOfWork,
+                                       IClassRoomQueryService classRoomQueryService,
+                                       IUserPermissionSchoolClassRoomQueryService userPermissionSchoolClassRoomQueryService,
+                                       IUserPermissionSchoolClassRoomCommandService userPermissionSchoolClassRoomCommandService)
         {
             this.schoolTeacherCommandService = schoolTeacherCommandService;
             this.schoolTeacherQueryService = schoolTeacherQueryService;
@@ -61,8 +74,11 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             this.schoolQueryService = schoolQueryService;
             this.notificationFactory = notificationFactory;
             this.userDeviceQueryService = userDeviceQueryService;
+            this.commandUnitOfWork = commandUnitOfWork;
+            this.classRoomQueryService = classRoomQueryService;
+            this.userPermissionSchoolClassRoomQueryService = userPermissionSchoolClassRoomQueryService;
+            this.userPermissionSchoolClassRoomCommandService = userPermissionSchoolClassRoomCommandService;
         }
-
         [HttpPost("AddSchoolTeacher")]
         public async Task<IActionResult> AddSchoolTeacher([FromBody] SchoolIdTeacherIdDTO schoolTeacher)
         {
@@ -151,6 +167,14 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
+                var supervisedClassrooms = await classRoomQueryService.GetBySchoolIdAndSupervisorIdAsync(schoolTeacher.SchoolId, schoolTeacher.TeacherId);
+                if (supervisedClassrooms != null && supervisedClassrooms.Any())
+                {
+                    return Conflict("Cannot remove teacher because they are a supervisor for one or more classrooms. Please reassign the supervisor for these classrooms first.");
+                }
+
+                await commandUnitOfWork.BeginTransactionAsync();
+
                 var teacherClassrooms = await classRoomTeacherCourseQueryService.GetTeacherClassroomsCoursesAsync(schoolTeacher.TeacherId, schoolTeacher.SchoolId);
                 var teacherCourses = await schoolTeacherCourseQueryService.GetTeacherCoursesAsync(schoolTeacher.TeacherId, schoolTeacher.SchoolId);
 
@@ -177,12 +201,13 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 };
                 var techerRoles = await userRoleQueryService.GetUserRolesDataAsync(schoolTeacher.TeacherId, schoolTeacher.SchoolId);
                 var teacherPermissions = await userPermissionQueryService.GetUserPermissions(schoolTeacher.SchoolId, schoolTeacher.TeacherId);
+                var classRoomPermissions = await userPermissionSchoolClassRoomQueryService.GetUserPermissionsBySchoolAsync(schoolTeacher.TeacherId, schoolTeacher.SchoolId);
+
                 var deleted = await schoolTeacherCommandService.DeleteAsync(sTeacher);
                 if (deleted)
                 {
                     if (techerRoles != null && techerRoles.Count() > 0)
                     {
-                        
                         foreach (var role in techerRoles)
                         {
                             await userRoleCommandService.DeleteAsync(role);
@@ -195,8 +220,17 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                         {
                             await userPermissionCommandService.DeleteAsync(permission);
                         }
-                        
                     }
+
+                    if (classRoomPermissions != null && classRoomPermissions.Any())
+                    {
+                        foreach (var permission in classRoomPermissions)
+                        {
+                            await userPermissionSchoolClassRoomCommandService.DeleteAsync(permission);
+                        }
+                    }
+
+                    await commandUnitOfWork.CommitTransactionAsync();
 
                     var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
                     var devices = await userDeviceQueryService.GetByUserIdAsync(schoolTeacher.TeacherId);
@@ -209,10 +243,12 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                     return Ok("Teacher removed from school");
                 }
 
+                await commandUnitOfWork.RollbackTransactionAsync();
                 return BadRequest("Error in removing");
             }
             catch(Exception ex)
             {
+                await commandUnitOfWork.RollbackTransactionAsync();
                 return BadRequest(ex.Message);
             }
         }
@@ -251,21 +287,28 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
+                var supervisedClassrooms = await classRoomQueryService.GetBySchoolIdAndSupervisorIdAsync(dto.SchoolId, dto.TeacherId);
+                if (supervisedClassrooms != null && supervisedClassrooms.Any())
+                {
+                    return Conflict("Cannot remove teacher because they are a supervisor for one or more classrooms. Please reassign the supervisor for these classrooms first.");
+                }
+
+                await commandUnitOfWork.BeginTransactionAsync();
 
                 var teacherClassrooms = await classRoomTeacherCourseQueryService.GetTeacherClassroomsCoursesAsync(dto.TeacherId, dto.SchoolId);
                 var teacherCourses = await schoolTeacherCourseQueryService.GetTeacherCoursesAsync(dto.TeacherId, dto.SchoolId);
 
                 var sTeacher = await schoolTeacherQueryService.GetSchoolTeacherByIdAsync(dto.SchoolId, dto.TeacherId);
                 if (sTeacher == null)
+                {
+                    await commandUnitOfWork.RollbackTransactionAsync();
                     return BadRequest("Can't find teacher to delete");
+                }
 
                 if (teacherClassrooms != null && teacherClassrooms.Count() > 0)
                 {
-
                     foreach (var classroom in teacherClassrooms)
                     {
-
-
                         await classRoomTeacherCourseCommandService.DeleteAsync(classroom);
                     }
                 }
@@ -278,23 +321,30 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                     }
                 }
 
+                var classRoomPermissions = await userPermissionSchoolClassRoomQueryService.GetUserPermissionsBySchoolAsync(dto.TeacherId, dto.SchoolId);
+                if (classRoomPermissions != null && classRoomPermissions.Any())
+                {
+                    foreach (var permission in classRoomPermissions)
+                    {
+                        await userPermissionSchoolClassRoomCommandService.DeleteAsync(permission);
+                    }
+                }
+
                 var deleted = await schoolTeacherCommandService.DeleteAsync(sTeacher);
                 if (deleted)
+                {
+                    await commandUnitOfWork.CommitTransactionAsync();
                     return Ok("Teacher removed from school");
+                }
 
+                await commandUnitOfWork.RollbackTransactionAsync();
                 return BadRequest("Error in removing Teacher");
             }
             catch (Exception ex)
             {
+                await commandUnitOfWork.RollbackTransactionAsync();
                 return BadRequest(ex.Message);
             }
-
-
-
-
-
-
-
         }
 
 
