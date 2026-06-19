@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.DTOs.StudentManagement;
+using Mdaresna.Doamin.DTOs.StudentManagement;
 using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.Common;
@@ -177,11 +177,11 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             try
             {
                 var student = await studentQueryService.GetByIdAsync(studentDTO.Id);
-                var payedChanged = !student.IsPayed && studentDTO.IsPayed;
-
                 if (student == null)
                     return BadRequest("Can't update student");
 
+                var payedChanged = !student.IsPayed && studentDTO.IsPayed;
+                var wasActive = student.Active;
 
                 student.FirstName = studentDTO.FirstName;
                 student.MiddelName = studentDTO.MidelName;
@@ -197,6 +197,11 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 
                 if (updated)
                 {
+                    if (wasActive != student.Active)
+                    {
+                        await SendStudentActivationNotificationToParents(student);
+                    }
+
                     var schoolAvailableCoins = 0;
                     var school = await schoolQueryRepository.GetByIdAsync(studentDTO.SchoolId);
 
@@ -245,9 +250,15 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 if (student == null)
                     return BadRequest("Student Not Found");
 
+                var wasActive = student.Active;
                 student.Active = studentActivationDTO.IsActive;
 
                 var updated = studentCommandService.Update(student);
+
+                if (updated && wasActive != student.Active)
+                {
+                    await SendStudentActivationNotificationToParents(student);
+                }
 
                 return updated ? Ok(student) : BadRequest("Error in updating student activation");
             }
@@ -396,9 +407,33 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             return result;
         }
 
+        private async Task SendStudentActivationNotificationToParents(Student student)
+        {
+            try
+            {
+                var parents = await studentParentQueryService.GetstudentParentsAsync(student.Id, null);
+                var parentIds = parents.Select(p => p.ParentId).Distinct().ToList();
 
-
-
-
+                if (parentIds.Count > 0)
+                {
+                    var devices = await userDeviceQueryService.GetUsersDevicesAsync(parentIds);
+                    if (devices.Any())
+                    {
+                        var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                        var tokens = devices.Select(d => d.FcmToken).ToList();
+                        var statusString = student.Active ? "مفعّل" : "غير مفعّل";
+                        await notificationProvider.SendToMultiUsersAsync(
+                            tokens,
+                            "تحديث حالة الطالب",
+                            $"تم تغيير حالة تفعيل الطالب {student.FirstName} {student.LastName} إلى {statusString}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending student activation notification: {ex.Message}");
+            }
+        }
     }
 }
+
