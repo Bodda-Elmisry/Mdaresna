@@ -104,6 +104,31 @@ public class ReportQueueController : Controller
         }
     }
 
+    [HttpPost("GetStudentReportsMonths")]
+    public async Task<IActionResult> GetStudentReportsMonths(
+        [FromBody] GetStudentReportsMonthsDTO dto,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (dto == null || dto.SchoolId == Guid.Empty || dto.StudentId == Guid.Empty)
+            {
+                return BadRequest("School id and Student id are required.");
+            }
+
+            var queues = await reportQueueQueryService.GetStudentReportsQueuesAsync(
+                dto.SchoolId,
+                dto.StudentId,
+                cancellationToken);
+
+            return Ok(queues.Select(MapToResult));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
     private static ReportQueueResultDTO MapToResult(ReportQueue queue)
     {
         return new ReportQueueResultDTO

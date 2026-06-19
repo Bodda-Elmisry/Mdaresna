@@ -220,5 +220,34 @@ namespace Mdaresna.Infrastructure.Services.SettingsManagement.Query
                 })
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<IReadOnlyList<ReportQueue>> GetStudentReportsQueuesAsync(
+            Guid schoolId,
+            Guid studentId,
+            CancellationToken cancellationToken = default)
+        {
+            var reportingConnectionString = await GetReportingConnectionStringAsync(
+                schoolId,
+                cancellationToken);
+
+            await using var reportContext = await SchoolReportDBContext.CreateAndMigrateAsync(
+                reportingConnectionString,
+                cancellationToken);
+
+            var reportQueueIds = await reportContext.StudentReports
+                .AsNoTracking()
+                .Where(r => r.StudentId == studentId && r.ReportQueueId != null)
+                .Select(r => r.ReportQueueId!.Value)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+
+            if (reportQueueIds.Count == 0)
+            {
+                return new List<ReportQueue>();
+            }
+
+            var queues = await reportQueueQueryRepository.GetByIdsWithDetailsAsync(reportQueueIds);
+            return queues.ToList();
+        }
     }
 }

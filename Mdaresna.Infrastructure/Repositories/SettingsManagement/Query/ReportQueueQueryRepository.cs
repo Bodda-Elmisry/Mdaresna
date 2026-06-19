@@ -44,6 +44,14 @@ namespace Mdaresna.Infrastructure.Repositories.SettingsManagement.Query
                 .FirstOrDefaultAsync(q => q.Id == id);
         }
 
+        public async Task<IEnumerable<ReportQueue>> GetByIdsWithDetailsAsync(IEnumerable<Guid> ids)
+        {
+            return await GetQueueWithDetails()
+                .Where(q => ids.Contains(q.Id) && q.Status == ReportQueueStatusEnum.Published)
+                .OrderByDescending(q => q.CreatedAt)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<ReportQueue>> GetPendingAsync(int take)
         {
             var resolvedTake = take > 0 ? take : 30;

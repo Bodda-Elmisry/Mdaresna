@@ -28,5 +28,7 @@ namespace Mdaresna.Repository.IRepositories.SettingsManagement.Query
             int? pageSize = null);
 
         Task<ReportQueue?> GetByIdWithDetailsAsync(Guid id);
+
+        Task<IEnumerable<ReportQueue>> GetByIdsWithDetailsAsync(IEnumerable<Guid> ids);
     }
 }

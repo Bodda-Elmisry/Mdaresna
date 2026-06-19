@@ -35,5 +35,10 @@ namespace Mdaresna.Repository.IServices.SettingsManagement.Query
             Guid? gradeId = null,
             Guid? classroomId = null,
             CancellationToken cancellationToken = default);
+
+        Task<IReadOnlyList<ReportQueue>> GetStudentReportsQueuesAsync(
+            Guid schoolId,
+            Guid studentId,
+            CancellationToken cancellationToken = default);
     }
 }
