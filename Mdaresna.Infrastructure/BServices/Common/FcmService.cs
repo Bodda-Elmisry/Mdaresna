@@ -16,6 +16,7 @@ namespace Mdaresna.Infrastructure.BServices.Common
     public class FcmService : INotificationService
     {
         private const string DefaultAndroidChannelId = "mdaresna_default";
+        private const string FirebaseServiceAccountFileName = "firebase-service-account.json";
 
         private readonly IServiceProvider _serviceProvider;
 
@@ -27,9 +28,28 @@ namespace Mdaresna.Infrastructure.BServices.Common
             {
                 FirebaseApp.Create(new AppOptions
                 {
-                    Credential = GoogleCredential.FromFile("firebase-service-account.json")
+                    Credential = GoogleCredential.FromFile(ResolveFirebaseServiceAccountPath())
                 });
             }
+        }
+
+        private static string ResolveFirebaseServiceAccountPath()
+        {
+            var candidatePaths = new[]
+            {
+                Path.Combine(AppContext.BaseDirectory, FirebaseServiceAccountFileName),
+                Path.Combine(Directory.GetCurrentDirectory(), FirebaseServiceAccountFileName)
+            };
+
+            var credentialPath = candidatePaths.FirstOrDefault(File.Exists);
+            if (!string.IsNullOrWhiteSpace(credentialPath))
+            {
+                return credentialPath;
+            }
+
+            throw new FileNotFoundException(
+                $"Firebase service account file '{FirebaseServiceAccountFileName}' was not found. Checked: {string.Join(", ", candidatePaths)}",
+                FirebaseServiceAccountFileName);
         }
 
         public async Task SendAsync(string token, string title, string body)

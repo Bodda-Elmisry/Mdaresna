@@ -56,13 +56,13 @@ namespace Mdaresna.Infrastructure.Data
             var yemenTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Aden");
 
             var dateTimeConverter = new ValueConverter<DateTime, DateTime>(
-                v => v.Kind == DateTimeKind.Utc ? v : TimeZoneInfo.ConvertTimeToUtc(v, yemenTimeZone),
-                v => v.ToTimeZone(Country.Yemen)
+                v => ConvertYemenLocalTimeToUtc(v, yemenTimeZone),
+                v => DateTime.SpecifyKind(v, DateTimeKind.Utc).ToTimeZone(Country.Yemen)
             );
 
             var nullableDateTimeConverter = new ValueConverter<DateTime?, DateTime?>(
-                v => v == null ? null : (v.Value.Kind == DateTimeKind.Utc ? v : TimeZoneInfo.ConvertTimeToUtc(v.Value, yemenTimeZone)),
-                v => v == null ? null : (DateTime?)v.Value.ToTimeZone(Country.Yemen)
+                v => v == null ? null : ConvertYemenLocalTimeToUtc(v.Value, yemenTimeZone),
+                v => v == null ? null : (DateTime?)DateTime.SpecifyKind(v.Value, DateTimeKind.Utc).ToTimeZone(Country.Yemen)
             );
 
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
@@ -82,6 +82,20 @@ namespace Mdaresna.Infrastructure.Data
                     }
                 }
             }
+        }
+
+        private static DateTime ConvertYemenLocalTimeToUtc(DateTime value, TimeZoneInfo yemenTimeZone)
+        {
+            if (value.Kind == DateTimeKind.Utc)
+            {
+                return value;
+            }
+
+            // Request JSON and audit helpers can produce Local or Unspecified values.
+            // Non-UTC dates in this application represent Yemen clock time, so remove
+            // the Kind marker before converting with the Yemen timezone.
+            var yemenLocalValue = DateTime.SpecifyKind(value, DateTimeKind.Unspecified);
+            return TimeZoneInfo.ConvertTimeToUtc(yemenLocalValue, yemenTimeZone);
         }
     }
 }

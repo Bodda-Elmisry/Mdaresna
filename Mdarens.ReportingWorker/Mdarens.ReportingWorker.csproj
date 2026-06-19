@@ -19,4 +19,8 @@
     <ProjectReference Include="..\Mdaresna.Infrastructure\Mdaresna.Infrastructure.csproj" />
     <ProjectReference Include="..\Mdaresna.Repository\Mdaresna.Repository.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\Mdaresna\firebase-service-account.json" Link="firebase-service-account.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

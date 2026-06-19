@@ -92,6 +92,8 @@ public class ReportQueueController : Controller
 
             var reports = await reportQueueQueryService.GetStudentReportsByReportIdAsync(
                 reportQueueId,
+                dto?.GradeId,
+                dto?.ClassRoomId,
                 cancellationToken);
 
             return Ok(reports);

@@ -13,16 +13,24 @@ namespace Mdaresna.Middlewares
     {
         private readonly RequestDelegate _next;
         private readonly IMemoryCache _cache;
-        private static readonly HttpClient _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+        private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
+        private static readonly HttpClient _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
 
-        public VpnBlockingMiddleware(RequestDelegate next, IMemoryCache cache)
+        public VpnBlockingMiddleware(RequestDelegate next, IMemoryCache cache, Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
             _next = next;
             _cache = cache;
+            _configuration = configuration;
         }
 
         public async Task InvokeAsync(HttpContext context)
         {
+            if (_configuration.GetValue<bool>("AppSettings:DisableVpnBlocking"))
+            {
+                await _next(context);
+                return;
+            }
+
             string clientIp = GetClientIp(context);
 
             if (IsPrivateOrLoopbackIp(clientIp))

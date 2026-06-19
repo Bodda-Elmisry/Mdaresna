@@ -1,9 +1,11 @@
 using Mdaresna.Doamin.DTOs.StudentManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
+using Mdaresna.Infrastructure.Data;
 using Mdaresna.Infrastructure.Helpers;
 using Mdaresna.Repository.IRepositories.Base;
 using Mdaresna.Repository.IServices.Base;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,14 +19,17 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Co
         private readonly IBaseCommandRepository<StudentAttendance> commandRepository;
         private readonly IBaseSharedRepository<StudentAttendance> sharedRepository;
         private readonly IBaseCommandBulkRepository<StudentAttendance> baseCommandBulkRepository;
+        private readonly AppDbContext context;
 
         public StudentAttendanceCommandService(IBaseCommandRepository<StudentAttendance> commandRepository,
             IBaseSharedRepository<StudentAttendance> sharedRepository,
-            IBaseCommandBulkRepository<StudentAttendance> baseCommandBulkRepository)
+            IBaseCommandBulkRepository<StudentAttendance> baseCommandBulkRepository,
+            AppDbContext context)
         {
             this.commandRepository = commandRepository;
             this.sharedRepository = sharedRepository;
             this.baseCommandBulkRepository = baseCommandBulkRepository;
+            this.context = context;
         }
         public bool Create(StudentAttendance entity)
         {
@@ -72,24 +77,44 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Co
         {
             try
             {
-                List<StudentAttendance> attendances = new List<StudentAttendance>();
+                var submittedAttendances = (attendanceDTO.StudentsAttenndaceList ?? Enumerable.Empty<StudentAttendanceDTO>())
+                    .GroupBy(item => item.StudentId)
+                    .ToDictionary(group => group.Key, group => group.Last().IsAttend);
 
-                foreach(var item in attendanceDTO.StudentsAttenndaceList)
+                var classroomStudentIds = await context.Students
+                    .AsNoTracking()
+                    .Where(student =>
+                        student.ClassRoomId == attendanceDTO.ClassRoomId &&
+                        student.Deleted == false)
+                    .Select(student => student.Id)
+                    .ToListAsync();
+
+                var attendances = new List<StudentAttendance>();
+                var now = DateTime.Now;
+
+                foreach (var studentId in classroomStudentIds)
                 {
+                    submittedAttendances.TryGetValue(studentId, out var isAttend);
+
                     var att = new StudentAttendance
                     {
                         Id = DataGenerationHelper.GenerateRowId(),
                         Date = attendanceDTO.Date,
                         ClassRoomId = attendanceDTO.ClassRoomId,
-                        StudentId = item.StudentId,
-                        IsAttend = item.IsAttend,
+                        StudentId = studentId,
+                        IsAttend = isAttend,
                         SupervisorId = attendanceDTO.SupervisorId,
                         WeekDay = attendanceDTO.WeekDay,
-                        CreateDate = DateTime.Now,
-                        LastModifyDate = DateTime.Now
+                        CreateDate = now,
+                        LastModifyDate = now
                     };
 
                     attendances.Add(att);
+                }
+
+                if (!attendances.Any())
+                {
+                    return true;
                 }
 
                 return await baseCommandBulkRepository.CreateBulk(attendances);

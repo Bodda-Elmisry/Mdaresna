@@ -32,6 +32,8 @@ namespace Mdaresna.Repository.IServices.SettingsManagement.Query
 
         Task<IReadOnlyList<StudentReportResultDTO>> GetStudentReportsByReportIdAsync(
             Guid reportQueueId,
+            Guid? gradeId = null,
+            Guid? classroomId = null,
             CancellationToken cancellationToken = default);
     }
 }

@@ -118,6 +118,42 @@ namespace Mdaresna
 
             var app = builder.Build();
 
+            app.Use(async (context, next) =>
+            {
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                var requestTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+                var method = context.Request.Method;
+                var path = context.Request.Path;
+
+                try
+                {
+                    await next();
+                }
+                finally
+                {
+                    stopwatch.Stop();
+                    var duration = stopwatch.ElapsedMilliseconds;
+                    var statusCode = context.Response.StatusCode;
+                    var logLine = $"[{requestTime}] {method} {path} - Status: {statusCode} - Time: {duration} ms{Environment.NewLine}";
+
+                    try
+                    {
+                        var logDir = Path.Combine(Directory.GetCurrentDirectory(), "Logs");
+                        if (!Directory.Exists(logDir))
+                        {
+                            Directory.CreateDirectory(logDir);
+                        }
+                        var logFileName = $"diagnostics_{DateTime.Now:yyyyMMdd}.log";
+                        var logFilePath = Path.Combine(logDir, logFileName);
+                        await System.IO.File.AppendAllTextAsync(logFilePath, logLine);
+                    }
+                    catch
+                    {
+                        // Fail-safe to prevent request failure if writing to log file fails
+                    }
+                }
+            });
+
             // Configure the HTTP request pipeline.
             //if (app.Environment.IsDevelopment())
             //{

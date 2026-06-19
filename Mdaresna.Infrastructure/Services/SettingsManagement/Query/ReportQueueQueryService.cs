@@ -94,6 +94,8 @@ namespace Mdaresna.Infrastructure.Services.SettingsManagement.Query
 
         public async Task<IReadOnlyList<StudentReportResultDTO>> GetStudentReportsByReportIdAsync(
             Guid reportQueueId,
+            Guid? gradeId = null,
+            Guid? classroomId = null,
             CancellationToken cancellationToken = default)
         {
             if (reportQueueId == Guid.Empty)
@@ -112,22 +114,40 @@ namespace Mdaresna.Infrastructure.Services.SettingsManagement.Query
                 reportingConnectionString,
                 cancellationToken);
 
-            var reports = await ReadStudentReportsAsync(
-                reportContext.StudentReports
-                    .AsNoTracking()
-                    .Where(report => report.ReportQueueId == reportQueueId),
-                cancellationToken);
+            var query = reportContext.StudentReports
+                .AsNoTracking()
+                .Where(report => report.ReportQueueId == reportQueueId);
+
+            if (classroomId.HasValue && classroomId.Value != Guid.Empty)
+            {
+                query = query.Where(report => report.ClassRoomId == classroomId.Value);
+            }
+            else if (gradeId.HasValue && gradeId.Value != Guid.Empty)
+            {
+                query = query.Where(report => report.GradeId == gradeId.Value);
+            }
+
+            var reports = await ReadStudentReportsAsync(query, cancellationToken);
 
             if (reports.Count > 0 || !queue.StartedAt.HasValue || !queue.CompletedAt.HasValue)
             {
                 return reports;
             }
 
-            return await ReadStudentReportsAsync(
-                ApplyReportQueueFallbackFilter(
-                    reportContext.StudentReports.AsNoTracking(),
-                    queue),
-                cancellationToken);
+            var fallbackQuery = ApplyReportQueueFallbackFilter(
+                reportContext.StudentReports.AsNoTracking(),
+                queue);
+
+            if (classroomId.HasValue && classroomId.Value != Guid.Empty)
+            {
+                fallbackQuery = fallbackQuery.Where(report => report.ClassRoomId == classroomId.Value);
+            }
+            else if (gradeId.HasValue && gradeId.Value != Guid.Empty)
+            {
+                fallbackQuery = fallbackQuery.Where(report => report.GradeId == gradeId.Value);
+            }
+
+            return await ReadStudentReportsAsync(fallbackQuery, cancellationToken);
         }
 
         private async Task<string> GetReportingConnectionStringAsync(

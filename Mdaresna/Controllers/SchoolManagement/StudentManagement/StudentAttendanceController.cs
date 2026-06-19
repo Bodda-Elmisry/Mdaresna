@@ -56,7 +56,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             }
         }
 
-        [PermissionAuthorize("AddAttendance")]
+        [PermissionAuthorize("AttendanceAction")]
         [HttpPost("SaveAttendance")]
         public async Task<IActionResult> AddClassRoomAttendence([FromBody] AddClassRoomAttendanceDTO attendanceDTO)
         {

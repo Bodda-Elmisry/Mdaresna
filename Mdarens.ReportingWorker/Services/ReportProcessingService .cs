@@ -14,7 +14,7 @@ public class ReportProcessingService : IReportProcessingService
 {
     private static readonly Guid ReportingServiceId = Guid.Parse("8488E63B-FD78-43BF-800B-03412C372DB5");
     private const string ReviewMonthReportPermissionKey = "ReviewSchoolMonthReport";
-    private const string ReviewNotificationTitle = "تقرير شهري";
+    private const string ReviewNotificationTitleText = "تقرير شهري";
 
     private readonly IWorkerJobSettingsService settingsService;
     private readonly IMdaresnaSchoolService schoolConnectionService;
@@ -179,15 +179,17 @@ public class ReportProcessingService : IReportProcessingService
             if (tokens.Count == 0)
             {
                 logger.LogInformation(
-                    "No employee devices found for review month report notification. ReportQueueId: {ReportQueueId}",
-                    reportQueue.Id);
+                    "No user devices found for review month report notification. ReportQueueId: {ReportQueueId}, SchoolId: {SchoolId}, PermissionKey: {PermissionKey}",
+                    reportQueue.Id,
+                    reportQueue.SchoolId,
+                    ReviewMonthReportPermissionKey);
                 return;
             }
 
             var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
-            var message = BuildReviewNotificationMessage(reportQueue);
+            var message = BuildCleanReviewNotificationMessage(reportQueue);
 
-            await notificationProvider.SendToMultiUsersAsync(tokens, ReviewNotificationTitle, message);
+            await notificationProvider.SendToMultiUsersAsync(tokens, ReviewNotificationTitleText, message);
 
             logger.LogInformation(
                 "Sent review month report notification for report queue {ReportQueueId} to {TokenCount} device(s).",
@@ -252,13 +254,9 @@ public class ReportProcessingService : IReportProcessingService
             .Distinct();
 
         var tokens = await (
-            from schoolEmployee in dbContext.SchoolEmployees.AsNoTracking()
-            join userDevice in dbContext.UserDevices.AsNoTracking()
-                on schoolEmployee.EmployeeId equals userDevice.UserId
+            from userDevice in dbContext.UserDevices.AsNoTracking()
             where
-                schoolEmployee.SchoolId == schoolId &&
-                schoolEmployee.Deleted == false &&
-                reviewerUserIds.Contains(schoolEmployee.EmployeeId) &&
+                reviewerUserIds.Contains(userDevice.UserId) &&
                 userDevice.Deleted == false &&
                 userDevice.FcmToken != null &&
                 userDevice.FcmToken != string.Empty
@@ -269,7 +267,7 @@ public class ReportProcessingService : IReportProcessingService
         return tokens;
     }
 
-    private static string BuildReviewNotificationMessage(ReportQueue reportQueue)
+    private static string BuildCleanReviewNotificationMessage(ReportQueue reportQueue)
     {
         var monthName = !string.IsNullOrWhiteSpace(reportQueue.Month?.Name)
             ? reportQueue.Month.Name
@@ -287,6 +285,7 @@ public class ReportProcessingService : IReportProcessingService
             message += $" للفصل {reportQueue.Classroom.Name}";
         }
 
-        return message;
+        return $"{message}|Type=ReportQueue|TargetId={reportQueue.Id}|SchoolId={reportQueue.SchoolId}";
     }
+
 }
