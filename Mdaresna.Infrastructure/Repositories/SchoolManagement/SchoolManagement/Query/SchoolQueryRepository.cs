@@ -138,7 +138,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
             var queryString = query.ToQueryString();
 
 
-            return await query.OrderBy(s => s.SchoolTypeId).OrderBy(s => s.Name)
+            return await query.OrderBy(s => s.CreateDate)
                                    .Skip((pageNumber - 1) * pagesize)
                                    .ToListAsync();
         }
@@ -179,7 +179,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                            AvailableCoins = s.AvailableCoins,
                            SchoolAdminId = s.SchoolAdminId,
                            SchoolAdminName = $"{s.SchoolAdmin.FirstName} {s.SchoolAdmin.LastName}",
-                           SchoolImages = s.SchoolImages.Select(s=> $"{SettingsHelper.GetAppUrl()}/{s.ImagePath.Replace("\\", "/")}"),
+                           SchoolImages = s.SchoolImages.OrderBy(img => img.CreateDate).Select(s=> $"{SettingsHelper.GetAppUrl()}/{s.ImagePath.Replace("\\", "/")}"),
+                           CreateDate = s.CreateDate,
                        });
 
             return query;

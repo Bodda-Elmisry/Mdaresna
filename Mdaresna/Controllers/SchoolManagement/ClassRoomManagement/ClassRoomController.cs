@@ -1,6 +1,7 @@
-﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.DTOs.Common;
+using Mdaresna.Doamin.DTOs.ClassRoomManagement;
 using Mdaresna.DTOs.SchoolManagementDTO.ClassRoomManagementDTO;
 using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
@@ -62,11 +63,11 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         }
 
         [HttpPost("GetSchoolClasses")]
-        public async Task<IActionResult> GetSchoolClasses([FromBody] SchoolIdDTO schoolId)
+        public async Task<IActionResult> GetSchoolClasses([FromBody] GetSchoolClassesFilteredDTO filterDto)
         {
             try
             {
-                var result = await classRoomQueryService.GetBySchoolIdAsync(schoolId.SchoolId);
+                var result = await classRoomQueryService.GetBySchoolIdFilteredAsync(filterDto);
                 
                 return Ok(result);
             }

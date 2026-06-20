@@ -90,7 +90,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
 
         public async Task<ClassRoomStudentExamResultDTO?> GetClassRoomStudentExamViewAsync(Guid studentId, Guid ExamId)
         {
-            var studentExam = await context.ClassRoomStudentExams.Include(e => e.StudentId)
+            var studentExam = await context.ClassRoomStudentExams.Include(e => e.Student)
                                                      .Include(e => e.Exam)
                                                      .Include(e => e.Exam.Month)
                                                      .Include(e => e.Exam.ClassRoom)

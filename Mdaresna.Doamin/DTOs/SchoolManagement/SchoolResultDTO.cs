@@ -1,4 +1,4 @@
-﻿namespace Mdaresna.Doamin.DTOs.SchoolManagement
+namespace Mdaresna.Doamin.DTOs.SchoolManagement
 {
     public class SchoolResultDTO
     {
@@ -17,5 +17,6 @@
         public Guid SchoolAdminId { get; set; }
         public string SchoolAdminName { get; set; }
         public IEnumerable<string> SchoolImages { get; set; }
+        public DateTime? CreateDate { get; set; }
     }
 }

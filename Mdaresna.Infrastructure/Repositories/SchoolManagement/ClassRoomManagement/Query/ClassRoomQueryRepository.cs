@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.DTOs.ClassRoomManagement;
+using Mdaresna.Doamin.DTOs.ClassRoomManagement;
 using Mdaresna.Doamin.Models.AdminManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
@@ -23,6 +23,49 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
         public ClassRoomQueryRepository(AppDbContext context) : base(context)
         {
             this.context = context;
+        }
+
+        public async Task<IEnumerable<ClassRoomResultDTO>> GetBySchoolIdFilteredAsync(GetSchoolClassesFilteredDTO filterDto)
+        {
+            var query = context.ClassRooms.Where(c => c.SchoolId == filterDto.SchoolId && c.Deleted == false);
+
+            if (!string.IsNullOrEmpty(filterDto.Name))
+            {
+                query = query.Where(c => c.Name.Contains(filterDto.Name));
+            }
+
+            if (filterDto.LanguageId.HasValue && filterDto.LanguageId.Value != Guid.Empty)
+            {
+                query = query.Where(c => c.LanguageId == filterDto.LanguageId.Value);
+            }
+
+            if (filterDto.GradeId.HasValue && filterDto.GradeId.Value != Guid.Empty)
+            {
+                query = query.Where(c => c.GradeId == filterDto.GradeId.Value);
+            }
+
+            if (filterDto.Gender.HasValue)
+            {
+                query = query.Where(c => c.Gender == filterDto.Gender.Value);
+            }
+
+            return await query.Select(c => new ClassRoomResultDTO
+            {
+                Id = c.Id,
+                Name = c.Name,
+                maxOfStudents = c.maxOfStudents,
+                SupervisorId = c.SupervisorId,
+                SupervisorName = $"{c.Supervisor.FirstName} {c.Supervisor.MiddelName} {c.Supervisor.LastName}",
+                Active = c.Active,
+                WCSUrl = c.WCSUrl,
+                SchoolId = c.SchoolId,
+                SchoolName = c.School.Name,
+                LanguageId = c.LanguageId,
+                LanguageName = c.Language.Name,
+                GradeId = c.GradeId,
+                Gradename = c.Grade.Name,
+                Gender = c.Gender
+            }).ToListAsync();
         }
 
         public async Task<IEnumerable<ClassRoomResultDTO>> GetBySchoolIdAsync(Guid SchoolId)

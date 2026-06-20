@@ -11,6 +11,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
+
 
 namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 {
@@ -24,6 +26,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         private readonly IUserPermissionQueryService userPermissionQueryService;
         private readonly IUserDeviceQueryService userDeviceQueryService;
         private readonly INotificationFactory notificationFactory;
+        private readonly ISchoolQueryService schoolQueryService;
 
         public StudentAbsencePermitController(
             IStudentAbsencePermitCommandService studentAbsencePermitCommandService,
@@ -31,7 +34,8 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             IStudentQueryService studentQueryService,
             IUserPermissionQueryService userPermissionQueryService,
             IUserDeviceQueryService userDeviceQueryService,
-            INotificationFactory notificationFactory)
+            INotificationFactory notificationFactory,
+            ISchoolQueryService schoolQueryService)
         {
             this.studentAbsencePermitCommandService = studentAbsencePermitCommandService;
             this.studentAbsencePermitQueryService = studentAbsencePermitQueryService;
@@ -39,6 +43,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             this.userPermissionQueryService = userPermissionQueryService;
             this.userDeviceQueryService = userDeviceQueryService;
             this.notificationFactory = notificationFactory;
+            this.schoolQueryService = schoolQueryService;
         }
 
         [HttpPost("Create")]
@@ -61,9 +66,17 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                         if (student != null)
                         {
                             var userIds = await userPermissionQueryService.GetPermissionUsersIdsByPermissionKey("ApproveAbsencePermit", student.SchoolId);
-                            if (userIds != null && userIds.Any())
+                            var userIdsList = userIds?.ToList() ?? new List<Guid>();
+
+                            var school = await schoolQueryService.GetByIdAsync(student.SchoolId);
+                            if (school != null && !userIdsList.Contains(school.SchoolAdminId))
                             {
-                                var devices = await userDeviceQueryService.GetUsersDevicesAsync(userIds);
+                                userIdsList.Add(school.SchoolAdminId);
+                            }
+
+                            if (userIdsList.Any())
+                            {
+                                var devices = await userDeviceQueryService.GetUsersDevicesAsync(userIdsList);
                                 if (devices != null && devices.Any())
                                 {
                                     var tokens = devices
