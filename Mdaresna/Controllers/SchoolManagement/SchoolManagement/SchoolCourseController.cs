@@ -75,7 +75,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                     Name = createSchoolCourseDTO.Name,
                     Description = createSchoolCourseDTO.Description,
                     SchoolId = createSchoolCourseDTO.SchoolId,
-                    LanguageId = createSchoolCourseDTO.LanguageId
+                    LanguageId = createSchoolCourseDTO.LanguageId,
+                    ExcludeFromMonthlyTotal = createSchoolCourseDTO.ExcludeFromMonthlyTotal
                 };
 
                 var added = schoolCourseCommandService.Create(course);
@@ -104,6 +105,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 course.Description = updateSchoolCourseDTO.Description;
                 course.SchoolId = updateSchoolCourseDTO.SchoolId;
                 course.LanguageId = updateSchoolCourseDTO.LanguageId;
+                course.ExcludeFromMonthlyTotal = updateSchoolCourseDTO.ExcludeFromMonthlyTotal;
 
                 var updated = schoolCourseCommandService.Update(course);
 

@@ -33,7 +33,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                             LanguageId = s.LanguageId,
                             LanguageName = s.Language.Name,
                             SchoolId = s.SchoolId,
-                            SchoolName = s.School.Name
+                            SchoolName = s.School.Name,
+                            ExcludeFromMonthlyTotal = s.ExcludeFromMonthlyTotal
                         })
                         .ToListAsync();
         }
@@ -50,7 +51,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                             LanguageId = s.LanguageId,
                             LanguageName = s.Language.Name,
                             SchoolId = s.SchoolId,
-                            SchoolName = s.School.Name
+                            SchoolName = s.School.Name,
+                            ExcludeFromMonthlyTotal = s.ExcludeFromMonthlyTotal
                         })
 
                         .ToListAsync();
@@ -71,7 +73,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                                         LanguageId = schoolCourse.LanguageId,
                                         LanguageName = schoolCourse.Language.Name,
                                         SchoolId = schoolCourse.SchoolId,
-                                        SchoolName = schoolCourse.School.Name
+                                        SchoolName = schoolCourse.School.Name,
+                                        ExcludeFromMonthlyTotal = schoolCourse.ExcludeFromMonthlyTotal
                                     };
         }
     }

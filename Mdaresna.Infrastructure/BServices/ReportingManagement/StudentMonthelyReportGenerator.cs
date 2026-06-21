@@ -259,7 +259,8 @@ internal class StudentMonthelyReportGenerator : IStudentReportGenerator
                 ClassRoomName = classroom.Name,
                 classroom.GradeId,
                 CourseId = course.Id,
-                CourseName = course.Name
+                CourseName = course.Name,
+                course.ExcludeFromMonthlyTotal
             };
 
         if (gradeId.HasValue)
@@ -287,7 +288,8 @@ internal class StudentMonthelyReportGenerator : IStudentReportGenerator
                 ClassRoomId = row.ClassRoomId,
                 ClassRoomName = row.ClassRoomName,
                 CourseId = row.CourseId,
-                CourseName = row.CourseName
+                CourseName = row.CourseName,
+                ExcludeFromMonthlyTotal = row.ExcludeFromMonthlyTotal
             })
             .ToListAsync(cancellationToken);
     }
@@ -676,7 +678,8 @@ internal class StudentMonthelyReportGenerator : IStudentReportGenerator
                     AttendanceEvaluation = attendanceEvaluation,
                     ExamEvaluation = examEvaluation,
                     TotalEvaluation = totalEvaluation,
-                    Assessment = GetAssessment(totalEvaluation)
+                    Assessment = GetAssessment(totalEvaluation),
+                    ExcludeFromMonthlyTotal = row.ExcludeFromMonthlyTotal
                 };
             })
             .OrderBy(row => row.SchoolId)

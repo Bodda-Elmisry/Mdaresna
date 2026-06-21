@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Models.AdminManagement;
+using Mdaresna.Doamin.Models.AdminManagement;
 using Mdaresna.Doamin.Models.Base;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -17,5 +17,7 @@ namespace Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement
 
         [ForeignKey(nameof(LanguageId))]
         public virtual Language Language { get; set; }
+
+        public bool ExcludeFromMonthlyTotal { get; set; } = false;
     }
 }

@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Models.AdminManagement;
+using Mdaresna.Doamin.Models.AdminManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using System;
 using System.Collections.Generic;
@@ -19,5 +19,6 @@ namespace Mdaresna.Doamin.DTOs.SchoolManagement
         public string SchoolName { get; set; }
         public Guid LanguageId { get; set; }
         public string LanguageName { get; set; }
+        public bool ExcludeFromMonthlyTotal { get; set; }
     }
 }

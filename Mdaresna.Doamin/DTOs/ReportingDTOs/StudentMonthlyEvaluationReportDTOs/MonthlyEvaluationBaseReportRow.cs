@@ -11,5 +11,6 @@ namespace Mdaresna.Doamin.DTOs.ReportingDTOs.StudentMonthlyEvaluationReportDTOs
         public string ClassRoomName { get; set; } = string.Empty;
         public Guid CourseId { get; set; }
         public string CourseName { get; set; } = string.Empty;
+        public bool ExcludeFromMonthlyTotal { get; set; }
     }
 }

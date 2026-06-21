@@ -17,5 +17,6 @@ namespace Mdaresna.Doamin.DTOs.ReportingDTOs.StudentMonthlyEvaluationReportDTOs
         public decimal ExamEvaluation { get; set; }
         public decimal TotalEvaluation { get; set; }
         public string Assessment { get; set; } = string.Empty;
+        public bool ExcludeFromMonthlyTotal { get; set; }
     }
 }

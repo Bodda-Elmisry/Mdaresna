@@ -1,4 +1,4 @@
-﻿namespace Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO
+namespace Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO
 {
     public class CreateSchoolCourseDTO
     {
@@ -6,5 +6,6 @@
         public string Description { get; set; }
         public Guid SchoolId { get; set; }
         public Guid LanguageId { get; set; }
+        public bool ExcludeFromMonthlyTotal { get; set; }
     }
 }
