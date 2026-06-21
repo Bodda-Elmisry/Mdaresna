@@ -10,6 +10,7 @@ using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Mdaresna.Helpers;
 
 namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 {
@@ -153,8 +154,12 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
-                var fileParts = file.FileName.Split('.');
-                string ext = fileParts[fileParts.Length - 1];
+                if (!FileValidationHelper.ValidateImage(file, out _))
+                {
+                    return string.Empty;
+                }
+
+                string ext = Path.GetExtension(file.FileName).TrimStart('.');
 
                 var imageId = Guid.NewGuid();
                 var localPath = Directory.GetCurrentDirectory();

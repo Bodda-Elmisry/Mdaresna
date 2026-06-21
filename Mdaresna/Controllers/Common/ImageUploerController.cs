@@ -1,8 +1,9 @@
-﻿using Mdaresna.Doamin.DTOs.Common;
+using Mdaresna.Doamin.DTOs.Common;
 using Mdaresna.Doamin.Helpers;
 using Mdaresna.Doamin.Models.UserManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.Repository.IBServices.Common;
+using Mdaresna.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -26,14 +27,12 @@ namespace Mdaresna.Controllers.Common
         {
             try
             {
-
-                if (uploadImageDTO.File == null || uploadImageDTO.File.Length == 0)
+                if (!FileValidationHelper.ValidateImage(uploadImageDTO.File, out var validationError))
                 {
-                    throw new ArgumentException("No file provided or file is empty.");
+                    return BadRequest(validationError);
                 }
 
-                var fileParts = uploadImageDTO.File.FileName.Split('.');
-                string ext = fileParts[fileParts.Length - 1];
+                string ext = Path.GetExtension(uploadImageDTO.File.FileName).TrimStart('.');
 
                 var localPath = Directory.GetCurrentDirectory();
                 var directoryPathWithoutLocal = GetPathWithoutLocal(localPath, uploadImageDTO);
