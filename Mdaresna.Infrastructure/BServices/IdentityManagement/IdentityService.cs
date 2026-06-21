@@ -37,8 +37,10 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
         private readonly ISchoolQueryService schoolQueryService;
         private readonly ISchoolEmployeeQueryService schoolEmployeeQueryService;
         private readonly ISchoolTeacherQueryService schoolTeacherQueryService;
-        private readonly ISMSLogCommandService smsLogCommandService;
         private readonly IConfiguration configuration;
+        private readonly ISMSLogCommandService smsLogCommandService;
+        private readonly IUserRefreshTokenCommandService userRefreshTokenCommandService;
+        private readonly IUserRefreshTokenQueryService userRefreshTokenQueryService;
 
         public IdentityService(IUserCommandService userCommandService,
                                 IUserQueryService userQueryService,
@@ -51,7 +53,9 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                                 ISchoolEmployeeQueryService schoolEmployeeQueryService,
                                 ISchoolTeacherQueryService schoolTeacherQueryService,
                                 ISMSLogCommandService smsLogCommandService,
-                                IConfiguration configuration)
+                                IConfiguration configuration,
+                                IUserRefreshTokenCommandService userRefreshTokenCommandService,
+                                IUserRefreshTokenQueryService userRefreshTokenQueryService)
         {
             this.userCommandService = userCommandService;
             this.userQueryService = userQueryService;
@@ -65,6 +69,8 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             this.schoolTeacherQueryService = schoolTeacherQueryService;
             this.smsLogCommandService = smsLogCommandService;
             this.configuration = configuration;
+            this.userRefreshTokenCommandService = userRefreshTokenCommandService;
+            this.userRefreshTokenQueryService = userRefreshTokenQueryService;
         }
 
         public async Task<RegisterResultDTO> Register(User RegisterUser)
@@ -372,15 +378,49 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             var tokenObj = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(tokenObj);
 
+            var refreshTokenString = Guid.NewGuid().ToString() + "-" + Guid.NewGuid().ToString();
+
+            var refreshToken = new UserRefreshToken
+            {
+                UserId = user.Id,
+                Token = refreshTokenString,
+                ExpiryDate = DateTime.Now.AddDays(7),
+                IsRevoked = false
+            };
+            userRefreshTokenCommandService.Create(refreshToken);
+
             return new LoginResultDTO
             {
                 LogedinUser = user,
                 Schools = userSchools,
                 IsEmployee = employee,
                 IsTeacher = teacher,
-                Token = tokenString
+                Token = tokenString,
+                RefreshToken = refreshTokenString
             };
 
+        }
+
+        public async Task<LoginResultDTO?> RefreshToken(string token)
+        {
+            var storedToken = await userRefreshTokenQueryService.GetByTokenAsync(token);
+            if (storedToken == null || storedToken.ExpiryDate < DateTime.Now || storedToken.IsRevoked)
+            {
+                return null;
+            }
+
+            var user = await userQueryService.GetByIdAsync(storedToken.UserId);
+            if (user == null || user.Deleted)
+            {
+                return null;
+            }
+
+            // Revoke old token
+            storedToken.IsRevoked = true;
+            userRefreshTokenCommandService.Update(storedToken);
+
+            // Generate new token & new refresh token
+            return await GetUserInfo(user, null);
         }
 
     }

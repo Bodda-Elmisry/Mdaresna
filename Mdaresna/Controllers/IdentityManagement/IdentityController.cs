@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.UserManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.IdentityDTO;
@@ -107,6 +107,8 @@ namespace Mdaresna.Controllers.IdentityManagement
                 var result = await identityService.ChangePassword(dTO.Id, dTO.OldPassword, dTO.NewPassword);
                 return result.Saved ? Ok("Password changed") : BadRequest(result.MSG);
             }
+
+
             catch(Exception ex)
             {
                 return BadRequest(ex.Message);
@@ -152,6 +154,25 @@ namespace Mdaresna.Controllers.IdentityManagement
                 return result == null ? BadRequest("Wrong phone number or password") : Ok(result);
             }
             catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("RefreshToken")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDTO dTO)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(dTO.RefreshToken))
+                {
+                    return BadRequest("Refresh token cannot be empty");
+                }
+
+                var result = await identityService.RefreshToken(dTO.RefreshToken);
+                return result == null ? Unauthorized("Invalid or expired refresh token") : Ok(result);
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }

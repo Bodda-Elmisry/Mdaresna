@@ -96,6 +96,7 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration(new UserBlockConfig());
         modelBuilder.ApplyConfiguration(new UserDeviceConfig());
         modelBuilder.ApplyConfiguration(new UserReportConfig());
+        modelBuilder.ApplyConfiguration(new UserRefreshTokenConfig());
     }
 
     private void ApplyCoinManagementConfigrations(ModelBuilder modelBuilder)
@@ -199,6 +200,7 @@ public class AppDbContext : DbContext
     public DbSet<RelationType> relationTypes { get; set; }
     public DbSet<SchoolUser> SchoolUsers { get; set; }
     public DbSet<UserReport> UserReports { get; set; }
+    public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
 
     #endregion
 

@@ -17,5 +17,6 @@ namespace Mdaresna.Doamin.DTOs.Identity
         public bool IsTeacher { get; set; }
         public bool IsEmployee { get; set; }
         public string Token { get; set; } = string.Empty;
+        public string RefreshToken { get; set; } = string.Empty;
     }
 }
