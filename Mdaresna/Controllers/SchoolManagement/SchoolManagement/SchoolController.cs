@@ -33,6 +33,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         private readonly IUserPermissionQueryService userPermissionQueryService;
         private readonly IMdaresnaSchoolService mdaresnaSchoolService;
 
+        private readonly ISchoolAccessValidator schoolAccessValidator;
+
         public SchoolController(ISchoolCommandService schoolCommandService,
                                 ISchoolQueryService schoolQueryService,
                                 IClassRoomCommandService classRoomCommandService,
@@ -42,7 +44,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                                 IUserDeviceQueryService userDeviceQueryService,
                                 IUserRoleQueryService userRoleQueryService,
                                 IUserPermissionQueryService userPermissionQueryService,
-                                IMdaresnaSchoolService mdaresnaSchoolService)
+                                IMdaresnaSchoolService mdaresnaSchoolService,
+                                ISchoolAccessValidator schoolAccessValidator)
         {
             this.schoolCommandService = schoolCommandService;
             this.schoolQueryService = schoolQueryService;
@@ -54,6 +57,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             this.userRoleQueryService = userRoleQueryService;
             this.userPermissionQueryService = userPermissionQueryService;
             this.mdaresnaSchoolService = mdaresnaSchoolService;
+            this.schoolAccessValidator = schoolAccessValidator;
         }
 
         [HttpPost("AddSchool")]
@@ -121,6 +125,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 if (school == null)
                     return BadRequest("There is no school to update");
 
+                var oldAdminId = school.SchoolAdminId;
+
                 school.Name = SchoolInfo.SchoolName;
                 school.About = SchoolInfo.About;
                 school.Vesion = SchoolInfo.Vesion;
@@ -128,7 +134,15 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 
                 var updated = schoolCommandService.Update(school);
                 if (updated)
+                {
+                    if (oldAdminId != SchoolInfo.SchoolAdminId)
+                    {
+                        schoolAccessValidator.RemoveSchoolAccessCache(oldAdminId, school.Id);
+                    }
+                    schoolAccessValidator.RemoveSchoolAccessCache(SchoolInfo.SchoolAdminId, school.Id);
+
                     return Ok(await schoolQueryService.GetSchoolById(school.Id));
+                }
 
                 return BadRequest("Error in update school");
             }

@@ -50,6 +50,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         private readonly IClassRoomQueryService classRoomQueryService;
         private readonly IUserPermissionSchoolClassRoomQueryService userPermissionSchoolClassRoomQueryService;
         private readonly IUserPermissionSchoolClassRoomCommandService userPermissionSchoolClassRoomCommandService;
+        private readonly ISchoolAccessValidator schoolAccessValidator;
 
         public SchoolEmployeeController(ISchoolEmployeeCommandService schoolEmployeeCommandService,
                                         ISchoolEmployeeQueryService schoolEmployeeQueryService,
@@ -66,7 +67,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                                         ICommandUnitOfWork commandUnitOfWork,
                                         IClassRoomQueryService classRoomQueryService,
                                         IUserPermissionSchoolClassRoomQueryService userPermissionSchoolClassRoomQueryService,
-                                        IUserPermissionSchoolClassRoomCommandService userPermissionSchoolClassRoomCommandService)
+                                        IUserPermissionSchoolClassRoomCommandService userPermissionSchoolClassRoomCommandService,
+                                        ISchoolAccessValidator schoolAccessValidator)
         {
             this.schoolEmployeeCommandService = schoolEmployeeCommandService;
             this.schoolEmployeeQueryService = schoolEmployeeQueryService;
@@ -84,6 +86,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             this.classRoomQueryService = classRoomQueryService;
             this.userPermissionSchoolClassRoomQueryService = userPermissionSchoolClassRoomQueryService;
             this.userPermissionSchoolClassRoomCommandService = userPermissionSchoolClassRoomCommandService;
+            this.schoolAccessValidator = schoolAccessValidator;
         }
 
         [HttpPost("AddSchoolEmployee")]
@@ -123,6 +126,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                         await notificationProvider.SendToMultiUsersAsync(tokens, "School Role", $"Assigned as employee to new school {school.Name}|{school.Id}");
                     }
 
+                    schoolAccessValidator.RemoveSchoolAccessCache(dto.EmployeeId, dto.SchoolId);
                     return Ok(dto);
                 }
                 return BadRequest("Can't add employee to school");
@@ -312,6 +316,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 if (deleted)
                 {
                     await commandUnitOfWork.CommitTransactionAsync();
+                    schoolAccessValidator.RemoveSchoolAccessCache(dto.EmployeeId, dto.SchoolId);
                     return Ok("Employee removed from school");
                 }
 

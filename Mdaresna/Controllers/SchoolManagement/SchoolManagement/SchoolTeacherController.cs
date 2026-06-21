@@ -45,6 +45,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         private readonly IClassRoomQueryService classRoomQueryService;
         private readonly IUserPermissionSchoolClassRoomQueryService userPermissionSchoolClassRoomQueryService;
         private readonly IUserPermissionSchoolClassRoomCommandService userPermissionSchoolClassRoomCommandService;
+        private readonly ISchoolAccessValidator schoolAccessValidator;
 
         public SchoolTeacherController(ISchoolTeacherCommandService schoolTeacherCommandService,
                                        ISchoolTeacherQueryService schoolTeacherQueryService,
@@ -62,7 +63,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                                        ICommandUnitOfWork commandUnitOfWork,
                                        IClassRoomQueryService classRoomQueryService,
                                        IUserPermissionSchoolClassRoomQueryService userPermissionSchoolClassRoomQueryService,
-                                       IUserPermissionSchoolClassRoomCommandService userPermissionSchoolClassRoomCommandService)
+                                       IUserPermissionSchoolClassRoomCommandService userPermissionSchoolClassRoomCommandService,
+                                       ISchoolAccessValidator schoolAccessValidator)
         {
             this.schoolTeacherCommandService = schoolTeacherCommandService;
             this.schoolTeacherQueryService = schoolTeacherQueryService;
@@ -81,6 +83,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             this.classRoomQueryService = classRoomQueryService;
             this.userPermissionSchoolClassRoomQueryService = userPermissionSchoolClassRoomQueryService;
             this.userPermissionSchoolClassRoomCommandService = userPermissionSchoolClassRoomCommandService;
+            this.schoolAccessValidator = schoolAccessValidator;
         }
         [HttpPost("AddSchoolTeacher")]
         public async Task<IActionResult> AddSchoolTeacher([FromBody] SchoolIdTeacherIdDTO schoolTeacher)
@@ -130,6 +133,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                         var tokens = devices.Select(d => d.FcmToken).ToList();
                         await notificationProvider.SendToMultiUsersAsync(tokens, "School Role", $"Assigned as a teacher to school {school.Name}|{school.Id}");
                     }
+                    schoolAccessValidator.RemoveSchoolAccessCache(schoolTeacher.TeacherId, schoolTeacher.SchoolId);
                     return Ok(schoolTeacher);
                 }
                 return BadRequest("Can't add teacher to school");
@@ -337,6 +341,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 if (deleted)
                 {
                     await commandUnitOfWork.CommitTransactionAsync();
+                    schoolAccessValidator.RemoveSchoolAccessCache(dto.TeacherId, dto.SchoolId);
                     return Ok("Teacher removed from school");
                 }
 

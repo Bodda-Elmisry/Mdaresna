@@ -23,6 +23,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         private readonly IUserDeviceQueryService userDeviceQueryService;
         private readonly INotificationFactory notificationFactory;
         private readonly ISchoolQueryService schoolQueryService;
+        private readonly ISchoolAccessValidator schoolAccessValidator;
 
         public StudentAbsencePermitController(
             IStudentAbsencePermitCommandService studentAbsencePermitCommandService,
@@ -31,7 +32,8 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             IUserPermissionQueryService userPermissionQueryService,
             IUserDeviceQueryService userDeviceQueryService,
             INotificationFactory notificationFactory,
-            ISchoolQueryService schoolQueryService)
+            ISchoolQueryService schoolQueryService,
+            ISchoolAccessValidator schoolAccessValidator)
         {
             this.studentAbsencePermitCommandService = studentAbsencePermitCommandService;
             this.studentAbsencePermitQueryService = studentAbsencePermitQueryService;
@@ -40,6 +42,17 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             this.userDeviceQueryService = userDeviceQueryService;
             this.notificationFactory = notificationFactory;
             this.schoolQueryService = schoolQueryService;
+            this.schoolAccessValidator = schoolAccessValidator;
+        }
+
+        private Guid CurrentUserId
+        {
+            get
+            {
+                var userIdClaim = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub) 
+                                  ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                return userIdClaim != null ? Guid.Parse(userIdClaim.Value) : Guid.Empty;
+            }
         }
 
         [HttpPost("Create")]
@@ -50,6 +63,11 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 if (permitDTO.StudentId == Guid.Empty || permitDTO.ParentId == Guid.Empty)
                 {
                     return BadRequest("Student and parent are required");
+                }
+
+                if (permitDTO.ParentId != CurrentUserId || !await schoolAccessValidator.CanAccessStudentAsync(CurrentUserId, permitDTO.StudentId))
+                {
+                    return Forbid();
                 }
 
                 var result = await studentAbsencePermitCommandService.CreateAbsencePermitAsync(permitDTO);
@@ -118,6 +136,16 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                     return BadRequest("Can't get data without student or parent");
                 }
 
+                if (permitsDTO.StudentId.HasValue && !await schoolAccessValidator.CanAccessStudentAsync(CurrentUserId, permitsDTO.StudentId.Value))
+                {
+                    return Forbid();
+                }
+
+                if (permitsDTO.ParentId.HasValue && permitsDTO.ParentId.Value != CurrentUserId)
+                {
+                    return Forbid();
+                }
+
                 var data = await studentAbsencePermitQueryService.GetStudentAbsencePermitsAsync(
                     permitsDTO.StudentId,
                     permitsDTO.ParentId,
@@ -136,6 +164,11 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         {
             try
             {
+                if (dto.ParentId != CurrentUserId)
+                {
+                    return Forbid();
+                }
+
                 var deleted = await studentAbsencePermitCommandService.SoftDeleteAbsencePermitAsync(
                     dto.StudentAbsencePermitId,
                     dto.ParentId);
@@ -156,38 +189,52 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         {
             try
             {
+                if (dto.ReviewerId != CurrentUserId)
+                {
+                    return Forbid();
+                }
+
+                var permit = await studentAbsencePermitQueryService.GetByIdAsync(dto.StudentAbsencePermitId);
+                if (permit == null)
+                {
+                    return BadRequest("Absence Permit Not Found");
+                }
+
+                var student = await studentQueryService.GetStudentByIdAsync(permit.StudentId);
+                if (student == null)
+                {
+                    return BadRequest("Student Not Found");
+                }
+
+                if (!await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, student.SchoolId))
+                {
+                    return Forbid();
+                }
+
                 var result = await studentAbsencePermitCommandService.ReviewAbsencePermitAsync(dto);
 
                 if (result == "Absence Permit Reviewed")
                 {
                     try
                     {
-                        var permit = await studentAbsencePermitQueryService.GetByIdAsync(dto.StudentAbsencePermitId);
-                        if (permit != null)
+                        var devices = await userDeviceQueryService.GetByUserIdAsync(permit.ParentId);
+                        if (devices != null && devices.Any())
                         {
-                            var student = await studentQueryService.GetStudentByIdAsync(permit.StudentId);
-                            if (student != null)
-                            {
-                                var devices = await userDeviceQueryService.GetByUserIdAsync(permit.ParentId);
-                                if (devices != null && devices.Any())
-                                {
-                                    var tokens = devices
-                                        .Select(d => d.FcmToken)
-                                        .Where(t => !string.IsNullOrWhiteSpace(t))
-                                        .Distinct()
-                                        .ToList();
+                            var tokens = devices
+                                .Select(d => d.FcmToken)
+                                .Where(t => !string.IsNullOrWhiteSpace(t))
+                                .Distinct()
+                                .ToList();
 
-                                    if (tokens.Any())
-                                    {
-                                        var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
-                                        var studentName = $"{student.FirstName} {student.LastName}";
-                                        
-                                        string statusAr = dto.Status == AbsencePermitStatusEnum.Approved ? "الموافقة على" : "رفض";
-                                        
-                                        var message = $"تم {statusAr} عذر الغياب المقدم للطالب {studentName} ليوم {permit.Date:yyyy/MM/dd}.|Type=AbsencePermit|StudentId={permit.StudentId}|SchoolId={student.SchoolId}";
-                                        await notificationProvider.SendToMultiUsersAsync(tokens, "تحديث عذر الغياب", message);
-                                    }
-                                }
+                            if (tokens.Any())
+                            {
+                                var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                                var studentName = $"{student.FirstName} {student.LastName}";
+                                
+                                string statusAr = dto.Status == AbsencePermitStatusEnum.Approved ? "الموافقة على" : "رفض";
+                                
+                                var message = $"تم {statusAr} عذر الغياب المقدم للطالب {studentName} ليوم {permit.Date:yyyy/MM/dd}.|Type=AbsencePermit|StudentId={permit.StudentId}|SchoolId={student.SchoolId}";
+                                await notificationProvider.SendToMultiUsersAsync(tokens, "تحديث عذر الغياب", message);
                             }
                         }
                     }

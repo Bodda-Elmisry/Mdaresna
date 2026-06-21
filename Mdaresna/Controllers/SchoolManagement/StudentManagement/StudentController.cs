@@ -31,6 +31,7 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         private readonly ISchoolQueryService schoolQueryService;
         private readonly INotificationFactory notificationFactory;
         private readonly ICommandUnitOfWork commandUnitOfWork;
+        private readonly ISchoolAccessValidator schoolAccessValidator;
 
         public StudentController(IStudentCommandService studentCommandService,
                                  IStudentQueryService studentQueryService,
@@ -40,7 +41,8 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                                  IUserDeviceQueryService userDeviceQueryService,
                                  ISchoolQueryService schoolQueryService,
                                  INotificationFactory notificationFactory,
-                                 ICommandUnitOfWork commandUnitOfWork)
+                                 ICommandUnitOfWork commandUnitOfWork,
+                                 ISchoolAccessValidator schoolAccessValidator)
         {
             this.studentCommandService = studentCommandService;
             this.studentQueryService = studentQueryService;
@@ -51,6 +53,17 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
             this.schoolQueryService = schoolQueryService;
             this.notificationFactory = notificationFactory;
             this.commandUnitOfWork = commandUnitOfWork;
+            this.schoolAccessValidator = schoolAccessValidator;
+        }
+
+        private Guid CurrentUserId
+        {
+            get
+            {
+                var userIdClaim = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub) 
+                                  ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                return userIdClaim != null ? Guid.Parse(userIdClaim.Value) : Guid.Empty;
+            }
         }
 
         [HttpPost("GetStudent")]
@@ -58,6 +71,10 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         {
             try
             {
+                if (!await schoolAccessValidator.CanAccessStudentAsync(CurrentUserId, studentIdDTO.StudentId))
+                {
+                    return Forbid();
+                }
                 //var result = await studentQueryService.GetByIdAsync(studentIdDTO.StudentId);
                 var result = await studentQueryService.GetStudentByIdAsync(studentIdDTO.StudentId);
                 return Ok(result);
@@ -88,6 +105,10 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         {
             try
             {
+                if (!await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, schoolIdClassRoomIdDTO.SchoolId))
+                {
+                    return Forbid();
+                }
                 var result = await studentQueryService.GetStudentsBySchoolIdAndClassRoomIdAsync(schoolIdClassRoomIdDTO.SchoolId,
                                                                                           schoolIdClassRoomIdDTO.ClassRoomId);
                 return Ok(result);
@@ -103,6 +124,10 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         {
             try
             {
+                if (!await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, dTO.SchoolId))
+                {
+                    return Forbid();
+                }
                 var result = await studentQueryService.GetStudentsBySchoolIdViewAsync(dTO.SchoolId, dTO.StudentCode, dTO.StudentName);
                 return Ok(result);
             }
@@ -117,6 +142,10 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
         {
             try
             {
+                if (!await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, studentDTO.SchoolId))
+                {
+                    return Forbid();
+                }
                 var studentCode = await GenerateCode(studentDTO.SchoolId);
                 var student = new Student
                 {
@@ -182,6 +211,12 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 var student = await studentQueryService.GetByIdAsync(studentDTO.Id);
                 if (student == null)
                     return BadRequest("Can't update student");
+
+                if (!await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, student.SchoolId) || 
+                    !await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, studentDTO.SchoolId))
+                {
+                    return Forbid();
+                }
 
                 var payedChanged = !student.IsPayed && studentDTO.IsPayed;
                 var wasActive = student.Active;

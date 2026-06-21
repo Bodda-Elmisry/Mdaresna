@@ -8,8 +8,8 @@ using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Mdaresna.Repository.IServices.UserManagement.Query;
+using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Microsoft.AspNetCore.Mvc;
-
 using Microsoft.AspNetCore.Authorization;
 
 namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
@@ -23,18 +23,31 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         private readonly IStudentQueryService studentQueryService;
         private readonly INotificationFactory notificationFactory;
         private readonly IUserDeviceQueryService userDeviceQueryService;
+        private readonly ISchoolAccessValidator schoolAccessValidator;
 
         public ClassRoomController(IClassRoomQueryService classRoomQueryService,
                                    IClassRoomCommandService classRoomCommandService,
                                    IStudentQueryService studentQueryService,
                                            INotificationFactory notificationFactory,
-                                           IUserDeviceQueryService userDeviceQueryService)
+                                           IUserDeviceQueryService userDeviceQueryService,
+                                           ISchoolAccessValidator schoolAccessValidator)
         {
             this.classRoomQueryService = classRoomQueryService;
             this.classRoomCommandService = classRoomCommandService;
             this.studentQueryService = studentQueryService;
             this.notificationFactory = notificationFactory;
             this.userDeviceQueryService = userDeviceQueryService;
+            this.schoolAccessValidator = schoolAccessValidator;
+        }
+
+        private Guid CurrentUserId
+        {
+            get
+            {
+                var userIdClaim = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub) 
+                                  ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                return userIdClaim != null ? Guid.Parse(userIdClaim.Value) : Guid.Empty;
+            }
         }
 
         [HttpPost("GetInitialData")]
@@ -42,6 +55,10 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         {
             try
             {
+                if (!await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, schoolId.SchoolId))
+                {
+                    return Forbid();
+                }
                 var result = await classRoomQueryService.getInitialValue(schoolId.SchoolId);
                 return Ok(result);
             }
@@ -56,6 +73,10 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         {
             try
             {
+                if (!await schoolAccessValidator.CanAccessClassRoomAsync(CurrentUserId, classRoomIdDTO.ClassRoomId))
+                {
+                    return Forbid();
+                }
                 var room = await classRoomQueryService.GetByIdAsync(classRoomIdDTO.ClassRoomId);
                 return Ok(room);
             }
@@ -70,6 +91,10 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         {
             try
             {
+                if (!await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, filterDto.SchoolId))
+                {
+                    return Forbid();
+                }
                 var result = await classRoomQueryService.GetBySchoolIdFilteredAsync(filterDto);
                 
                 return Ok(result);
@@ -85,6 +110,10 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         {
             try
             {
+                if (!await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, supervisorClassesDTO.SchoolId))
+                {
+                    return Forbid();
+                }
                 var result = await classRoomQueryService.GetBySchoolIdAndSupervisorIdAsync(supervisorClassesDTO.SchoolId,
                                                                                      supervisorClassesDTO.SupervisorId);
                 return Ok(result);
@@ -100,6 +129,10 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         {
             try
             {
+                if (!await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, supervisorClassesDTO.SchoolId))
+                {
+                    return Forbid();
+                }
                 var result = await classRoomQueryService.GetBySchoolIdAndUserIdAsync(supervisorClassesDTO.SchoolId,
                                                                                      supervisorClassesDTO.SupervisorId);
                 return Ok(result);
@@ -115,6 +148,10 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         {
             try
             {
+                if (!await schoolAccessValidator.CanAccessClassRoomAsync(CurrentUserId, RoomIddto.ClassRoomId))
+                {
+                    return Forbid();
+                }
                 var classRoom = await classRoomQueryService.GetByIdAsync(RoomIddto.ClassRoomId);
                 classRoom.Active = false;
                 var Updated = classRoomCommandService.Update(classRoom);
@@ -143,6 +180,10 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         {
             try
             {
+                if (!await schoolAccessValidator.CanAccessClassRoomAsync(CurrentUserId, RoomIddto.ClassRoomId))
+                {
+                    return Forbid();
+                }
                 var classRoom = await classRoomQueryService.GetByIdAsync(RoomIddto.ClassRoomId);
                 classRoom.Active = true;
                 var Updated = classRoomCommandService.Update(classRoom);
@@ -172,6 +213,14 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
             try
             {
                 var classRoom = await classRoomQueryService.GetByIdAsync(classRoomDTO.Id);
+                if (classRoom == null)
+                    return BadRequest("There is no classroom to update");
+
+                if (!await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, classRoom.SchoolId) || 
+                    !await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, classRoomDTO.SchoolId))
+                {
+                    return Forbid();
+                }
                 classRoom.Name = classRoomDTO.Name;
                 classRoom.SchoolId = classRoomDTO.SchoolId;
                 classRoom.GradeId = classRoomDTO.GradeId;
@@ -196,10 +245,14 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         }
 
         [HttpPost("AddClass")]
-        public IActionResult CreateNewCalssRoom([FromBody] CreateClassRoomDTO classRoomDTO)
+        public async Task<IActionResult> CreateNewCalssRoom([FromBody] CreateClassRoomDTO classRoomDTO)
         {
             try
             {
+                if (!await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, classRoomDTO.SchoolId))
+                {
+                    return Forbid();
+                }
                 var classRoom = new ClassRoom
                 {
                     Name = classRoomDTO.Name,
@@ -235,9 +288,10 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         {
             try
             {
-
-                
-
+                if (!await schoolAccessValidator.CanAccessClassRoomAsync(CurrentUserId, dto.ClassRoomId))
+                {
+                    return Forbid();
+                }
                 var classroom = await classRoomQueryService.GetByIdAsync(dto.ClassRoomId);
 
                 if (classroom == null)

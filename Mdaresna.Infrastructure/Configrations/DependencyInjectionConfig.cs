@@ -502,6 +502,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(ISchoolTypeQueryService), typeof(SchoolTypeQueryService));
             services.AddScoped(typeof(ISchoolYearMonthQueryService), typeof(SchoolYearMonthQueryService));
             services.AddScoped(typeof(ISchoolYearQueryService), typeof(SchoolYearQueryService));
+            services.AddScoped(typeof(ISchoolAccessValidator), typeof(SchoolAccessValidator));
 
             #endregion
         }
