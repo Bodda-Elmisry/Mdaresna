@@ -2,12 +2,14 @@
 using Mdaresna.DTOs.IdentityDTO;
 using Mdaresna.Repository.IServices.IdentityManagement.Command;
 using Mdaresna.Repository.IServices.IdentityManagement.Query;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security;
 
 namespace Mdaresna.Controllers.IdentityManagement
 {
     [Route("Permission")]
+    [Authorize]
     public class PermissionController : Controller
     {
         private readonly IPermissionQueryService permissionQueryService;

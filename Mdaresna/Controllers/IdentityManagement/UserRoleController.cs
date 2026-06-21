@@ -10,12 +10,14 @@ using Mdaresna.Repository.IServices.IdentityManagement.Command;
 using Mdaresna.Repository.IServices.IdentityManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Repository.IServices.UserManagement.Query;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
 
 namespace Mdaresna.Controllers.IdentityManagement
 {
     [Route("UserRole")]
+    [Authorize]
     public class UserRoleController : Controller
     {
         private readonly IUserRoleQueryService userRoleQueryService;

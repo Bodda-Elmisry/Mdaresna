@@ -6,10 +6,12 @@ using Mdaresna.Repository.IBServices.Common;
 using Mdaresna.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Mdaresna.Controllers.Common
 {
     [Route("ImageUploder")]
+    [Authorize]
     public class ImageUploerController : Controller
     {
         private readonly IImageUploderService imageUploderService;

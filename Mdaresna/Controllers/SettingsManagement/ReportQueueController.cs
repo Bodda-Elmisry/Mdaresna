@@ -1,13 +1,15 @@
-using Mdaresna.Doamin.DTOs.SettingsManagement;
 using Mdaresna.Doamin.DTOs.Common;
+using Mdaresna.Doamin.DTOs.SettingsManagement;
 using Mdaresna.Doamin.Models.SettingsManagement;
 using Mdaresna.DTOs.SettingsManagementDTO;
 using Mdaresna.Repository.IServices.SettingsManagement.Query;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers.SettingsManagement;
 
 [Route("ReportQueue")]
+[Authorize]
 public class ReportQueueController : Controller
 {
     private readonly IReportQueueQueryService reportQueueQueryService;

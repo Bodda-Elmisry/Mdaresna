@@ -1,5 +1,4 @@
 ﻿using Mdaresna.Doamin.Enums;
-using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.StudentManagementDTO;
@@ -7,11 +6,13 @@ using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Mdaresna.Repository.IServices.UserManagement.Query;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 {
     [Route("StudentParent")]
+    [Authorize]
     public class StudentParentController : Controller
     {
         private readonly IStudentParentQueryService studentParentQueryService;

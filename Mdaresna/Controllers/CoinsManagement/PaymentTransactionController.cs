@@ -3,12 +3,14 @@ using Mdaresna.DTOs.CoinsManagementDTO;
 using Mdaresna.DTOs.Common;
 using Mdaresna.Repository.IServices.CoinsManagement.Command;
 using Mdaresna.Repository.IServices.CoinsManagement.Query;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetTopologySuite.Algorithm.Distance;
 
 namespace Mdaresna.Controllers.CoinsManagement
 {
     [Route("PaymentTransaction")]
+    [Authorize]
     public class PaymentTransactionController : Controller
     {
         private readonly IPaymentTransactionQueryService paymentTransactionQueryService;

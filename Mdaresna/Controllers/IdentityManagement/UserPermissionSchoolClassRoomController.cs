@@ -11,12 +11,14 @@ using Mdaresna.Repository.IServices.IdentityManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Repository.IServices.UserManagement.Query;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security;
 
 namespace Mdaresna.Controllers.IdentityManagement
 {
     [Route("UserPermissionSchoolClassroom")]
+    [Authorize]
     public class UserPermissionSchoolClassRoomController : Controller
     {
         private readonly IUserPermissionSchoolClassRoomCommandService userPermissionSchoolClassRoomCommandService;

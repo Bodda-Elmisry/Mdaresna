@@ -3,11 +3,13 @@ using Mdaresna.DTOs.CoinsManagementDTO;
 using Mdaresna.DTOs.Common;
 using Mdaresna.Repository.IServices.CoinsManagement.Command;
 using Mdaresna.Repository.IServices.CoinsManagement.Query;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers.CoinsManagement
 {
     [Route("CoinType")]
+    [Authorize]
     public class CoinTypeController : Controller
     {
         private readonly ICoinTypeCommandService coinTypeCommandService;

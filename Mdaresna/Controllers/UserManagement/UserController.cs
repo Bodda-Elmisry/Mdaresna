@@ -8,9 +8,11 @@ using Mdaresna.Repository.IServices.UserManagement.Command;
 using Mdaresna.Repository.IServices.UserManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Mdaresna.Controllers.UserManagement
 {
+    [Authorize]
     [Route("API/User")]
     public class UserController : Controller
     {
@@ -33,6 +35,16 @@ namespace Mdaresna.Controllers.UserManagement
             this.context = context;
         }
 
+        private Guid CurrentUserId
+        {
+            get
+            {
+                var userIdClaim = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub) 
+                                  ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                return userIdClaim != null ? Guid.Parse(userIdClaim.Value) : Guid.Empty;
+            }
+        }
+
         [HttpPost("CreateUser")]
         public IActionResult CreateUser(User user)
         {
@@ -53,6 +65,11 @@ namespace Mdaresna.Controllers.UserManagement
         {
             try
             {
+                if (dTO.Id != CurrentUserId)
+                {
+                    return Forbid();
+                }
+
                 var user = await userQueryService.GetByIdAsync(dTO.Id);
 
                 if (user == null)
@@ -89,6 +106,11 @@ namespace Mdaresna.Controllers.UserManagement
         {
             try
             {
+                if (dTO.UserId != CurrentUserId)
+                {
+                    return Forbid();
+                }
+
                 var user = await userQueryService.GetByIdAsync(dTO.UserId);
 
                 if (user == null)
@@ -145,6 +167,11 @@ namespace Mdaresna.Controllers.UserManagement
         {
             try
             {
+                if (dTO.UserId != CurrentUserId)
+                {
+                    return Forbid();
+                }
+
                 var user = await userQueryService.GetByIdAsync(dTO.UserId);
 
                 if (user == null)
@@ -171,6 +198,8 @@ namespace Mdaresna.Controllers.UserManagement
                 {
                     return BadRequest("Report cannot be null");
                 }
+
+                report.ReporterUserId = CurrentUserId;
 
                 if (report.ReporterUserId == Guid.Empty || report.ReportedUserId == Guid.Empty)
                 {
@@ -224,6 +253,8 @@ namespace Mdaresna.Controllers.UserManagement
                 {
                     return BadRequest("Block request cannot be null");
                 }
+
+                block.BlockerUserId = CurrentUserId;
 
                 if (block.BlockerUserId == Guid.Empty || block.BlockedUserId == Guid.Empty)
                 {
@@ -287,6 +318,11 @@ namespace Mdaresna.Controllers.UserManagement
         {
             try
             {
+                if (dTO.UserId != CurrentUserId)
+                {
+                    return Forbid();
+                }
+
                 if (dTO.UserId == Guid.Empty)
                 {
                     return BadRequest("User ID cannot be empty");
@@ -331,6 +367,11 @@ namespace Mdaresna.Controllers.UserManagement
         {
             try
             {
+                if (dTO.UserId != CurrentUserId)
+                {
+                    return Forbid();
+                }
+
                 if (dTO.UserId == Guid.Empty)
                 {
                     return BadRequest("User ID cannot be empty");

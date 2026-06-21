@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO;
@@ -14,9 +14,12 @@ using Mdaresna.Repository.MainDB.DTOs;
 using Mdaresna.Repository.MainDB.IServices;
 using Microsoft.AspNetCore.Mvc;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 {
     [Route("api/School")]
+    [Authorize]
     public class SchoolController : Controller
     {
         private readonly ISchoolCommandService schoolCommandService;

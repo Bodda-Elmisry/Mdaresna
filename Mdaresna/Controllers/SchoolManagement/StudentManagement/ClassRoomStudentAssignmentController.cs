@@ -2,15 +2,13 @@ using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.StudentManagement;
 using Mdaresna.DTOs.SchoolManagementDTO.StudentManagementDTO;
-using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Command;
-using Mdaresna.Infrastructure.Services.SchoolManagement.StudentManagement.Query;
+using Mdaresna.Middlewares;
 using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Mdaresna.Middlewares;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 {

@@ -11,9 +11,11 @@ using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Mdaresna.Helpers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 {
+    [Authorize]
     [Route("SchoolPost")]
     public class SchoolPostController : Controller
     {
@@ -40,6 +42,16 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             this.appSettings = appSettings.Value;
         }
 
+        private Guid CurrentUserId
+        {
+            get
+            {
+                var userIdClaim = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub) 
+                                  ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                return userIdClaim != null ? Guid.Parse(userIdClaim.Value) : Guid.Empty;
+            }
+        }
+
         [HttpPost("AddPost")]
         public async Task<IActionResult> AddPost([FromForm] AddSchoolPostDTO post)
         {
@@ -47,6 +59,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             {
                 return BadRequest("Post cannot be null");
             }
+
+            post.PosterId = CurrentUserId;
 
             var moderationDecision = SchoolPostModerationHelper.Evaluate(
                 post.Content,
@@ -106,6 +120,8 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             {
                 return BadRequest("Report cannot be null");
             }
+
+            report.UserId = CurrentUserId;
 
             if (report.PostId == Guid.Empty || report.UserId == Guid.Empty)
             {

@@ -20,9 +20,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 {
     [Route("SchoolTeacher")]
+    [Authorize]
     public class SchoolTeacherController : Controller
     {
         private readonly ISchoolTeacherCommandService schoolTeacherCommandService;

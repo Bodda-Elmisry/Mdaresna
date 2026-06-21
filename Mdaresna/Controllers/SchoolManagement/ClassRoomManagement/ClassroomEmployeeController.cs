@@ -1,13 +1,16 @@
-﻿using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
+using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.ClassRoomManagementDTO;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
 {
     [Route("ClassroomEmployee")]
+    [Authorize]
     public class ClassroomEmployeeController : Controller
     {
         private readonly IClassroomEmployeeQueryService classroomEmployeeQueryService;

@@ -1,10 +1,12 @@
 ﻿using Mdaresna.Doamin.DTOs.ReportingDTOs.StudentWeeklyReportDTOs;
 using Mdaresna.Repository.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers
 {
     [Route("Reporting")]
+    [Authorize]
     public class ReportingController : Controller
     {
         private readonly IReportingService reportingService;

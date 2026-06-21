@@ -1,13 +1,16 @@
-﻿using Mdaresna.Doamin.Models.UserManagement;
+using Mdaresna.Doamin.Models.UserManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.StudentManagementDTO;
 using Mdaresna.Repository.IServices.UserManagement.Command;
 using Mdaresna.Repository.IServices.UserManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 {
     [Route("RelationType")]
+    [Authorize]
     public class RelationTypeController : Controller
     {
         private readonly IRelationTypeQueryService relationTypeQueryService;

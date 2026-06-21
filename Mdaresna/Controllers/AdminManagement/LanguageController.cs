@@ -3,12 +3,14 @@ using Mdaresna.DTOs.AdminManagementDTO;
 using Mdaresna.DTOs.Common;
 using Mdaresna.Repository.IServices.AdminManagement.Command;
 using Mdaresna.Repository.IServices.AdminManagement.Query;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace Mdaresna.Controllers.AdminManagement
 {
     [Route("Language")]
+    [Authorize]
     public class LanguageController : Controller
     {
         private readonly ILanguageQueryService languageQueryService;

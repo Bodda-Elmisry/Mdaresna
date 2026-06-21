@@ -3,11 +3,13 @@ using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.IdentityDTO;
 using Mdaresna.Repository.IServices.IdentityManagement.Command;
 using Mdaresna.Repository.IServices.IdentityManagement.Query;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers.IdentityManagement
 {
     [Route("Role")]
+    [Authorize]
     public class RoleController : Controller
     {
         private readonly IRoleCommandService roleCommandService;

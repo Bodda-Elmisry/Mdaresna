@@ -8,6 +8,7 @@ using Mdaresna.Repository.IServices.UserManagement.Query;
 using Mdaresna.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Mdaresna.Controllers.IdentityManagement
 {
@@ -28,6 +29,16 @@ namespace Mdaresna.Controllers.IdentityManagement
             this.userCommandService = userCommandService;
             this.userQueryService = userQueryService;
             this.context = context;
+        }
+
+        private Guid CurrentUserId
+        {
+            get
+            {
+                var userIdClaim = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub) 
+                                  ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                return userIdClaim != null ? Guid.Parse(userIdClaim.Value) : Guid.Empty;
+            }
         }
 
         [HttpPost("Register")]
@@ -79,6 +90,20 @@ namespace Mdaresna.Controllers.IdentityManagement
         {
             try
             {
+                if (userMainInfo == null)
+                {
+                    return BadRequest("UserMainInfo cannot be null");
+                }
+
+                var existingUser = await userQueryService.GetByIdAsync(userMainInfo.Id);
+                if (existingUser != null && !string.IsNullOrEmpty(existingUser.Password))
+                {
+                    if (CurrentUserId == Guid.Empty || userMainInfo.Id != CurrentUserId)
+                    {
+                        return Forbid();
+                    }
+                }
+
                 var user = new User
                 {
                     Id = userMainInfo.Id,
@@ -99,11 +124,17 @@ namespace Mdaresna.Controllers.IdentityManagement
             }
         }
 
+        [Authorize]
         [HttpPost("ChangePassword")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO dTO)
         {
             try
             {
+                if (dTO.Id != CurrentUserId)
+                {
+                    return Forbid();
+                }
+
                 var result = await identityService.ChangePassword(dTO.Id, dTO.OldPassword, dTO.NewPassword);
                 return result.Saved ? Ok("Password changed") : BadRequest(result.MSG);
             }
@@ -178,11 +209,17 @@ namespace Mdaresna.Controllers.IdentityManagement
             }
         }
 
+        [Authorize]
         [HttpPost("DeleteAccount")]
         public async Task<IActionResult> DeleteAccount([FromBody] UserIdDTO idDTO)
         {
             try
             {
+                if (idDTO.UserId != CurrentUserId)
+                {
+                    return Forbid();
+                }
+
                 var user = await userQueryService.GetByIdAsync(idDTO.UserId);
                 if (user == null)
                     return BadRequest("User not exist to delete");

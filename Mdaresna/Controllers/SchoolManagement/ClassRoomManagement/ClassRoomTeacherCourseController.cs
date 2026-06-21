@@ -1,21 +1,20 @@
 ﻿using Mdaresna.Doamin.DTOs.ClassRoomManagement;
 using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement;
-using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.ClassRoomManagementDTO;
-using Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Query;
-using Mdaresna.Infrastructure.Services.UserManagement.Query;
 using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.ClassRoomManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Repository.IServices.UserManagement.Query;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
 {
     [Route("ClassRoomTeacherCourse")]
+    [Authorize]
     public class ClassRoomTeacherCourseController : Controller
     {
         private readonly IClassRoomTeacherCourseQueryService classRoomTeacherCourseQueryService;

@@ -2,16 +2,12 @@ using Mdaresna.Doamin.DTOs.StudentManagement;
 using Mdaresna.Doamin.Enums;
 using Mdaresna.Repository.IFactories;
 using Mdaresna.Repository.IServices.IdentityManagement.Query;
-using Mdaresna.Repository.IServices.UserManagement.Query;
+using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
-using Microsoft.AspNetCore.Mvc;
+using Mdaresna.Repository.IServices.UserManagement.Query;
 using Microsoft.AspNetCore.Authorization;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
+using Microsoft.AspNetCore.Mvc;
 
 
 namespace Mdaresna.Controllers.SchoolManagement.StudentManagement

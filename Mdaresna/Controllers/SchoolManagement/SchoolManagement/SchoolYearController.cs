@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.DTOs.SchoolManagement;
+using Mdaresna.Doamin.DTOs.SchoolManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO;
@@ -8,9 +8,12 @@ using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 {
     [Route("SchoolYear")]
+    [Authorize]
     public class SchoolYearController : Controller
     {
         private readonly ISchoolYearQueryService schoolYearQueryService;

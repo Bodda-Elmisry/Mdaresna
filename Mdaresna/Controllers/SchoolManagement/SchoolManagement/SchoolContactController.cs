@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Helpers;
+using Mdaresna.Doamin.Helpers;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.DTOs.SchoolManagementDTO.SchoolManagementDTO;
@@ -6,9 +6,12 @@ using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 {
     [Route("SchoolContact")]
+    [Authorize]
     public class SchoolContactController : Controller
     {
         private readonly ISchoolContactCommandService schoolContactCommandService;

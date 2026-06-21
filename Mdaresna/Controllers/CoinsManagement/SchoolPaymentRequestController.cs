@@ -9,11 +9,13 @@ using Mdaresna.Repository.IServices.IdentityManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Repository.IServices.UserManagement.Query;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers.CoinsManagement
 {
     [Route("SchoolPaymentRequest")]
+    [Authorize]
     public class SchoolPaymentRequestController : Controller
     {
         private readonly ISchoolPaymentRequestCommandService schoolPaymentRequestCommandService;

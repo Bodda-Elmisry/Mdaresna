@@ -1,11 +1,12 @@
 using Mdaresna.DTOs.SettingsManagementDTO;
 using Mdaresna.Repository.IServices.SettingsManagement.Query;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
 
 namespace Mdaresna.Controllers.SettingsManagement
 {
     [Route("SMSLog")]
+    [Authorize]
     public class SMSLogController : Controller
     {
         private readonly ISMSLogQueryService smsLogQueryService;

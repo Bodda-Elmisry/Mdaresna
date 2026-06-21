@@ -14,9 +14,12 @@ using Mdaresna.Repository.IServices.UserManagement.Query;
 using Mdaresna.Repository.IUnitOfWork;
 using Microsoft.AspNetCore.Mvc;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
 {
     [Route("Student")]
+    [Authorize]
     public class StudentController : Controller
     {
         private readonly IStudentCommandService studentCommandService;

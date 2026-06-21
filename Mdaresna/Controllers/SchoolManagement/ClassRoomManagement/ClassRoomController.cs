@@ -10,9 +10,12 @@ using Mdaresna.Repository.IServices.SchoolManagement.StudentManagement.Query;
 using Mdaresna.Repository.IServices.UserManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
 {
     [Route("ClassRoom")]
+    [Authorize]
     public class ClassRoomController : Controller
     {
         private readonly IClassRoomQueryService classRoomQueryService;

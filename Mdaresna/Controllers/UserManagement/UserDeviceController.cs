@@ -1,12 +1,13 @@
-﻿using Mdaresna.Doamin.Models.UserManagement;
-using Mdaresna.DTOs.Common;
+using Mdaresna.Doamin.Models.UserManagement;
 using Mdaresna.DTOs.UserManagementDTO;
 using Mdaresna.Repository.IServices.UserManagement.Command;
 using Mdaresna.Repository.IServices.UserManagement.Query;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Controllers.UserManagement
 {
+    [Authorize]
     [Route("UserDevice")]
     public class UserDeviceController : Controller
     {
@@ -19,6 +20,16 @@ namespace Mdaresna.Controllers.UserManagement
             this.userDeviceQueryService = userDeviceQueryService;
         }
 
+        private Guid CurrentUserId
+        {
+            get
+            {
+                var userIdClaim = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub) 
+                                  ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                return userIdClaim != null ? Guid.Parse(userIdClaim.Value) : Guid.Empty;
+            }
+        }
+
         [HttpPost("Create")]
         public async Task<IActionResult> Create([FromBody] DeviceRegistrationDto dto)
         {
@@ -28,6 +39,8 @@ namespace Mdaresna.Controllers.UserManagement
                 {
                     return BadRequest("UserDevice cannot be null");
                 }
+
+                dto.UserId = CurrentUserId;
 
                 var existingDevice = await userDeviceQueryService.GetByDeviceIdAsync(dto.DeviceId);
                 if (existingDevice != null)
@@ -82,14 +95,19 @@ namespace Mdaresna.Controllers.UserManagement
         {
             try
             {
-                
+                if (dto == null)
+                {
+                    return BadRequest("DTO cannot be null");
+                }
+
+                dto.UserId = CurrentUserId;
+
                 var userDevice = await userDeviceQueryService.GetByUserIdAndFcmTockenAsync(dto.UserId, dto.FcmTocken);
 
                 if (userDevice == null)
                 {
                     return BadRequest("UserDevice cannot be null");
                 }
-
 
                 var result = await userDeviceCommandService.DeleteAsync(userDevice);
                 if (result)
@@ -106,6 +124,5 @@ namespace Mdaresna.Controllers.UserManagement
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
     }
 }
