@@ -14,7 +14,7 @@ namespace Mdaresna.Repository.Helpers
             Timeout = TimeSpan.FromSeconds(8)
         };
 
-        public static async Task<string> SendConfirmationKey(SMSProvider provider, User user)
+        public static async Task<string> SendConfirmationKey(SMSProvider provider, User user, string plainKey)
         {
             string response = string.Empty;
             try
@@ -26,7 +26,7 @@ namespace Mdaresna.Repository.Helpers
                     provider.ProviderPassword,
                     provider.SenderName,
                     user.PhoneNumber,
-                    BuildConfirmationMessage(user)
+                    BuildConfirmationMessage(user, plainKey)
                     );
 
                 Console.WriteLine($"SMS Url = {url}");
@@ -65,9 +65,9 @@ namespace Mdaresna.Repository.Helpers
             return key;
         }
 
-        public static string BuildConfirmationMessage(User user)
+        public static string BuildConfirmationMessage(User user, string plainKey)
         {
-            return string.Format("Welcome to Mdaresna\n Your Key: {0}", user.PhoneConfirmationCode);
+            return string.Format("Welcome to Mdaresna\n Your Key: {0}", plainKey);
         }
     }
 }

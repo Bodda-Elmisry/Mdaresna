@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -59,6 +59,22 @@ namespace Mdaresna.Repository.Helpers
             return Encoding.Unicode.GetString(ms.ToArray());
         }
 
+        public static string HashConfirmationCode(string code)
+        {
+            if (string.IsNullOrEmpty(code))
+                return string.Empty;
 
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] bytes = Encoding.UTF8.GetBytes(code);
+                byte[] hash = sha256.ComputeHash(bytes);
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < hash.Length; i++)
+                {
+                    sb.Append(hash[i].ToString("x2"));
+                }
+                return sb.ToString();
+            }
+        }
     }
 }

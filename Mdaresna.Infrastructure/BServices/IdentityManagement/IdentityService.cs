@@ -77,6 +77,7 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
         {
             var result = new RegisterResultDTO { MSG = string.Empty };
 
+            string? plainKey = null;
             var user = await userQueryService.GetUserByPhoneNumber(RegisterUser.PhoneNumber);
             if (user != null)
             {
@@ -89,7 +90,8 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                 else
                 {
                     // User exists but phone is not confirmed. Generate a new OTP and update.
-                    user.PhoneConfirmationCode = SMSHelper.GenerateConfirmationKey();
+                    plainKey = SMSHelper.GenerateConfirmationKey();
+                    user.PhoneConfirmationCode = UserHelper.HashConfirmationCode(plainKey);
                     userCommandService.Update(user);
 
                     RegisterUser.Id = user.Id;
@@ -101,15 +103,16 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             else
             {
                 // New user
-                RegisterUser.PhoneConfirmationCode = SMSHelper.GenerateConfirmationKey();
+                plainKey = SMSHelper.GenerateConfirmationKey();
+                RegisterUser.PhoneConfirmationCode = UserHelper.HashConfirmationCode(plainKey);
                 RegisterUser.EncriptionKey = UserHelper.GenerateEncriptionKey(32);
                 result.Regidterd = userCommandService.Create(RegisterUser);
             }
 
-            if (result.Regidterd)
+            if (result.Regidterd && plainKey != null)
             {
                 var addStanderdRole = await AddStanderdRoleToUser(RegisterUser.Id);
-                result.MSG = await SendConferamtionKey(RegisterUser);
+                result.MSG = await SendConferamtionKey(RegisterUser, plainKey);
             }
 
             return result;
@@ -138,12 +141,12 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             return result;
         }
 
-        private async Task<string> SendConferamtionKey(User user)
+        private async Task<string> SendConferamtionKey(User user, string plainKey)
         {
             var smsProvider = await sMSProviderQueryService.GetFirstActive();
             string MSG;
-            MSG = await SMSHelper.SendConfirmationKey(smsProvider, user);
-            var message = SMSHelper.BuildConfirmationMessage(user);
+            MSG = await SMSHelper.SendConfirmationKey(smsProvider, user, plainKey);
+            var message = SMSHelper.BuildConfirmationMessage(user, plainKey);
             smsLogCommandService.Create(new Mdaresna.Doamin.Models.SettingsManagement.SMSLog
             {
                 SMSProviderId = smsProvider?.Id,
@@ -165,16 +168,20 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                 User = null
             };
 
-            var user = await userQueryService.GetUserByPhoneNumberAndConfirmationKey(PhoneNumber, Key);
-            if (user != null)
+            var user = await userQueryService.GetUserByPhoneNumber(PhoneNumber);
+            if (user != null && !string.IsNullOrEmpty(user.PhoneConfirmationCode))
             {
-                user.PhoneConfirmed = true;
-                user.PhoneConfirmationCode = null;
-                result.Confirmed = userCommandService.Update(user);
-                if(result.Confirmed)
+                var hashedInputKey = UserHelper.HashConfirmationCode(Key);
+                if (user.PhoneConfirmationCode == hashedInputKey)
                 {
-                    result.MSG = "Number Confirmed";
-                    result.User = user;
+                    user.PhoneConfirmed = true;
+                    user.PhoneConfirmationCode = null;
+                    result.Confirmed = userCommandService.Update(user);
+                    if(result.Confirmed)
+                    {
+                        result.MSG = "Number Confirmed";
+                        result.User = user;
+                    }
                 }
             }
 
@@ -281,13 +288,11 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
 
             if(user != null)
             {
-                if (string.IsNullOrEmpty(user.PhoneConfirmationCode))
-                {
-                    user.PhoneConfirmationCode = SMSHelper.GenerateConfirmationKey();
-                    userCommandService.Update(user);
-                }
+                var plainKey = SMSHelper.GenerateConfirmationKey();
+                user.PhoneConfirmationCode = UserHelper.HashConfirmationCode(plainKey);
+                userCommandService.Update(user);
 
-                var confirmationKey = await this.SendConferamtionKey(user);
+                var confirmationKey = await this.SendConferamtionKey(user, plainKey);
                 if(!string.IsNullOrEmpty(confirmationKey))
                 {
                     result.ConfermationKeySent = true;
