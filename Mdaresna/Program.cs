@@ -165,6 +165,7 @@ namespace Mdaresna
 
             app.UseMiddleware<SetAppUrlMiddleware>();
             app.UseMiddleware<VpnBlockingMiddleware>();
+            app.UseMiddleware<AppCheckMiddleware>();
 
             app.UseStaticFiles(new StaticFileOptions
             {
