@@ -209,6 +209,25 @@ namespace Mdaresna.Controllers.IdentityManagement
             }
         }
 
+        [HttpPost("Logout")]
+        public async Task<IActionResult> Logout([FromBody] RefreshTokenDTO dTO)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(dTO.RefreshToken))
+                {
+                    return BadRequest("Refresh token cannot be empty");
+                }
+
+                await identityService.Logout(dTO.RefreshToken);
+                return Ok("Logged out successfully");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [Authorize]
         [HttpPost("DeleteAccount")]
         public async Task<IActionResult> DeleteAccount([FromBody] UserIdDTO idDTO)

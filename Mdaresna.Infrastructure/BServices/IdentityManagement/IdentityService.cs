@@ -242,6 +242,21 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                     {
                         result.Saved = true;
                         result.MSG = string.Empty;
+
+                        try
+                        {
+                            var activeTokens = (await userRefreshTokenQueryService.GetAllAsync())
+                                               .Where(t => t.UserId == userId && !t.IsRevoked);
+                            foreach (var token in activeTokens)
+                            {
+                                token.IsRevoked = true;
+                                userRefreshTokenCommandService.Update(token);
+                            }
+                        }
+                        catch
+                        {
+                            // Soft failure: do not block password update if token revocation fails
+                        }
                     }
                     else
                     {
@@ -303,6 +318,21 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                 {
                     result.MSG = string.Empty;
                     result.PasswordChanged = true;
+
+                    try
+                    {
+                        var activeTokens = (await userRefreshTokenQueryService.GetAllAsync())
+                                           .Where(t => t.UserId == userId && !t.IsRevoked);
+                        foreach (var token in activeTokens)
+                        {
+                            token.IsRevoked = true;
+                            userRefreshTokenCommandService.Update(token);
+                        }
+                    }
+                    catch
+                    {
+                        // Soft failure
+                    }
                 }
             }
 
@@ -421,6 +451,17 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
 
             // Generate new token & new refresh token
             return await GetUserInfo(user, null);
+        }
+
+        public async Task<bool> Logout(string token)
+        {
+            var storedToken = await userRefreshTokenQueryService.GetByTokenAsync(token);
+            if (storedToken != null)
+            {
+                storedToken.IsRevoked = true;
+                return userRefreshTokenCommandService.Update(storedToken);
+            }
+            return false;
         }
 
     }
