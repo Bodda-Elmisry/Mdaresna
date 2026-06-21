@@ -68,5 +68,7 @@ namespace Mdaresna.Doamin.Models.UserManagement
 
         public bool DemoAccount { get; set; } = true;
 
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string? Token { get; set; }
     }
 }

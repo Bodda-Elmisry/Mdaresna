@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.CoinsManagement;
 using Mdaresna.DTOs.CoinsManagementDTO;
 using Mdaresna.DTOs.Common;
@@ -27,6 +27,7 @@ namespace Mdaresna.Controllers.CoinsManagement
         private readonly IUserPermissionQueryService userPermissionQueryService;
         private readonly INotificationFactory notificationFactory;
         private readonly IUserDeviceQueryService userDeviceQueryService;
+        private readonly ISchoolAccessValidator schoolAccessValidator;
 
         public SchoolPaymentRequestController(ISchoolPaymentRequestCommandService schoolPaymentRequestCommandService,
                                               ISchoolPaymentRequestQueryService schoolPaymentRequestQueryService,
@@ -36,7 +37,8 @@ namespace Mdaresna.Controllers.CoinsManagement
                                               ICoinTypeQueryService coinTypeQueryService,
                                               IUserPermissionQueryService userPermissionQueryService,
                                               INotificationFactory notificationFactory,
-                                              IUserDeviceQueryService userDeviceQueryService)
+                                              IUserDeviceQueryService userDeviceQueryService,
+                                              ISchoolAccessValidator schoolAccessValidator)
         {
             this.schoolPaymentRequestCommandService = schoolPaymentRequestCommandService;
             this.schoolPaymentRequestQueryService = schoolPaymentRequestQueryService;
@@ -47,6 +49,26 @@ namespace Mdaresna.Controllers.CoinsManagement
             this.userPermissionQueryService = userPermissionQueryService;
             this.notificationFactory = notificationFactory;
             this.userDeviceQueryService = userDeviceQueryService;
+            this.schoolAccessValidator = schoolAccessValidator;
+        }
+
+        private Guid CurrentUserId
+        {
+            get
+            {
+                var userIdClaim = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub) 
+                                   ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                return userIdClaim != null ? Guid.Parse(userIdClaim.Value) : Guid.Empty;
+            }
+        }
+
+        private bool IsApplicationManager
+        {
+            get
+            {
+                var userTypeClaim = User.FindFirst("user_type");
+                return userTypeClaim != null && userTypeClaim.Value == ((int)UserTypeEnum.ApplicationManager).ToString();
+            }
         }
 
         [HttpPost("GetRequests")]
@@ -54,6 +76,11 @@ namespace Mdaresna.Controllers.CoinsManagement
         {
             try
             {
+                if (!IsApplicationManager && (!dTO.SchoolId.HasValue || !await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, dTO.SchoolId.Value)))
+                {
+                    return Forbid();
+                }
+
                 var requests = await schoolPaymentRequestQueryService.GetSchoolPaymentRequestsListAsync(dTO.RequestDateFrom,
                                                                                                         dTO.RequestDateTo,
                                                                                                         dTO.TransfareCode,
@@ -78,6 +105,17 @@ namespace Mdaresna.Controllers.CoinsManagement
         {
             try
             {
+                var requestEntity = await schoolPaymentRequestQueryService.GetByIdAsync(dTO.RequestId);
+                if (requestEntity == null)
+                {
+                    return BadRequest("Request not found");
+                }
+
+                if (!IsApplicationManager && !await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, requestEntity.SchoolId))
+                {
+                    return Forbid();
+                }
+
                 var request = await schoolPaymentRequestQueryService.GetSchoolPaymentRequestViewAsync(dTO.RequestId);
 
                 return Ok(request);
@@ -95,6 +133,11 @@ namespace Mdaresna.Controllers.CoinsManagement
 
             try
             {
+                if (!IsApplicationManager && !await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, dTO.SchoolId))
+                {
+                    return Forbid();
+                }
+
                 var request = new SchoolPaymentRequest
                 {
                     RequestDate = dTO.RequestDate,
@@ -103,8 +146,8 @@ namespace Mdaresna.Controllers.CoinsManagement
                     TransfareAmount = dTO.TransfareAmount,
                     PaymentTypeId = dTO.PaymentTypeId,
                     SchoolId = dTO.SchoolId,
-                    Approvied = dTO.Approvied,
-                    ApproviedById = dTO.ApproviedById
+                    Approvied = null,
+                    ApproviedById = null
                 };
 
                 var added = schoolPaymentRequestCommandService.Create(request);
@@ -130,6 +173,11 @@ namespace Mdaresna.Controllers.CoinsManagement
 
                 if (request == null)
                     return BadRequest("There is no request to update");
+
+                if (!IsApplicationManager && !await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, request.SchoolId))
+                {
+                    return Forbid();
+                }
 
                 if (request.Approvied != null)
                     return BadRequest("Can't update request because it's already reviewd");
@@ -158,6 +206,11 @@ namespace Mdaresna.Controllers.CoinsManagement
         {
             try
             {
+                if (!IsApplicationManager)
+                {
+                    return Forbid();
+                }
+
                 var request = await schoolPaymentRequestQueryService.GetByIdAsync(dTO.RequestId);
 
                 if (request == null)
@@ -193,7 +246,7 @@ namespace Mdaresna.Controllers.CoinsManagement
                 var schoolUpdated = schoolCommandService.Update(school);
 
                 request.Approvied = true;
-                request.ApproviedById = Guid.Parse(dTO.ToId);
+                request.ApproviedById = CurrentUserId;
 
                 var approved = schoolPaymentRequestCommandService.Update(request);
 
@@ -226,13 +279,18 @@ namespace Mdaresna.Controllers.CoinsManagement
         {
             try
             {
+                if (!IsApplicationManager)
+                {
+                    return Forbid();
+                }
+
                 var request = await schoolPaymentRequestQueryService.GetByIdAsync(dTO.RequestId);
 
                 if (request == null)
                     return BadRequest("There is no request to reject");
 
                 request.Approvied = false;
-                request.ApproviedById = dTO.RejectedById;
+                request.ApproviedById = CurrentUserId;
 
                 var updated = schoolPaymentRequestCommandService.Update(request);
 
@@ -256,6 +314,11 @@ namespace Mdaresna.Controllers.CoinsManagement
 
                 if (request == null)
                     return BadRequest("There is no request to delete");
+
+                if (!IsApplicationManager && !await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, request.SchoolId))
+                {
+                    return Forbid();
+                }
 
                 if (request.Approvied != null)
                     return BadRequest("Can't delete request because it's already reviewd");
@@ -285,6 +348,11 @@ namespace Mdaresna.Controllers.CoinsManagement
                 if (request == null)
                     return BadRequest("There is no request to delete");
 
+                if (!IsApplicationManager && !await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, request.SchoolId))
+                {
+                    return Forbid();
+                }
+
                 request.Deleted = true;
 
                 var deleted = schoolPaymentRequestCommandService.Update(request);
@@ -295,9 +363,6 @@ namespace Mdaresna.Controllers.CoinsManagement
             {
                 return BadRequest(ex.Message);
             }
-
-
-
         }
     }
 }

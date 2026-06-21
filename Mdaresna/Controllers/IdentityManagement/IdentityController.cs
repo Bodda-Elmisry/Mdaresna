@@ -161,11 +161,17 @@ namespace Mdaresna.Controllers.IdentityManagement
             }
         }
 
+        [Authorize]
         [HttpPost("AddUserNewPassword")]
         public async Task<IActionResult> AddUserNewPassword([FromBody] AddUserNewPasswordDTO dTO)
         {
             try
             {
+                if (dTO.UserId != CurrentUserId)
+                {
+                    return Forbid();
+                }
+
                 var result = await identityService.AddUserNewPassword(dTO.UserId, dTO.Password);
 
                 return result.PasswordChanged ? Ok("Password Changed") : BadRequest(result.MSG);

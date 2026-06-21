@@ -179,6 +179,7 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                     result.Confirmed = userCommandService.Update(user);
                     if(result.Confirmed)
                     {
+                        user.Token = GenerateTempToken(user);
                         result.MSG = "Number Confirmed";
                         result.User = user;
                     }
@@ -467,6 +468,33 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                 return userRefreshTokenCommandService.Update(storedToken);
             }
             return false;
+        }
+
+        private string GenerateTempToken(User user)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwtSection = configuration.GetSection("Jwt");
+            var keyBytes = Encoding.UTF8.GetBytes(jwtSection["Key"] ?? "MdaresnaAPISecretKeyMustBeVeryLong32Chars!");
+
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName ?? string.Empty),
+                new Claim(ClaimTypes.MobilePhone, user.PhoneNumber ?? string.Empty),
+                new Claim("user_type", ((int)user.UserType).ToString()),
+            };
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddMinutes(15), // Short-lived (15 minutes) token for registration/reset completion
+                Issuer = jwtSection["Issuer"],
+                Audience = jwtSection["Audience"],
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(keyBytes), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var tokenObj = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(tokenObj);
         }
 
     }

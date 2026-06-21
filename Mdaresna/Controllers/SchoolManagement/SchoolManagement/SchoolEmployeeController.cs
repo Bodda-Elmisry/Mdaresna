@@ -36,6 +36,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
     {
         private readonly ISchoolEmployeeCommandService schoolEmployeeCommandService;
         private readonly ISchoolEmployeeQueryService schoolEmployeeQueryService;
+        private readonly ISchoolTeacherQueryService schoolTeacherQueryService;
         private readonly IUserRoleCommandService userRoleCommandService;
         private readonly IUserRoleQueryService userRoleQueryService;
         private readonly IUserPermissionCommandService userPermissionCommandService;
@@ -54,6 +55,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 
         public SchoolEmployeeController(ISchoolEmployeeCommandService schoolEmployeeCommandService,
                                         ISchoolEmployeeQueryService schoolEmployeeQueryService,
+                                        ISchoolTeacherQueryService schoolTeacherQueryService,
                                         IUserRoleCommandService userRoleCommandService,
                                         IUserRoleQueryService userRoleQueryService,
                                         IUserPermissionCommandService userPermissionCommandService,
@@ -72,6 +74,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             this.schoolEmployeeCommandService = schoolEmployeeCommandService;
             this.schoolEmployeeQueryService = schoolEmployeeQueryService;
+            this.schoolTeacherQueryService = schoolTeacherQueryService;
             this.userRoleCommandService = userRoleCommandService;
             this.userRoleQueryService = userRoleQueryService;
             this.userPermissionCommandService = userPermissionCommandService;
@@ -101,6 +104,10 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 
                 if (schoolManagerRole != null)
                     return Conflict("School manager can't be assigned as employee");
+
+                var isTeacher = await schoolTeacherQueryService.isExist(dto.SchoolId, dto.EmployeeId);
+                if (isTeacher)
+                    return Conflict("User is already assigned as a teacher in this school. A user cannot be both a teacher and an employee.");
 
                 var teacher = await schoolEmployeeQueryService.GetSchoolEmployeeByIdAsync(dto.SchoolId, dto.EmployeeId);
 
