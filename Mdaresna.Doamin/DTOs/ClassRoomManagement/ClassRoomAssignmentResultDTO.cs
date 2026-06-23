@@ -23,6 +23,8 @@ namespace Mdaresna.Doamin.DTOs.ClassRoomManagement
         public Guid SupervisorId { get; set; }
         public string SupervisorName { get; set; } = string.Empty;
         public decimal Rate { get; set; }
+        public int AssignedStudentsCount { get; set; }
+        public int RatedStudentsCount { get; set; }
         public DateTime? CreateDate { get; set; }
         public DateTime? LastModifyDate { get; set; }
     }

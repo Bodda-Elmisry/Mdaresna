@@ -78,7 +78,14 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                 Month = e.Month.Name,
                 CourseId = e.CourseId,
                 CourseName = e.Course.Name,
-                Rate = e.Rate
+                Rate = e.Rate,
+                AssignedStudentsCount = context.ClassRoomStudentExams.Count(studentExam =>
+                    studentExam.ExamId == e.Id &&
+                    !studentExam.Deleted),
+                RatedStudentsCount = context.ClassRoomStudentExams.Count(studentExam =>
+                    studentExam.ExamId == e.Id &&
+                    !studentExam.Deleted &&
+                    studentExam.TotalResult.HasValue)
             }).ToListAsync();
 
             return result;
@@ -145,7 +152,14 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                 Month = result.Month.Name,
                 CourseId = result.CourseId,
                 CourseName = result.Course.Name,
-                Rate = result.Rate
+                Rate = result.Rate,
+                AssignedStudentsCount = await context.ClassRoomStudentExams.CountAsync(studentExam =>
+                    studentExam.ExamId == result.Id &&
+                    !studentExam.Deleted),
+                RatedStudentsCount = await context.ClassRoomStudentExams.CountAsync(studentExam =>
+                    studentExam.ExamId == result.Id &&
+                    !studentExam.Deleted &&
+                    studentExam.TotalResult.HasValue)
             } : null;
         }
 

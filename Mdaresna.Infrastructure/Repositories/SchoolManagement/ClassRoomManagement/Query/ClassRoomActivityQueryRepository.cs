@@ -72,6 +72,13 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                             ActivityDetails = c.Details,
                             WeekDay = c.WeekDay,
                             Rate = c.Rate,
+                            AssignedStudentsCount = context.ClassRoomStudentActivities.Count(studentActivity =>
+                                studentActivity.ActivityId == c.Id &&
+                                !studentActivity.Deleted),
+                            RatedStudentsCount = context.ClassRoomStudentActivities.Count(studentActivity =>
+                                studentActivity.ActivityId == c.Id &&
+                                !studentActivity.Deleted &&
+                                studentActivity.Result.HasValue),
                             CreateDate = c.CreateDate,
                             LastModifyDate = c.LastModifyDate,
                             ActivityDate = c.ActivityDate
@@ -103,6 +110,13 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                     ActivityDetails = item.Details,
                     WeekDay = item.WeekDay,
                     Rate = item.Rate,
+                    AssignedStudentsCount = await context.ClassRoomStudentActivities.CountAsync(studentActivity =>
+                        studentActivity.ActivityId == item.Id &&
+                        !studentActivity.Deleted),
+                    RatedStudentsCount = await context.ClassRoomStudentActivities.CountAsync(studentActivity =>
+                        studentActivity.ActivityId == item.Id &&
+                        !studentActivity.Deleted &&
+                        studentActivity.Result.HasValue),
                     CreateDate = item.CreateDate,
                     LastModifyDate = item.LastModifyDate,
                 } : null;

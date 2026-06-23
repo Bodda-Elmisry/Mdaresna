@@ -21,5 +21,7 @@ namespace Mdaresna.Doamin.DTOs.ClassRoomManagement
         public Guid CourseId { get; set; }
         public string CourseName { get; set; } = string.Empty;
         public decimal Rate { get; set; }
+        public int AssignedStudentsCount { get; set; }
+        public int RatedStudentsCount { get; set; }
     }
 }
