@@ -4,6 +4,7 @@
     {
         Current = 1,
         Last = 2,
-        BeforeLast = 3
+        BeforeLast = 3,
+        ThreeWeeksAgo = 4
     }
 }

@@ -279,6 +279,7 @@ namespace Mdaresna.Infrastructure.Services
                 ReportPeriodFilterEnum.Current => 0,
                 ReportPeriodFilterEnum.Last => 1,
                 ReportPeriodFilterEnum.BeforeLast => 2,
+                ReportPeriodFilterEnum.ThreeWeeksAgo => 3,
                 _ => 0
             };
 
