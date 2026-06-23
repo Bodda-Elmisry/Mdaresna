@@ -9,6 +9,7 @@
         public bool IsAttend { get; set; }
         public decimal ActivityRate { get; set; }
         public decimal StudentResult { get; set; }
+        public bool IsEvaluated { get; set; }
         public decimal Percintage { get { return ((this.StudentResult / this.ActivityRate) * 100); } }
         public string Details { get; set; } = string.Empty;
     }

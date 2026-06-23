@@ -10,6 +10,7 @@
         public string DeliveredDate { get; set; } = string.Empty;
         public decimal AssignmentRate { get; set; }
         public decimal StudentResult { get; set; }
+        public bool IsEvaluated { get; set; }
         public decimal Percintage { get { return ((this.StudentResult / this.AssignmentRate) * 100); } }
         public string Details { get; set; } = string.Empty;
 

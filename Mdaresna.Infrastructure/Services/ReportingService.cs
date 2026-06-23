@@ -175,6 +175,13 @@ namespace Mdaresna.Infrastructure.Services
                     var hasPermit = permitByDate.TryGetValue(currentDate.Date, out var permitValue);
                     var isAttend = hasAttendance && (attendanceValue!.AttendanceIsAttend ?? false);
                     var isAbsencePermit = !isAttend && hasPermit;
+                    var attendanceStatus = isAttend
+                        ? "Present"
+                        : isAbsencePermit
+                            ? "Permit"
+                            : hasAttendance
+                                ? "Absent"
+                                : "NotRegistered";
 
                     return new StudentAttendanceWeeklyReportResponseDTO
                     {
@@ -186,11 +193,7 @@ namespace Mdaresna.Infrastructure.Services
                         IsExcption = isAbsencePermit,
                         IsAbsencePermit = isAbsencePermit,
                         AbsencePermitReason = isAbsencePermit ? permitValue!.AbsencePermitReason : null,
-                        AttendanceStatus = isAttend
-                            ? "Present"
-                            : isAbsencePermit
-                                ? "Permit"
-                                : "Absent"
+                        AttendanceStatus = attendanceStatus
                     };
                 })
                 .ToList();
@@ -212,6 +215,7 @@ namespace Mdaresna.Infrastructure.Services
                         : string.Empty,
                     AssignmentRate = q.AssignmentRate ?? 0,
                     StudentResult = q.StudentResult ?? 0,
+                    IsEvaluated = q.IsDelivered == true,
                     Details = q.AssignmentDetails ?? string.Empty
                 })
                 .ToList();
@@ -230,6 +234,7 @@ namespace Mdaresna.Infrastructure.Services
                     IsAttend = q.ExamIsAttend ?? false,
                     ExamRate = q.ExamRate ?? 0,
                     StudentResult = q.StudentExamResult ?? 0,
+                    IsEvaluated = q.StudentExamResult.HasValue,
                     Details = q.ExamDetails ?? string.Empty
                 })
                 .ToList();
@@ -248,6 +253,7 @@ namespace Mdaresna.Infrastructure.Services
                     IsAttend = q.ActivityIsAttend ?? false,
                     ActivityRate = q.ActivityRate ?? 0,
                     StudentResult = q.StudentActivityResult ?? 0,
+                    IsEvaluated = q.StudentActivityResult.HasValue,
                     Details = q.ActivityDetails ?? string.Empty
                 })
                 .ToList();

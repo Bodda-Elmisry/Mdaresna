@@ -117,7 +117,7 @@ namespace Mdaresna.Infrastructure.Helpers
                        TeacherLastName = user != null ? user.LastName : null,
                        IsAttend = studentExam.IsAttend,
                        ExamRate = exam.Rate,
-                       StudentResult = studentExam.TotalResult ?? 0,
+                       StudentResult = studentExam.TotalResult,
                        Details = exam.Details
                    };
         }
@@ -154,7 +154,7 @@ namespace Mdaresna.Infrastructure.Helpers
                        TeacherLastName = user != null ? user.LastName : null,
                        IsAttend = studentActivity.IsAttend,
                        ExamRate = activity.Rate,
-                       StudentResult = studentActivity.Result ?? 0,
+                       StudentResult = studentActivity.Result,
                        Details = activity.Details
                    };
         }
@@ -218,7 +218,7 @@ namespace Mdaresna.Infrastructure.Helpers
             public bool? IsDelivered { get; set; }
             public DateTime? DeliveredDate { get; set; }
             public decimal AssignmentRate { get; set; }
-            public decimal StudentResult { get; set; }
+            public decimal? StudentResult { get; set; }
             public string? Details { get; set; }
         }
 
@@ -233,7 +233,7 @@ namespace Mdaresna.Infrastructure.Helpers
             public string? TeacherLastName { get; set; }
             public bool? IsAttend { get; set; }
             public decimal ExamRate { get; set; }
-            public decimal StudentResult { get; set; }
+            public decimal? StudentResult { get; set; }
             public string? Details { get; set; }
         }
 
@@ -248,7 +248,7 @@ namespace Mdaresna.Infrastructure.Helpers
             public string? TeacherLastName { get; set; }
             public bool? IsAttend { get; set; }
             public decimal ExamRate { get; set; }
-            public decimal StudentResult { get; set; }
+            public decimal? StudentResult { get; set; }
             public string? Details { get; set; }
         }
 
