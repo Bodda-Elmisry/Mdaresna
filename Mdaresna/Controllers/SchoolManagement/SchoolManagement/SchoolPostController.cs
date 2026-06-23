@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 {
-    [Authorize]
     [Route("SchoolPost")]
     public class SchoolPostController : Controller
     {
@@ -53,6 +52,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("AddPost")]
+        [Authorize]
         public async Task<IActionResult> AddPost([FromForm] AddSchoolPostDTO post)
         {
             if (post == null)
@@ -114,6 +114,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("ReportPost")]
+        [Authorize]
         public IActionResult ReportPost([FromBody] AddSchoolPostReportDTO report)
         {
             if (report == null)
@@ -254,6 +255,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpDelete("DeletePost")]
+        [Authorize]
         public async Task<IActionResult> DeletePost([FromBody] SchoolPostIdDTO dTO)
         {
             if (dTO.PostId == Guid.Empty)
@@ -273,6 +275,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("ApprovePost")]
+        [Authorize]
         public async Task<IActionResult> ApprovePost([FromBody] SchoolPostIdDTO dTO)
         {
             if (dTO.PostId == Guid.Empty)
@@ -299,6 +302,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpDelete("DeletePostReports")]
+        [Authorize]
         public async Task<IActionResult> DeletePostReports([FromBody] SchoolPostIdDTO dTO)
         {
             if (dTO.PostId == Guid.Empty)
@@ -341,6 +345,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("GetReportsList")]
+        [Authorize]
         public async Task<IActionResult> GetReportsList([FromBody] SchoolIdDTO dTO)
         {
             if (dTO.SchoolId == Guid.Empty)

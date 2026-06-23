@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Authorization;
 namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 {
     [Route("SchoolContact")]
-    [Authorize]
     public class SchoolContactController : Controller
     {
         private readonly ISchoolContactCommandService schoolContactCommandService;
@@ -45,6 +44,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("AddContact")]
+        [Authorize]
         public async Task<IActionResult> CreateContact([FromBody] CreateSchoolContactDTO createSchoolContactDTO)
         {
             try
@@ -70,6 +70,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("UpdateContact")]
+        [Authorize]
         public async Task<IActionResult> UpdateContact([FromBody] UpdateSchoolContactDTO updateSchoolContactDTO)
         {
             try
@@ -97,6 +98,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("DeleteContact")]
+        [Authorize]
         public async Task<IActionResult> DeleteSchoolContact([FromBody] SchoolContactIdDTO dto)
         {
             try

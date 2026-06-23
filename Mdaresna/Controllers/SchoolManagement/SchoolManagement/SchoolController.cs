@@ -19,7 +19,6 @@ using Microsoft.AspNetCore.Authorization;
 namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 {
     [Route("api/School")]
-    [Authorize]
     public class SchoolController : Controller
     {
         private readonly ISchoolCommandService schoolCommandService;
@@ -61,6 +60,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("AddSchool")]
+        [Authorize]
         public async Task<IActionResult> CreateNewSchool([FromBody] CreateSchoolDTO School)
         {
             try
@@ -116,6 +116,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("UpdateSchool")]
+        [Authorize]
         public async Task<IActionResult> UpdateSchoolInfo([FromBody] UpdateSchoolDTO SchoolInfo)
         {
             try
@@ -153,6 +154,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("ChangeSchoolCoinType")]
+        [Authorize]
         public async Task<IActionResult> ChangeSchoolCoinType([FromBody] ChangeSchoolCoinTypeDTO dto)
         {
             try
@@ -177,6 +179,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("AddCoinsToSchool")]
+        [Authorize]
         public async Task<IActionResult> AddCoinsToSchool([FromBody] AddCoinsToSchoolDTO coinsdto)
         {
             try
@@ -228,6 +231,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("ChangeActivation")]
+        [Authorize]
         public async Task<IActionResult> ChangeSchoolActivition([FromBody] ChangeSchoolActivationDTO dTO)
         {
             try
@@ -267,6 +271,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("ActivateNewSchool")]
+        [Authorize]
         public async Task<IActionResult> ActivateNewSchool([FromBody] ActivateNewSchoolDTO dTO)
         {
             try
@@ -321,6 +326,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("GetUserSchools")]
+        [Authorize]
         public async Task<IActionResult> GetUserSchools([FromBody] GetUserSchoolsDTO DTO)
         {
             try
@@ -335,6 +341,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("SoftDeleteSchool")]
+        [Authorize]
         public async Task<IActionResult> SoftDeleteSchool([FromBody] SchoolIdDTO dto)
         {
             try
@@ -371,6 +378,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("RemoveSchoolImage")]
+        [Authorize]
         public async Task<IActionResult> RemoveSchoolImage([FromBody] ImagePathDTO dto)
         {
             try
