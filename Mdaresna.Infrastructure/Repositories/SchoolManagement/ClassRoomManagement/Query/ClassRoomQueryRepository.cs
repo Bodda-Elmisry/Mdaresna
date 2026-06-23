@@ -135,7 +135,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                              join su in context.Users on cr.SupervisorId equals su.Id
                              join l in context.Languages on cr.LanguageId equals l.Id
                              join g in context.SchoolGrades on cr.GradeId equals g.Id
-                             join crtc in context.ClassRoomTeacherCourses on cr.Id equals crtc.ClassRoomId into classroomTeacherCourses
+                             join crtc in context.ClassRoomTeacherCourses.Where(tc => !tc.Deleted) on cr.Id equals crtc.ClassRoomId into classroomTeacherCourses
                              from crtc in classroomTeacherCourses.DefaultIfEmpty()
                              where (s.SchoolAdminId == userId || cr.SupervisorId == userId || crtc.TeacherId == userId)
                                    && s.Id == schoolId
@@ -148,7 +148,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                              join su in context.Users on cr.SupervisorId equals su.Id
                              join l in context.Languages on cr.LanguageId equals l.Id
                              join g in context.SchoolGrades on cr.GradeId equals g.Id
-                             join crtc in context.ClassroomEmployees on cr.Id equals crtc.ClassRoomId into classroomEmployees
+                             join crtc in context.ClassroomEmployees.Where(e => !e.Deleted) on cr.Id equals crtc.ClassRoomId into classroomEmployees
                              from crtc in classroomEmployees.DefaultIfEmpty()
                              where (s.SchoolAdminId == userId || cr.SupervisorId == userId || crtc.EmployeeId == userId)
                                    && s.Id == schoolId
