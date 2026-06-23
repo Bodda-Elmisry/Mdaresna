@@ -55,15 +55,15 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                 Name = c.Name,
                 maxOfStudents = c.maxOfStudents,
                 SupervisorId = c.SupervisorId,
-                SupervisorName = $"{c.Supervisor.FirstName} {c.Supervisor.MiddelName} {c.Supervisor.LastName}",
+                SupervisorName = c.Supervisor != null ? $"{c.Supervisor.FirstName} {c.Supervisor.MiddelName} {c.Supervisor.LastName}" : string.Empty,
                 Active = c.Active,
                 WCSUrl = c.WCSUrl,
                 SchoolId = c.SchoolId,
-                SchoolName = c.School.Name,
+                SchoolName = c.School != null ? c.School.Name : string.Empty,
                 LanguageId = c.LanguageId,
-                LanguageName = c.Language.Name,
+                LanguageName = c.Language != null ? c.Language.Name : string.Empty,
                 GradeId = c.GradeId,
-                Gradename = c.Grade.Name,
+                Gradename = c.Grade != null ? c.Grade.Name : string.Empty,
                 Gender = c.Gender
             }).ToListAsync();
         }
@@ -79,15 +79,15 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                                 Name = c.Name,
                                 maxOfStudents = c.maxOfStudents,
                                 SupervisorId = c.SupervisorId,
-                                SupervisorName = $"{c.Supervisor.FirstName} {c.Supervisor.MiddelName} {c.Supervisor.LastName}",
+                                SupervisorName = c.Supervisor != null ? $"{c.Supervisor.FirstName} {c.Supervisor.MiddelName} {c.Supervisor.LastName}" : string.Empty,
                                 Active = c.Active,
                                 WCSUrl = c.WCSUrl,
                                 SchoolId = c.SchoolId,
-                                SchoolName = c.School.Name,
+                                SchoolName = c.School != null ? c.School.Name : string.Empty,
                                 LanguageId = c.LanguageId,
-                                LanguageName = c.Language.Name,
+                                LanguageName = c.Language != null ? c.Language.Name : string.Empty,
                                 GradeId = c.GradeId,
-                                Gradename = c.Grade.Name,
+                                Gradename = c.Grade != null ? c.Grade.Name : string.Empty,
                                 Gender = c.Gender
 
                             })
@@ -111,15 +111,15 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                                 Name = c.Name,
                                 maxOfStudents = c.maxOfStudents,
                                 SupervisorId = c.SupervisorId,
-                                SupervisorName = $"{c.Supervisor.FirstName} {c.Supervisor.MiddelName} {c.Supervisor.LastName}",
+                                SupervisorName = c.Supervisor != null ? $"{c.Supervisor.FirstName} {c.Supervisor.MiddelName} {c.Supervisor.LastName}" : string.Empty,
                                 Active = c.Active,
                                 WCSUrl = c.WCSUrl,
                                 SchoolId = c.SchoolId,
-                                SchoolName = c.School.Name,
+                                SchoolName = c.School != null ? c.School.Name : string.Empty,
                                 LanguageId = c.LanguageId,
-                                LanguageName = c.Language.Name,
+                                LanguageName = c.Language != null ? c.Language.Name : string.Empty,
                                 GradeId = c.GradeId,
-                                Gradename = c.Grade.Name,
+                                Gradename = c.Grade != null ? c.Grade.Name : string.Empty,
                                 Gender = c.Gender
 
                             }).ToListAsync();
@@ -132,7 +132,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
 
                 var tquery = from cr in context.ClassRooms
                              join s in context.Schools on cr.SchoolId equals s.Id
-                             join su in context.Users on cr.SupervisorId equals su.Id
+                             join su in context.Users on cr.SupervisorId equals su.Id into supervisorUsers
+                             from su in supervisorUsers.DefaultIfEmpty()
                              join l in context.Languages on cr.LanguageId equals l.Id
                              join g in context.SchoolGrades on cr.GradeId equals g.Id
                              join crtc in context.ClassRoomTeacherCourses.Where(tc => !tc.Deleted) on cr.Id equals crtc.ClassRoomId into classroomTeacherCourses
@@ -145,7 +146,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
 
                 var equery = from cr in context.ClassRooms
                              join s in context.Schools on cr.SchoolId equals s.Id
-                             join su in context.Users on cr.SupervisorId equals su.Id
+                             join su in context.Users on cr.SupervisorId equals su.Id into supervisorUsers
+                             from su in supervisorUsers.DefaultIfEmpty()
                              join l in context.Languages on cr.LanguageId equals l.Id
                              join g in context.SchoolGrades on cr.GradeId equals g.Id
                              join crtc in context.ClassroomEmployees.Where(e => !e.Deleted) on cr.Id equals crtc.ClassRoomId into classroomEmployees
@@ -169,7 +171,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                         Name = x.cr.Name,
                         maxOfStudents = x.cr.maxOfStudents,
                         SupervisorId = x.cr.SupervisorId,
-                        SupervisorName = x.su.FirstName + " " + x.su.LastName,
+                        SupervisorName = x.su != null ? x.su.FirstName + " " + x.su.LastName : string.Empty,
                         Active = x.cr.Active,
                         WCSUrl = x.cr.WCSUrl,
                         SchoolId = x.cr.SchoolId,
@@ -202,15 +204,15 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                                 Name = room.Name,
                                 maxOfStudents = room.maxOfStudents,
                                 SupervisorId = room.SupervisorId,
-                                SupervisorName = $"{room.Supervisor.FirstName} {room.Supervisor.MiddelName} {room.Supervisor.LastName}",
+                                SupervisorName = room.Supervisor != null ? $"{room.Supervisor.FirstName} {room.Supervisor.MiddelName} {room.Supervisor.LastName}" : string.Empty,
                                 Active = room.Active,
                                 WCSUrl = room.WCSUrl,
                                 SchoolId = room.SchoolId,
-                                SchoolName = room.School.Name,
+                                SchoolName = room.School != null ? room.School.Name : string.Empty,
                                 LanguageId = room.LanguageId,
-                                LanguageName = room.Language.Name,
+                                LanguageName = room.Language != null ? room.Language.Name : string.Empty,
                                 GradeId = room.GradeId,
-                                Gradename = room.Grade.Name,
+                                Gradename = room.Grade != null ? room.Grade.Name : string.Empty,
                                 Gender = room.Gender
 
                             };

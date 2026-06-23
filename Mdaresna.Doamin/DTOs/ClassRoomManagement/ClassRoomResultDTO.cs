@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.AdminManagement;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Mdaresna.Doamin.Models.UserManagement;
@@ -18,8 +18,8 @@ namespace Mdaresna.Doamin.DTOs.ClassRoomManagement
 
         public string Name { get; set; } = string.Empty;
         public int maxOfStudents { get; set; }
-        public Guid SupervisorId { get; set; }
-        public string SupervisorName { get; set; } = string.Empty;
+        public Guid? SupervisorId { get; set; }
+        public string? SupervisorName { get; set; }
         public bool Active { get; set; }
         public string WCSUrl { get; set; } = string.Empty;
         public Guid SchoolId { get; set; }

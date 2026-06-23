@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.AdminManagement;
 using Mdaresna.Doamin.Models.Base;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
@@ -16,10 +16,10 @@ namespace Mdaresna.Doamin.Models.SchoolManagement.ClassRoomManagement
 
         public int maxOfStudents { get; set; }
 
-        public Guid SupervisorId { get; set; }
+        public Guid? SupervisorId { get; set; }
 
         [ForeignKey(nameof(SupervisorId))]
-        public User Supervisor { get; set; }
+        public User? Supervisor { get; set; }
 
         public bool Active { get; set; }
 
