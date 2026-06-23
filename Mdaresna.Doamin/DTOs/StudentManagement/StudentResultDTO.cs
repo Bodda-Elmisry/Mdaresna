@@ -35,6 +35,8 @@ namespace Mdaresna.Doamin.DTOs.StudentManagement
 
         public bool IsPayed { get; set; }
 
+        public int ParentsCount { get; set; }
+
         public DateTime? BirthDate { get; set; }
     }
 }

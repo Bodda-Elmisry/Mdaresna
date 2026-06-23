@@ -60,7 +60,10 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                 SchoolId = schoolId,
                 SchoolName = s.School.Name,
                 ImageUrl = !string.IsNullOrEmpty(s.ImageUrl) ? $"{SettingsHelper.GetAppUrl()}/{s.ImageUrl.Replace("\\", "/")}" : string.Empty,
-                IsPayed = s.IsPayed
+                IsPayed = s.IsPayed,
+                ParentsCount = context.StudentParents.Count(studentParent =>
+                    studentParent.StudentId == s.Id &&
+                    studentParent.Deleted == false)
             }).OrderByDescending(s => s.BirthDate)
                 .ToListAsync();
 
@@ -97,7 +100,10 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                     SchoolId = schoolId,
                     SchoolName = s.School.Name,
                     ImageUrl = !string.IsNullOrEmpty(s.ImageUrl) ? $"{SettingsHelper.GetAppUrl()}/{s.ImageUrl.Replace("\\", "/")}" : string.Empty,
-                    IsPayed = s.IsPayed
+                    IsPayed = s.IsPayed,
+                    ParentsCount = context.StudentParents.Count(studentParent =>
+                        studentParent.StudentId == s.Id &&
+                        studentParent.Deleted == false)
                 })
             .ToListAsync();
         }
@@ -122,7 +128,10 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                     SchoolId = student.SchoolId,
                     SchoolName = student.School.Name,
                     ImageUrl = !string.IsNullOrEmpty(student.ImageUrl) ? $"{SettingsHelper.GetAppUrl()}/{student.ImageUrl.Replace("\\", "/")}" : string.Empty,
-                    IsPayed = student.IsPayed
+                    IsPayed = student.IsPayed,
+                    ParentsCount = await context.StudentParents.CountAsync(studentParent =>
+                        studentParent.StudentId == student.Id &&
+                        studentParent.Deleted == false)
                 };
         }
 
@@ -146,7 +155,10 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                     SchoolId = student.SchoolId,
                     SchoolName = student.School.Name,
                     ImageUrl = !string.IsNullOrEmpty(student.ImageUrl) ? $"{SettingsHelper.GetAppUrl()}/{student.ImageUrl.Replace("\\", "/")}" : string.Empty,
-                    IsPayed = student.IsPayed
+                    IsPayed = student.IsPayed,
+                    ParentsCount = await context.StudentParents.CountAsync(studentParent =>
+                        studentParent.StudentId == student.Id &&
+                        studentParent.Deleted == false)
                 };
         }
 
