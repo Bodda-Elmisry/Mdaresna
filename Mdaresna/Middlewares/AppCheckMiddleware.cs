@@ -32,6 +32,13 @@ namespace Mdaresna.Middlewares
                 return;
             }
 
+            // Bypass OPTIONS (preflight) requests
+            if (context.Request.Method == "OPTIONS")
+            {
+                await _next(context);
+                return;
+            }
+
             var path = context.Request.Path.Value ?? "";
             if (path.Contains("/swagger", StringComparison.OrdinalIgnoreCase) || 
                 path.Contains("/index.html", StringComparison.OrdinalIgnoreCase))

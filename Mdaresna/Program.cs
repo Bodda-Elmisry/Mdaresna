@@ -163,6 +163,10 @@ namespace Mdaresna
 
             //app.UseSerilogRequestLogging();
 
+            app.UseCors(builder => builder.AllowAnyOrigin()
+                                          .AllowAnyMethod()
+                                          .AllowAnyHeader());
+
             app.UseMiddleware<SetAppUrlMiddleware>();
             app.UseMiddleware<VpnBlockingMiddleware>();
             app.UseMiddleware<AppCheckMiddleware>();
@@ -177,10 +181,6 @@ namespace Mdaresna
 
             app.UseSwagger();
             app.UseSwaggerUI();
-
-            app.UseCors(builder => builder.AllowAnyOrigin()
-                                          .AllowAnyMethod()
-                                          .AllowAnyHeader());
 
 
             app.UseHttpsRedirection();
