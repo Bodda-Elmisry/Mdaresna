@@ -123,7 +123,7 @@ namespace Mdaresna.Middlewares
                     return _cachedKeys;
                 }
 
-                var url = $"https://firebaseappcheck.googleapis.com/v1/projects/{projectId}/publicKeys";
+                var url = "https://firebaseappcheck.googleapis.com/v1/jwks";
                 var response = await _httpClient.GetFromJsonAsync<JwksResponse>(url);
 
                 var keys = new List<SecurityKey>();
