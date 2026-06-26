@@ -174,11 +174,11 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
-                var supervisedClassrooms = await classRoomQueryService.GetBySchoolIdAndSupervisorIdAsync(dto.SchoolId, dto.EmployeeId);
-                if (supervisedClassrooms != null && supervisedClassrooms.Any())
-                {
-                    return Conflict("Cannot remove employee because they are a supervisor for one or more classrooms. Please reassign the supervisor for these classrooms first.");
-                }
+                //var supervisedClassrooms = await classRoomQueryService.GetBySchoolIdAndSupervisorIdAsync(dto.SchoolId, dto.EmployeeId);
+                //if (supervisedClassrooms != null && supervisedClassrooms.Any())
+                //{
+                //    return Conflict("Cannot remove employee because they are a supervisor for one or more classrooms. Please reassign the supervisor for these classrooms first.");
+                //}
 
                 await commandUnitOfWork.BeginTransactionAsync();
 

@@ -26,7 +26,7 @@ namespace Mdaresna.Doamin.Models.UserManagement
 
         public bool PhoneConfirmed { get; set; }
 
-        [MaxLength(20)]
+        [MaxLength(200)]
         public string? PhoneConfirmationCode { get; set; }
 
         [MaxLength(800)]
@@ -58,7 +58,7 @@ namespace Mdaresna.Doamin.Models.UserManagement
 
         public bool EmailConfirmed { get; set; }
 
-        [MaxLength(20)]
+        [MaxLength(200)]
         public string? EmailConfirmtionKey { get; set; }
 
 
