@@ -206,7 +206,7 @@ namespace Mdaresna.Controllers.IdentityManagement
                     return BadRequest("Refresh token cannot be empty");
                 }
 
-                var result = await identityService.RefreshToken(dTO.RefreshToken);
+                var result = await identityService.RefreshToken(dTO.RefreshToken, dTO.SchoolId);
                 return result == null ? Unauthorized("Invalid or expired refresh token") : Ok(result);
             }
             catch (Exception ex)

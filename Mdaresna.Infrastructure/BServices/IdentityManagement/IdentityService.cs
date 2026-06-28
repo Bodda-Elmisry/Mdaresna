@@ -437,7 +437,7 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
 
         }
 
-        public async Task<LoginResultDTO?> RefreshToken(string token)
+        public async Task<LoginResultDTO?> RefreshToken(string token, Guid? schoolId = null)
         {
             var storedToken = await userRefreshTokenQueryService.GetByTokenAsync(token);
             if (storedToken == null || storedToken.ExpiryDate < DateTime.Now || storedToken.IsRevoked)
@@ -456,7 +456,7 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             userRefreshTokenCommandService.Update(storedToken);
 
             // Generate new token & new refresh token
-            return await GetUserInfo(user, null);
+            return await GetUserInfo(user, schoolId);
         }
 
         public async Task<bool> Logout(string token)

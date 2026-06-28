@@ -18,7 +18,7 @@ namespace Mdaresna.Repository.IBServices.IdentityManagement
         Task<ChangePasswordResultDTO> ChangePassword(Guid userId, string oldPassword, string newPassword);
         Task<ForgetPasseordResultDTO> ForgetPassword(string phoneNumber);
         Task<AddUserNewPasswordResultDTO> AddUserNewPassword(Guid userId, string Password);
-        Task<LoginResultDTO?> RefreshToken(string token);
+        Task<LoginResultDTO?> RefreshToken(string token, Guid? schoolId = null);
         Task<bool> Logout(string token);
     }
 }
