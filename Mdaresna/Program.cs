@@ -163,6 +163,13 @@ namespace Mdaresna
 
             //app.UseSerilogRequestLogging();
 
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                        Path.Combine(Directory.GetCurrentDirectory(), "Images")),
+                RequestPath = "/Images"
+            });
+
             app.UseCors(builder => builder.AllowAnyOrigin()
                                           .AllowAnyMethod()
                                           .AllowAnyHeader());
@@ -171,12 +178,6 @@ namespace Mdaresna
             app.UseMiddleware<VpnBlockingMiddleware>();
             app.UseMiddleware<AppCheckMiddleware>();
 
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider(
-                        Path.Combine(Directory.GetCurrentDirectory(), "Images")),
-                RequestPath = "/Images"
-            });
             app.UseRouting();
 
             app.UseSwagger();

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ namespace Mdaresna.Infrastructure.BServices.Common
     {
         private const string DefaultAndroidChannelId = "mdaresna_default";
         private const string FirebaseServiceAccountFileName = "firebase-service-account.json";
+        private static readonly TimeSpan StoredNotificationTimeToLive = TimeSpan.FromDays(28);
 
         private readonly IServiceProvider _serviceProvider;
 
@@ -67,12 +69,15 @@ namespace Mdaresna.Infrastructure.BServices.Common
                 Android = new AndroidConfig
                 {
                     Priority = Priority.High,
+                    TimeToLive = StoredNotificationTimeToLive,
                     Notification = new AndroidNotification
                     {
                         ChannelId = DefaultAndroidChannelId,
                         Sound = "default",
                     }
-                }
+                },
+                Apns = CreateApnsConfig(),
+                Webpush = CreateWebpushConfig()
             };
 
             try
@@ -125,12 +130,15 @@ namespace Mdaresna.Infrastructure.BServices.Common
                 Android = new AndroidConfig
                 {
                     Priority = Priority.High,
+                    TimeToLive = StoredNotificationTimeToLive,
                     Notification = new AndroidNotification
                     {
                         ChannelId = DefaultAndroidChannelId,
                         Sound = "default",
                     }
-                }
+                },
+                Apns = CreateApnsConfig(),
+                Webpush = CreateWebpushConfig()
             };
 
             var result = await FirebaseMessaging.DefaultInstance.SendEachForMulticastAsync(message);
@@ -188,6 +196,39 @@ namespace Mdaresna.Infrastructure.BServices.Common
                 ["targetId"] = payload.TargetId,
                 ["studentId"] = payload.StudentId,
                 ["classRoomId"] = payload.ClassRoomId,
+            };
+        }
+
+        private static ApnsConfig CreateApnsConfig()
+        {
+            var expiresAt = DateTimeOffset.UtcNow
+                .Add(StoredNotificationTimeToLive)
+                .ToUnixTimeSeconds()
+                .ToString(CultureInfo.InvariantCulture);
+
+            return new ApnsConfig
+            {
+                Headers = new Dictionary<string, string>
+                {
+                    ["apns-priority"] = "10",
+                    ["apns-expiration"] = expiresAt
+                },
+                Aps = new Aps
+                {
+                    Sound = "default"
+                }
+            };
+        }
+
+        private static WebpushConfig CreateWebpushConfig()
+        {
+            return new WebpushConfig
+            {
+                Headers = new Dictionary<string, string>
+                {
+                    ["TTL"] = ((int)StoredNotificationTimeToLive.TotalSeconds)
+                        .ToString(CultureInfo.InvariantCulture)
+                }
             };
         }
 

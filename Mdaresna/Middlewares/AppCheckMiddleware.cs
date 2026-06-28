@@ -39,9 +39,8 @@ namespace Mdaresna.Middlewares
                 return;
             }
 
-            var path = context.Request.Path.Value ?? "";
-            if (path.Contains("/swagger", StringComparison.OrdinalIgnoreCase) || 
-                path.Contains("/index.html", StringComparison.OrdinalIgnoreCase))
+            var path = context.Request.Path.Value ?? string.Empty;
+            if (ShouldBypassAppCheck(path))
             {
                 await _next(context);
                 return;
@@ -75,6 +74,13 @@ namespace Mdaresna.Middlewares
             }
 
             await _next(context);
+        }
+
+        private static bool ShouldBypassAppCheck(string path)
+        {
+            return path.StartsWith("/Images", StringComparison.OrdinalIgnoreCase) ||
+                   path.StartsWith("/swagger", StringComparison.OrdinalIgnoreCase) ||
+                   path.Equals("/index.html", StringComparison.OrdinalIgnoreCase);
         }
 
         private async Task<bool> ValidateTokenAsync(string token)
