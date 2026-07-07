@@ -162,6 +162,9 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 if (sAct == null)
                     return BadRequest("There is no activity to update");
 
+                bool wasModified = sAct.Result != dto.Result ||
+                                   sAct.IsAttend != dto.IsAttend;
+
                 sAct.Result = dto.Result;
                 sAct.IsAttend = dto.IsAttend;
 
@@ -170,33 +173,36 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                     return BadRequest("Error in Updating");
 
 
-                try
+                if (wasModified)
                 {
-                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
-                    var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Activity);
-                    var studentIds = new List<Guid> { dto.StudentId };
-                    var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
-                    if (devices != null && devices.Any())
+                    try
                     {
-                        var tokens = devices
-                            .Select(d => d.FcmTocken)
-                            .Where(t => !string.IsNullOrWhiteSpace(t))
-                            .Distinct()
-                            .ToList();
-
-                        if (tokens.Any())
+                        var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                        var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Activity);
+                        var studentIds = new List<Guid> { dto.StudentId };
+                        var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
+                        if (devices != null && devices.Any())
                         {
-                            var student = await studentQueryService.GetByIdAsync(dto.StudentId);
-                            var viewDto = await classRoomStudentActivityQueryService.GetClassRoomStudentActivityViewAsync(sAct.StudentId, sAct.ActivityId);
-                            var classRoomId = viewDto?.ClassRoomId ?? Guid.Empty;
-                            var message = $"تم رصد تقييم مشاركة {student.FirstName} {student.LastName} في النشاط. يمكنكم الآن رؤية التقييم والاحتفاء بتجربته الأخيرة. | Type=Activity | TargetId={sAct.ActivityId} | StudentId={dto.StudentId} | ClassRoomId={classRoomId}";
-                            await notificationProvider.SendToMultiUsersAsync(tokens, "تقييم نشاط مدرسي", message);
+                            var tokens = devices
+                                .Select(d => d.FcmTocken)
+                                .Where(t => !string.IsNullOrWhiteSpace(t))
+                                .Distinct()
+                                .ToList();
+
+                            if (tokens.Any())
+                            {
+                                var student = await studentQueryService.GetByIdAsync(dto.StudentId);
+                                var viewDto = await classRoomStudentActivityQueryService.GetClassRoomStudentActivityViewAsync(sAct.StudentId, sAct.ActivityId);
+                                var classRoomId = viewDto?.ClassRoomId ?? Guid.Empty;
+                                var message = $"تم رصد تقييم مشاركة {student.FirstName} {student.LastName} في النشاط. يمكنكم الآن رؤية التقييم والاحتفاء بتجربته الأخيرة. | Type=Activity | TargetId={sAct.ActivityId} | StudentId={dto.StudentId} | ClassRoomId={classRoomId}";
+                                await notificationProvider.SendToMultiUsersAsync(tokens, "تقييم نشاط مدرسي", message);
+                            }
                         }
                     }
-                }
-                catch (Exception)
-                {
-                    // Ignore notification failures so the API request is not aborted
+                    catch (Exception)
+                    {
+                        // Ignore notification failures so the API request is not aborted
+                    }
                 }
 
                 return Ok(await classRoomStudentActivityQueryService.GetClassRoomStudentActivityViewAsync(sAct.StudentId, sAct.ActivityId));

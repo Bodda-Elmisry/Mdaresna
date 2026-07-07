@@ -165,6 +165,10 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 if (sAss == null)
                     return BadRequest("There is no assignment to update");
 
+                bool wasModified = sAss.Result != dto.Result ||
+                                   sAss.IsDelivered != dto.IsDelivered ||
+                                   sAss.DeliveredDate != dto.DeliveredDate;
+
                 sAss.Result = dto.Result;
                 sAss.IsDelivered = dto.IsDelivered;
                 sAss.DeliveredDate = dto.DeliveredDate;
@@ -173,33 +177,36 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 if (!updated)
                     return BadRequest("Error in Updating");
 
-                try
+                if (wasModified)
                 {
-                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
-                    var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Assignment);
-                    var studentIds = new List<Guid> { dto.StudentId };
-                    var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
-                    if (devices != null && devices.Any())
+                    try
                     {
-                        var tokens = devices
-                            .Select(d => d.FcmTocken)
-                            .Where(t => !string.IsNullOrWhiteSpace(t))
-                            .Distinct()
-                            .ToList();
-
-                        if (tokens.Any())
+                        var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                        var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Assignment);
+                        var studentIds = new List<Guid> { dto.StudentId };
+                        var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
+                        if (devices != null && devices.Any())
                         {
-                            var student = await studentQueryService.GetByIdAsync(dto.StudentId);
-                            var viewDto = await classRoomStudentAssignmentQueryService.GetClassRoomStudentAssignmentViewAsync(sAss.StudentId, sAss.AssignmentId);
-                            var classRoomId = viewDto?.ClassRoomId ?? Guid.Empty;
-                            var message = $"تم تقييم الواجب الخاص بـ {student.FirstName} {student.LastName}. يمكنك الآن الاطلاع على النتائج وملاحظات المعلم عبر التطبيق. | Type=Assignment | TargetId={sAss.AssignmentId} | StudentId={dto.StudentId} | ClassRoomId={classRoomId}";
-                            await notificationProvider.SendToMultiUsersAsync(tokens, "تقييم واجب مدرسي", message);
+                            var tokens = devices
+                                .Select(d => d.FcmTocken)
+                                .Where(t => !string.IsNullOrWhiteSpace(t))
+                                .Distinct()
+                                .ToList();
+
+                            if (tokens.Any())
+                            {
+                                var student = await studentQueryService.GetByIdAsync(dto.StudentId);
+                                var viewDto = await classRoomStudentAssignmentQueryService.GetClassRoomStudentAssignmentViewAsync(sAss.StudentId, sAss.AssignmentId);
+                                var classRoomId = viewDto?.ClassRoomId ?? Guid.Empty;
+                                var message = $"تم تقييم الواجب الخاص بـ {student.FirstName} {student.LastName}. يمكنك الآن الاطلاع على النتائج وملاحظات المعلم عبر التطبيق. | Type=Assignment | TargetId={sAss.AssignmentId} | StudentId={dto.StudentId} | ClassRoomId={classRoomId}";
+                                await notificationProvider.SendToMultiUsersAsync(tokens, "تقييم واجب مدرسي", message);
+                            }
                         }
                     }
-                }
-                catch (Exception)
-                {
-                    // Ignore notification failures so the API request is not aborted
+                    catch (Exception)
+                    {
+                        // Ignore notification failures so the API request is not aborted
+                    }
                 }
 
                 return Ok(await classRoomStudentAssignmentQueryService.GetClassRoomStudentAssignmentViewAsync(sAss.StudentId, sAss.AssignmentId));

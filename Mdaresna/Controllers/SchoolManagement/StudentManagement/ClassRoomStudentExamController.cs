@@ -182,6 +182,9 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 if (exam == null)
                     return BadRequest("There is no exam student to update");
 
+                bool wasModified = exam.TotalResult != dto.TotalResult ||
+                                   exam.IsAttend != dto.IsAttend;
+
                 exam.TotalResult = dto.TotalResult;
                 exam.IsAttend = dto.IsAttend;
 
@@ -190,33 +193,36 @@ namespace Mdaresna.Controllers.SchoolManagement.StudentManagement
                 if (!updated) 
                     return BadRequest("Error in updating student exam");
 
-                try
+                if (wasModified)
                 {
-                    var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
-                    var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Exam);
-                    var studentIds = new List<Guid> { dto.StudentId };
-                    var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
-                    if (devices != null && devices.Any())
+                    try
                     {
-                        var tokens = devices
-                            .Select(d => d.FcmTocken)
-                            .Where(t => !string.IsNullOrWhiteSpace(t))
-                            .Distinct()
-                            .ToList();
-
-                        if (tokens.Any())
+                        var notificationProvider = notificationFactory.GetProvider(NotificationProvidersEnum.Mobile);
+                        var studentProvider = studentTransactionsFactory.GetProvider(StudentTransactionProvidersEnum.Exam);
+                        var studentIds = new List<Guid> { dto.StudentId };
+                        var devices = await studentProvider.GetTransactionSTudentsParentsDevicesAsync(studentIds);
+                        if (devices != null && devices.Any())
                         {
-                            var student = await studentQueryService.GetByIdAsync(dto.StudentId);
-                            var viewDto = await classRoomStudentExamQueryService.GetClassRoomStudentExamViewAsync(dto.StudentId, dto.ExamId);
-                            var classRoomId = viewDto?.ClassRoomId ?? Guid.Empty;
-                            var message = $"ظهرت الآن نتائج اختبار {student.FirstName} {student.LastName} . تفضل بالاطلاع عليها لمتابعة تطوره الدراسي المستمر | Type=Exam | TargetId={dto.ExamId} | StudentId={dto.StudentId} | ClassRoomId={classRoomId}";
-                            await notificationProvider.SendToMultiUsersAsync(tokens, "نتائج اختبار", message);
+                            var tokens = devices
+                                .Select(d => d.FcmTocken)
+                                .Where(t => !string.IsNullOrWhiteSpace(t))
+                                .Distinct()
+                                .ToList();
+
+                            if (tokens.Any())
+                            {
+                                var student = await studentQueryService.GetByIdAsync(dto.StudentId);
+                                var viewDto = await classRoomStudentExamQueryService.GetClassRoomStudentExamViewAsync(dto.StudentId, dto.ExamId);
+                                var classRoomId = viewDto?.ClassRoomId ?? Guid.Empty;
+                                var message = $"ظهرت الآن نتائج اختبار {student.FirstName} {student.LastName} . تفضل بالاطلاع عليها لمتابعة تطوره الدراسي المستمر | Type=Exam | TargetId={dto.ExamId} | StudentId={dto.StudentId} | ClassRoomId={classRoomId}";
+                                await notificationProvider.SendToMultiUsersAsync(tokens, "نتائج اختبار", message);
+                            }
                         }
                     }
-                }
-                catch (Exception)
-                {
-                    // Ignore notification failures so the API request is not aborted
+                    catch (Exception)
+                    {
+                        // Ignore notification failures so the API request is not aborted
+                    }
                 }
 
                 return Ok(await classRoomStudentExamQueryService.GetClassRoomStudentExamViewAsync(dto.StudentId, dto.ExamId));
