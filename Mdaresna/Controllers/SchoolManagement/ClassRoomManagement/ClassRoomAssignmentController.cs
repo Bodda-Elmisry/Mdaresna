@@ -128,7 +128,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                                 if (tokens.Any())
                                 {
                                     var childName = devicesGroup.FirstOrDefault()?.StudentName ?? "";
-                                    var message = $"تمت إضافة واجب جديد لـ {childName}. بلمسة من تشجيعكم ومتابعتكم، سيبدع بالتأكيد في إنجازه. | Type=Assignment | TargetId={assingment.Id} | ClassRoomId={assingment.ClassRoomId}";
+                                    var message = $"تمت إضافة واجب جديد لـ {childName}. بلمسة من تشجيعكم ومتابعتكم، سيبدع بالتأكيد في إنجازه. | Type=Assignment | TargetId={assingment.Id} | ClassRoomId={assingment.ClassRoomId} | StudentId={devicesGroup.Key}";
                                     await notificationProvider.SendToMultiUsersAsync(tokens, "واجب مدرسي جديد", message);
                                 }
                             }

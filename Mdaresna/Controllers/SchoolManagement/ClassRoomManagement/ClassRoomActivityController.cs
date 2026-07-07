@@ -114,7 +114,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                                 if (tokens.Any())
                                 {
                                     var childName = devicesGroup.FirstOrDefault()?.StudentName ?? "";
-                                    var message = $"تمت إضافة نشاط جديد لـ {childName}. مشاركتكم تشجعهم على التميز والإبداع. | Type=Activity | TargetId={activity.Id} | ClassRoomId={activity.ClassRoomId}";
+                                    var message = $"تمت إضافة نشاط جديد لـ {childName}. مشاركتكم تشجعهم على التميز والإبداع. | Type=Activity | TargetId={activity.Id} | ClassRoomId={activity.ClassRoomId} | StudentId={devicesGroup.Key}";
                                     await notificationProvider.SendToMultiUsersAsync(tokens, "نشاط مدرسي جديد", message);
                                 }
                             }

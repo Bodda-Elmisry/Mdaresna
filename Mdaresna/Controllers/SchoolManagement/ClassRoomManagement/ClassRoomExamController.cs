@@ -137,7 +137,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
                                 if (tokens.Any())
                                 {
                                     var childName = devicesGroup.FirstOrDefault()?.StudentName ?? "";
-                                    var message = $"تم تحديد موعد اختبار جديد لـ {childName}. دعواتنا وتوجيهاتكم هي سر نجاحهم وتفوقهم. | Type=Exam | TargetId={exam.Id} | ClassRoomId={exam.ClassRoomId}";
+                                    var message = $"تم تحديد موعد اختبار جديد لـ {childName}. دعواتنا وتوجيهاتكم هي سر نجاحهم وتفوقهم. | Type=Exam | TargetId={exam.Id} | ClassRoomId={exam.ClassRoomId} | StudentId={devicesGroup.Key}";
                                     await notificationProvider.SendToMultiUsersAsync(tokens, "اختبار جديد", message);
                                 }
                             }
