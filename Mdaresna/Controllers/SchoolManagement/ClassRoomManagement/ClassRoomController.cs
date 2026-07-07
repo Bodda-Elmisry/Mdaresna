@@ -11,6 +11,7 @@ using Mdaresna.Repository.IServices.UserManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Mdaresna.Repository.IServices.IdentityManagement.Query;
 
 namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
 {
@@ -24,13 +25,15 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
         private readonly INotificationFactory notificationFactory;
         private readonly IUserDeviceQueryService userDeviceQueryService;
         private readonly ISchoolAccessValidator schoolAccessValidator;
+        private readonly IUserPermissionSchoolClassRoomQueryService userPermissionSchoolClassRoomQueryService;
 
         public ClassRoomController(IClassRoomQueryService classRoomQueryService,
                                    IClassRoomCommandService classRoomCommandService,
                                    IStudentQueryService studentQueryService,
                                            INotificationFactory notificationFactory,
                                            IUserDeviceQueryService userDeviceQueryService,
-                                           ISchoolAccessValidator schoolAccessValidator)
+                                           ISchoolAccessValidator schoolAccessValidator,
+                                           IUserPermissionSchoolClassRoomQueryService userPermissionSchoolClassRoomQueryService)
         {
             this.classRoomQueryService = classRoomQueryService;
             this.classRoomCommandService = classRoomCommandService;
@@ -38,6 +41,7 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
             this.notificationFactory = notificationFactory;
             this.userDeviceQueryService = userDeviceQueryService;
             this.schoolAccessValidator = schoolAccessValidator;
+            this.userPermissionSchoolClassRoomQueryService = userPermissionSchoolClassRoomQueryService;
         }
 
         private Guid CurrentUserId
@@ -301,6 +305,11 @@ namespace Mdaresna.Controllers.SchoolManagement.ClassRoomManagement
 
                 if (classroomStudents != null && classroomStudents.Count() > 0)
                     return BadRequest("Please move students from classroom first");
+
+                if (await userPermissionSchoolClassRoomQueryService.HasClassRoomPermissionsAsync(dto.ClassRoomId))
+                {
+                    return BadRequest("Cannot delete classroom because it has associated permissions. Please remove the permissions first.");
+                }
 
                 classroom.Deleted = true;
 

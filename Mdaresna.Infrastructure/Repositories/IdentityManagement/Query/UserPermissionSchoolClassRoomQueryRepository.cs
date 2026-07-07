@@ -37,5 +37,10 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
                 .Select(x => x.up)
                 .ToListAsync();
         }
+
+        public async Task<bool> HasClassRoomPermissionsAsync(Guid classroomId)
+        {
+            return await context.userPermissionSchoolClassRooms.AnyAsync(c => c.ClassRoomId == classroomId && c.Deleted == false);
+        }
     }
 }

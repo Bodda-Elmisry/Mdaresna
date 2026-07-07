@@ -12,5 +12,6 @@ namespace Mdaresna.Repository.IServices.IdentityManagement.Query
     {
         Task<UserPermissionSchoolClassRoom?> GetUserPermissionSchoolClassRoomByIdAsync(Guid userId, Guid permissionId, Guid classroomId);
         Task<IEnumerable<UserPermissionSchoolClassRoom>> GetUserPermissionsBySchoolAsync(Guid userId, Guid schoolId);
+        Task<bool> HasClassRoomPermissionsAsync(Guid classroomId);
     }
 }

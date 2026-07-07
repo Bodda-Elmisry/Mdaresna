@@ -37,6 +37,11 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Query
             return await userPermissionSchoolClassRoomQueryRepository.GetUserPermissionsBySchoolAsync(userId, schoolId);
         }
 
+        public async Task<bool> HasClassRoomPermissionsAsync(Guid classroomId)
+        {
+            return await userPermissionSchoolClassRoomQueryRepository.HasClassRoomPermissionsAsync(classroomId);
+        }
+
 
 
 

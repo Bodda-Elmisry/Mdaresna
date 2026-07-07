@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Enums;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.DTOs.IdentityDTO;
 using Mdaresna.Infrastructure.Services.IdentityManagement.Command;
@@ -96,9 +96,19 @@ namespace Mdaresna.Controllers.IdentityManagement
                 {
                     var userPermission = await userPermissionSchoolClassRoomQueryService.GetUserPermissionSchoolClassRoomByIdAsync(up.UserId, up.PermissionId, up.ClassRoomId);
 
-                    removed = await userPermissionSchoolClassRoomCommandService.DeleteAsync(userPermission);
-
-                    notRemoved = string.IsNullOrEmpty(notRemoved) ? up.PermissionId.ToString() : $", {up.PermissionId.ToString()}";
+                    if (userPermission != null)
+                    {
+                        removed = await userPermissionSchoolClassRoomCommandService.DeleteAsync(userPermission);
+                        if (!removed)
+                        {
+                            notRemoved = string.IsNullOrEmpty(notRemoved) ? up.PermissionId.ToString() : $", {up.PermissionId.ToString()}";
+                        }
+                    }
+                    else
+                    {
+                        // If the permission is already gone, we don't count it as a failure, but we could list it if needed.
+                        // For consistency, we'll proceed since the goal is accomplished (it is not assigned anymore).
+                    }
                 }
 
                 if (!string.IsNullOrEmpty(notRemoved))
