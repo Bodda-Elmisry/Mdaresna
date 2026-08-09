@@ -56,9 +56,22 @@ namespace Mdaresna.Middlewares
             }
 
             var appCheckToken = context.Request.Headers["X-Firebase-AppCheck"].ToString();
+            var yemenTimeStr = DateTime.UtcNow.AddHours(3).ToString("yyyy-MM-dd HH:mm:ss");
+            
+            // Get client IP address
+            var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            if (context.Request.Headers.TryGetValue("X-Forwarded-For", out var forwardedFor))
+            {
+                var ips = forwardedFor.ToString().Split(',', StringSplitOptions.RemoveEmptyEntries);
+                if (ips.Length > 0)
+                {
+                    clientIp = ips[0].Trim();
+                }
+            }
+
             if (string.IsNullOrEmpty(appCheckToken))
             {
-                _logger.LogWarning("App Check token is missing.");
+                _logger.LogWarning("[{YemenTime}] App Check token is missing. Client IP: {ClientIp}", yemenTimeStr, clientIp);
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 await context.Response.WriteAsync("App Check token is missing.");
                 return;
@@ -67,7 +80,7 @@ namespace Mdaresna.Middlewares
             var isValid = await ValidateTokenAsync(appCheckToken);
             if (!isValid)
             {
-                _logger.LogWarning("App Check token is invalid or expired.");
+                _logger.LogWarning("[{YemenTime}] App Check token is invalid or expired. Client IP: {ClientIp}", yemenTimeStr, clientIp);
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 await context.Response.WriteAsync("App Check token is invalid.");
                 return;
@@ -87,9 +100,11 @@ namespace Mdaresna.Middlewares
         {
             try
             {
-                var projectId = _configuration["FirebaseAppCheck:ProjectId"] ?? "mdaresna";
-                var issuer = $"https://firebaseappcheck.googleapis.com/{projectId}";
-                var audience = $"projects/{projectId}";
+                // App Check JWTs use the numeric Firebase project number in
+                // their issuer and audience claims, not the string project ID.
+                var projectNumber = _configuration["FirebaseAppCheck:ProjectNumber"] ?? "521805027053";
+                var issuer = $"https://firebaseappcheck.googleapis.com/{projectNumber}";
+                var audience = $"projects/{projectNumber}";
 
                 var validationParameters = new TokenValidationParameters
                 {
@@ -99,7 +114,7 @@ namespace Mdaresna.Middlewares
                     ValidAudience = audience,
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.FromMinutes(5),
-                    IssuerSigningKeys = await GetPublicKeysAsync(projectId),
+                    IssuerSigningKeys = await GetPublicKeysAsync(),
                     ValidateIssuerSigningKey = true
                 };
 
@@ -109,12 +124,13 @@ namespace Mdaresna.Middlewares
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "App Check token validation failed.");
+                var yemenTimeStr = DateTime.UtcNow.AddHours(3).ToString("yyyy-MM-dd HH:mm:ss");
+                _logger.LogError(ex, "[{YemenTime}] App Check token validation failed.", yemenTimeStr);
                 return false;
             }
         }
 
-        private async Task<IEnumerable<SecurityKey>> GetPublicKeysAsync(string projectId)
+        private async Task<IEnumerable<SecurityKey>> GetPublicKeysAsync()
         {
             if (DateTime.UtcNow < _keysExpiration && _cachedKeys.Count > 0)
             {
@@ -156,7 +172,8 @@ namespace Mdaresna.Middlewares
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to fetch Firebase App Check public keys.");
+                var yemenTimeStr = DateTime.UtcNow.AddHours(3).ToString("yyyy-MM-dd HH:mm:ss");
+                _logger.LogError(ex, "[{YemenTime}] Failed to fetch Firebase App Check public keys.", yemenTimeStr);
                 return _cachedKeys;
             }
             finally
