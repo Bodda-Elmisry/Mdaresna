@@ -34,7 +34,7 @@ namespace Mdaresna.Controllers.IdentityManagement
                 ignoredRoles.Add(Guid.Parse("92D00B28-9D25-4BD2-A587-6C22A3A07A92")); //Standerd
                 ignoredRoles.Add(Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73")); //school manager
                 //ignoredRoles.Add(Guid.Parse("10620C5F-37FE-4D18-996F-915ECE8893F1")); //school teacher
-                var roles = await roleQueryService.GetRolesAsync(dTO.Type, dTO.Name, dTO.Activation, dTO.Description, ignoredRoles);
+                var roles = await roleQueryService.GetRolesAsync(dTO.Type, dTO.Name, dTO.Activation, dTO.Description, ignoredRoles, dTO.SchoolId);
 
                 return Ok(roles);
             }
@@ -68,7 +68,9 @@ namespace Mdaresna.Controllers.IdentityManagement
                     dTO.IsSchoolRole ? 1 : 2,
                     dTO.Name,
                     true,
-                    null
+                    null,
+                    null,
+                    dTO.SchoolId
                     );
 
                 if (existingRolesWithTheSameName != null && existingRolesWithTheSameName.Count() > 0)
@@ -80,7 +82,8 @@ namespace Mdaresna.Controllers.IdentityManagement
                     Description = dTO.Description,
                     Active = dTO.Active,
                     AdminRole = !dTO.IsSchoolRole,
-                    SchoolRole = dTO.IsSchoolRole
+                    SchoolRole = dTO.IsSchoolRole,
+                    SchoolId = dTO.IsSchoolRole ? dTO.SchoolId : null
                 };
 
                 var added = await roleCommandService.Create(role, dTO.Permissions);

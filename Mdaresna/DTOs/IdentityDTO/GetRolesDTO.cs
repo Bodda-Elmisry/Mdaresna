@@ -1,4 +1,4 @@
-﻿namespace Mdaresna.DTOs.IdentityDTO
+namespace Mdaresna.DTOs.IdentityDTO
 {
     public class GetRolesDTO
     {
@@ -6,5 +6,6 @@
         public string? Name { get; set; }
         public string? Description { get; set; }
         public bool? Activation { get; set; }
+        public Guid? SchoolId { get; set; }
     }
 }

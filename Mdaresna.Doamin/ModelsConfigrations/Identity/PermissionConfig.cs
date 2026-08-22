@@ -21,6 +21,10 @@ namespace Mdaresna.Doamin.ModelsConfigrations.Identity
                 .Property(p => p.Name_AR)
                 .HasDefaultValue(string.Empty);
 
+            builder
+                .Property(p => p.AvailableForSchoolCustomRoles)
+                .HasDefaultValue(true);
+
             //builder
             //    .Property(p => p.CreateDate)
             //    .HasDefaultValue(DateTime.Now);

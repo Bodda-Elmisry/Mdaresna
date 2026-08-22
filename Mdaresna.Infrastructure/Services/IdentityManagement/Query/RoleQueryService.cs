@@ -28,9 +28,9 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Query
             this.roleQueryRepository = roleQueryRepository;
         }
 
-        public async Task<IEnumerable<RoleResultDTO>> GetRolesAsync(int type, string? name, bool? activation, string? description, IEnumerable<Guid>? ignoredRoles = null)
+        public async Task<IEnumerable<RoleResultDTO>> GetRolesAsync(int type, string? name, bool? activation, string? description, IEnumerable<Guid>? ignoredRoles = null, Guid? schoolId = null)
         {
-            return await roleQueryRepository.GetRolesAsync(type, name, activation, description, ignoredRoles);
+            return await roleQueryRepository.GetRolesAsync(type, name, activation, description, ignoredRoles, schoolId);
         }
 
         public async Task<Role?> GetStanderdRole()

@@ -1665,6 +1665,54 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     Description_AR = "الموافقة أو رفض أعذار غياب الطلاب المقدمة من أولياء الأمور",
                     SchoolPermission = true,
                     AppPermission = false
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("A1B2C3D4-E5F6-4789-A012-3456789ABC01"),
+                    Key = "ViewSchoolRoles",
+                    Name = "View School Roles",
+                    Name_AR = "عرض أدوار المدرسة",
+                    Description = "View school roles list",
+                    Description_AR = "عرض قائمة أدوار المدرسة",
+                    SchoolPermission = true,
+                    AppPermission = false,
+                    AvailableForSchoolCustomRoles = true
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("B2C3D4E5-F6A7-4890-B123-456789ABC012"),
+                    Key = "CreateSchoolRole",
+                    Name = "Create School Role",
+                    Name_AR = "إنشاء دور مخصص للمدرسة",
+                    Description = "Create custom school role",
+                    Description_AR = "إنشاء دور مخصص للمدرسة",
+                    SchoolPermission = true,
+                    AppPermission = false,
+                    AvailableForSchoolCustomRoles = true
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("C3D4E5F6-A7B8-4901-C234-56789ABC0123"),
+                    Key = "EditSchoolRole",
+                    Name = "Edit School Role",
+                    Name_AR = "تعديل دور مخصص للمدرسة",
+                    Description = "Edit custom school role",
+                    Description_AR = "تعديل دور مخصص للمدرسة",
+                    SchoolPermission = true,
+                    AppPermission = false,
+                    AvailableForSchoolCustomRoles = true
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("D4E5F6A7-B8C9-4012-D345-6789ABC01234"),
+                    Key = "DeleteSchoolRole",
+                    Name = "Delete School Role",
+                    Name_AR = "حذف دور مخصص للمدرسة",
+                    Description = "Delete custom school role",
+                    Description_AR = "حذف دور مخصص للمدرسة",
+                    SchoolPermission = true,
+                    AppPermission = false,
+                    AvailableForSchoolCustomRoles = true
                 }
 
                 );

@@ -20,6 +20,11 @@ namespace Mdaresna.Doamin.ModelsConfigrations.Identity
             //builder
             //    .Property(p => p.LastModifyDate)
             //    .HasDefaultValue(DateTime.Now);
+
+            builder
+                .HasOne(e => e.School)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

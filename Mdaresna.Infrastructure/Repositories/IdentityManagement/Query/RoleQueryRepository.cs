@@ -34,11 +34,11 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             return role;
         }
 
-        public async Task<IEnumerable<RoleResultDTO>> GetRolesAsync(int type, string? name, bool? activation, string? description, IEnumerable<Guid>? ignoredRoles = null)
+        public async Task<IEnumerable<RoleResultDTO>> GetRolesAsync(int type, string? name, bool? activation, string? description, IEnumerable<Guid>? ignoredRoles = null, Guid? schoolId = null)
         {
 
             var query = from r in context.Roles
-                        join rp in (
+                        join rpGroup in (
                             from rolePermission in context.RolePermissions
                             group rolePermission by rolePermission.RoleId into g
                             select new
@@ -46,19 +46,26 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
                                 RoleID = g.Key,
                                 PermissionsCount = g.Count()
                             }
-                        ) on r.Id equals rp.RoleID
+                        ) on r.Id equals rpGroup.RoleID into rps
+                        from rp in rps.DefaultIfEmpty()
                         select new
                         {
                             Role = r,
-                            PermissionsCount = rp.PermissionsCount
+                            PermissionsCount = rp != null ? rp.PermissionsCount : 0
                         };
 
             query = query.Where(r => r.Role.Deleted == false);
 
-
             query = type == 1 ? query.Where(r => r.Role.SchoolRole == true) : query.Where(r => r.Role.AdminRole == true);
 
-            //query = type == 1 ? query.Where(r => r.SchoolRole == true) : query.Where(r => r.AdminRole == true);
+            if (type == 1 && schoolId.HasValue)
+            {
+                query = query.Where(r => r.Role.SchoolId == null || r.Role.SchoolId == schoolId.Value);
+            }
+            else if (type == 1 && !schoolId.HasValue)
+            {
+                query = query.Where(r => r.Role.SchoolId == null);
+            }
 
             query = !string.IsNullOrEmpty(name) ? query.Where(r => r.Role.Name.Contains(name)) : query;
 
@@ -76,6 +83,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
                 AdminRole = r.Role.AdminRole,
                 Description = r.Role.Description,
                 SchoolRole = r.Role.SchoolRole,
+                SchoolId = r.Role.SchoolId,
                 PermissionsCount = r.PermissionsCount
             }).ToListAsync();
 

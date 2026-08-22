@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.DTOs.Identity;
+using Mdaresna.Doamin.DTOs.Identity;
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Repository.IRepositories.Base;
 using System;
@@ -13,6 +13,6 @@ namespace Mdaresna.Repository.IRepositories.IdentityManagement.Query
     {
         Task<Role?> GetStanderdRole();
         Task<Role?> GetRoleByNameAsycn(string name);
-        Task<IEnumerable<RoleResultDTO>> GetRolesAsync(int type, string? name, bool? activation, string? description, IEnumerable<Guid>? ignoredRoles = null);
+        Task<IEnumerable<RoleResultDTO>> GetRolesAsync(int type, string? name, bool? activation, string? description, IEnumerable<Guid>? ignoredRoles = null, Guid? schoolId = null);
     }
 }

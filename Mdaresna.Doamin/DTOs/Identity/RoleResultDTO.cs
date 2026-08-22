@@ -1,4 +1,4 @@
-﻿using Mdaresna.Doamin.Models.Identity;
+using Mdaresna.Doamin.Models.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +15,7 @@ namespace Mdaresna.Doamin.DTOs.Identity
         public bool Active { get; set; }
         public bool SchoolRole { get; set; }
         public bool AdminRole { get; set; }
+        public Guid? SchoolId { get; set; }
 
         public int PermissionsCount { get; set; }
     }

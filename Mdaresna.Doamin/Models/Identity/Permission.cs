@@ -14,5 +14,6 @@ namespace Mdaresna.Doamin.Models.Identity
         public bool SchoolPermission { get; set; }
         public bool AppPermission { get; set; }
         public bool AllowedToMapToClassroom { get; set; }
+        public bool AvailableForSchoolCustomRoles { get; set; } = true;
     }
 }
