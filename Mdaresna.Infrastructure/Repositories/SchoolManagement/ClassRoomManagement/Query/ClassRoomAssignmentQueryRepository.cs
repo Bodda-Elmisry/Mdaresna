@@ -78,11 +78,17 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
             if (fromdate != null && todate != null && fromdate != todate)
                 query = query.Where(q => q.AssignmentDate >= fromdate && q.AssignmentDate <= todate);
 
+            var totalCount = await query.CountAsync();
+
             query = query.OrderByDescending(q=> q.AssignmentDate)
                          .Skip((pageNumber - 1)* pagesize)
                          .Take(pagesize);
 
-            return await query.ToListAsync();
+            var items = await query.ToListAsync();
+            foreach (var item in items)
+                item.TotalCount = totalCount;
+
+            return items;
 
 
 

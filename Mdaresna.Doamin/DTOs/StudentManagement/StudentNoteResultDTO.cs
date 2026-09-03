@@ -19,6 +19,7 @@ namespace Mdaresna.Doamin.DTOs.StudentManagement
         public string ClassRoomName { get; set; }
         public Guid StudentId { get; set; }
         public string StudentName { get; set; }
+        public int TotalCount { get; set; }
 
     }
 }

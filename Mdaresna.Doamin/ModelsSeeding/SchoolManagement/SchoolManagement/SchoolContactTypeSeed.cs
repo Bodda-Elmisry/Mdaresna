@@ -17,18 +17,21 @@ namespace Mdaresna.Doamin.ModelsSeeding.SchoolManagement.SchoolManagement
                 new SchoolContactType
                 {
                     Id = Guid.Parse("5160B1A7-B5FF-4807-A3E0-94FD99579407"),
-                    Name = "Email"
+                    Name = "Email",
+                    ActionType = global::Mdaresna.Doamin.Enums.ContactActionType.Email
                     
                 },
                 new SchoolContactType
                 {
                     Id = Guid.Parse("04415888-FE5C-4C91-A8AA-B6A8D1383C08"),
-                    Name = "Mobile"
+                    Name = "Mobile",
+                    ActionType = global::Mdaresna.Doamin.Enums.ContactActionType.Phone
                 },
                 new SchoolContactType
                 {
                     Id = Guid.Parse("7B962CC1-DB7B-489F-B75E-A478FB932E00"),
-                    Name = "Phone"
+                    Name = "Phone",
+                    ActionType = global::Mdaresna.Doamin.Enums.ContactActionType.Phone
                 },
                 new SchoolContactType
                 {
@@ -38,7 +41,8 @@ namespace Mdaresna.Doamin.ModelsSeeding.SchoolManagement.SchoolManagement
                 new SchoolContactType
                 {
                     Id = Guid.Parse("3851E877-81EC-4E74-A9EE-AB29265E873F"),
-                    Name = "Address"
+                    Name = "Address",
+                    ActionType = global::Mdaresna.Doamin.Enums.ContactActionType.Map
                 }
                 );
         }

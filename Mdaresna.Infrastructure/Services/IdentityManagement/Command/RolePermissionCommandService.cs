@@ -1,6 +1,7 @@
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Infrastructure.Helpers;
 using Mdaresna.Repository.IRepositories.Base;
+using Mdaresna.Repository.IRepositories.IdentityManagement.Command;
 using Mdaresna.Repository.IServices.Base;
 using Mdaresna.Repository.IServices.IdentityManagement.Command;
 using System;
@@ -16,14 +17,17 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Command
         private readonly IBaseCommandRepository<RolePermission> commandRepository;
         private readonly IBaseSharedRepository<RolePermission> sharedRepository;
         private readonly IBaseCommandBulkRepository<RolePermission> baseCommandBulkRepository;
+        private readonly IRolePermissionCommandRepository rolePermissionCommandRepository;
 
         public RolePermissionCommandService(IBaseCommandRepository<RolePermission> commandRepository,
             IBaseSharedRepository<RolePermission> sharedRepository,
-            IBaseCommandBulkRepository<RolePermission> baseCommandBulkRepository)
+            IBaseCommandBulkRepository<RolePermission> baseCommandBulkRepository,
+            IRolePermissionCommandRepository rolePermissionCommandRepository)
         {
             this.commandRepository = commandRepository;
             this.sharedRepository = sharedRepository;
             this.baseCommandBulkRepository = baseCommandBulkRepository;
+            this.rolePermissionCommandRepository = rolePermissionCommandRepository;
         }
         public bool Create(RolePermission entity)
         {
@@ -73,6 +77,11 @@ namespace Mdaresna.Infrastructure.Services.IdentityManagement.Command
             {
                 throw ex;
             }
+        }
+
+        public Task<bool> ReplaceRolePermissionsAsync(Guid roleId, IEnumerable<Guid> permissionIds)
+        {
+            return rolePermissionCommandRepository.ReplaceRolePermissionsAsync(roleId, permissionIds);
         }
 
         public bool Update(RolePermission entity)

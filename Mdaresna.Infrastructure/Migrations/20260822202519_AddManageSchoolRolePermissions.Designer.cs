@@ -4,6 +4,7 @@ using Mdaresna.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Mdaresna.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260822202519_AddManageSchoolRolePermissions")]
+    partial class AddManageSchoolRolePermissions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3732,9 +3735,6 @@ namespace Mdaresna.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ActionType")
-                        .HasColumnType("int");
-
                     b.Property<DateTime?>("CreateDate")
                         .HasColumnType("datetime2");
 
@@ -3765,35 +3765,30 @@ namespace Mdaresna.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("5160b1a7-b5ff-4807-a3e0-94fd99579407"),
-                            ActionType = 3,
                             Deleted = false,
                             Name = "Email"
                         },
                         new
                         {
                             Id = new Guid("04415888-fe5c-4c91-a8aa-b6a8d1383c08"),
-                            ActionType = 2,
                             Deleted = false,
                             Name = "Mobile"
                         },
                         new
                         {
                             Id = new Guid("7b962cc1-db7b-489f-b75e-a478fb932e00"),
-                            ActionType = 2,
                             Deleted = false,
                             Name = "Phone"
                         },
                         new
                         {
                             Id = new Guid("a3fdcfa4-0c57-416b-91a9-51e8601e7d0c"),
-                            ActionType = 0,
                             Deleted = false,
                             Name = "Fax"
                         },
                         new
                         {
                             Id = new Guid("3851e877-81ec-4e74-a9ee-ab29265e873f"),
-                            ActionType = 4,
                             Deleted = false,
                             Name = "Address"
                         });

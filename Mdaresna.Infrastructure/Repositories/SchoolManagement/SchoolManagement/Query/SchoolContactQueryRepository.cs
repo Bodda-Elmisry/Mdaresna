@@ -36,7 +36,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                              TypeDescription = c.ContactType.Description,
                              //TypeIcon = this.GetTypeIconeURL(c.ContactType.IconUrl),
                              TypeIcon = !string.IsNullOrEmpty(c.ContactType.IconUrl) ? $"{SettingsHelper.GetAppUrl()}/{c.ContactType.IconUrl.Replace("\\", "/")}" : string.Empty,
-                              TypeName = c.ContactType.Name
+                              TypeName = c.ContactType.Name,
+                              ActionType = c.ContactType.ActionType
                           })
                 .OrderBy(c => c.TypeName)
                 .ToListAsync();
@@ -58,7 +59,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                 SchoolContactValue = result.Value,
                 TypeDescription = result.ContactType.Description,
                 TypeIcon = this.GetTypeIconeURL(result.ContactType.IconUrl),
-                TypeName = result.ContactType.Name
+                TypeName = result.ContactType.Name,
+                ActionType = result.ContactType.ActionType
             };
         }
 

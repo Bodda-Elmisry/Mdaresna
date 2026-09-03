@@ -1713,6 +1713,18 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     SchoolPermission = true,
                     AppPermission = false,
                     AvailableForSchoolCustomRoles = true
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("E5F6A7B8-C9D0-4123-E456-789ABC012345"),
+                    Key = "ManageSchoolRolePermissions",
+                    Name = "Manage School Role Permissions",
+                    Name_AR = "إدارة صلاحيات أدوار المدرسة",
+                    Description = "Add or remove permissions from custom school roles",
+                    Description_AR = "إضافة أو إزالة الصلاحيات من أدوار المدرسة المخصصة",
+                    SchoolPermission = true,
+                    AppPermission = false,
+                    AvailableForSchoolCustomRoles = false
                 }
 
                 );

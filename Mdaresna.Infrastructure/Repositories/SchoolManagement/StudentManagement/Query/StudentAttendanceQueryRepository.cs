@@ -133,6 +133,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                 query = query.Where(a => a.ClassRoomId == classRoomId.Value);
             }
 
+            var totalCount = await query.CountAsync();
+
             var rows = await query
                 .OrderByDescending(a => a.Date)
                 .Skip((pageNumber - 1) * pageSize)
@@ -165,7 +167,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                     IsAttend = a.IsAttend,
                     IsAbsencePermit = a.IsAbsencePermit,
                     AbsencePermitReason = a.AbsencePermitReason,
-                    AttendanceStatus = a.AttendanceStatus
+                    AttendanceStatus = a.AttendanceStatus,
+                    TotalCount = totalCount
                 })
                 .ToList();
         }

@@ -53,6 +53,12 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                 BirthDate = s.BirthDate,
                 ClassRoomId = s.ClassRoomId,
                 ClassRoomName = s.ClassRoom.Name,
+                SupervisorName = s.ClassRoom.Supervisor != null
+                    ? $"{s.ClassRoom.Supervisor.FirstName} {s.ClassRoom.Supervisor.MiddelName} {s.ClassRoom.Supervisor.LastName}"
+                    : string.Empty,
+                SupervisorPhoneNumber = s.ClassRoom.Supervisor != null
+                    ? s.ClassRoom.Supervisor.PhoneNumber
+                    : string.Empty,
                 Code = s.Code,
                 FirstName = s.FirstName,
                 LastName = s.LastName,
@@ -93,6 +99,12 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                     BirthDate = s.BirthDate,
                     ClassRoomId = s.ClassRoomId,
                     ClassRoomName = s.ClassRoom.Name,
+                    SupervisorName = s.ClassRoom.Supervisor != null
+                        ? $"{s.ClassRoom.Supervisor.FirstName} {s.ClassRoom.Supervisor.MiddelName} {s.ClassRoom.Supervisor.LastName}"
+                        : string.Empty,
+                    SupervisorPhoneNumber = s.ClassRoom.Supervisor != null
+                        ? s.ClassRoom.Supervisor.PhoneNumber
+                        : string.Empty,
                     Code = s.Code,
                     FirstName = s.FirstName,
                     LastName = s.LastName,
@@ -111,7 +123,9 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
         public async Task<StudentResultDTO?> GetStudentByIdAsync(Guid studentId)
         {
             var student = await context.Students
-                                .Include(s => s.ClassRoom).Include(s => s.School)
+                                .Include(s => s.ClassRoom)
+                                .ThenInclude(classRoom => classRoom.Supervisor)
+                                .Include(s => s.School)
                                 .FirstOrDefaultAsync(s => s.Id == studentId && s.Deleted == false);
             return student == null ? null :
                 new StudentResultDTO
@@ -121,6 +135,10 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                     BirthDate = student.BirthDate,
                     ClassRoomId = student.ClassRoomId,
                     ClassRoomName = student.ClassRoom.Name,
+                    SupervisorName = student.ClassRoom.Supervisor != null
+                        ? $"{student.ClassRoom.Supervisor.FirstName} {student.ClassRoom.Supervisor.MiddelName} {student.ClassRoom.Supervisor.LastName}"
+                        : string.Empty,
+                    SupervisorPhoneNumber = student.ClassRoom.Supervisor?.PhoneNumber ?? string.Empty,
                     Code = student.Code,
                     FirstName = student.FirstName,
                     LastName = student.LastName,
@@ -138,7 +156,9 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
         public async Task<StudentResultDTO?> GetStudentByCodeAsync(string code)
         {
             var student = await context.Students
-                                .Include(s => s.ClassRoom).Include(s => s.School)
+                                .Include(s => s.ClassRoom)
+                                .ThenInclude(classRoom => classRoom.Supervisor)
+                                .Include(s => s.School)
                                 .FirstOrDefaultAsync(s => s.Code == code && s.Deleted == false);
             return student == null ? null :
                 new StudentResultDTO
@@ -148,6 +168,10 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                     BirthDate = student.BirthDate,
                     ClassRoomId = student.ClassRoomId,
                     ClassRoomName = student.ClassRoom.Name,
+                    SupervisorName = student.ClassRoom.Supervisor != null
+                        ? $"{student.ClassRoom.Supervisor.FirstName} {student.ClassRoom.Supervisor.MiddelName} {student.ClassRoom.Supervisor.LastName}"
+                        : string.Empty,
+                    SupervisorPhoneNumber = student.ClassRoom.Supervisor?.PhoneNumber ?? string.Empty,
                     Code = student.Code,
                     FirstName = student.FirstName,
                     LastName = student.LastName,

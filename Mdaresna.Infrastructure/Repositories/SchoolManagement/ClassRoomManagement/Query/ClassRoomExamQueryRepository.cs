@@ -59,6 +59,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
             if (rate != null)
                 query = query.Where(e => e.Rate == rate);
 
+            var totalCount = await query.CountAsync();
+
             var result = await query
                 .OrderByDescending(e => e.ExamDate)
                 .Skip((resolvedPageNumber - 1) * pageSize)
@@ -79,6 +81,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                 CourseId = e.CourseId,
                 CourseName = e.Course.Name,
                 Rate = e.Rate,
+                TotalCount = totalCount,
                 AssignedStudentsCount = context.ClassRoomStudentExams.Count(studentExam =>
                     studentExam.ExamId == e.Id &&
                     !studentExam.Deleted),

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Mdaresna.Doamin.Enums;
+
 namespace Mdaresna.Doamin.DTOs.SchoolManagement
 {
     public class SchoolContactResultDTO
@@ -15,5 +17,6 @@ namespace Mdaresna.Doamin.DTOs.SchoolManagement
         public string TypeName { get; set; }
         public string? TypeIcon { get; set; }
         public string? TypeDescription { get; set; }
+        public ContactActionType ActionType { get; set; }
     }
 }

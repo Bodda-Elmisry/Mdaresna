@@ -25,7 +25,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             this.appSettings = appSettings.Value;
         }
 
-        public async Task<List<Permission>> GetPermissionsListAsync(int permissionsType, int pageNumber, string? permissionName, Guid userId)
+        public async Task<List<Permission>> GetPermissionsListAsync(int permissionsType, int pageNumber, string? permissionName, Guid userId, bool forSchoolCustomRole = false)
         {
 
             var result = new List<Permission>();
@@ -34,7 +34,7 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             switch (permissionsType)
             {
                 case 1:
-                    result = await GetSchoolPermissions(pageNumber, permissionName, userId);
+                    result = await GetSchoolPermissions(pageNumber, permissionName, userId, forSchoolCustomRole);
                     break;
                 case 2:
                     result = await GetAppPermissions(pageNumber, permissionName, userId);
@@ -44,11 +44,16 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
             return result;
         }
 
-        private async Task<List<Permission>> GetSchoolPermissions(int pageNumber, string? permissionName, Guid userId)
+        private async Task<List<Permission>> GetSchoolPermissions(int pageNumber, string? permissionName, Guid userId, bool forSchoolCustomRole)
         {
             int pagesize = this.appSettings.PageSize != null ? this.appSettings.PageSize.Value : 30;
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             var query = _context.Permissions.Where(p => p.SchoolPermission == true && p.Deleted == false);
+
+            if (forSchoolCustomRole)
+            {
+                query = query.Where(p => p.AvailableForSchoolCustomRoles);
+            }
 
             query = query.Where(p=> p.Id != Guid.Parse("219007EA-620E-4D96-8292-2D015EF68DB1") 
                                  && p.Id != Guid.Parse("9301FC37-AE75-4EF6-B6FA-A656452E5A2E")

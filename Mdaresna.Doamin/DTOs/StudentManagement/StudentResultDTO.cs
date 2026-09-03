@@ -33,6 +33,10 @@ namespace Mdaresna.Doamin.DTOs.StudentManagement
 
         public string ClassRoomName { get; set; }
 
+        public string SupervisorName { get; set; } = string.Empty;
+
+        public string SupervisorPhoneNumber { get; set; } = string.Empty;
+
         public bool IsPayed { get; set; }
 
         public int ParentsCount { get; set; }

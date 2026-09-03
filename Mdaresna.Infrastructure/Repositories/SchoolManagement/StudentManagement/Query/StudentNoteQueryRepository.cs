@@ -55,6 +55,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
             if (!string.IsNullOrEmpty(Notes))
                 query = query.Where(n => n.Notes.Contains(Notes));
 
+            var totalCount = await query.CountAsync();
+
             query = query.Include(n => n.Student)
                          .Include(n => n.Course)
                          .Include(n => n.ClassRoom)
@@ -76,7 +78,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.StudentManagemen
                 ClassRoomId = n.ClassRoomId,
                 ClassRoomName = n.ClassRoom.Name,
                 StudentId = n.StudentId,
-                StudentName = $"{n.Student.FirstName} {n.Student.MiddelName} {n.Student.LastName}"
+                StudentName = $"{n.Student.FirstName} {n.Student.MiddelName} {n.Student.LastName}",
+                TotalCount = totalCount
             }).ToListAsync();
 
         }

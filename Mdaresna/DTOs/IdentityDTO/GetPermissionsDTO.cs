@@ -6,5 +6,6 @@
         public int PageNumber { get; set; }
         public string PermissionName { get; set; }
         public Guid UserId { get; set; }
+        public bool ForSchoolCustomRole { get; set; }
     }
 }

@@ -15,12 +15,15 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
     {
         private readonly ISchoolContactCommandService schoolContactCommandService;
         private readonly ISchoolContactQueryService schoolContactQueryService;
+        private readonly ISchoolContactTypeQueryService schoolContactTypeQueryService;
 
         public SchoolContactController(ISchoolContactCommandService schoolContactCommandService,
-                                       ISchoolContactQueryService schoolContactQueryService)
+                                       ISchoolContactQueryService schoolContactQueryService,
+                                       ISchoolContactTypeQueryService schoolContactTypeQueryService)
         {
             this.schoolContactCommandService = schoolContactCommandService;
             this.schoolContactQueryService = schoolContactQueryService;
+            this.schoolContactTypeQueryService = schoolContactTypeQueryService;
         }
 
         private string? GetTypeIconeURL(string? url)
@@ -49,9 +52,20 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
+                var contactType = await schoolContactTypeQueryService.GetByIdAsync(
+                    createSchoolContactDTO.SchoolContactTypeId);
+                if (contactType == null)
+                    return BadRequest("Can't find contact type.");
+
+                if (!SchoolContactValueValidator.TryValidate(
+                        contactType.ActionType,
+                        createSchoolContactDTO.Value,
+                        out var validationError))
+                    return BadRequest(validationError);
+
                 var contact = new SchoolContact
                 {
-                    Value = createSchoolContactDTO.Value,
+                    Value = createSchoolContactDTO.Value.Trim(),
                     ContactTypeId = createSchoolContactDTO.SchoolContactTypeId,
                     SchoolId = createSchoolContactDTO.SchoolId
                 };
@@ -80,7 +94,18 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 if (contact == null)
                     return BadRequest("Can't update contact");
 
-                contact.Value = updateSchoolContactDTO.Value;
+                var contactType = await schoolContactTypeQueryService.GetByIdAsync(
+                    updateSchoolContactDTO.SchoolContactTypeId);
+                if (contactType == null)
+                    return BadRequest("Can't find contact type.");
+
+                if (!SchoolContactValueValidator.TryValidate(
+                        contactType.ActionType,
+                        updateSchoolContactDTO.Value,
+                        out var validationError))
+                    return BadRequest(validationError);
+
+                contact.Value = updateSchoolContactDTO.Value.Trim();
                 contact.ContactTypeId = updateSchoolContactDTO.SchoolContactTypeId;
 
                 var updated = schoolContactCommandService.Update(contact);

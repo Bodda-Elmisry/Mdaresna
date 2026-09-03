@@ -36,56 +36,44 @@ namespace Mdaresna.Infrastructure.Repositories.IdentityManagement.Query
 
         public async Task<IEnumerable<RoleResultDTO>> GetRolesAsync(int type, string? name, bool? activation, string? description, IEnumerable<Guid>? ignoredRoles = null, Guid? schoolId = null)
         {
+            var query = context.Roles
+                .AsNoTracking()
+                .Where(role => role.Deleted == false);
 
-            var query = from r in context.Roles
-                        join rpGroup in (
-                            from rolePermission in context.RolePermissions
-                            group rolePermission by rolePermission.RoleId into g
-                            select new
-                            {
-                                RoleID = g.Key,
-                                PermissionsCount = g.Count()
-                            }
-                        ) on r.Id equals rpGroup.RoleID into rps
-                        from rp in rps.DefaultIfEmpty()
-                        select new
-                        {
-                            Role = r,
-                            PermissionsCount = rp != null ? rp.PermissionsCount : 0
-                        };
-
-            query = query.Where(r => r.Role.Deleted == false);
-
-            query = type == 1 ? query.Where(r => r.Role.SchoolRole == true) : query.Where(r => r.Role.AdminRole == true);
+            query = type == 1
+                ? query.Where(role => role.SchoolRole == true)
+                : query.Where(role => role.AdminRole == true);
 
             if (type == 1 && schoolId.HasValue)
             {
-                query = query.Where(r => r.Role.SchoolId == null || r.Role.SchoolId == schoolId.Value);
+                query = query.Where(role => role.SchoolId == schoolId.Value);
             }
             else if (type == 1 && !schoolId.HasValue)
             {
-                query = query.Where(r => r.Role.SchoolId == null);
+                query = query.Where(role => role.SchoolId == null);
             }
 
-            query = !string.IsNullOrEmpty(name) ? query.Where(r => r.Role.Name.Contains(name)) : query;
+            query = !string.IsNullOrEmpty(name) ? query.Where(role => role.Name.Contains(name)) : query;
 
-            query = !string.IsNullOrEmpty(description) ? query.Where(r => r.Role.Description.Contains(description)) : query;
+            query = !string.IsNullOrEmpty(description) ? query.Where(role => role.Description.Contains(description)) : query;
 
-            query = activation != null ? query.Where(r => r.Role.Active == activation) : query;
+            query = activation != null ? query.Where(role => role.Active == activation) : query;
 
-            query = ignoredRoles != null ? query.Where(r => !ignoredRoles.Contains(r.Role.Id)) : query;
+            query = ignoredRoles != null ? query.Where(role => !ignoredRoles.Contains(role.Id)) : query;
 
-            return await query.Select(r => new RoleResultDTO
+            var resultQuery = query.Select(role => new RoleResultDTO
             {
-                RoleId = r.Role.Id,
-                Name = r.Role.Name,
-                Active = r.Role.Active, 
-                AdminRole = r.Role.AdminRole,
-                Description = r.Role.Description,
-                SchoolRole = r.Role.SchoolRole,
-                SchoolId = r.Role.SchoolId,
-                PermissionsCount = r.PermissionsCount
-            }).ToListAsync();
+                RoleId = role.Id,
+                Name = role.Name,
+                Active = role.Active,
+                AdminRole = role.AdminRole,
+                Description = role.Description,
+                SchoolRole = role.SchoolRole,
+                SchoolId = role.SchoolId,
+                PermissionsCount = context.RolePermissions.Count(rolePermission => rolePermission.RoleId == role.Id)
+            });
+
+            return await resultQuery.ToListAsync();
 
         }
 

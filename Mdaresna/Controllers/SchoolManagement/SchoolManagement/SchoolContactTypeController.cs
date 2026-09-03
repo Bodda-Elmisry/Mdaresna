@@ -41,6 +41,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                     Name = t.Name,
                     IconUrl = GetTypeIconeURL(t.IconUrl),
                     Description = t.Description,
+                    ActionType = t.ActionType,
                     CreateDate = t.CreateDate,
                     LastModifyDate = t.LastModifyDate
                 });
@@ -72,10 +73,16 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         {
             try
             {
+                if (schoolContactTypeDTO.ActionType.HasValue &&
+                    !Enum.IsDefined(schoolContactTypeDTO.ActionType.Value))
+                    return BadRequest("Unsupported contact action type.");
+
                 var type = new SchoolContactType
                 {
                     Name = schoolContactTypeDTO.Name,
                     Description = schoolContactTypeDTO.Description,
+                    ActionType = schoolContactTypeDTO.ActionType ??
+                        global::Mdaresna.Doamin.Enums.ContactActionType.Text,
                 };
                 var added = schoolContactTypeCommandService.Create(type);
                 if (added)
@@ -101,8 +108,14 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 if (type == null)
                     return BadRequest("Can't Update Type");
 
+                if (updateSchoolContactTypeDTO.ActionType.HasValue &&
+                    !Enum.IsDefined(updateSchoolContactTypeDTO.ActionType.Value))
+                    return BadRequest("Unsupported contact action type.");
+
                 type.Name = updateSchoolContactTypeDTO.Name;
                 type.Description = updateSchoolContactTypeDTO.Description;
+                if (updateSchoolContactTypeDTO.ActionType.HasValue)
+                    type.ActionType = updateSchoolContactTypeDTO.ActionType.Value;
 
                 var updated = schoolContactTypeCommandService.Update(type);
                 if (updated)

@@ -21,6 +21,7 @@ namespace Mdaresna.Doamin.DTOs.ClassRoomManagement
         public decimal Rate { get; set; }
         public int AssignedStudentsCount { get; set; }
         public int RatedStudentsCount { get; set; }
+        public int TotalCount { get; set; }
         public DateTime? CreateDate { get; set; }
         public DateTime? LastModifyDate { get; set; }
 

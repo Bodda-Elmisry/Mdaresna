@@ -30,7 +30,8 @@ namespace Mdaresna.Controllers.IdentityManagement
                 var permissions = await permissionQueryService.GetPermissionsListAsync(dTO.permissionsType,
                                                                                  dTO.PageNumber,
                                                                                  dTO.PermissionName,
-                                                                                 dTO.UserId);
+                                                                                 dTO.UserId,
+                                                                                 dTO.ForSchoolCustomRole);
 
                 return Ok(permissions);
             }

@@ -10,5 +10,6 @@ namespace Mdaresna.Repository.IRepositories.IdentityManagement.Command
 {
     public interface IRolePermissionCommandRepository : IBaseCommandRepository<RolePermission>
     {
+        Task<bool> ReplaceRolePermissionsAsync(Guid roleId, IEnumerable<Guid> permissionIds);
     }
 }

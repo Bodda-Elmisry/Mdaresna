@@ -12,5 +12,6 @@ namespace Mdaresna.Repository.IServices.IdentityManagement.Command
     {
         Task<bool> Create(IEnumerable<RolePermission> entitiesList);
         Task<bool> DeleteAsync(IEnumerable<RolePermission> entitiesList);
+        Task<bool> ReplaceRolePermissionsAsync(Guid roleId, IEnumerable<Guid> permissionIds);
     }
 }

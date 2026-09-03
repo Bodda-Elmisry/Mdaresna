@@ -53,6 +53,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
             if (fromdate != null && todate != null && fromdate != todate)
                 query = query.Where(q => q.ActivityDate >= fromdate && q.ActivityDate <= todate);
 
+            var totalCount = await query.CountAsync();
+
             query = query.OrderByDescending(q => q.ActivityDate)
                          .Skip((pageNumber - 1) * pagesize)
                          .Take(pagesize);
@@ -72,6 +74,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.ClassRoomManagem
                             ActivityDetails = c.Details,
                             WeekDay = c.WeekDay,
                             Rate = c.Rate,
+                            TotalCount = totalCount,
                             AssignedStudentsCount = context.ClassRoomStudentActivities.Count(studentActivity =>
                                 studentActivity.ActivityId == c.Id &&
                                 !studentActivity.Deleted),

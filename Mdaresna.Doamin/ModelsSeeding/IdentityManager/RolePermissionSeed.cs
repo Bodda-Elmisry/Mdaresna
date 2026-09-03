@@ -588,6 +588,12 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 RoleId = Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"),
                 PermissionId = Guid.Parse("D4E5F6A7-B8C9-4012-D345-6789ABC01234")
             });
+
+            builder.HasData(new RolePermission
+            {
+                RoleId = Guid.Parse("4B8A99FE-B759-4C18-9500-8052C3D7AC73"),
+                PermissionId = Guid.Parse("E5F6A7B8-C9D0-4123-E456-789ABC012345")
+            });
         }
 
 
