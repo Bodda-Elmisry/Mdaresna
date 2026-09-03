@@ -19,6 +19,7 @@ namespace Mdaresna.Doamin.DTOs.SchoolManagement
         public IEnumerable<string> Images { get; set; }
         public string ModerationStatus { get; set; }
         public string? ModerationReason { get; set; }
+        public string Visibility { get; set; }
 
 
     }

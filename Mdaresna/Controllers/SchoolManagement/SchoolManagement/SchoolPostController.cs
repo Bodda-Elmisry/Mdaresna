@@ -23,6 +23,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         private readonly ISchoolPostReportCommandService schoolPostReportCommandService;
         private readonly ISchoolPostReportQueryService schoolPostReportQueryService;
         private readonly IImageUploderService imageUploderService;
+        private readonly ISchoolAccessValidator schoolAccessValidator;
         private readonly AppSettingDTO appSettings;
 
         public SchoolPostController(
@@ -31,6 +32,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             ISchoolPostReportCommandService schoolPostReportCommandService,
             ISchoolPostReportQueryService schoolPostReportQueryService,
             IImageUploderService imageUploderService,
+            ISchoolAccessValidator schoolAccessValidator,
             IOptions<AppSettingDTO> appSettings)
         {
             this.schoolPostCommandService = schoolPostCommandService;
@@ -38,6 +40,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             this.schoolPostReportCommandService = schoolPostReportCommandService;
             this.schoolPostReportQueryService = schoolPostReportQueryService;
             this.imageUploderService = imageUploderService;
+            this.schoolAccessValidator = schoolAccessValidator;
             this.appSettings = appSettings.Value;
         }
 
@@ -51,6 +54,15 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             }
         }
 
+        private bool HasPermission(string permissionKey)
+        {
+            return User.FindAll("permissions").Any(claim =>
+                string.Equals(
+                    claim.Value.Split(':', 2)[0],
+                    permissionKey,
+                    StringComparison.OrdinalIgnoreCase));
+        }
+
         [HttpPost("AddPost")]
         [Authorize]
         public async Task<IActionResult> AddPost([FromForm] AddSchoolPostDTO post)
@@ -60,7 +72,18 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 return BadRequest("Post cannot be null");
             }
 
+            if (!Enum.IsDefined(typeof(SchoolPostVisibilityEnum), post.Visibility))
+            {
+                return BadRequest("Invalid post visibility");
+            }
+
             post.PosterId = CurrentUserId;
+
+            if (post.Visibility == SchoolPostVisibilityEnum.SchoolMembers &&
+                !await schoolAccessValidator.CanAccessSchoolAsync(post.PosterId, post.SchoolId))
+            {
+                return Forbid();
+            }
 
             var moderationDecision = SchoolPostModerationHelper.Evaluate(
                 post.Content,
@@ -81,6 +104,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 Content = post.Content,
                 PosterId = post.PosterId,
                 SchoolId = post.SchoolId,
+                Visibility = post.Visibility,
                 ModerationStatus = moderationDecision.Status,
                 ModerationReason = moderationDecision.ReasonCode
             };
@@ -224,9 +248,14 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 return BadRequest("School ID cannot be empty");
             }
 
+            var viewerUserId = CurrentUserId == Guid.Empty ? (Guid?)null : CurrentUserId;
+            var includeSchoolMembers = viewerUserId.HasValue &&
+                await schoolAccessValidator.CanAccessSchoolAsync(viewerUserId.Value, dTO.SchoolId);
+
             var post = await schoolPostQueryService.GetSchoolPostesWithImagesAsync(
                 dTO.SchoolId,
-                dTO.ViewerUserId,
+                viewerUserId,
+                includeSchoolMembers,
                 dTO.SerachText,
                 dTO.PageNumber);
             if (post == null)
@@ -245,7 +274,15 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 return BadRequest("Post ID cannot be empty");
             }
 
-            var post = await schoolPostQueryService.GetPostWithImagesAsync(dTO.PostId);
+            var schoolPost = await schoolPostQueryService.GetByIdAsync(dTO.PostId);
+            if (schoolPost == null || schoolPost.Deleted)
+            {
+                return NotFound("Post not found");
+            }
+
+            var includeSchoolMembers = CurrentUserId != Guid.Empty &&
+                await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, schoolPost.SchoolId);
+            var post = await schoolPostQueryService.GetPostWithImagesAsync(dTO.PostId, includeSchoolMembers);
             if (post == null)
             {
                 return NotFound("Post not found");
@@ -320,11 +357,34 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         }
 
         [HttpPost("GetPostsWithReportsCount")]
+        [Authorize]
         public async Task<IActionResult> GetPostsWithReportsCount([FromBody] SchoolPostReportsFilterDTO filter)
         {
             if (filter == null)
             {
                 return BadRequest("Filter cannot be null");
+            }
+
+            var canViewAllReportedPosts = HasPermission("ShowReportedPosts");
+            var canViewSchoolReportedPosts = HasPermission("ShowSchoolReportedPosts");
+            if (!canViewAllReportedPosts && !canViewSchoolReportedPosts)
+            {
+                return Forbid();
+            }
+
+            if (!canViewAllReportedPosts)
+            {
+                if (!filter.SchoolId.HasValue || filter.SchoolId.Value == Guid.Empty)
+                {
+                    return BadRequest("School ID is required");
+                }
+
+                if (!await schoolAccessValidator.CanAccessSchoolAsync(
+                        CurrentUserId,
+                        filter.SchoolId.Value))
+                {
+                    return Forbid();
+                }
             }
 
             if (filter.MinReportsCount.HasValue &&

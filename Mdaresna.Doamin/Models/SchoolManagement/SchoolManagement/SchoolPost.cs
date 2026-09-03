@@ -28,6 +28,8 @@ namespace Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement
 
         public string? ModerationReason { get; set; }
 
+        public SchoolPostVisibilityEnum Visibility { get; set; } =
+            SchoolPostVisibilityEnum.Public;
 
     }
 }

@@ -1,3 +1,4 @@
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -11,6 +12,10 @@ namespace Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.SchoolManagement
             builder
                 .Property(p => p.ModerationReason)
                 .HasMaxLength(120);
+
+            builder
+                .Property(p => p.Visibility)
+                .HasDefaultValue(SchoolPostVisibilityEnum.Public);
 
             builder
                 .HasOne(p => p.School)

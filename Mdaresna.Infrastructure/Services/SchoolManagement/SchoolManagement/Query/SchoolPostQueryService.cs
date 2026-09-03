@@ -28,9 +28,9 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Que
             this.schoolPostQueryRepository = schoolPostQueryRepository;
         }
 
-        public async Task<PostResultDTO> GetPostWithImagesAsync(Guid postId)
+        public async Task<PostResultDTO> GetPostWithImagesAsync(Guid postId, bool includeSchoolMembers)
         {
-            return await schoolPostQueryRepository.GetPostWithImagesAsync(postId);
+            return await schoolPostQueryRepository.GetPostWithImagesAsync(postId, includeSchoolMembers);
         }
 
         public async Task<IEnumerable<SchoolPostReportsCountResultDTO>> GetPostsWithReportsCountAsync(Guid? schoolId, string? schoolName, int? minReportsCount, int? maxReportsCount, int pageNumber)
@@ -38,9 +38,9 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Que
             return await schoolPostQueryRepository.GetPostsWithReportsCountAsync(schoolId, schoolName, minReportsCount, maxReportsCount, pageNumber);
         }
 
-        public async Task<IEnumerable<PostResultDTO>> GetSchoolPostesWithImagesAsync(Guid schoolId, Guid? viewerUserId, string searchText, int pageNumber)
+        public async Task<IEnumerable<PostResultDTO>> GetSchoolPostesWithImagesAsync(Guid schoolId, Guid? viewerUserId, bool includeSchoolMembers, string searchText, int pageNumber)
         {
-            return await schoolPostQueryRepository.GetSchoolPostesWithImagesAsync(schoolId, viewerUserId, searchText, pageNumber);
+            return await schoolPostQueryRepository.GetSchoolPostesWithImagesAsync(schoolId, viewerUserId, includeSchoolMembers, searchText, pageNumber);
         }
     }
 }

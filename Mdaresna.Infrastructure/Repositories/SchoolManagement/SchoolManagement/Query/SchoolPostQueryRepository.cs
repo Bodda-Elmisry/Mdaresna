@@ -27,6 +27,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
         public async Task<IEnumerable<PostResultDTO>> GetSchoolPostesWithImagesAsync(
             Guid schoolId,
             Guid? viewerUserId,
+            bool includeSchoolMembers,
             string searchText,
             int pageNumber)
         {
@@ -37,7 +38,9 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                 .Where(x =>
                     x.SchoolId == schoolId &&
                     x.Deleted == false &&
-                    x.ModerationStatus == SchoolPostModerationStatusEnum.Approved);
+                    x.ModerationStatus == SchoolPostModerationStatusEnum.Approved &&
+                    (x.Visibility == SchoolPostVisibilityEnum.Public ||
+                     (includeSchoolMembers && x.Visibility == SchoolPostVisibilityEnum.SchoolMembers)));
 
             if (viewerUserId.HasValue && viewerUserId.Value != Guid.Empty)
             {
@@ -70,7 +73,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                     Schoold = p.SchoolId,
                     SchoolName = p.School.Name,
                     ModerationStatus = p.ModerationStatus.ToString(),
-                    ModerationReason = p.ModerationReason
+                    ModerationReason = p.ModerationReason,
+                    Visibility = p.Visibility.ToString()
                 })
                 .ToListAsync();
 
@@ -122,6 +126,7 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                     SchoolName = school.Name,
                     post.ModerationStatus,
                     post.ModerationReason,
+                    post.Visibility,
                     LastModifyDate = post.LastModifyDate ?? post.PostDate,
                     ReportsCount = (int?)reportsCount.ReportsCount ?? 0,
                     PosterFirstName = poster.FirstName,
@@ -171,14 +176,15 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                     ReportsCount = x.ReportsCount,
                     LastModifyDate = x.LastModifyDate,
                     ModerationStatus = x.ModerationStatus.ToString(),
-                    ModerationReason = x.ModerationReason
+                    ModerationReason = x.ModerationReason,
+                    Visibility = x.Visibility.ToString()
                 })
                 .ToList();
 
             return result;
         }
 
-        public async Task<PostResultDTO> GetPostWithImagesAsync(Guid postId)
+        public async Task<PostResultDTO> GetPostWithImagesAsync(Guid postId, bool includeSchoolMembers)
         {
             var post = await context.SchoolPosts
                 .Include(p => p.Poster)
@@ -186,7 +192,9 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                 .FirstOrDefaultAsync(x =>
                     x.Id == postId &&
                     x.Deleted == false &&
-                    x.ModerationStatus == SchoolPostModerationStatusEnum.Approved);
+                    x.ModerationStatus == SchoolPostModerationStatusEnum.Approved &&
+                    (x.Visibility == SchoolPostVisibilityEnum.Public ||
+                     (includeSchoolMembers && x.Visibility == SchoolPostVisibilityEnum.SchoolMembers)));
 
             if (post == null)
             {
@@ -203,7 +211,8 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                 SchoolName = post.School.Name,
                 LastModifyDate = post.LastModifyDate ?? post.PostDate,
                 ModerationStatus = post.ModerationStatus.ToString(),
-                ModerationReason = post.ModerationReason
+                ModerationReason = post.ModerationReason,
+                Visibility = post.Visibility.ToString()
             };
 
             result.Images = await GetPostImages(postId);
