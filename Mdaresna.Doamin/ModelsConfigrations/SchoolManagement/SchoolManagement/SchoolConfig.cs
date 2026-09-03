@@ -13,6 +13,10 @@ namespace Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.SchoolManagement
     {
         public void Configure(EntityTypeBuilder<School> builder)
         {
+            builder
+                .Property(school => school.LogoUrl)
+                .HasMaxLength(500);
+
             //builder
             //    .Property(p => p.CreateDate)
             //    .HasDefaultValue(DateTime.Now);

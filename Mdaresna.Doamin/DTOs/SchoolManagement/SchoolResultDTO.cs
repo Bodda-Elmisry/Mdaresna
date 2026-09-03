@@ -9,6 +9,7 @@ namespace Mdaresna.Doamin.DTOs.SchoolManagement
         public string Vesion { get; set; }
         public bool? Active { get; set; }
         public string ImageUrl { get; set; }
+        public string? LogoUrl { get; set; }
         public Guid SchoolTypeId { get; set; }
         public string SchoolTypeName { get; set; }
         public Guid? CoinTypeId { get; set; }

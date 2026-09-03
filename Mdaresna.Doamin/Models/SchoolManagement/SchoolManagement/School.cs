@@ -16,6 +16,8 @@ namespace Mdaresna.Doamin.Models.SchoolManagement.SchoolManagement
 
         public string ImageUrl { get; set; }
 
+        public string? LogoUrl { get; set; }
+
         public Guid SchoolTypeId { get; set; }
 
         [ForeignKey(nameof(SchoolTypeId))]

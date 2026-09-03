@@ -3,7 +3,10 @@ using Mdaresna.Doamin.Helpers;
 using Mdaresna.Doamin.Models.UserManagement;
 using Mdaresna.DTOs.Common;
 using Mdaresna.Repository.IBServices.Common;
+using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Command;
+using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Mdaresna.Helpers;
+using Mdaresna.Middlewares;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
@@ -15,13 +18,145 @@ namespace Mdaresna.Controllers.Common
     public class ImageUploerController : Controller
     {
         private readonly IImageUploderService imageUploderService;
+        private readonly ISchoolCommandService schoolCommandService;
+        private readonly ISchoolQueryService schoolQueryService;
+        private readonly ISchoolAccessValidator schoolAccessValidator;
         private readonly AppSettingDTO _appSettings;
+        private const long MaxSchoolLogoSizeInBytes = 2 * 1024 * 1024;
+        private static readonly string[] AllowedSchoolLogoExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
 
         public ImageUploerController(IImageUploderService imageUploderService,
+                                     ISchoolCommandService schoolCommandService,
+                                     ISchoolQueryService schoolQueryService,
+                                     ISchoolAccessValidator schoolAccessValidator,
                                      IOptions<AppSettingDTO> appSettings)
         {
             this.imageUploderService = imageUploderService;
+            this.schoolCommandService = schoolCommandService;
+            this.schoolQueryService = schoolQueryService;
+            this.schoolAccessValidator = schoolAccessValidator;
             this._appSettings = appSettings.Value;
+        }
+
+        private Guid CurrentUserId
+        {
+            get
+            {
+                var userIdClaim = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)
+                                  ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                return userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var userId)
+                    ? userId
+                    : Guid.Empty;
+            }
+        }
+
+        [HttpPost("UploadSchoolLogo")]
+        [PermissionAuthorize("UploadeSchoolImage")]
+        public async Task<IActionResult> UploadSchoolLogo([FromForm] UploadSchoolLogoDTO dto)
+        {
+            if (dto == null || dto.SchoolId == Guid.Empty)
+            {
+                return BadRequest("School ID cannot be empty");
+            }
+
+            if (!await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, dto.SchoolId))
+            {
+                return Forbid();
+            }
+
+            if (!FileValidationHelper.ValidateImage(dto.File, out var validationError))
+            {
+                return BadRequest(validationError);
+            }
+
+            if (dto.File.Length > MaxSchoolLogoSizeInBytes)
+            {
+                return BadRequest("School logo size cannot exceed 2 MB.");
+            }
+
+            var extension = Path.GetExtension(dto.File.FileName).ToLowerInvariant();
+            if (!AllowedSchoolLogoExtensions.Contains(extension))
+            {
+                return BadRequest("School logo must be a JPG, PNG, or WebP image.");
+            }
+
+            var school = await schoolQueryService.GetByIdAsync(dto.SchoolId);
+            if (school == null || school.Deleted)
+            {
+                return NotFound("School not found");
+            }
+
+            var relativeDirectory = Path.Combine(
+                _appSettings.ImagesPath,
+                "Schools",
+                dto.SchoolId.ToString(),
+                "Logo");
+            var absoluteDirectory = Path.Combine(Directory.GetCurrentDirectory(), relativeDirectory);
+            Directory.CreateDirectory(absoluteDirectory);
+
+            var fileName = $"logo_{Guid.NewGuid():N}{extension}";
+            var relativePath = Path.Combine(relativeDirectory, fileName);
+            var absolutePath = Path.Combine(absoluteDirectory, fileName);
+
+            await using (var stream = new FileStream(absolutePath, FileMode.CreateNew))
+            {
+                await dto.File.CopyToAsync(stream);
+            }
+
+            var oldLogoPath = school.LogoUrl;
+            try
+            {
+                school.LogoUrl = relativePath;
+                if (!schoolCommandService.Update(school))
+                {
+                    DeleteLogoFile(relativePath, dto.SchoolId);
+                    return BadRequest("Error in uploading school logo");
+                }
+            }
+            catch
+            {
+                DeleteLogoFile(relativePath, dto.SchoolId);
+                throw;
+            }
+
+            DeleteLogoFile(oldLogoPath, dto.SchoolId);
+            return Ok(BuildPublicUrl(relativePath));
+        }
+
+        [HttpDelete("RemoveSchoolLogo")]
+        [PermissionAuthorize("UploadeSchoolImage")]
+        public async Task<IActionResult> RemoveSchoolLogo([FromBody] SchoolIdDTO dto)
+        {
+            if (dto == null || dto.SchoolId == Guid.Empty)
+            {
+                return BadRequest("School ID cannot be empty");
+            }
+
+            if (!await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, dto.SchoolId))
+            {
+                return Forbid();
+            }
+
+            var school = await schoolQueryService.GetByIdAsync(dto.SchoolId);
+            if (school == null || school.Deleted)
+            {
+                return NotFound("School not found");
+            }
+
+            var oldLogoPath = school.LogoUrl;
+            if (string.IsNullOrWhiteSpace(oldLogoPath))
+            {
+                return Ok("School logo removed");
+            }
+
+            school.LogoUrl = null;
+            if (!schoolCommandService.Update(school))
+            {
+                return BadRequest("Error in removing school logo");
+            }
+
+            DeleteLogoFile(oldLogoPath, dto.SchoolId);
+            return Ok("School logo removed");
         }
 
         [HttpPost("UploadImage")]
@@ -142,6 +277,37 @@ namespace Mdaresna.Controllers.Common
              
 
             return directoryPath;
+        }
+
+        private string BuildPublicUrl(string relativePath)
+        {
+            return $"{SettingsHelper.GetAppUrl().TrimEnd('/')}/{relativePath.Replace("\\", "/").TrimStart('/')}";
+        }
+
+        private void DeleteLogoFile(string? storedPath, Guid schoolId)
+        {
+            if (string.IsNullOrWhiteSpace(storedPath))
+            {
+                return;
+            }
+
+            var fileName = Path.GetFileName(storedPath.Replace('/', Path.DirectorySeparatorChar));
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                return;
+            }
+
+            var logoDirectory = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                _appSettings.ImagesPath,
+                "Schools",
+                schoolId.ToString(),
+                "Logo");
+            var filePath = Path.Combine(logoDirectory, fileName);
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
         }
 
 
