@@ -12,7 +12,7 @@ namespace Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query
     public interface ISchoolPostQueryService : IBaseQueryService<SchoolPost>
     {
         Task<IEnumerable<PostResultDTO>> GetSchoolPostesWithImagesAsync(Guid schoolId, Guid? viewerUserId, bool includeSchoolMembers, string searchText, int pageNumber);
-        Task<PostResultDTO> GetPostWithImagesAsync(Guid postId, bool includeSchoolMembers);
+        Task<PostResultDTO> GetPostWithImagesAsync(Guid postId, Guid? viewerUserId, bool includeSchoolMembers);
         Task<IEnumerable<SchoolPostReportsCountResultDTO>> GetPostsWithReportsCountAsync(Guid? schoolId, string? schoolName, int? minReportsCount, int? maxReportsCount, int pageNumber);
     }
 }

@@ -476,6 +476,7 @@ namespace Mdaresna.Infrastructure.Configrations
             services.AddScoped(typeof(ISchoolPostCommandService), typeof(SchoolPostCommandService));
             services.AddScoped(typeof(ISchoolPostImageCommandService), typeof(SchoolPostImageCommandService));
             services.AddScoped(typeof(ISchoolPostReportCommandService), typeof(SchoolPostReportCommandService));
+            services.AddScoped(typeof(ISchoolPostReactionService), typeof(SchoolPostReactionService));
             services.AddScoped(typeof(ISchoolEmployeeCommandService), typeof(SchoolEmployeeCommandService));
             services.AddScoped(typeof(ISchoolTeacherCommandService), typeof(SchoolTeacherCommandService));
             services.AddScoped(typeof(ISchoolTeacherCourseCommandService), typeof(SchoolTeacherCourseCommandService));

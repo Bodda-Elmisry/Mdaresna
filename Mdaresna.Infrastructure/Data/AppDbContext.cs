@@ -127,6 +127,7 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration(new SchoolCourseConfig());
         modelBuilder.ApplyConfiguration(new SchoolGradeConfig());
         modelBuilder.ApplyConfiguration(new SchoolPostReportConfig());
+        modelBuilder.ApplyConfiguration(new SchoolPostReactionConfig());
     }
 
     private void ApplyClassRoomManagementConfigrations(ModelBuilder modelBuilder)
@@ -231,6 +232,7 @@ public class AppDbContext : DbContext
     public DbSet<SchoolPost> SchoolPosts { get; set; }
     public DbSet<SchoolPostImage> SchoolPostImages { get; set; }
     public DbSet<SchoolPostReport> SchoolPostReports { get; set; }
+    public DbSet<SchoolPostReaction> SchoolPostReactions { get; set; }
     public DbSet<SchoolType> SchoolTypes { get; set; }
     public DbSet<School> Schools { get; set; }
     public DbSet<SchoolImage> SchoolImages { get; set; }

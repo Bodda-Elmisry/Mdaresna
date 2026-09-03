@@ -28,9 +28,9 @@ namespace Mdaresna.Infrastructure.Services.SchoolManagement.SchoolManagement.Que
             this.schoolPostQueryRepository = schoolPostQueryRepository;
         }
 
-        public async Task<PostResultDTO> GetPostWithImagesAsync(Guid postId, bool includeSchoolMembers)
+        public async Task<PostResultDTO> GetPostWithImagesAsync(Guid postId, Guid? viewerUserId, bool includeSchoolMembers)
         {
-            return await schoolPostQueryRepository.GetPostWithImagesAsync(postId, includeSchoolMembers);
+            return await schoolPostQueryRepository.GetPostWithImagesAsync(postId, viewerUserId, includeSchoolMembers);
         }
 
         public async Task<IEnumerable<SchoolPostReportsCountResultDTO>> GetPostsWithReportsCountAsync(Guid? schoolId, string? schoolName, int? minReportsCount, int? maxReportsCount, int pageNumber)

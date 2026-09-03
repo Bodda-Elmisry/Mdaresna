@@ -74,7 +74,23 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                     SchoolName = p.School.Name,
                     ModerationStatus = p.ModerationStatus.ToString(),
                     ModerationReason = p.ModerationReason,
-                    Visibility = p.Visibility.ToString()
+                    Visibility = p.Visibility.ToString(),
+                    ReactionsCount = context.SchoolPostReactions.Count(reaction =>
+                        reaction.PostId == p.Id &&
+                        !reaction.Deleted &&
+                        !reaction.User.Deleted),
+                    CurrentUserReaction = viewerUserId.HasValue
+                        ? context.SchoolPostReactions
+                            .Where(reaction =>
+                                reaction.PostId == p.Id &&
+                                reaction.UserId == viewerUserId.Value &&
+                                !reaction.Deleted)
+                            .Select(reaction =>
+                                reaction.ReactionType == SchoolPostReactionTypeEnum.Like
+                                    ? "Like"
+                                    : null)
+                            .FirstOrDefault()
+                        : null
                 })
                 .ToListAsync();
 
@@ -127,6 +143,10 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                     post.ModerationStatus,
                     post.ModerationReason,
                     post.Visibility,
+                    ReactionsCount = context.SchoolPostReactions.Count(reaction =>
+                        reaction.PostId == post.Id &&
+                        !reaction.Deleted &&
+                        !reaction.User.Deleted),
                     LastModifyDate = post.LastModifyDate ?? post.PostDate,
                     ReportsCount = (int?)reportsCount.ReportsCount ?? 0,
                     PosterFirstName = poster.FirstName,
@@ -177,14 +197,18 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                     LastModifyDate = x.LastModifyDate,
                     ModerationStatus = x.ModerationStatus.ToString(),
                     ModerationReason = x.ModerationReason,
-                    Visibility = x.Visibility.ToString()
+                    Visibility = x.Visibility.ToString(),
+                    ReactionsCount = x.ReactionsCount
                 })
                 .ToList();
 
             return result;
         }
 
-        public async Task<PostResultDTO> GetPostWithImagesAsync(Guid postId, bool includeSchoolMembers)
+        public async Task<PostResultDTO> GetPostWithImagesAsync(
+            Guid postId,
+            Guid? viewerUserId,
+            bool includeSchoolMembers)
         {
             var post = await context.SchoolPosts
                 .Include(p => p.Poster)
@@ -194,7 +218,11 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                     x.Deleted == false &&
                     x.ModerationStatus == SchoolPostModerationStatusEnum.Approved &&
                     (x.Visibility == SchoolPostVisibilityEnum.Public ||
-                     (includeSchoolMembers && x.Visibility == SchoolPostVisibilityEnum.SchoolMembers)));
+                     (includeSchoolMembers && x.Visibility == SchoolPostVisibilityEnum.SchoolMembers)) &&
+                    (!viewerUserId.HasValue || !context.UserBlocks.Any(block =>
+                        !block.Deleted &&
+                        block.BlockerUserId == viewerUserId.Value &&
+                        block.BlockedUserId == x.PosterId)));
 
             if (post == null)
             {
@@ -212,7 +240,20 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                 LastModifyDate = post.LastModifyDate ?? post.PostDate,
                 ModerationStatus = post.ModerationStatus.ToString(),
                 ModerationReason = post.ModerationReason,
-                Visibility = post.Visibility.ToString()
+                Visibility = post.Visibility.ToString(),
+                ReactionsCount = await context.SchoolPostReactions.CountAsync(reaction =>
+                    reaction.PostId == post.Id &&
+                    !reaction.Deleted &&
+                    !reaction.User.Deleted),
+                CurrentUserReaction = viewerUserId.HasValue
+                    ? (await context.SchoolPostReactions
+                        .Where(reaction =>
+                            reaction.PostId == post.Id &&
+                            reaction.UserId == viewerUserId.Value &&
+                            !reaction.Deleted)
+                        .Select(reaction => (SchoolPostReactionTypeEnum?)reaction.ReactionType)
+                        .FirstOrDefaultAsync())?.ToString()
+                    : null
             };
 
             result.Images = await GetPostImages(postId);

@@ -22,6 +22,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         private readonly ISchoolPostQueryService schoolPostQueryService;
         private readonly ISchoolPostReportCommandService schoolPostReportCommandService;
         private readonly ISchoolPostReportQueryService schoolPostReportQueryService;
+        private readonly ISchoolPostReactionService schoolPostReactionService;
         private readonly IImageUploderService imageUploderService;
         private readonly ISchoolAccessValidator schoolAccessValidator;
         private readonly AppSettingDTO appSettings;
@@ -31,6 +32,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             ISchoolPostQueryService schoolPostQueryService,
             ISchoolPostReportCommandService schoolPostReportCommandService,
             ISchoolPostReportQueryService schoolPostReportQueryService,
+            ISchoolPostReactionService schoolPostReactionService,
             IImageUploderService imageUploderService,
             ISchoolAccessValidator schoolAccessValidator,
             IOptions<AppSettingDTO> appSettings)
@@ -39,6 +41,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             this.schoolPostQueryService = schoolPostQueryService;
             this.schoolPostReportCommandService = schoolPostReportCommandService;
             this.schoolPostReportQueryService = schoolPostReportQueryService;
+            this.schoolPostReactionService = schoolPostReactionService;
             this.imageUploderService = imageUploderService;
             this.schoolAccessValidator = schoolAccessValidator;
             this.appSettings = appSettings.Value;
@@ -280,15 +283,104 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
                 return NotFound("Post not found");
             }
 
-            var includeSchoolMembers = CurrentUserId != Guid.Empty &&
-                await schoolAccessValidator.CanAccessSchoolAsync(CurrentUserId, schoolPost.SchoolId);
-            var post = await schoolPostQueryService.GetPostWithImagesAsync(dTO.PostId, includeSchoolMembers);
+            var viewerUserId = CurrentUserId == Guid.Empty ? (Guid?)null : CurrentUserId;
+            var includeSchoolMembers = viewerUserId.HasValue &&
+                await schoolAccessValidator.CanAccessSchoolAsync(viewerUserId.Value, schoolPost.SchoolId);
+            var post = await schoolPostQueryService.GetPostWithImagesAsync(
+                dTO.PostId,
+                viewerUserId,
+                includeSchoolMembers);
             if (post == null)
             {
                 return NotFound("Post not found");
             }
 
             return Ok(post);
+        }
+
+        [HttpPost("React")]
+        [Authorize]
+        public async Task<IActionResult> React([FromBody] SetSchoolPostReactionDTO dTO)
+        {
+            if (dTO == null || dTO.PostId == Guid.Empty)
+            {
+                return BadRequest("Post ID cannot be empty");
+            }
+
+            if (!Enum.IsDefined(typeof(SchoolPostReactionTypeEnum), dTO.ReactionType))
+            {
+                return BadRequest("Invalid reaction type");
+            }
+
+            var post = await schoolPostQueryService.GetByIdAsync(dTO.PostId);
+            if (post == null || post.Deleted)
+            {
+                return NotFound("Post not found");
+            }
+
+            var includeSchoolMembers = await schoolAccessValidator.CanAccessSchoolAsync(
+                CurrentUserId,
+                post.SchoolId);
+            var result = await schoolPostReactionService.SetReactionAsync(
+                dTO.PostId,
+                CurrentUserId,
+                dTO.ReactionType,
+                includeSchoolMembers);
+
+            return result == null ? NotFound("Post not found") : Ok(result);
+        }
+
+        [HttpDelete("RemoveReaction")]
+        [Authorize]
+        public async Task<IActionResult> RemoveReaction([FromBody] SchoolPostIdDTO dTO)
+        {
+            if (dTO == null || dTO.PostId == Guid.Empty)
+            {
+                return BadRequest("Post ID cannot be empty");
+            }
+
+            var post = await schoolPostQueryService.GetByIdAsync(dTO.PostId);
+            if (post == null || post.Deleted)
+            {
+                return NotFound("Post not found");
+            }
+
+            var includeSchoolMembers = await schoolAccessValidator.CanAccessSchoolAsync(
+                CurrentUserId,
+                post.SchoolId);
+            var result = await schoolPostReactionService.RemoveReactionAsync(
+                dTO.PostId,
+                CurrentUserId,
+                includeSchoolMembers);
+
+            return result == null ? NotFound("Post not found") : Ok(result);
+        }
+
+        [HttpPost("GetPostReactions")]
+        [Authorize]
+        public async Task<IActionResult> GetPostReactions([FromBody] GetSchoolPostReactionsDTO dTO)
+        {
+            if (dTO == null || dTO.PostId == Guid.Empty)
+            {
+                return BadRequest("Post ID cannot be empty");
+            }
+
+            var post = await schoolPostQueryService.GetByIdAsync(dTO.PostId);
+            if (post == null || post.Deleted)
+            {
+                return NotFound("Post not found");
+            }
+
+            var includeSchoolMembers = await schoolAccessValidator.CanAccessSchoolAsync(
+                CurrentUserId,
+                post.SchoolId);
+            var result = await schoolPostReactionService.GetReactionsAsync(
+                dTO.PostId,
+                CurrentUserId,
+                includeSchoolMembers,
+                dTO.PageNumber);
+
+            return result == null ? NotFound("Post not found") : Ok(result);
         }
 
         [HttpDelete("DeletePost")]
