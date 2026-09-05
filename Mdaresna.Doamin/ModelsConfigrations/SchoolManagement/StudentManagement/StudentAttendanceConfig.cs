@@ -14,6 +14,11 @@ namespace Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.StudentManagement
         public void Configure(EntityTypeBuilder<StudentAttendance> builder)
         {
             builder
+                .HasIndex(attendance => new { attendance.StudentId, attendance.Date })
+                .HasDatabaseName("IX_StudentAttendances_StudentId_Date_Active")
+                .HasFilter("[Deleted] = 0");
+
+            builder
                 .HasOne(e => e.Student)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);

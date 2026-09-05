@@ -87,29 +87,9 @@ namespace Mdaresna.Infrastructure.BServices.Common
             catch (FirebaseMessagingException exception)
             {
                 Console.WriteLine($"FCM send failed for token {token}: {exception.Message}");
-                if (exception.MessagingErrorCode == MessagingErrorCode.Unregistered || exception.MessagingErrorCode == MessagingErrorCode.InvalidArgument)
+                if (IsInvalidTokenError(exception))
                 {
-                    _ = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            using (var scope = _serviceProvider.CreateScope())
-                            {
-                                var dbContext = scope.ServiceProvider.GetRequiredService<Mdaresna.Infrastructure.Data.AppDbContext>();
-                                var userDevice = await dbContext.UserDevices.FirstOrDefaultAsync(d => d.FcmToken == token);
-                                if (userDevice != null)
-                                {
-                                    dbContext.UserDevices.Remove(userDevice);
-                                    await dbContext.SaveChangesAsync();
-                                    Console.WriteLine($"Deleted invalid FCM token {token} from database.");
-                                }
-                            }
-                        }
-                        catch (Exception dbEx)
-                        {
-                            Console.WriteLine($"Failed to delete invalid FCM token {token} from DB: {dbEx.Message}");
-                        }
-                    });
+                    await DeleteInvalidTokensAsync([token]);
                 }
                 throw;
             }
@@ -145,6 +125,8 @@ namespace Mdaresna.Infrastructure.BServices.Common
             Console.WriteLine("SuccessCount = " + result.SuccessCount.ToString());
             Console.WriteLine("FailureCount = " + result.FailureCount.ToString());
 
+            var invalidTokens = new HashSet<string>(StringComparer.Ordinal);
+
             for (var i = 0; i < result.Responses.Count; i++)
             {
                 if (!result.Responses[i].IsSuccess)
@@ -153,31 +135,49 @@ namespace Mdaresna.Infrastructure.BServices.Common
                     var exception = result.Responses[i].Exception;
                     Console.WriteLine($"FCM send failed for token {token}: {exception?.Message}");
 
-                    if (exception != null && (exception.MessagingErrorCode == MessagingErrorCode.Unregistered || exception.MessagingErrorCode == MessagingErrorCode.InvalidArgument))
+                    if (IsInvalidTokenError(exception))
                     {
-                        _ = Task.Run(async () =>
-                        {
-                            try
-                            {
-                                using (var scope = _serviceProvider.CreateScope())
-                                {
-                                    var dbContext = scope.ServiceProvider.GetRequiredService<Mdaresna.Infrastructure.Data.AppDbContext>();
-                                    var userDevice = await dbContext.UserDevices.FirstOrDefaultAsync(d => d.FcmToken == token);
-                                    if (userDevice != null)
-                                    {
-                                        dbContext.UserDevices.Remove(userDevice);
-                                        await dbContext.SaveChangesAsync();
-                                        Console.WriteLine($"Deleted invalid FCM token {token} from database.");
-                                    }
-                                }
-                            }
-                            catch (Exception dbEx)
-                            {
-                                Console.WriteLine($"Failed to delete invalid FCM token {token} from DB: {dbEx.Message}");
-                            }
-                        });
+                        invalidTokens.Add(token);
                     }
                 }
+            }
+
+            await DeleteInvalidTokensAsync(invalidTokens);
+        }
+
+        private static bool IsInvalidTokenError(FirebaseMessagingException? exception)
+        {
+            return exception?.MessagingErrorCode is MessagingErrorCode.Unregistered
+                or MessagingErrorCode.InvalidArgument;
+        }
+
+        private async Task DeleteInvalidTokensAsync(IEnumerable<string> tokens)
+        {
+            var invalidTokens = tokens
+                .Where(token => !string.IsNullOrWhiteSpace(token))
+                .Distinct(StringComparer.Ordinal)
+                .ToList();
+
+            if (invalidTokens.Count == 0)
+            {
+                return;
+            }
+
+            try
+            {
+                await using var scope = _serviceProvider.CreateAsyncScope();
+                var dbContext = scope.ServiceProvider
+                    .GetRequiredService<Mdaresna.Infrastructure.Data.AppDbContext>();
+
+                var deletedCount = await dbContext.UserDevices
+                    .Where(device => invalidTokens.Contains(device.FcmToken))
+                    .ExecuteDeleteAsync();
+
+                Console.WriteLine($"Deleted {deletedCount} invalid FCM token(s) from database.");
+            }
+            catch (Exception dbEx)
+            {
+                Console.WriteLine($"Failed to delete {invalidTokens.Count} invalid FCM token(s) from DB: {dbEx.Message}");
             }
         }
 

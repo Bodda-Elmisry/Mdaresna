@@ -15,6 +15,11 @@ namespace Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.SchoolManagement
         public void Configure(EntityTypeBuilder<SchoolYear> builder)
         {
             builder
+                .HasIndex(year => new { year.SchoolId, year.IsActive, year.Compleated })
+                .HasDatabaseName("IX_SchoolYears_SchoolId_Active_Completed")
+                .HasFilter("[Deleted] = 0");
+
+            builder
                 .HasOne(e => e.School)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);

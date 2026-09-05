@@ -94,9 +94,16 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                 })
                 .ToListAsync();
 
+            var postIds = result
+                .Select(post => post.Id)
+                .ToList();
+            var imagesByPostId = await GetPostImages(postIds);
+
             foreach (var post in result)
             {
-                post.Images = await GetPostImages(post.Id);
+                post.Images = imagesByPostId.TryGetValue(post.Id, out var images)
+                    ? images
+                    : Array.Empty<string>();
             }
 
             return result;
@@ -266,6 +273,34 @@ namespace Mdaresna.Infrastructure.Repositories.SchoolManagement.SchoolManagement
                 .Where(x => x.PostId == postId)
                 .Select(x => $"{SettingsHelper.GetAppUrl()}/{x.ImageUrl.Replace("\\", "/")}")
                 .ToListAsync();
+        }
+
+        private async Task<IReadOnlyDictionary<Guid, IReadOnlyList<string>>> GetPostImages(
+            IReadOnlyCollection<Guid> postIds)
+        {
+            if (postIds.Count == 0)
+            {
+                return new Dictionary<Guid, IReadOnlyList<string>>();
+            }
+
+            var appUrl = SettingsHelper.GetAppUrl();
+            var imageRows = await context.SchoolPostImages
+                .AsNoTracking()
+                .Where(image => postIds.Contains(image.PostId))
+                .Select(image => new
+                {
+                    image.PostId,
+                    image.ImageUrl
+                })
+                .ToListAsync();
+
+            return imageRows
+                .GroupBy(image => image.PostId)
+                .ToDictionary(
+                    group => group.Key,
+                    group => (IReadOnlyList<string>)group
+                        .Select(image => $"{appUrl}/{image.ImageUrl.Replace("\\", "/")}")
+                        .ToList());
         }
     }
 }

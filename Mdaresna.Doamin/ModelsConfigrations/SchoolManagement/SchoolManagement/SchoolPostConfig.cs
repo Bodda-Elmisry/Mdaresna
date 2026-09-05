@@ -10,6 +10,18 @@ namespace Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.SchoolManagement
         public void Configure(EntityTypeBuilder<SchoolPost> builder)
         {
             builder
+                .HasIndex(post => new
+                {
+                    post.SchoolId,
+                    post.ModerationStatus,
+                    post.Visibility,
+                    post.LastModifyDate,
+                    post.PostDate
+                })
+                .HasDatabaseName("IX_SchoolPosts_Feed")
+                .HasFilter("[Deleted] = 0");
+
+            builder
                 .Property(p => p.ModerationReason)
                 .HasMaxLength(120);
 

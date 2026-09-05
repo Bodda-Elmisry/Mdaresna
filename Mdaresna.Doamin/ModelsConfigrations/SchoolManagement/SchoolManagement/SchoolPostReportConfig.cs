@@ -9,6 +9,11 @@ namespace Mdaresna.Doamin.ModelsConfigrations.SchoolManagement.SchoolManagement
         public void Configure(EntityTypeBuilder<SchoolPostReport> builder)
         {
             builder
+                .HasIndex(report => report.PostId)
+                .HasDatabaseName("IX_SchoolPostReports_PostId_Active")
+                .HasFilter("[Deleted] = 0");
+
+            builder
                 .HasOne(r => r.Post)
                 .WithMany()
                 .HasForeignKey(r => r.PostId)
