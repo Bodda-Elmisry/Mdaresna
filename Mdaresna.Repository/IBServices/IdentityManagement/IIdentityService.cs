@@ -14,7 +14,7 @@ namespace Mdaresna.Repository.IBServices.IdentityManagement
         Task<RegisterResultDTO> Register(User RegisterUser);
         Task<ConfirmSMSKeyResultDTO> ConfirmKey(string PhoneNumber, string Key);
         Task<SaveUserMainInfoResultDTO> SaveUserMainInfo(User userInfo);
-        Task<LoginResultDTO> Login(string PhoneNumber, string Password, Guid? schoolId);
+        Task<LoginResultDTO?> Login(string loginIdentifier, string Password, Guid? schoolId);
         Task<ChangePasswordResultDTO> ChangePassword(Guid userId, string oldPassword, string newPassword);
         Task<ForgetPasseordResultDTO> ForgetPassword(string phoneNumber);
         Task<AddUserNewPasswordResultDTO> AddUserNewPassword(Guid userId, string Password);

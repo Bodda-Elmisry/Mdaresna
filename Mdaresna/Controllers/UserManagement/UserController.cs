@@ -86,7 +86,26 @@ namespace Mdaresna.Controllers.UserManagement
                 user.City = dTO.City;
                 user.Region = dTO.Region;
                 user.Contry = dTO.Country;
-                user.Email = dTO.Email;
+                var normalizedEmail = string.IsNullOrWhiteSpace(dTO.Email)
+                    ? null
+                    : dTO.Email.Trim().ToLowerInvariant();
+
+                if (normalizedEmail?.Length > 320)
+                    return BadRequest("Email cannot exceed 320 characters");
+
+                if (normalizedEmail != null)
+                {
+                    var emailAlreadyUsed = await context.Users.AnyAsync(otherUser =>
+                        otherUser.Id != dTO.Id &&
+                        otherUser.Deleted == false &&
+                        otherUser.NormalizedEmail == normalizedEmail);
+
+                    if (emailAlreadyUsed)
+                        return Conflict("Email is already used by another account");
+                }
+
+                user.Email = string.IsNullOrWhiteSpace(dTO.Email) ? null : dTO.Email.Trim();
+                user.NormalizedEmail = normalizedEmail;
 
                 var updated = userCommandService.Update(user);
 

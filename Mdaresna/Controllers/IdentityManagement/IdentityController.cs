@@ -187,8 +187,15 @@ namespace Mdaresna.Controllers.IdentityManagement
         {
             try
             {
-                var result = await identityService.Login(login.PhoneNumber, login.Password, login.SchoolId);
-                return result == null ? BadRequest("Wrong phone number or password") : Ok(result);
+                var loginIdentifier = !string.IsNullOrWhiteSpace(login.LoginIdentifier)
+                    ? login.LoginIdentifier
+                    : login.PhoneNumber;
+
+                if (string.IsNullOrWhiteSpace(loginIdentifier) || string.IsNullOrEmpty(login.Password))
+                    return BadRequest("Phone number or email and password are required");
+
+                var result = await identityService.Login(loginIdentifier, login.Password, login.SchoolId);
+                return result == null ? BadRequest("Wrong phone number/email or password") : Ok(result);
             }
             catch(Exception ex)
             {

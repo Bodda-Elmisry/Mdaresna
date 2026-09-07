@@ -38,6 +38,11 @@ namespace Mdaresna.Infrastructure.Services.UserManagement.Query
             return await userQueryRepository.GetUserByPhoneNumber(PhoneNumber);
         }
 
+        public async Task<IReadOnlyList<User>> GetUsersByLoginIdentifier(string loginIdentifier)
+        {
+            return await userQueryRepository.GetUsersByLoginIdentifier(loginIdentifier);
+        }
+
         public async Task<User> GetUserByPhoneNumberAndConfirmationKey(string PhoneNumber, string Key)
         {
             return await userQueryRepository.GetUserByPhoneNumberAndConfirmationKey(PhoneNumber, Key);

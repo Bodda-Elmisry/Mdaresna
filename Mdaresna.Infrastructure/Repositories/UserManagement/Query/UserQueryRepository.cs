@@ -34,6 +34,23 @@ namespace Mdaresna.Infrastructure.Repositories.UserManagement.Query
             }
         }
 
+        public async Task<IReadOnlyList<User>> GetUsersByLoginIdentifier(string loginIdentifier)
+        {
+            var identifier = loginIdentifier.Trim();
+
+            if (identifier.Contains('@'))
+            {
+                var normalizedEmail = identifier.ToLowerInvariant();
+                return await context.Users
+                    .Where(user => user.NormalizedEmail == normalizedEmail && user.Deleted == false)
+                    .ToListAsync();
+            }
+
+            return await context.Users
+                .Where(user => user.PhoneNumber == identifier && user.Deleted == false)
+                .ToListAsync();
+        }
+
         public async Task<User?> GetUserByPhoneNumberAndConfirmationKey(string PhoneNumber, string Key)
         {
             return await context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == PhoneNumber &&

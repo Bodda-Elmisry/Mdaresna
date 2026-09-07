@@ -56,6 +56,10 @@ namespace Mdaresna.Doamin.Models.UserManagement
 
         public string? Email { get; set; }
 
+        [MaxLength(320)]
+        [JsonIgnore]
+        public string? NormalizedEmail { get; set; }
+
         public bool EmailConfirmed { get; set; }
 
         [MaxLength(200)]

@@ -347,23 +347,23 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
 
         }
 
-        public async Task<LoginResultDTO> Login(string PhoneNumber, string Password, Guid? schoolId)
+        public async Task<LoginResultDTO?> Login(string loginIdentifier, string Password, Guid? schoolId)
         {
-            var user = await userQueryService.GetUserByPhoneNumber(PhoneNumber);
+            if (string.IsNullOrWhiteSpace(loginIdentifier) || string.IsNullOrEmpty(Password))
+                return null;
 
-            if (user != null && user.Id != Guid.Empty)
-            {
-                var decp = UserHelper.DecryptPassword(user.Password, user.EncriptionKey);
-                Console.WriteLine(decp);
-                var encriptedPassword = UserHelper.EncryptPassword(Password, user.EncriptionKey);
-                user = user.Password == encriptedPassword ? user : null;
+            var candidates = await userQueryService.GetUsersByLoginIdentifier(loginIdentifier);
+            var matchingUsers = candidates
+                .Where(user => user.Id != Guid.Empty &&
+                               user.Password == UserHelper.EncryptPassword(Password, user.EncriptionKey))
+                .Take(2)
+                .ToList();
 
-                 
-            }
-            var result = (user == null || user.Id == Guid.Empty) ? null 
-                            : await GetUserInfo(user, schoolId);
-            
-            return result;
+            // Never choose an arbitrary account if legacy data contains a duplicate identifier.
+            if (matchingUsers.Count != 1)
+                return null;
+
+            return await GetUserInfo(matchingUsers[0], schoolId);
         }
 
         private async Task<LoginResultDTO> GetUserInfo(User user, Guid? schoolId)

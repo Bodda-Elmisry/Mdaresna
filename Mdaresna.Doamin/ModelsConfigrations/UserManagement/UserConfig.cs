@@ -13,6 +13,15 @@ namespace Mdaresna.Doamin.ModelsConfigrations.UserManagement
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
+            builder.Property(user => user.NormalizedEmail).HasMaxLength(320);
+
+            builder
+                .HasIndex(user => user.NormalizedEmail)
+                .IsUnique()
+                .HasFilter("[NormalizedEmail] IS NOT NULL AND [Deleted] = 0");
+
+            builder.HasIndex(user => user.PhoneNumber);
+
             //builder
             //    .Property(p => p.Language)
             //    .HasDefaultValue("en");

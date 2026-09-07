@@ -12,6 +12,7 @@ namespace Mdaresna.Repository.IRepositories.UserManagement.Query
     public interface IUserQueryRepository : IBaseQueryRepository<User>
     {
         Task<User?> GetUserByPhoneNumber(string PhoneNumber);
+        Task<IReadOnlyList<User>> GetUsersByLoginIdentifier(string loginIdentifier);
         Task<User?> GetUserByPhoneNumberAndConfirmationKey(string PhoneNumber, string Key);
         Task<User?> GetUserByPhoneNumberAndPassword(string PhoneNumber, string Password);
         Task<UserResultDTO?> GetUserById(Guid Id);
