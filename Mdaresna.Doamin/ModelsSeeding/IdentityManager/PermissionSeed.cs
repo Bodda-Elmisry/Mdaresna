@@ -1725,6 +1725,78 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     SchoolPermission = true,
                     AppPermission = false,
                     AvailableForSchoolCustomRoles = false
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("FCCA6951-E719-418F-91A9-B9ED598B73DA"),
+                    Key = "CreateLegalPolicy",
+                    Name = "Create Legal Policy",
+                    Name_AR = "إنشاء سياسة قانونية",
+                    Description = "Create a new legal policy draft",
+                    Description_AR = "إنشاء مسودة سياسة قانونية جديدة",
+                    SchoolPermission = false,
+                    AppPermission = true,
+                    AvailableForSchoolCustomRoles = false
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("E563525F-3553-4FBF-86D9-9D3CEE16B440"),
+                    Key = "ActivateLegalPolicy",
+                    Name = "Activate Legal Policy",
+                    Name_AR = "تفعيل سياسة قانونية",
+                    Description = "Activate a legal policy and require users to accept it",
+                    Description_AR = "تفعيل سياسة قانونية وإلزام المستخدمين بالموافقة عليها",
+                    SchoolPermission = false,
+                    AppPermission = true,
+                    AvailableForSchoolCustomRoles = false
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("D1D0CFDD-9BED-4CF9-8894-82FA1280498E"),
+                    Key = "DeleteLegalPolicy",
+                    Name = "Delete Legal Policy",
+                    Name_AR = "حذف سياسة قانونية",
+                    Description = "Delete an unused legal policy draft",
+                    Description_AR = "حذف مسودة سياسة قانونية غير مستخدمة",
+                    SchoolPermission = false,
+                    AppPermission = true,
+                    AvailableForSchoolCustomRoles = false
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("E5B3F685-9B46-4086-B4B2-446DCE9183E7"),
+                    Key = "ViewLegalPolicies",
+                    Name = "View Legal Policies",
+                    Name_AR = "عرض السياسات القانونية",
+                    Description = "View legal policies ordered by creation date",
+                    Description_AR = "عرض السياسات القانونية بترتيب تاريخ الإنشاء",
+                    SchoolPermission = false,
+                    AppPermission = true,
+                    AvailableForSchoolCustomRoles = false
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("312718AA-9407-4E1D-A210-54E97D05A403"),
+                    Key = "RevokeLegalPolicyAcceptance",
+                    Name = "Revoke Legal Policy Acceptance",
+                    Name_AR = "إلغاء موافقة مستخدم على سياسة",
+                    Description = "Revoke a user's active legal policy acceptance",
+                    Description_AR = "إلغاء موافقة مستخدم النشطة على سياسة قانونية",
+                    SchoolPermission = false,
+                    AppPermission = true,
+                    AvailableForSchoolCustomRoles = false
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("792DC31E-28AC-44C1-AC44-9F5E283C03CA"),
+                    Key = "ViewLegalPolicyAcceptances",
+                    Name = "View Legal Policy Acceptances",
+                    Name_AR = "عرض موافقات المستخدمين على السياسات",
+                    Description = "View user legal policy acceptance history",
+                    Description_AR = "عرض سجل موافقات المستخدمين على السياسات القانونية",
+                    SchoolPermission = false,
+                    AppPermission = true,
+                    AvailableForSchoolCustomRoles = false
                 }
 
                 );

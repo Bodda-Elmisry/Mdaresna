@@ -11,7 +11,9 @@ using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Mdaresna.Helpers;
+using Mdaresna.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
 {
@@ -25,6 +27,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
         private readonly ISchoolPostReactionService schoolPostReactionService;
         private readonly IImageUploderService imageUploderService;
         private readonly ISchoolAccessValidator schoolAccessValidator;
+        private readonly AppDbContext context;
         private readonly AppSettingDTO appSettings;
 
         public SchoolPostController(
@@ -35,6 +38,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             ISchoolPostReactionService schoolPostReactionService,
             IImageUploderService imageUploderService,
             ISchoolAccessValidator schoolAccessValidator,
+            AppDbContext context,
             IOptions<AppSettingDTO> appSettings)
         {
             this.schoolPostCommandService = schoolPostCommandService;
@@ -44,6 +48,7 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             this.schoolPostReactionService = schoolPostReactionService;
             this.imageUploderService = imageUploderService;
             this.schoolAccessValidator = schoolAccessValidator;
+            this.context = context;
             this.appSettings = appSettings.Value;
         }
 
@@ -81,6 +86,26 @@ namespace Mdaresna.Controllers.SchoolManagement.SchoolManagement
             }
 
             post.PosterId = CurrentUserId;
+
+            var currentPolicyId = await context.LegalPolicyVersions
+                .Where(policy => policy.IsActive &&
+                                 policy.Deleted == false &&
+                                 policy.EffectiveDateUtc <= DateTime.UtcNow)
+                .Select(policy => (Guid?)policy.Id)
+                .FirstOrDefaultAsync();
+
+            if (currentPolicyId.HasValue)
+            {
+                var acceptedCurrentPolicy = await context.UserLegalPolicyAcceptances.AnyAsync(
+                    acceptance => acceptance.UserId == post.PosterId &&
+                                  acceptance.LegalPolicyVersionId == currentPolicyId.Value &&
+                                  acceptance.RevokedAtUtc == null &&
+                                  acceptance.Deleted == false);
+
+                if (!acceptedCurrentPolicy)
+                    return StatusCode(StatusCodes.Status428PreconditionRequired,
+                        "LEGAL_POLICY_ACCEPTANCE_REQUIRED");
+            }
 
             if (post.Visibility == SchoolPostVisibilityEnum.SchoolMembers &&
                 !await schoolAccessValidator.CanAccessSchoolAsync(post.PosterId, post.SchoolId))

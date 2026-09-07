@@ -144,6 +144,38 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
                 PermissionId = Guid.Parse("0C7C9F0E-8F3C-4F44-9D83-0C2E5B1C61F1")
             });
+
+            builder.HasData(
+                new RolePermission
+                {
+                    RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
+                    PermissionId = Guid.Parse("FCCA6951-E719-418F-91A9-B9ED598B73DA")
+                },
+                new RolePermission
+                {
+                    RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
+                    PermissionId = Guid.Parse("E563525F-3553-4FBF-86D9-9D3CEE16B440")
+                },
+                new RolePermission
+                {
+                    RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
+                    PermissionId = Guid.Parse("D1D0CFDD-9BED-4CF9-8894-82FA1280498E")
+                },
+                new RolePermission
+                {
+                    RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
+                    PermissionId = Guid.Parse("E5B3F685-9B46-4086-B4B2-446DCE9183E7")
+                },
+                new RolePermission
+                {
+                    RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
+                    PermissionId = Guid.Parse("312718AA-9407-4E1D-A210-54E97D05A403")
+                },
+                new RolePermission
+                {
+                    RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
+                    PermissionId = Guid.Parse("792DC31E-28AC-44C1-AC44-9F5E283C03CA")
+                });
         }
 
         private void InitStanderdPermissions(EntityTypeBuilder<RolePermission> builder)
