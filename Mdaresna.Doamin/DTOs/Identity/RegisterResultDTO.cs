@@ -6,5 +6,6 @@ namespace Mdaresna.DTOs.IdentityDTO
     {
         public bool Regidterd { get; set; }
         public string MSG { get; set; }
+        public Mdaresna.Doamin.DTOs.Identity.VerificationDispatchResultDTO? Verification { get; set; }
     }
 }

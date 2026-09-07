@@ -1,4 +1,5 @@
 using Mdaresna.Doamin.DTOs.Identity;
+using Mdaresna.Doamin.Enums;
 using Mdaresna.Doamin.Models.Identity;
 using Mdaresna.Doamin.Models.UserManagement;
 using Mdaresna.DTOs.IdentityDTO;
@@ -8,8 +9,6 @@ using Mdaresna.Repository.IRepositories.IdentityManagement.Command;
 using Mdaresna.Repository.IServices.IdentityManagement.Command;
 using Mdaresna.Repository.IServices.IdentityManagement.Query;
 using Mdaresna.Repository.IServices.SchoolManagement.SchoolManagement.Query;
-using Mdaresna.Repository.IServices.SettingsManagement.Query;
-using Mdaresna.Repository.IServices.SettingsManagement.Command;
 using Mdaresna.Repository.IServices.UserManagement.Command;
 using Mdaresna.Repository.IServices.UserManagement.Query;
 using System;
@@ -29,7 +28,6 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
     {
         private readonly IUserCommandService userCommandService;
         private readonly IUserQueryService userQueryService;
-        private readonly ISMSProviderQueryService sMSProviderQueryService;
         private readonly IUserPermissionQueryService userPermissionQueryService;
         private readonly IUserRoleQueryService userRoleQueryService;
         private readonly IUserRoleCommandService userRoleCommandService;
@@ -38,13 +36,12 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
         private readonly ISchoolEmployeeQueryService schoolEmployeeQueryService;
         private readonly ISchoolTeacherQueryService schoolTeacherQueryService;
         private readonly IConfiguration configuration;
-        private readonly ISMSLogCommandService smsLogCommandService;
         private readonly IUserRefreshTokenCommandService userRefreshTokenCommandService;
         private readonly IUserRefreshTokenQueryService userRefreshTokenQueryService;
+        private readonly IPhoneVerificationService phoneVerificationService;
 
         public IdentityService(IUserCommandService userCommandService,
                                 IUserQueryService userQueryService,
-                                ISMSProviderQueryService sMSProviderQueryService,
                                 IUserPermissionQueryService userPermissionQueryService,
                                 IUserRoleQueryService userRoleQueryService,
                                 IUserRoleCommandService userRoleCommandService,
@@ -52,14 +49,13 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                                 ISchoolQueryService schoolQueryService,
                                 ISchoolEmployeeQueryService schoolEmployeeQueryService,
                                 ISchoolTeacherQueryService schoolTeacherQueryService,
-                                ISMSLogCommandService smsLogCommandService,
                                 IConfiguration configuration,
                                 IUserRefreshTokenCommandService userRefreshTokenCommandService,
-                                IUserRefreshTokenQueryService userRefreshTokenQueryService)
+                                IUserRefreshTokenQueryService userRefreshTokenQueryService,
+                                IPhoneVerificationService phoneVerificationService)
         {
             this.userCommandService = userCommandService;
             this.userQueryService = userQueryService;
-            this.sMSProviderQueryService = sMSProviderQueryService;
             this.userPermissionQueryService = userPermissionQueryService;
             this.userRoleQueryService = userRoleQueryService;
             this.userRoleCommandService = userRoleCommandService;
@@ -67,17 +63,16 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             this.schoolQueryService = schoolQueryService;
             this.schoolEmployeeQueryService = schoolEmployeeQueryService;
             this.schoolTeacherQueryService = schoolTeacherQueryService;
-            this.smsLogCommandService = smsLogCommandService;
             this.configuration = configuration;
             this.userRefreshTokenCommandService = userRefreshTokenCommandService;
             this.userRefreshTokenQueryService = userRefreshTokenQueryService;
+            this.phoneVerificationService = phoneVerificationService;
         }
 
         public async Task<RegisterResultDTO> Register(User RegisterUser)
         {
             var result = new RegisterResultDTO { MSG = string.Empty };
 
-            string? plainKey = null;
             var user = await userQueryService.GetUserByPhoneNumber(RegisterUser.PhoneNumber);
             if (user != null)
             {
@@ -89,30 +84,24 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                 }
                 else
                 {
-                    // User exists but phone is not confirmed. Generate a new OTP and update.
-                    plainKey = SMSHelper.GenerateConfirmationKey();
-                    user.PhoneConfirmationCode = UserHelper.HashConfirmationCode(plainKey);
-                    userCommandService.Update(user);
-
-                    RegisterUser.Id = user.Id;
-                    RegisterUser.PhoneConfirmationCode = user.PhoneConfirmationCode;
-                    RegisterUser.EncriptionKey = user.EncriptionKey;
+                    RegisterUser = user;
                     result.Regidterd = true;
                 }
             }
             else
             {
                 // New user
-                plainKey = SMSHelper.GenerateConfirmationKey();
-                RegisterUser.PhoneConfirmationCode = UserHelper.HashConfirmationCode(plainKey);
                 RegisterUser.EncriptionKey = UserHelper.GenerateEncriptionKey(32);
                 result.Regidterd = userCommandService.Create(RegisterUser);
             }
 
-            if (result.Regidterd && plainKey != null)
+            if (result.Regidterd)
             {
-                var addStanderdRole = await AddStanderdRoleToUser(RegisterUser.Id);
-                result.MSG = await SendConferamtionKey(RegisterUser, plainKey);
+                await AddStanderdRoleToUser(RegisterUser.Id);
+                result.Verification = await phoneVerificationService.StartAsync(
+                    RegisterUser,
+                    VerificationPurposeEnum.Registration);
+                result.MSG = result.Verification.Message;
             }
 
             return result;
@@ -141,25 +130,7 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
             return result;
         }
 
-        private async Task<string> SendConferamtionKey(User user, string plainKey)
-        {
-            var smsProvider = await sMSProviderQueryService.GetFirstActive();
-            string MSG;
-            MSG = await SMSHelper.SendConfirmationKey(smsProvider, user, plainKey);
-            var message = SMSHelper.BuildConfirmationMessage(user, plainKey);
-            smsLogCommandService.Create(new Mdaresna.Doamin.Models.SettingsManagement.SMSLog
-            {
-                SMSProviderId = smsProvider?.Id,
-                PhoneNumber = user.PhoneNumber,
-                Message = message,
-                Response = MSG,
-                IsSuccess = !string.IsNullOrEmpty(MSG) &&
-                            !MSG.StartsWith("SOMETHING WENT AWRY", StringComparison.OrdinalIgnoreCase)
-            });
-            return MSG;
-        }
-
-        public async Task<ConfirmSMSKeyResultDTO> ConfirmKey(string PhoneNumber, string Key)
+        public async Task<ConfirmSMSKeyResultDTO> ConfirmKey(Guid challengeId, string key)
         {
             var result = new ConfirmSMSKeyResultDTO
             {
@@ -168,13 +139,14 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                 User = null
             };
 
-            var user = await userQueryService.GetUserByPhoneNumber(PhoneNumber);
-            if (user != null && !string.IsNullOrEmpty(user.PhoneConfirmationCode))
+            var confirmation = await phoneVerificationService.ConfirmAsync(challengeId, key);
+            if (confirmation.Confirmed && confirmation.UserId.HasValue)
             {
-                var hashedInputKey = UserHelper.HashConfirmationCode(Key);
-                if (user.PhoneConfirmationCode == hashedInputKey)
+                var user = await userQueryService.GetByIdAsync(confirmation.UserId.Value);
+                if (user != null)
                 {
-                    user.PhoneConfirmed = true;
+                    if (confirmation.Purpose == VerificationPurposeEnum.Registration)
+                        user.PhoneConfirmed = true;
                     user.PhoneConfirmationCode = null;
                     result.Confirmed = userCommandService.Update(user);
                     if(result.Confirmed)
@@ -185,6 +157,9 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
                     }
                 }
             }
+
+            if (!confirmation.Confirmed)
+                result.MSG = confirmation.Message;
 
             return result;
         }
@@ -289,17 +264,14 @@ namespace Mdaresna.Infrastructure.BServices.IdentityManagement
 
             if(user != null)
             {
-                var plainKey = SMSHelper.GenerateConfirmationKey();
-                user.PhoneConfirmationCode = UserHelper.HashConfirmationCode(plainKey);
-                userCommandService.Update(user);
-
-                var confirmationKey = await this.SendConferamtionKey(user, plainKey);
-                if(!string.IsNullOrEmpty(confirmationKey))
-                {
-                    result.ConfermationKeySent = true;
-                    result.MSG = string.Empty;
-                    result.UserId = user.Id;
-                }
+                result.Verification = await phoneVerificationService.StartAsync(
+                    user,
+                    VerificationPurposeEnum.PasswordReset);
+                // The challenge is still usable when the SMS cooldown is active;
+                // the client can wait and resend against the returned challenge ID.
+                result.ConfermationKeySent = true;
+                result.MSG = result.Verification.Message;
+                result.UserId = user.Id;
             }
 
             return result;

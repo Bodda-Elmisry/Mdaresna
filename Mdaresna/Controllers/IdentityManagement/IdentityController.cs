@@ -60,7 +60,8 @@ namespace Mdaresna.Controllers.IdentityManagement
                 };
 
                 var registerd = await identityService.Register(user);
-                return registerd.Regidterd ? Ok(user) : 
+                return registerd.Regidterd && registerd.Verification != null
+                    ? Ok(registerd.Verification) :
                             (string.IsNullOrEmpty(registerd.MSG) ? BadRequest("Error") :
                                             Conflict(registerd.MSG));
             }
@@ -75,7 +76,12 @@ namespace Mdaresna.Controllers.IdentityManagement
         {
             try
             {
-                var result = await identityService.ConfirmKey(confirmPhone.PhoneNumber, confirmPhone.Key);
+                if (confirmPhone.ChallengeId == Guid.Empty)
+                    return BadRequest("Verification challenge ID is required");
+
+                var result = await identityService.ConfirmKey(
+                    confirmPhone.ChallengeId,
+                    confirmPhone.Key);
 
                 return result.Confirmed ? Ok(result.User) : BadRequest(result.MSG);
             }
@@ -153,7 +159,9 @@ namespace Mdaresna.Controllers.IdentityManagement
             {
                 var sent = await identityService.ForgetPassword(dTO.PhoneNumber);
 
-                return sent.ConfermationKeySent ? Ok(sent.UserId) : BadRequest(sent.MSG);
+                return sent.ConfermationKeySent && sent.Verification != null
+                    ? Ok(sent.Verification)
+                    : BadRequest(sent.MSG);
             }
             catch(Exception ex)
             {

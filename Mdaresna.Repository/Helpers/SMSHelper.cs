@@ -1,5 +1,6 @@
 using Mdaresna.Doamin.Models.SettingsManagement;
 using Mdaresna.Doamin.Models.UserManagement;
+using Mdaresna.Doamin.Enums;
 using System;
 using System.Net;
 using System.Net.Http;
@@ -14,7 +15,11 @@ namespace Mdaresna.Repository.Helpers
             Timeout = TimeSpan.FromSeconds(8)
         };
 
-        public static async Task<string> SendConfirmationKey(SMSProvider provider, User user, string plainKey)
+        public static async Task<string> SendConfirmationKey(
+            SMSProvider provider,
+            User user,
+            string plainKey,
+            VerificationPurposeEnum purpose = VerificationPurposeEnum.Registration)
         {
             string response = string.Empty;
             try
@@ -26,10 +31,12 @@ namespace Mdaresna.Repository.Helpers
                     provider.ProviderPassword,
                     provider.SenderName,
                     user.PhoneNumber,
-                    BuildConfirmationMessage(user, plainKey)
+                    BuildConfirmationMessage(plainKey, purpose)
                     );
 
-                Console.WriteLine($"SMS Url = {url}");
+                // Never log the provider URL because it contains credentials,
+                // the recipient phone number, and the one-time code.
+                Console.WriteLine("Sending SMS verification request.");
                 response = await httpClient.GetStringAsync(url);
                 return response;
             }
@@ -51,23 +58,35 @@ namespace Mdaresna.Repository.Helpers
 
         public static string GenerateConfirmationKey()
         {
-            string NumericChars = "0123456789";
-
-            var _random = new Random();
-            int length = 5;
-            string key = string.Empty;
-            while (length > 0)
-            {
-                key += NumericChars[_random.Next(NumericChars.Length)];
-                length--;
-            }
-
-            return key;
+            return System.Security.Cryptography.RandomNumberGenerator
+                .GetInt32(0, 1_000_000)
+                .ToString("D6");
         }
 
         public static string BuildConfirmationMessage(User user, string plainKey)
         {
-            return string.Format("Welcome to Mdaresna\n Your Key: {0}", plainKey);
+            return BuildConfirmationMessage(
+                plainKey,
+                VerificationPurposeEnum.Registration);
+        }
+
+        public static string BuildConfirmationMessage(
+            string plainKey,
+            VerificationPurposeEnum purpose)
+        {
+            var action = purpose == VerificationPurposeEnum.PasswordReset
+                ? "resetting your password"
+                : "creating your account";
+            return $"Mdaresna verification code for {action}: {plainKey}. " +
+                   "Do not share this code with anyone.";
+        }
+
+        public static bool IsSuccessfulResponse(string? response)
+        {
+            return !string.IsNullOrWhiteSpace(response) &&
+                   !response.StartsWith(
+                       "SOMETHING WENT AWRY",
+                       StringComparison.OrdinalIgnoreCase);
         }
     }
 }

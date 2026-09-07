@@ -394,6 +394,7 @@ namespace Mdaresna.Infrastructure.Configrations
         private static void ConfigerBIdentityManagementServ(IServiceCollection services)
         {
             services.AddScoped<IIdentityService, IdentityService>();
+            services.AddScoped<IPhoneVerificationService, PhoneVerificationService>();
 
         }
 

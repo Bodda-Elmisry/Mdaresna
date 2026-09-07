@@ -162,6 +162,9 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration(new ReportQueueConfig());
         modelBuilder.ApplyConfiguration(new LegalPolicyVersionConfig());
         modelBuilder.ApplyConfiguration(new UserLegalPolicyAcceptanceConfig());
+        modelBuilder.ApplyConfiguration(new VerificationChallengeConfig());
+        modelBuilder.ApplyConfiguration(new VerificationDeliveryAttemptConfig());
+        modelBuilder.ApplyConfiguration(new WhatsAppVerificationRequestConfig());
     }
 
     private void ApplyIdentitySeeding(ModelBuilder modelBuilder)
@@ -286,6 +289,9 @@ public class AppDbContext : DbContext
     public DbSet<ReportQueue> ReportQueues { get; set; }
     public DbSet<LegalPolicyVersion> LegalPolicyVersions { get; set; }
     public DbSet<UserLegalPolicyAcceptance> UserLegalPolicyAcceptances { get; set; }
+    public DbSet<VerificationChallenge> VerificationChallenges { get; set; }
+    public DbSet<VerificationDeliveryAttempt> VerificationDeliveryAttempts { get; set; }
+    public DbSet<WhatsAppVerificationRequest> WhatsAppVerificationRequests { get; set; }
 
 
     #endregion

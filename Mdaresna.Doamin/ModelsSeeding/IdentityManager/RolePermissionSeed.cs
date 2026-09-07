@@ -175,6 +175,21 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                 {
                     RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
                     PermissionId = Guid.Parse("792DC31E-28AC-44C1-AC44-9F5E283C03CA")
+                },
+                new RolePermission
+                {
+                    RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
+                    PermissionId = Guid.Parse("A13D7C8E-4F2A-4B91-8D6E-1C5A7B9E2031")
+                },
+                new RolePermission
+                {
+                    RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
+                    PermissionId = Guid.Parse("B24E8D9F-5A3B-4C02-9E7F-2D6B8C0F3142")
+                },
+                new RolePermission
+                {
+                    RoleId = Guid.Parse("228AE7F5-C704-4660-AEB0-0E1F43112AE1"),
+                    PermissionId = Guid.Parse("C35F9EA0-6B4C-4D13-AF80-3E7C9D104253")
                 });
         }
 

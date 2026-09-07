@@ -11,5 +11,6 @@ namespace Mdaresna.Doamin.DTOs.Identity
         public bool ConfermationKeySent { get; set; }
         public Guid? UserId { get; set; }
         public string MSG { get; set; }
+        public VerificationDispatchResultDTO? Verification { get; set; }
     }
 }

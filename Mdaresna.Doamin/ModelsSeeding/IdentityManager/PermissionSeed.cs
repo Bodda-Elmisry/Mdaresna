@@ -1797,6 +1797,42 @@ namespace Mdaresna.Doamin.ModelsSeeding.IdentityManager
                     SchoolPermission = false,
                     AppPermission = true,
                     AvailableForSchoolCustomRoles = false
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("A13D7C8E-4F2A-4B91-8D6E-1C5A7B9E2031"),
+                    Key = "ViewWhatsAppVerificationRequests",
+                    Name = "View WhatsApp Verification Requests",
+                    Name_AR = "عرض طلبات إرسال أكواد التحقق عبر واتساب",
+                    Description = "View manual WhatsApp verification requests",
+                    Description_AR = "عرض طلبات إرسال أكواد التحقق يدويًا عبر واتساب",
+                    SchoolPermission = false,
+                    AppPermission = true,
+                    AvailableForSchoolCustomRoles = false
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("B24E8D9F-5A3B-4C02-9E7F-2D6B8C0F3142"),
+                    Key = "PrepareWhatsAppVerificationMessage",
+                    Name = "Prepare WhatsApp Verification Message",
+                    Name_AR = "تجهيز رسالة التحقق عبر واتساب",
+                    Description = "Generate a verification code and open its WhatsApp message",
+                    Description_AR = "إنشاء كود تحقق وتجهيز رسالته للإرسال عبر واتساب",
+                    SchoolPermission = false,
+                    AppPermission = true,
+                    AvailableForSchoolCustomRoles = false
+                },
+                new Permission
+                {
+                    Id = Guid.Parse("C35F9EA0-6B4C-4D13-AF80-3E7C9D104253"),
+                    Key = "ConfirmWhatsAppVerificationSent",
+                    Name = "Confirm WhatsApp Verification Sent",
+                    Name_AR = "تأكيد إرسال رسالة التحقق عبر واتساب",
+                    Description = "Confirm that a manual WhatsApp verification message was sent",
+                    Description_AR = "تأكيد إرسال رسالة التحقق يدويًا عبر واتساب",
+                    SchoolPermission = false,
+                    AppPermission = true,
+                    AvailableForSchoolCustomRoles = false
                 }
 
                 );
