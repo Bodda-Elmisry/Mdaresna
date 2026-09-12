@@ -1,0 +1,12 @@
+{
+  "solution": {
+    "path": "Mdaresna.sln",
+    "projects": [
+      "src\\BuildingBlocks\\Mdaresna.SharedKernel\\Mdaresna.SharedKernel.csproj",
+      "src\\BuildingBlocks\\Mdaresna.Tenancy.Abstractions\\Mdaresna.Tenancy.Abstractions.csproj",
+      "src\\BuildingBlocks\\Mdaresna.IntegrationContracts\\Mdaresna.IntegrationContracts.csproj",
+      "src\\BuildingBlocks\\Mdaresna.Messaging.Abstractions\\Mdaresna.Messaging.Abstractions.csproj",
+      "tests\\Mdaresna.ArchitectureTests\\Mdaresna.ArchitectureTests.csproj"
+    ]
+  }
+}

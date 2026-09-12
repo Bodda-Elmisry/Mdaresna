@@ -298,7 +298,10 @@
 # General generated files
 **/bin/
 **/obj/
+**/TestResults/
 .vs/
+*.user
+*.suo
 
 # Runtime-generated app content
 Mdaresna/Logs/
