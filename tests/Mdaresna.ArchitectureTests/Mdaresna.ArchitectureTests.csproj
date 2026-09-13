@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\BuildingBlocks\Mdaresna.Api.Contracts\Mdaresna.Api.Contracts.csproj" />
     <ProjectReference Include="..\..\src\BuildingBlocks\Mdaresna.SharedKernel\Mdaresna.SharedKernel.csproj" />
     <ProjectReference Include="..\..\src\BuildingBlocks\Mdaresna.Tenancy.Abstractions\Mdaresna.Tenancy.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\BuildingBlocks\Mdaresna.IntegrationContracts\Mdaresna.IntegrationContracts.csproj" />

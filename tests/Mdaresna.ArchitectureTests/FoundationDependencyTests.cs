@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Xml.Linq;
+using Mdaresna.Api.Contracts;
 using Mdaresna.IntegrationContracts.Messaging;
 using Mdaresna.Messaging.Abstractions;
 using Mdaresna.SharedKernel.Time;
@@ -12,6 +13,7 @@ public sealed class FoundationDependencyTests
     [Fact]
     public void Foundation_projects_follow_the_allowed_dependency_direction()
     {
+        AssertLocalReferences(typeof(ApiResponse<>).Assembly);
         AssertLocalReferences(typeof(IClock).Assembly);
         AssertLocalReferences(typeof(TenantId).Assembly);
         AssertLocalReferences(
@@ -57,6 +59,7 @@ public sealed class FoundationDependencyTests
         var repositoryRoot = FindRepositoryRoot();
         var expectedReferences = new Dictionary<string, string[]>
         {
+            ["Mdaresna.Api.Contracts"] = [],
             ["Mdaresna.SharedKernel"] = [],
             ["Mdaresna.Tenancy.Abstractions"] = [],
             ["Mdaresna.IntegrationContracts"] = ["Mdaresna.Tenancy.Abstractions"],
@@ -110,6 +113,7 @@ public sealed class FoundationDependencyTests
 
     private static IEnumerable<Assembly> FoundationAssemblies()
     {
+        yield return typeof(ApiResponse<>).Assembly;
         yield return typeof(IClock).Assembly;
         yield return typeof(TenantId).Assembly;
         yield return typeof(IIntegrationEvent).Assembly;

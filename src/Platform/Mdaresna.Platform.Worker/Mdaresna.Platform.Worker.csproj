@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>Mdaresna.Platform.Worker</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="RabbitMQ.Client" Version="7.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Mdaresna.Platform.Application\Mdaresna.Platform.Application.csproj" />
+    <ProjectReference Include="..\Mdaresna.Platform.Infrastructure\Mdaresna.Platform.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
