@@ -19,8 +19,17 @@ internal sealed class RegistryReadStore(PlatformDbContext dbContext) : IRegistry
 
         if (query.Search is { } search)
         {
-            tenants = tenants.Where(tenant => tenant.DisplayName.Contains(search) ||
-                tenant.LegalName != null && tenant.LegalName.Contains(search));
+            if (dbContext.Database.IsNpgsql())
+            {
+                var pattern = ToPostgreSqlContainsPattern(search);
+                tenants = tenants.Where(tenant => EF.Functions.ILike(tenant.DisplayName, pattern, "\\") ||
+                    tenant.LegalName != null && EF.Functions.ILike(tenant.LegalName, pattern, "\\"));
+            }
+            else
+            {
+                tenants = tenants.Where(tenant => tenant.DisplayName.Contains(search) ||
+                    tenant.LegalName != null && tenant.LegalName.Contains(search));
+            }
         }
 
         var totalCount = await tenants.CountAsync(cancellationToken);
@@ -97,9 +106,19 @@ internal sealed class RegistryReadStore(PlatformDbContext dbContext) : IRegistry
                 // Free-text school-name searches need not be valid school codes.
             }
 
-            schools = code is { } schoolCode
-                ? schools.Where(school => school.DisplayName.Contains(search) || school.Code == schoolCode)
-                : schools.Where(school => school.DisplayName.Contains(search));
+            if (dbContext.Database.IsNpgsql())
+            {
+                var pattern = ToPostgreSqlContainsPattern(search);
+                schools = code is { } schoolCode
+                    ? schools.Where(school => EF.Functions.ILike(school.DisplayName, pattern, "\\") || school.Code == schoolCode)
+                    : schools.Where(school => EF.Functions.ILike(school.DisplayName, pattern, "\\"));
+            }
+            else
+            {
+                schools = code is { } schoolCode
+                    ? schools.Where(school => school.DisplayName.Contains(search) || school.Code == schoolCode)
+                    : schools.Where(school => school.DisplayName.Contains(search));
+            }
         }
 
         var totalCount = await schools.CountAsync(cancellationToken);
@@ -155,4 +174,9 @@ internal sealed class RegistryReadStore(PlatformDbContext dbContext) : IRegistry
                 school.UpdatedAtUtc,
                 school.Version))
             .SingleOrDefaultAsync(cancellationToken);
+
+    private static string ToPostgreSqlContainsPattern(string value) =>
+        $"%{value.Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("%", "\\%", StringComparison.Ordinal)
+            .Replace("_", "\\_", StringComparison.Ordinal)}%";
 }

@@ -274,3 +274,29 @@ internal sealed class AccountActivationChallengeConfiguration : IEntityTypeConfi
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
+
+internal sealed class AccountPasswordResetChallengeConfiguration : IEntityTypeConfiguration<AccountPasswordResetChallenge>
+{
+    public void Configure(EntityTypeBuilder<AccountPasswordResetChallenge> builder)
+    {
+        builder.ToTable("account_password_reset_challenges", "identity", table =>
+        {
+            table.HasCheckConstraint("ck_identity_password_reset_challenge_expiry",
+                "[ExpiresAtUtc] > [CreatedAtUtc]");
+            table.HasCheckConstraint("ck_identity_password_reset_challenge_counts",
+                "[SendCount] >= 0 AND [FailedAttempts] >= 0");
+        });
+        builder.HasKey(x => x.AccountId);
+        builder.Property(x => x.CodeHash).HasMaxLength(32).IsRequired();
+        builder.Property(x => x.CreatedAtUtc).HasPrecision(3);
+        builder.Property(x => x.ExpiresAtUtc).HasPrecision(3);
+        builder.Property(x => x.ConsumedAtUtc).HasPrecision(3);
+        builder.Property(x => x.LastSentAtUtc).HasPrecision(3);
+        builder.Property(x => x.SendWindowStartUtc).HasPrecision(3);
+        builder.Property(x => x.RowVersion).IsRowVersion();
+        builder.HasOne(x => x.Account)
+            .WithOne(x => x.PasswordResetChallenge)
+            .HasForeignKey<AccountPasswordResetChallenge>(x => x.AccountId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}

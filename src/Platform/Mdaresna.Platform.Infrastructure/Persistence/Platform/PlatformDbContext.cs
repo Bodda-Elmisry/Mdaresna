@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Mdaresna.Platform.Infrastructure.Persistence.Platform;
 
-public sealed class PlatformDbContext(DbContextOptions<PlatformDbContext> options) : DbContext(options)
+public class PlatformDbContext(DbContextOptions options) : DbContext(options)
 {
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<SchoolRegistration> Schools => Set<SchoolRegistration>();
@@ -51,6 +51,8 @@ public sealed class PlatformDbContext(DbContextOptions<PlatformDbContext> option
         modelBuilder.ApplyConfiguration(new UnitGrantConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.PlatformSmsProviderConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.PlatformSmsLogConfiguration());
+        if (Database.IsNpgsql())
+            PostgreSqlModelAdapter.Apply(modelBuilder);
     }
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)

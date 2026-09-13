@@ -1,24 +1,35 @@
 using Mdaresna.Platform.Bootstrap;
 using Mdaresna.Platform.Infrastructure.Messaging;
 using Mdaresna.Platform.Infrastructure.Persistence.Identity;
+using Mdaresna.Platform.Infrastructure.Persistence;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using System.Text;
 
 try
 {
+    var provider = Environment.GetEnvironmentVariable("PlatformDatabase__Provider") ?? "SqlServer";
+    var usePostgreSql = provider.Equals("PostgreSql", StringComparison.OrdinalIgnoreCase);
+    if (!usePostgreSql && !provider.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))
+        throw new BootstrapRejectedException("PlatformDatabase__Provider must be SqlServer or PostgreSql.");
+
     if (args.Length > 0 && args[0] == "--seed-sms-provider")
     {
         var seedOptions = SmsProviderSeedOptions.Parse(args);
         var seedConnection = RequireConnection("ConnectionStrings__PlatformConnection");
-        EnsureExplicitPlatformTarget(seedConnection);
-        var seedDbOptions = new DbContextOptionsBuilder<PlatformDbContext>()
-            .UseSqlServer(seedConnection, sql =>
-                sql.MigrationsHistoryTable("__EFMigrationsHistory", "platform"))
-            .Options;
-        await using var seedDb = new PlatformDbContext(seedDbOptions);
+        EnsureExplicitPlatformTarget(seedConnection, usePostgreSql);
+        await using PlatformDbContext seedDb = usePostgreSql
+            ? new PostgreSqlPlatformDbContext(
+                new DbContextOptionsBuilder<PostgreSqlPlatformDbContext>()
+                    .UseNpgsql(seedConnection, pg =>
+                        pg.MigrationsHistoryTable("__EFMigrationsHistory", "platform")).Options)
+            : new PlatformDbContext(
+                new DbContextOptionsBuilder<PlatformDbContext>()
+                    .UseSqlServer(seedConnection, sql =>
+                        sql.MigrationsHistoryTable("__EFMigrationsHistory", "platform")).Options);
 
         if (seedOptions.DryRun)
         {
@@ -41,18 +52,26 @@ try
     var options = BootstrapOptions.Parse(args);
     var platformConnection = RequireConnection("ConnectionStrings__PlatformConnection");
     var identityConnection = RequireConnection("ConnectionStrings__IdentityConnection");
-    EnsureSeparateDatabaseTargets(platformConnection, identityConnection);
+    EnsureSeparateDatabaseTargets(platformConnection, identityConnection, usePostgreSql);
 
-    var platformOptions = new DbContextOptionsBuilder<PlatformDbContext>()
-        .UseSqlServer(platformConnection, sql =>
-            sql.MigrationsHistoryTable("__EFMigrationsHistory", "platform"))
-        .Options;
-    var identityOptions = new DbContextOptionsBuilder<IdentityDbContext>()
-        .UseSqlServer(identityConnection, sql =>
-            sql.MigrationsHistoryTable("__EFMigrationsHistory", "identity"))
-        .Options;
-    await using var platformDb = new PlatformDbContext(platformOptions);
-    await using var identityDb = new IdentityDbContext(identityOptions);
+    await using PlatformDbContext platformDb = usePostgreSql
+        ? new PostgreSqlPlatformDbContext(
+            new DbContextOptionsBuilder<PostgreSqlPlatformDbContext>()
+                .UseNpgsql(platformConnection, pg =>
+                    pg.MigrationsHistoryTable("__EFMigrationsHistory", "platform")).Options)
+        : new PlatformDbContext(
+            new DbContextOptionsBuilder<PlatformDbContext>()
+                .UseSqlServer(platformConnection, sql =>
+                    sql.MigrationsHistoryTable("__EFMigrationsHistory", "platform")).Options);
+    await using IdentityDbContext identityDb = usePostgreSql
+        ? new PostgreSqlIdentityDbContext(
+            new DbContextOptionsBuilder<PostgreSqlIdentityDbContext>()
+                .UseNpgsql(identityConnection, pg =>
+                    pg.MigrationsHistoryTable("__EFMigrationsHistory", "identity")).Options)
+        : new IdentityDbContext(
+            new DbContextOptionsBuilder<IdentityDbContext>()
+                .UseSqlServer(identityConnection, sql =>
+                    sql.MigrationsHistoryTable("__EFMigrationsHistory", "identity")).Options);
     var bootstrapper = new FirstOwnerBootstrapper(identityDb, platformDb);
 
     if (options.DryRun)
@@ -117,8 +136,36 @@ static string RequireConnection(string variable)
     return value;
 }
 
-static void EnsureSeparateDatabaseTargets(string platformConnection, string identityConnection)
+static void EnsureSeparateDatabaseTargets(
+    string platformConnection, string identityConnection, bool usePostgreSql)
 {
+    if (usePostgreSql)
+    {
+        NpgsqlConnectionStringBuilder platformPg;
+        NpgsqlConnectionStringBuilder identityPg;
+        try
+        {
+            platformPg = new NpgsqlConnectionStringBuilder(platformConnection);
+            identityPg = new NpgsqlConnectionStringBuilder(identityConnection);
+        }
+        catch (ArgumentException)
+        {
+            throw new BootstrapRejectedException("Both connection strings must be valid PostgreSQL targets.");
+        }
+        if (string.IsNullOrWhiteSpace(platformPg.Host) ||
+            string.IsNullOrWhiteSpace(identityPg.Host) ||
+            string.IsNullOrWhiteSpace(platformPg.Database) ||
+            string.IsNullOrWhiteSpace(identityPg.Database) ||
+            platformPg.Host.Equals(identityPg.Host, StringComparison.OrdinalIgnoreCase) &&
+            platformPg.Port == identityPg.Port &&
+            platformPg.Database.Equals(identityPg.Database, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new BootstrapRejectedException(
+                "Platform and Identity require explicit, different PostgreSQL databases.");
+        }
+        return;
+    }
+
     SqlConnectionStringBuilder platform;
     SqlConnectionStringBuilder identity;
     try
@@ -150,8 +197,21 @@ static void EnsureSeparateDatabaseTargets(string platformConnection, string iden
     }
 }
 
-static void EnsureExplicitPlatformTarget(string platformConnection)
+static void EnsureExplicitPlatformTarget(string platformConnection, bool usePostgreSql)
 {
+    if (usePostgreSql)
+    {
+        try
+        {
+            var pgTarget = new NpgsqlConnectionStringBuilder(platformConnection);
+            if (!string.IsNullOrWhiteSpace(pgTarget.Host) &&
+                !string.IsNullOrWhiteSpace(pgTarget.Database)) return;
+        }
+        catch (ArgumentException) { }
+        throw new BootstrapRejectedException(
+            "The Platform connection requires an explicit PostgreSQL host and database.");
+    }
+
     SqlConnectionStringBuilder target;
     try
     {

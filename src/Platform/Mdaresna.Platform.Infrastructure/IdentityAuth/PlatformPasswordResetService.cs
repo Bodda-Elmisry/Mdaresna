@@ -9,54 +9,22 @@ using Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Mdaresna.Platform.Infrastructure.IdentityAuth;
 
-public sealed class PlatformActivationOptions
-{
-    public byte[] CodeHashKey { get; }
-
-    public PlatformActivationOptions(byte[] codeHashKey)
-    {
-        if (codeHashKey is not { Length: >= 32 })
-        {
-            throw new ArgumentException("A random activation HMAC key of at least 32 bytes is required.");
-        }
-
-        CodeHashKey = codeHashKey.ToArray();
-    }
-
-    public static PlatformActivationOptions FromConfiguration(IConfiguration configuration)
-    {
-        var raw = configuration["PlatformActivation:CodeHashKey"];
-        try
-        {
-            return new PlatformActivationOptions(Convert.FromBase64String(raw ?? string.Empty));
-        }
-        catch (FormatException)
-        {
-            throw new InvalidOperationException(
-                "PlatformActivation:CodeHashKey must be a Base64-encoded random 32-byte secret.");
-        }
-    }
-}
-
 /// <summary>
-/// First-owner activation only. No normal Platform token is issued until the
-/// phone code and the user-chosen password have been committed together.
+/// Phone-OTP recovery for an existing, active Platform operator. A separate
+/// challenge and HMAC purpose keep this flow independent of first activation.
 /// </summary>
-public sealed class PlatformFirstOwnerActivationService(
+public sealed class PlatformPasswordResetService(
     IdentityDbContext identityDb,
     PlatformDbContext platformDb,
     IPlatformSmsSender smsSender,
-    PlatformPasswordCredentialFactory credentialFactory,
     IPasswordHasher<Account> passwordHasher,
     PlatformActivationOptions options,
-    ILogger<PlatformFirstOwnerActivationService> logger)
+    ILogger<PlatformPasswordResetService> logger)
 {
-    private const string ProvisionedAuditAction = "platform.bootstrap.first_owner.provisioned";
     private const int MaximumFailedAttempts = 5;
     private const int MaximumDailySends = 10;
     private static readonly TimeSpan CodeLifetime = TimeSpan.FromMinutes(10);
@@ -66,18 +34,15 @@ public sealed class PlatformFirstOwnerActivationService(
     public async Task StartAsync(string phone, CancellationToken cancellationToken = default)
     {
         var normalized = phone?.Trim();
-        if (string.IsNullOrWhiteSpace(normalized) || normalized.Length > 32)
-        {
-            return;
-        }
+        if (!IsValidPhone(normalized)) return;
 
         var identifier = await identityDb.LoginIdentifiers.AsNoTracking()
             .SingleOrDefaultAsync(x => x.Type == LoginIdentifierType.Phone &&
                                        x.SchoolId == null &&
                                        x.NormalizedValue == normalized,
                 cancellationToken);
-        if (identifier is null || identifier.IsVerified ||
-            !await IsProvisionedFirstOwnerAsync(identifier.AccountId, cancellationToken))
+        if (identifier?.IsVerified != true ||
+            !await HasPlatformAccessAsync(identifier.AccountId, cancellationToken))
         {
             return;
         }
@@ -90,27 +55,29 @@ public sealed class PlatformFirstOwnerActivationService(
             await using var transaction = await identityDb.Database.BeginTransactionAsync(
                 IsolationLevel.Serializable, cancellationToken);
             await DatabaseAdvisoryLock.AcquireAsync(identityDb, transaction,
-                $"mdaresna-platform-first-owner-activation:{identifier.AccountId:N}", cancellationToken);
-            var account = await identityDb.Accounts
-                .Include(x => x.PasswordCredential)
+                $"mdaresna-platform-password-reset:{identifier.AccountId:N}", cancellationToken);
+            var account = await identityDb.Accounts.Include(x => x.PasswordCredential)
                 .SingleOrDefaultAsync(x => x.Id == identifier.AccountId, cancellationToken);
-            var now = DateTimeOffset.UtcNow;
-            var challenge = await identityDb.ActivationChallenges
+            var currentIdentifier = await identityDb.LoginIdentifiers
+                .SingleOrDefaultAsync(x => x.Id == identifier.Id, cancellationToken);
+            var challenge = await identityDb.PasswordResetChallenges
                 .SingleOrDefaultAsync(x => x.AccountId == identifier.AccountId, cancellationToken);
+            var now = DateTimeOffset.UtcNow;
+
             if (generatedOnPreviousAttempt is not null && challenge is not null &&
                 challenge.ConsumedAtUtc is null && challenge.ExpiresAtUtc > now &&
                 CryptographicOperations.FixedTimeEquals(
-                    challenge.CodeHash,
-                    HashCode(identifier.AccountId, generatedOnPreviousAttempt)))
+                    challenge.CodeHash, HashCode(identifier.AccountId, generatedOnPreviousAttempt)))
             {
-                // A prior commit may have succeeded while its acknowledgement
-                // was lost. Send the code that actually reached the database.
                 await transaction.CommitAsync(cancellationToken);
                 return generatedOnPreviousAttempt;
             }
 
-            if (account?.Status != AccountStatus.PendingVerification ||
-                account.PasswordCredential is not null ||
+            if (account?.Status != AccountStatus.Active || account.PasswordCredential is null ||
+                currentIdentifier?.IsVerified != true ||
+                currentIdentifier.Type != LoginIdentifierType.Phone ||
+                currentIdentifier.SchoolId is not null ||
+                currentIdentifier.NormalizedValue != normalized ||
                 challenge is not null &&
                 (now - challenge.LastSentAtUtc < SendCooldown ||
                  now - challenge.SendWindowStartUtc < SendWindow &&
@@ -122,20 +89,19 @@ public sealed class PlatformFirstOwnerActivationService(
 
             var generatedCode = RandomNumberGenerator.GetInt32(0, 100_000_000).ToString("D8");
             generatedOnPreviousAttempt = generatedCode;
-            var hash = HashCode(identifier.AccountId, generatedCode);
             if (challenge is null)
             {
-                challenge = new AccountActivationChallenge
+                challenge = new AccountPasswordResetChallenge
                 {
                     AccountId = identifier.AccountId,
+                    CodeHash = HashCode(identifier.AccountId, generatedCode),
                     CreatedAtUtc = now,
-                    SendWindowStartUtc = now,
-                    SendCount = 1,
-                    LastSentAtUtc = now,
                     ExpiresAtUtc = now.Add(CodeLifetime),
-                    CodeHash = hash
+                    LastSentAtUtc = now,
+                    SendWindowStartUtc = now,
+                    SendCount = 1
                 };
-                identityDb.ActivationChallenges.Add(challenge);
+                identityDb.PasswordResetChallenges.Add(challenge);
             }
             else
             {
@@ -145,60 +111,49 @@ public sealed class PlatformFirstOwnerActivationService(
                     challenge.SendCount = 0;
                 }
 
+                challenge.CodeHash = HashCode(identifier.AccountId, generatedCode);
                 challenge.CreatedAtUtc = now;
                 challenge.ExpiresAtUtc = now.Add(CodeLifetime);
-                challenge.LastSentAtUtc = now;
                 challenge.ConsumedAtUtc = null;
-                challenge.FailedAttempts = 0;
+                challenge.LastSentAtUtc = now;
                 challenge.SendCount++;
-                challenge.CodeHash = hash;
+                challenge.FailedAttempts = 0;
             }
 
-            AddSecurityEvent(identifier.AccountId, "platform.first_owner.activation.requested", true, now);
+            AddSecurityEvent(identifier.AccountId, "platform.password_reset.requested", true, now);
             await identityDb.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
             return generatedCode;
         });
-        if (code is null)
-        {
-            return;
-        }
 
+        if (code is null) return;
         try
         {
-            await smsSender.SendAsync(normalized,
-                $"Mdaresna Platform activation code: {code}. Expires in 10 minutes. Do not share it.",
-                "otp",
-                null,
-                cancellationToken);
+            await smsSender.SendAsync(normalized!,
+                $"Mdaresna Platform password reset code: {code}. Expires in 10 minutes. Do not share it.",
+                "otp", null, cancellationToken);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            logger.LogWarning("Platform first-owner activation SMS delivery failed.");
-            // An undelivered code must never be accepted if the provider rejects it.
+            logger.LogWarning("Platform password reset SMS delivery failed.");
             try
             {
                 await InvalidateUndeliveredCodeAsync(identifier.AccountId, code, cancellationToken);
             }
             catch (Exception invalidationException) when (invalidationException is not OperationCanceledException)
             {
-                // Keep the public response indistinguishable. The unknown code
-                // expires quickly even if this defensive invalidation fails.
-                logger.LogError("Failed to invalidate an undelivered activation code.");
+                logger.LogError("Failed to invalidate an undelivered password reset code.");
             }
         }
     }
 
     public async Task<bool> CompleteAsync(
-        string phone,
-        string code,
-        string password,
+        string phone, string code, string newPassword,
         CancellationToken cancellationToken = default)
     {
         var normalized = phone?.Trim();
-        if (string.IsNullOrWhiteSpace(normalized) || normalized.Length > 32 ||
-            code is not { Length: 8 } || !code.All(char.IsAsciiDigit) ||
-            !IsValidPassword(password))
+        if (!IsValidPhone(normalized) || code is not { Length: 8 } ||
+            !code.All(char.IsAsciiDigit) || !IsValidPassword(newPassword))
         {
             return false;
         }
@@ -208,13 +163,12 @@ public sealed class PlatformFirstOwnerActivationService(
                                        x.SchoolId == null &&
                                        x.NormalizedValue == normalized,
                 cancellationToken);
-        if (identifier is null || identifier.IsVerified ||
-            !await IsProvisionedFirstOwnerAsync(identifier.AccountId, cancellationToken))
+        if (identifier?.IsVerified != true ||
+            !await HasPlatformAccessAsync(identifier.AccountId, cancellationToken))
         {
             return false;
         }
 
-        var completionCommittedOnPreviousAttempt = false;
         var strategy = identityDb.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(async () =>
         {
@@ -222,85 +176,83 @@ public sealed class PlatformFirstOwnerActivationService(
             await using var transaction = await identityDb.Database.BeginTransactionAsync(
                 IsolationLevel.Serializable, cancellationToken);
             await DatabaseAdvisoryLock.AcquireAsync(identityDb, transaction,
-                $"mdaresna-platform-first-owner-activation:{identifier.AccountId:N}", cancellationToken);
+                $"mdaresna-platform-password-reset:{identifier.AccountId:N}", cancellationToken);
+            var account = await identityDb.Accounts.Include(x => x.PasswordCredential)
+                .SingleOrDefaultAsync(x => x.Id == identifier.AccountId, cancellationToken);
             var currentIdentifier = await identityDb.LoginIdentifiers
                 .SingleOrDefaultAsync(x => x.Id == identifier.Id, cancellationToken);
-            var account = await identityDb.Accounts
-                .Include(x => x.PasswordCredential)
-                .SingleOrDefaultAsync(x => x.Id == identifier.AccountId, cancellationToken);
-            var challenge = await identityDb.ActivationChallenges
+            var challenge = await identityDb.PasswordResetChallenges
                 .SingleOrDefaultAsync(x => x.AccountId == identifier.AccountId, cancellationToken);
             var now = DateTimeOffset.UtcNow;
-            if (completionCommittedOnPreviousAttempt &&
-                currentIdentifier?.IsVerified == true &&
-                account?.Status == AccountStatus.Active &&
-                account.PasswordCredential is { } previousCredential &&
-                challenge?.ConsumedAtUtc is not null &&
-                CryptographicOperations.FixedTimeEquals(
-                    challenge.CodeHash, HashCode(identifier.AccountId, code)) &&
-                passwordHasher.VerifyHashedPassword(
-                    account, previousCredential.PasswordHash, password) !=
-                PasswordVerificationResult.Failed)
-            {
-                await transaction.CommitAsync(cancellationToken);
-                return true;
-            }
-
-            if (currentIdentifier is null || currentIdentifier.IsVerified ||
-                account?.Status != AccountStatus.PendingVerification ||
-                account.PasswordCredential is not null || challenge is null ||
+            if (account?.Status != AccountStatus.Active || account.PasswordCredential is null ||
+                currentIdentifier?.IsVerified != true ||
+                currentIdentifier.Type != LoginIdentifierType.Phone ||
+                currentIdentifier.SchoolId is not null ||
+                currentIdentifier.NormalizedValue != normalized || challenge is null ||
                 challenge.ConsumedAtUtc is not null || challenge.ExpiresAtUtc <= now ||
                 challenge.FailedAttempts >= MaximumFailedAttempts)
             {
                 return false;
             }
 
-            var suppliedHash = HashCode(identifier.AccountId, code);
-            if (!CryptographicOperations.FixedTimeEquals(challenge.CodeHash, suppliedHash))
+            if (!CryptographicOperations.FixedTimeEquals(
+                    challenge.CodeHash, HashCode(identifier.AccountId, code)))
             {
                 challenge.FailedAttempts++;
                 if (challenge.FailedAttempts >= MaximumFailedAttempts)
-                {
                     challenge.ConsumedAtUtc = now;
-                }
-
-                AddSecurityEvent(identifier.AccountId, "platform.first_owner.activation.code_rejected", false, now);
+                AddSecurityEvent(identifier.AccountId, "platform.password_reset.code_rejected", false, now);
                 await identityDb.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
                 return false;
             }
 
-            currentIdentifier.IsVerified = true;
-            currentIdentifier.VerifiedAtUtc = now;
-            account.Status = AccountStatus.Active;
+            var credential = account.PasswordCredential;
+            credential.PasswordHash = passwordHasher.HashPassword(account, newPassword);
+            credential.HashingAlgorithm = PlatformPasswordCredentialFactory.Algorithm;
+            credential.HashingVersion = PlatformPasswordCredentialFactory.Version;
+            credential.SecurityStamp = Guid.NewGuid().ToString("N");
+            credential.FailedSignInCount = 0;
+            credential.LockoutEndUtc = null;
+            credential.MustChangePassword = false;
+            credential.ChangedAtUtc = now;
             account.UpdatedAtUtc = now;
-            identityDb.PasswordCredentials.Add(credentialFactory.Create(account, password, now));
             challenge.ConsumedAtUtc = now;
-            AddSecurityEvent(identifier.AccountId, "platform.first_owner.activation.completed", true, now);
+
+            var sessions = await identityDb.Sessions
+                .Where(x => x.AccountId == identifier.AccountId &&
+                            x.RevokedAtUtc == null && x.ExpiresAtUtc > now)
+                .ToArrayAsync(cancellationToken);
+            foreach (var session in sessions)
+            {
+                session.RevokedAtUtc = now;
+                session.RevocationReason = "password-reset";
+            }
+
+            AddSecurityEvent(identifier.AccountId, "platform.password_reset.completed", true, now);
             await identityDb.SaveChangesAsync(cancellationToken);
-            completionCommittedOnPreviousAttempt = true;
             await transaction.CommitAsync(cancellationToken);
             return true;
         });
     }
 
-    private async Task<bool> IsProvisionedFirstOwnerAsync(Guid accountId, CancellationToken ct)
+    private async Task<bool> HasPlatformAccessAsync(Guid accountId, CancellationToken ct)
     {
         var owner = IdentityAccountId.From(accountId);
-        return await platformDb.AuditEntries.AsNoTracking().AnyAsync(
-                   x => x.AccountId == owner && x.Action == ProvisionedAuditAction, ct) &&
-               await (from assignment in platformDb.RoleAssignments.AsNoTracking()
+        return await (from assignment in platformDb.RoleAssignments.AsNoTracking()
                       join role in platformDb.Roles.AsNoTracking()
                           on assignment.RoleId equals role.Id
                       where assignment.AccountId == owner &&
-                            assignment.RevokedAtUtc == null &&
-                            role.IsActive && role.IsSystem && role.Key == "app-manager"
+                            assignment.RevokedAtUtc == null && role.IsActive
                       select assignment.Id).AnyAsync(ct);
     }
 
     private byte[] HashCode(Guid accountId, string code) =>
         HMACSHA256.HashData(options.CodeHashKey,
-            Encoding.UTF8.GetBytes($"mdaresna-platform-first-owner:{accountId:N}:{code}"));
+            Encoding.UTF8.GetBytes($"mdaresna-platform-password-reset:{accountId:N}:{code}"));
+
+    private static bool IsValidPhone(string? phone) =>
+        phone is { Length: >= 8 and <= 16 } && phone.All(char.IsAsciiDigit);
 
     private static bool IsValidPassword(string? password) =>
         password is { Length: >= 12 and <= 1024 } &&
@@ -325,18 +277,17 @@ public sealed class PlatformFirstOwnerActivationService(
             await using var transaction = await identityDb.Database.BeginTransactionAsync(
                 IsolationLevel.Serializable, ct);
             await DatabaseAdvisoryLock.AcquireAsync(identityDb, transaction,
-                $"mdaresna-platform-first-owner-activation:{accountId:N}", ct);
-            var challenge = await identityDb.ActivationChallenges
+                $"mdaresna-platform-password-reset:{accountId:N}", ct);
+            var challenge = await identityDb.PasswordResetChallenges
                 .SingleOrDefaultAsync(x => x.AccountId == accountId, ct);
             if (challenge is not null && challenge.ConsumedAtUtc is null &&
                 CryptographicOperations.FixedTimeEquals(challenge.CodeHash, HashCode(accountId, code)))
             {
                 var now = DateTimeOffset.UtcNow;
                 challenge.ConsumedAtUtc = now;
-                AddSecurityEvent(accountId, "platform.first_owner.activation.sms_failed", false, now);
+                AddSecurityEvent(accountId, "platform.password_reset.sms_failed", false, now);
                 await identityDb.SaveChangesAsync(ct);
             }
-
             await transaction.CommitAsync(ct);
         });
     }

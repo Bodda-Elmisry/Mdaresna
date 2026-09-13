@@ -31,7 +31,9 @@ public sealed class PlatformControllerAuthorizationTests
                     {
                         "Login",
                         "StartFirstOwnerActivation",
-                        "CompleteFirstOwnerActivation"
+                        "CompleteFirstOwnerActivation",
+                        "StartPasswordReset",
+                        "CompletePasswordReset"
                     });
                     continue;
                 }

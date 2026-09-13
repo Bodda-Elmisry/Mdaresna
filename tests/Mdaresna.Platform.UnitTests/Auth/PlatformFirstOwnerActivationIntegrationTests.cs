@@ -154,6 +154,48 @@ public sealed class PlatformFirstOwnerActivationIntegrationTests
             Assert.False(await CompleteAsync(identityOptions, platformOptions, sms,
                 activationOptions, secondCode));
             Assert.True(await CanLoginAsync(identityOptions, platformOptions));
+
+            string originalStamp;
+            var activeSessionId = Guid.NewGuid();
+            await using (var identityDb = new IdentityDbContext(identityOptions))
+            {
+                originalStamp = (await identityDb.PasswordCredentials
+                    .SingleAsync(x => x.AccountId == accountId)).SecurityStamp;
+                identityDb.Sessions.Add(new IdentitySession
+                {
+                    Id = activeSessionId,
+                    AccountId = accountId,
+                    RefreshTokenHash = Guid.NewGuid().ToString("N"),
+                    CreatedAtUtc = DateTimeOffset.UtcNow,
+                    ExpiresAtUtc = DateTimeOffset.UtcNow.AddHours(1)
+                });
+                await identityDb.SaveChangesAsync();
+            }
+
+            await ResetStartAsync(identityOptions, platformOptions, sms, activationOptions);
+            Assert.Equal(3, sms.Messages.Count);
+            var resetCode = ExtractCode(sms.Messages[2]);
+            Assert.False(await ResetCompleteAsync(identityOptions, platformOptions, sms,
+                activationOptions, "00000000" == resetCode ? "11111111" : "00000000"));
+            Assert.True(await CanLoginAsync(identityOptions, platformOptions));
+            const string changedPassword = "New-local-test-password-147852369";
+            Assert.True(await ResetCompleteAsync(identityOptions, platformOptions, sms,
+                activationOptions, resetCode, changedPassword));
+            Assert.False(await ResetCompleteAsync(identityOptions, platformOptions, sms,
+                activationOptions, resetCode, changedPassword));
+            Assert.False(await CanLoginAsync(identityOptions, platformOptions));
+            Assert.True(await CanLoginAsync(identityOptions, platformOptions, changedPassword));
+            await using (var identityDb = new IdentityDbContext(identityOptions))
+            {
+                var credential = await identityDb.PasswordCredentials
+                    .SingleAsync(x => x.AccountId == accountId);
+                Assert.NotEqual(originalStamp, credential.SecurityStamp);
+                Assert.NotNull((await identityDb.PasswordResetChallenges
+                    .SingleAsync(x => x.AccountId == accountId)).ConsumedAtUtc);
+                var session = await identityDb.Sessions.SingleAsync(x => x.Id == activeSessionId);
+                Assert.NotNull(session.RevokedAtUtc);
+                Assert.Equal("password-reset", session.RevocationReason);
+            }
         }
         finally
         {
@@ -244,12 +286,42 @@ public sealed class PlatformFirstOwnerActivationIntegrationTests
 
     private static async Task<bool> CanLoginAsync(
         DbContextOptions<IdentityDbContext> identityOptions,
-        DbContextOptions<PlatformDbContext> platformOptions)
+        DbContextOptions<PlatformDbContext> platformOptions,
+        string password = Password)
     {
         await using var identityDb = new IdentityDbContext(identityOptions);
         await using var platformDb = new PlatformDbContext(platformOptions);
         return await new PlatformLoginService(identityDb, platformDb, new PasswordHasher<Account>())
-            .LoginAsync(TestPhone, Password) is not null;
+            .LoginAsync(TestPhone, password) is not null;
+    }
+
+    private static async Task ResetStartAsync(
+        DbContextOptions<IdentityDbContext> identityOptions,
+        DbContextOptions<PlatformDbContext> platformOptions,
+        FakeSmsSender sms,
+        PlatformActivationOptions options)
+    {
+        await using var identityDb = new IdentityDbContext(identityOptions);
+        await using var platformDb = new PlatformDbContext(platformOptions);
+        await new PlatformPasswordResetService(identityDb, platformDb, sms,
+            new PasswordHasher<Account>(), options,
+            NullLogger<PlatformPasswordResetService>.Instance).StartAsync(TestPhone);
+    }
+
+    private static async Task<bool> ResetCompleteAsync(
+        DbContextOptions<IdentityDbContext> identityOptions,
+        DbContextOptions<PlatformDbContext> platformOptions,
+        FakeSmsSender sms,
+        PlatformActivationOptions options,
+        string code,
+        string password = Password)
+    {
+        await using var identityDb = new IdentityDbContext(identityOptions);
+        await using var platformDb = new PlatformDbContext(platformOptions);
+        return await new PlatformPasswordResetService(identityDb, platformDb, sms,
+            new PasswordHasher<Account>(), options,
+            NullLogger<PlatformPasswordResetService>.Instance)
+            .CompleteAsync(TestPhone, code, password);
     }
 
     private static string ExtractCode(string message)

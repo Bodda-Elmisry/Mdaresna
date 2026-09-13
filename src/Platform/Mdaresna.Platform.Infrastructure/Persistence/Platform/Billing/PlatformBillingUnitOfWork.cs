@@ -1,4 +1,3 @@
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Mdaresna.Platform.Application.Billing;
 using Mdaresna.Platform.Application.Errors;
@@ -54,8 +53,7 @@ internal sealed class PlatformBillingUnitOfWork(PlatformDbContext dbContext) : I
         }
         catch (DbUpdateException updateException) when (
             updateException.Entries.Any(entry => entry.Entity is UnitGrant) &&
-            updateException.InnerException is SqlException sqlException &&
-            sqlException.Number is 2601 or 2627)
+            DatabaseErrorClassifier.IsUniqueViolation(updateException.InnerException))
         {
             throw new PlatformConflictException(
                 "unit_grant.duplicate",
@@ -63,8 +61,7 @@ internal sealed class PlatformBillingUnitOfWork(PlatformDbContext dbContext) : I
         }
         catch (DbUpdateException updateException) when (
             updateException.Entries.Any(entry => entry.Entity is UnitPurchaseIntent) &&
-            updateException.InnerException is SqlException sqlException &&
-            sqlException.Number is 2601 or 2627)
+            DatabaseErrorClassifier.IsUniqueViolation(updateException.InnerException))
         {
             throw new PlatformConflictException(
                 "unit_purchase.duplicate",
@@ -72,8 +69,7 @@ internal sealed class PlatformBillingUnitOfWork(PlatformDbContext dbContext) : I
         }
         catch (DbUpdateException updateException) when (
             updateException.Entries.Any(entry => entry.Entity is UnitType) &&
-            updateException.InnerException is SqlException sqlException &&
-            sqlException.Number is 2601 or 2627)
+            DatabaseErrorClassifier.IsUniqueViolation(updateException.InnerException))
         {
             throw new PlatformConflictException(
                 "unit_type.duplicate_code",
@@ -82,8 +78,7 @@ internal sealed class PlatformBillingUnitOfWork(PlatformDbContext dbContext) : I
         catch (DbUpdateException updateException) when (
             updateException.Entries.Any(entry =>
                 entry.Entity is PlatformPaymentRequest or PlatformPaymentLedgerEntry) &&
-            updateException.InnerException is SqlException sqlException &&
-            sqlException.Number is 2601 or 2627)
+            DatabaseErrorClassifier.IsUniqueViolation(updateException.InnerException))
         {
             throw new PlatformConflictException(
                 "platform_payment.duplicate_request_or_transfer",

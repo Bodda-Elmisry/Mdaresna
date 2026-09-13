@@ -33,7 +33,7 @@ start with the old `SOMETHING WENT AWRY` error text. It should be replaced with
 a verified, unambiguous success prefix once the gateway's actual responses are
 known.
 
-The operation checks that the database is migrated, holds a SQL application
+The operation checks that the database is migrated, holds a provider-specific database
 lock, inserts the encrypted provider and an audit entry in one transaction, and
 returns unchanged when its fixed ID is already present. It never reactivates a
 disabled or deleted record or overwrites an operator's later edits or credential

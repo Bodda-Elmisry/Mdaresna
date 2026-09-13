@@ -4,10 +4,10 @@ using Mdaresna.Platform.Application.Abstractions.Security;
 using Mdaresna.Platform.Application.Errors;
 using Mdaresna.Platform.Domain.Access;
 using Mdaresna.Platform.Infrastructure.Persistence.Identity;
+using Mdaresna.Platform.Infrastructure.Persistence;
 using Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace Mdaresna.Platform.Infrastructure.IdentityAuth.Staff;
@@ -105,7 +105,7 @@ public sealed class PlatformStaffRoleManager(
             await platformDb.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateException ex) when (
-            ex.InnerException is SqlException { Number: 2601 or 2627 })
+            DatabaseErrorClassifier.IsUniqueViolation(ex.InnerException))
         {
             throw new PlatformConflictException(
                 "staff.role_already_assigned",

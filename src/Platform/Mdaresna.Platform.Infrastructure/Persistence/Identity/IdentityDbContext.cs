@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Mdaresna.Platform.Infrastructure.Persistence.Identity;
 
-public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : DbContext(options)
+public class IdentityDbContext(DbContextOptions options) : DbContext(options)
 {
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<LoginIdentifier> LoginIdentifiers => Set<LoginIdentifier>();
@@ -13,6 +13,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
     public DbSet<IdentitySecurityEvent> SecurityEvents => Set<IdentitySecurityEvent>();
     public DbSet<IdentityOutboxMessage> OutboxMessages => Set<IdentityOutboxMessage>();
     public DbSet<AccountActivationChallenge> ActivationChallenges => Set<AccountActivationChallenge>();
+    public DbSet<AccountPasswordResetChallenge> PasswordResetChallenges => Set<AccountPasswordResetChallenge>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -26,6 +27,9 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
         modelBuilder.ApplyConfiguration(new Configurations.IdentitySecurityEventConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.IdentityOutboxMessageConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.AccountActivationChallengeConfiguration());
+        modelBuilder.ApplyConfiguration(new Configurations.AccountPasswordResetChallengeConfiguration());
+        if (Database.IsNpgsql())
+            PostgreSqlModelAdapter.Apply(modelBuilder);
     }
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)

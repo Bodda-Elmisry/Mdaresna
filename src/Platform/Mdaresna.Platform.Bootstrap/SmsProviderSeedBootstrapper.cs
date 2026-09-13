@@ -2,7 +2,7 @@ using System.Data;
 using Mdaresna.Platform.Infrastructure.Messaging;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities;
-using Microsoft.Data.SqlClient;
+using Mdaresna.Platform.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -116,20 +116,11 @@ internal sealed class SmsProviderSeedBootstrapper(
         IDbContextTransaction transaction,
         CancellationToken cancellationToken)
     {
-        var connection = (SqlConnection)db.Database.GetDbConnection();
-        await using var command = connection.CreateCommand();
-        command.Transaction = (SqlTransaction)transaction.GetDbTransaction();
-        command.CommandText = "DECLARE @result int; " +
-                              "EXEC @result = sys.sp_getapplock " +
-                              "@Resource = @resource, @LockMode = 'Exclusive', " +
-                              "@LockOwner = 'Transaction', @LockTimeout = 0; " +
-                              "SELECT @result;";
-        command.Parameters.Add(new SqlParameter("@resource", SqlDbType.NVarChar, 255)
+        try
         {
-            Value = LockResource
-        });
-        var result = (int)(await command.ExecuteScalarAsync(cancellationToken) ?? -999);
-        if (result < 0)
+            await DatabaseAdvisoryLock.AcquireAsync(db, transaction, LockResource, cancellationToken);
+        }
+        catch (InvalidOperationException)
         {
             throw new BootstrapRejectedException(
                 "Another SMS provider seed is running or the database lock was refused.");

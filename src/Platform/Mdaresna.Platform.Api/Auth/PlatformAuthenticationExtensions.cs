@@ -24,6 +24,7 @@ public static class PlatformAuthenticationExtensions
         services.AddScoped<PlatformLoginService>();
         services.AddSingleton(_ => PlatformActivationOptions.FromConfiguration(configuration));
         services.AddScoped<PlatformFirstOwnerActivationService>();
+        services.AddScoped<PlatformPasswordResetService>();
         services.AddScoped<PlatformPrincipalValidator>();
         services.AddSingleton<IPlatformAccessTokenIssuer, PlatformAccessTokenIssuer>();
 

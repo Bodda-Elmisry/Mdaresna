@@ -46,8 +46,20 @@ internal sealed class UnitTypeRepository(PlatformDbContext dbContext) : IUnitTyp
         var search = query.Search?.Trim();
         if (!string.IsNullOrEmpty(search))
         {
-            unitTypes = unitTypes.Where(x =>
-                x.Code.Contains(search) || x.DisplayName.Contains(search));
+            if (dbContext.Database.IsNpgsql())
+            {
+                var pattern = $"%{search.Replace("\\", "\\\\", StringComparison.Ordinal)
+                    .Replace("%", "\\%", StringComparison.Ordinal)
+                    .Replace("_", "\\_", StringComparison.Ordinal)}%";
+                unitTypes = unitTypes.Where(x =>
+                    EF.Functions.ILike(x.Code, pattern, "\\") ||
+                    EF.Functions.ILike(x.DisplayName, pattern, "\\"));
+            }
+            else
+            {
+                unitTypes = unitTypes.Where(x =>
+                    x.Code.Contains(search) || x.DisplayName.Contains(search));
+            }
         }
 
         var totalCount = await unitTypes.CountAsync(cancellationToken);

@@ -45,13 +45,29 @@ public static class ServiceCollectionExtensions
 
         var platformConnection = GetRequiredConnectionString(configuration, PlatformConnectionName);
         var identityConnection = GetRequiredConnectionString(configuration, IdentityConnectionName);
-        SqlDatabaseTargetValidator.EnsureDifferent(platformConnection, identityConnection);
-
-        services.AddDbContext<PlatformDbContext>(options =>
-            ConfigureSqlServer(options, platformConnection, "platform"));
-
-        services.AddDbContext<IdentityDbContext>(options =>
-            ConfigureSqlServer(options, identityConnection, "identity"));
+        var provider = configuration["PlatformDatabase:Provider"] ?? "SqlServer";
+        if (provider.Equals("PostgreSql", StringComparison.OrdinalIgnoreCase))
+        {
+            PostgreSqlDatabaseTargetValidator.EnsureDifferent(platformConnection, identityConnection);
+            services.AddDbContext<PostgreSqlPlatformDbContext>(options =>
+                ConfigurePostgreSql(options, platformConnection, "platform"));
+            services.AddDbContext<PostgreSqlIdentityDbContext>(options =>
+                ConfigurePostgreSql(options, identityConnection, "identity"));
+            services.AddScoped<PlatformDbContext>(sp => sp.GetRequiredService<PostgreSqlPlatformDbContext>());
+            services.AddScoped<IdentityDbContext>(sp => sp.GetRequiredService<PostgreSqlIdentityDbContext>());
+        }
+        else if (provider.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))
+        {
+            SqlDatabaseTargetValidator.EnsureDifferent(platformConnection, identityConnection);
+            services.AddDbContext<PlatformDbContext>(options =>
+                ConfigureSqlServer(options, platformConnection, "platform"));
+            services.AddDbContext<IdentityDbContext>(options =>
+                ConfigureSqlServer(options, identityConnection, "identity"));
+        }
+        else
+        {
+            throw new InvalidOperationException("PlatformDatabase:Provider must be SqlServer or PostgreSql.");
+        }
 
         services.AddScoped<ITenantRepository, TenantRepository>();
         services.AddScoped<ISchoolRegistrationRepository, SchoolRegistrationRepository>();
@@ -94,13 +110,17 @@ public static class ServiceCollectionExtensions
             .AddHealthChecks()
             .AddCheck(
                 "platform-database",
-                new SqlConnectionHealthCheck(platformConnection),
+                provider.Equals("PostgreSql", StringComparison.OrdinalIgnoreCase)
+                    ? new PostgreSqlConnectionHealthCheck(platformConnection)
+                    : new SqlConnectionHealthCheck(platformConnection),
                 failureStatus: HealthStatus.Unhealthy,
                 tags: ["ready"],
                 timeout: TimeSpan.FromSeconds(5))
             .AddCheck(
                 "identity-database",
-                new SqlConnectionHealthCheck(identityConnection),
+                provider.Equals("PostgreSql", StringComparison.OrdinalIgnoreCase)
+                    ? new PostgreSqlConnectionHealthCheck(identityConnection)
+                    : new SqlConnectionHealthCheck(identityConnection),
                 failureStatus: HealthStatus.Unhealthy,
                 tags: ["ready"],
                 timeout: TimeSpan.FromSeconds(5));
@@ -133,6 +153,17 @@ public static class ServiceCollectionExtensions
                 sql.MigrationsHistoryTable("__EFMigrationsHistory", migrationsHistorySchema);
                 sql.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
             });
+    }
+
+    private static void ConfigurePostgreSql(
+        DbContextOptionsBuilder options, string connectionString, string historySchema)
+    {
+        options.UseNpgsql(connectionString, pg =>
+        {
+            pg.MigrationsAssembly(typeof(ServiceCollectionExtensions).Assembly.FullName);
+            pg.MigrationsHistoryTable("__EFMigrationsHistory", historySchema);
+            pg.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
+        });
     }
 
 }

@@ -55,6 +55,44 @@ public sealed class PlatformAuthController(
 
     [AllowAnonymous]
     [EnableRateLimiting("platform-login")]
+    [HttpPost("password-reset/start")]
+    public async Task<IResult> StartPasswordReset(
+        [FromBody] StartPasswordResetRequest request,
+        [FromServices] PlatformPasswordResetService resetService,
+        CancellationToken cancellationToken)
+    {
+        await resetService.StartAsync(request.Phone, cancellationToken);
+        return ApiResponseWriter.ToResult(ApiResponse<object?>.Success(
+            null,
+            statusCode: 202,
+            message: "If this account is eligible, a password reset code will be sent.",
+            correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
+    }
+
+    [AllowAnonymous]
+    [EnableRateLimiting("platform-login")]
+    [HttpPost("password-reset/complete")]
+    public async Task<IResult> CompletePasswordReset(
+        [FromBody] CompletePasswordResetRequest request,
+        [FromServices] PlatformPasswordResetService resetService,
+        CancellationToken cancellationToken)
+    {
+        var completed = await resetService.CompleteAsync(
+            request.Phone, request.Code, request.NewPassword, cancellationToken);
+        return completed
+            ? ApiResponseWriter.ToResult(ApiResponse<object?>.Success(
+                null,
+                message: "Password reset. Sign in with your new password.",
+                correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)))
+            : ApiResponseWriter.ToResult(ApiResponse<object?>.Failure(
+                400,
+                "auth.password_reset_invalid",
+                "The password reset could not be completed.",
+                correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
+    }
+
+    [AllowAnonymous]
+    [EnableRateLimiting("platform-login")]
     [HttpPost("login")]
     public async Task<IResult> Login(
         [FromBody] PlatformLoginRequest request,
@@ -96,6 +134,14 @@ public sealed record CompleteFirstOwnerActivationRequest(
     [Required, MaxLength(32)] string Phone,
     [Required, StringLength(8, MinimumLength = 8)] string Code,
     [Required, MinLength(12), MaxLength(1024)] string Password);
+
+public sealed record StartPasswordResetRequest(
+    [Required, MaxLength(32)] string Phone);
+
+public sealed record CompletePasswordResetRequest(
+    [Required, MaxLength(32)] string Phone,
+    [Required, StringLength(8, MinimumLength = 8)] string Code,
+    [Required, MinLength(12), MaxLength(1024)] string NewPassword);
 
 public sealed record PlatformLoginRequest(
     [Required, MaxLength(320)] string Identifier,

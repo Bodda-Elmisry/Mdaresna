@@ -1,11 +1,11 @@
 using System.Data;
 using System.Text.Json;
 using Mdaresna.Platform.Domain.Access;
+using Mdaresna.Platform.Infrastructure.Persistence;
 using Mdaresna.Platform.Infrastructure.Persistence.Identity;
 using Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -33,8 +33,8 @@ internal sealed class FirstOwnerBootstrapper(
                 "Both databases must be reachable with all reviewed migrations applied.");
         }
 
-        // The Platform database is the one-time gate. Its transaction-scoped SQL
-        // application lock serializes concurrent bootstrap processes before any
+        // The Platform database is the one-time gate. Its transaction-scoped
+        // provider-specific advisory lock serializes concurrent bootstrap processes before any
         // Identity write occurs. The Identity operation marker permits recovery
         // if Identity commits but the Platform transaction subsequently fails.
         await using var transaction = await platformDb.Database.BeginTransactionAsync(
@@ -339,20 +339,12 @@ internal sealed class FirstOwnerBootstrapper(
         IDbContextTransaction transaction,
         CancellationToken cancellationToken)
     {
-        var connection = (SqlConnection)platformDb.Database.GetDbConnection();
-        await using var command = connection.CreateCommand();
-        command.Transaction = (SqlTransaction)transaction.GetDbTransaction();
-        command.CommandText = "DECLARE @result int; " +
-                              "EXEC @result = sys.sp_getapplock " +
-                              "@Resource = @resource, @LockMode = 'Exclusive', " +
-                              "@LockOwner = 'Transaction', @LockTimeout = 0; " +
-                              "SELECT @result;";
-        command.Parameters.Add(new SqlParameter("@resource", SqlDbType.NVarChar, 255)
+        try
         {
-            Value = "mdaresna-platform-first-owner-bootstrap"
-        });
-        var result = (int)(await command.ExecuteScalarAsync(cancellationToken) ?? -999);
-        if (result < 0)
+            await DatabaseAdvisoryLock.AcquireAsync(platformDb, transaction,
+                "mdaresna-platform-first-owner-bootstrap", cancellationToken);
+        }
+        catch (InvalidOperationException)
         {
             throw new BootstrapRejectedException(
                 "Another first-owner bootstrap is running or the database lock was refused.");

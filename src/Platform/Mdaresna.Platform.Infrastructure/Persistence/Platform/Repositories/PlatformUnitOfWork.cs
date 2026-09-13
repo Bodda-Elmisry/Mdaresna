@@ -3,7 +3,6 @@ using Mdaresna.Platform.Application.Errors;
 using Mdaresna.Platform.Domain.Access;
 using Mdaresna.Platform.Domain.Registry;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace Mdaresna.Platform.Infrastructure.Persistence.Platform.Repositories;
@@ -19,7 +18,7 @@ internal sealed class PlatformUnitOfWork(PlatformDbContext dbContext) : IPlatfor
         }
         catch (DbUpdateException exception) when (
             exception.Entries.Any(entry => entry.Entity is Tenant or SchoolRegistration) &&
-            exception.InnerException is SqlException { Number: 2601 or 2627 })
+            DatabaseErrorClassifier.IsUniqueViolation(exception.InnerException))
         {
             throw new PlatformConflictException(
                 "registry.concurrent_conflict",
