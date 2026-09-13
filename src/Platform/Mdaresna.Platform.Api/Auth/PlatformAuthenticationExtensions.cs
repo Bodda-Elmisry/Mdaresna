@@ -22,6 +22,7 @@ public static class PlatformAuthenticationExtensions
         services.AddScoped<IPasswordHasher<Account>, PasswordHasher<Account>>();
         services.AddScoped<PlatformPasswordCredentialFactory>();
         services.AddScoped<PlatformLoginService>();
+        services.AddScoped<AccountAppLanguageService>();
         services.AddSingleton(_ => PlatformActivationOptions.FromConfiguration(configuration));
         services.AddScoped<PlatformFirstOwnerActivationService>();
         services.AddScoped<PlatformPasswordResetService>();

@@ -31,6 +31,31 @@ internal sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
     }
 }
 
+internal sealed class AccountAppLanguagePreferenceConfiguration :
+    IEntityTypeConfiguration<AccountAppLanguagePreference>
+{
+    public void Configure(EntityTypeBuilder<AccountAppLanguagePreference> builder)
+    {
+        builder.ToTable("account_app_language_preferences", "identity", table =>
+        {
+            table.HasCheckConstraint("ck_identity_app_language_app_code",
+                "[AppCode] IN (N'platform', N'schools', N'family')");
+            table.HasCheckConstraint("ck_identity_app_language_language_code",
+                "[LanguageCode] IN (N'ar', N'en')");
+            table.HasCheckConstraint("ck_identity_app_language_updated_at_utc",
+                "DATEPART(TZOFFSET, [UpdatedAtUtc]) = 0");
+        });
+        builder.HasKey(x => new { x.AccountId, x.AppCode });
+        builder.Property(x => x.AppCode).HasMaxLength(16).IsRequired();
+        builder.Property(x => x.LanguageCode).HasMaxLength(2).IsRequired();
+        builder.Property(x => x.UpdatedAtUtc).HasPrecision(3);
+        builder.HasOne(x => x.Account)
+            .WithMany(x => x.AppLanguagePreferences)
+            .HasForeignKey(x => x.AccountId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
 internal sealed class LoginIdentifierConfiguration : IEntityTypeConfiguration<LoginIdentifier>
 {
     public void Configure(EntityTypeBuilder<LoginIdentifier> builder)

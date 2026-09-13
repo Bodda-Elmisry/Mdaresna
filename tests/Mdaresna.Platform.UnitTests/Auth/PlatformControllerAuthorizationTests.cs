@@ -38,6 +38,14 @@ public sealed class PlatformControllerAuthorizationTests
                     continue;
                 }
 
+                if (controller.Name == "PlatformAccountLanguageController")
+                {
+                    // Every signed-in Platform account may edit only its own preference.
+                    Assert.NotNull(controller.GetCustomAttribute<AuthorizeAttribute>());
+                    Assert.Contains(action.Name, new[] { "Get", "Put" });
+                    continue;
+                }
+
                 Assert.True(
                     action.GetCustomAttribute<PlatformPermissionAttribute>() is not null ||
                     controller.GetCustomAttribute<PlatformPermissionAttribute>() is not null,

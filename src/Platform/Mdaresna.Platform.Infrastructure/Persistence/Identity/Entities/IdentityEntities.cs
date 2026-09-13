@@ -35,11 +35,21 @@ public sealed class Account
     public byte[] RowVersion { get; set; } = [];
 
     public ICollection<LoginIdentifier> LoginIdentifiers { get; set; } = [];
+    public ICollection<AccountAppLanguagePreference> AppLanguagePreferences { get; set; } = [];
     public PasswordCredential? PasswordCredential { get; set; }
     public ICollection<IdentitySession> Sessions { get; set; } = [];
     public ICollection<MfaMethod> MfaMethods { get; set; } = [];
     public AccountActivationChallenge? ActivationChallenge { get; set; }
     public AccountPasswordResetChallenge? PasswordResetChallenge { get; set; }
+}
+
+public sealed class AccountAppLanguagePreference
+{
+    public Guid AccountId { get; set; }
+    public string AppCode { get; set; } = string.Empty;
+    public string LanguageCode { get; set; } = "ar";
+    public DateTimeOffset UpdatedAtUtc { get; set; }
+    public Account Account { get; set; } = null!;
 }
 
 public sealed class AccountActivationChallenge

@@ -123,6 +123,36 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Ide
                         });
                 });
 
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountAppLanguagePreference", b =>
+                {
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AppCode")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("LanguageCode")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.HasKey("AccountId", "AppCode");
+
+                    b.ToTable("account_app_language_preferences", "identity", t =>
+                        {
+                            t.HasCheckConstraint("ck_identity_app_language_app_code", "\"AppCode\" IN ('platform', 'schools', 'family')");
+
+                            t.HasCheckConstraint("ck_identity_app_language_language_code", "\"LanguageCode\" IN ('ar', 'en')");
+
+                            t.HasCheckConstraint("ck_identity_app_language_updated_at_utc", "TRUE");
+                        });
+                });
+
             modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountPasswordResetChallenge", b =>
                 {
                     b.Property<Guid>("AccountId")
@@ -555,6 +585,17 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Ide
                     b.Navigation("Account");
                 });
 
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountAppLanguagePreference", b =>
+                {
+                    b.HasOne("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.Account", "Account")
+                        .WithMany("AppLanguagePreferences")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
             modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountPasswordResetChallenge", b =>
                 {
                     b.HasOne("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.Account", "Account")
@@ -619,6 +660,8 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Ide
             modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.Account", b =>
                 {
                     b.Navigation("ActivationChallenge");
+
+                    b.Navigation("AppLanguagePreferences");
 
                     b.Navigation("LoginIdentifiers");
 

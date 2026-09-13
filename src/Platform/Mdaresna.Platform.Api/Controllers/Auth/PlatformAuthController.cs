@@ -13,6 +13,7 @@ namespace Mdaresna.Platform.Api.Controllers.Auth;
 [Route("api/platform/v1/auth")]
 public sealed class PlatformAuthController(
     PlatformLoginService loginService,
+    AccountAppLanguageService languageService,
     IPlatformAccessTokenIssuer tokenIssuer) : ControllerBase
 {
     [AllowAnonymous]
@@ -114,6 +115,8 @@ public sealed class PlatformAuthController(
         }
 
         var access = tokenIssuer.Issue(login);
+        var preferredLanguage = await languageService.GetStoredAsync(
+            login.AccountId, AccountAppLanguageService.PlatformApp, cancellationToken);
         return ApiResponseWriter.ToResult(
             ApiResponse<PlatformLoginResponse>.Success(
                 new PlatformLoginResponse(
@@ -122,7 +125,8 @@ public sealed class PlatformAuthController(
                     access.ExpiresInSeconds,
                     access.ExpiresAtUtc,
                     login.AccountId,
-                    login.DisplayName),
+                    login.DisplayName,
+                    preferredLanguage),
                 correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
     }
 }
@@ -153,4 +157,5 @@ public sealed record PlatformLoginResponse(
     int ExpiresInSeconds,
     DateTimeOffset ExpiresAtUtc,
     Guid AccountId,
-    string? DisplayName);
+    string? DisplayName,
+    string? PreferredLanguage);

@@ -6,6 +6,7 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Identity;
 public class IdentityDbContext(DbContextOptions options) : DbContext(options)
 {
     public DbSet<Account> Accounts => Set<Account>();
+    public DbSet<AccountAppLanguagePreference> AppLanguagePreferences => Set<AccountAppLanguagePreference>();
     public DbSet<LoginIdentifier> LoginIdentifiers => Set<LoginIdentifier>();
     public DbSet<PasswordCredential> PasswordCredentials => Set<PasswordCredential>();
     public DbSet<IdentitySession> Sessions => Set<IdentitySession>();
@@ -20,6 +21,7 @@ public class IdentityDbContext(DbContextOptions options) : DbContext(options)
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfiguration(new Configurations.AccountConfiguration());
+        modelBuilder.ApplyConfiguration(new Configurations.AccountAppLanguagePreferenceConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.LoginIdentifierConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.PasswordCredentialConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.IdentitySessionConfiguration());
