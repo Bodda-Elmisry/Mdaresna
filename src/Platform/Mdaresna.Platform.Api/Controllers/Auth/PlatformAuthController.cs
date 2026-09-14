@@ -129,6 +129,15 @@ public sealed class PlatformAuthController(
             orderby role.Key
             select new PlatformLoginRole(role.Key, role.DisplayName))
             .ToArrayAsync(cancellationToken);
+        var permissions = await (
+            from assignment in platformDb.RoleAssignments.AsNoTracking()
+            join role in platformDb.Roles.AsNoTracking() on assignment.RoleId equals role.Id
+            join permission in platformDb.RolePermissions.AsNoTracking() on role.Id equals permission.RoleId
+            where assignment.AccountId == accountId && assignment.RevokedAtUtc == null && role.IsActive
+            select permission.PermissionCode)
+            .ToArrayAsync(cancellationToken);
+        var permissionCodes = permissions.Select(code => code.Value)
+            .Distinct(StringComparer.Ordinal).OrderBy(code => code, StringComparer.Ordinal).ToArray();
         return ApiResponseWriter.ToResult(
             ApiResponse<PlatformLoginResponse>.Success(
                 new PlatformLoginResponse(
@@ -139,7 +148,8 @@ public sealed class PlatformAuthController(
                     login.AccountId,
                     login.DisplayName,
                     preferredLanguage,
-                    roles),
+                    roles,
+                    permissionCodes),
                 correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
     }
 }
@@ -172,6 +182,7 @@ public sealed record PlatformLoginResponse(
     Guid AccountId,
     string? DisplayName,
     string? PreferredLanguage,
-    IReadOnlyList<PlatformLoginRole> Roles);
+    IReadOnlyList<PlatformLoginRole> Roles,
+    IReadOnlyList<string> PermissionCodes);
 
 public sealed record PlatformLoginRole(string Key, string DisplayName);

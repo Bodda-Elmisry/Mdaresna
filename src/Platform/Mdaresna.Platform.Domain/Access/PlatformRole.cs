@@ -152,6 +152,19 @@ public sealed partial class PlatformRole : AggregateRoot
         RaiseAccessChange("platform-role.deactivated", changedByAccountId, timestamp);
     }
 
+    public void Activate(IdentityAccountId changedByAccountId, DateTimeOffset occurredAtUtc)
+    {
+        if (IsActive)
+        {
+            return;
+        }
+
+        var timestamp = DomainGuard.UtcTimestamp(occurredAtUtc, nameof(occurredAtUtc));
+        IsActive = true;
+        UpdatedAtUtc = timestamp;
+        RaiseAccessChange("platform-role.activated", changedByAccountId, timestamp);
+    }
+
     internal static PlatformRole Rehydrate(
         PlatformRoleId id,
         string key,

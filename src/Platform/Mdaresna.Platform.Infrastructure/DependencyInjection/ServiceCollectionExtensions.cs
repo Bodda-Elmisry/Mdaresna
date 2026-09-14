@@ -104,6 +104,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPlatformStaffDirectory, PlatformStaffDirectory>();
         services.AddScoped<IPlatformStaffRoleManager, PlatformStaffRoleManager>();
         services.AddScoped<IPlatformRoleCatalog, PlatformRoleCatalog>();
+        services.AddScoped<IPlatformRoleManager, PlatformRoleManager>();
         services.TryAddSingleton<IClock>(SystemClock.Instance);
 
         services
