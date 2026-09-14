@@ -12,6 +12,25 @@ namespace Mdaresna.Platform.UnitTests.Auth;
 public sealed class PlatformStaffServicesTests
 {
     [Fact]
+    public void Invitation_and_first_login_code_are_separate_messages()
+    {
+        const string userName = "school.operator";
+        const string code = "12345678";
+
+        var invitation = PlatformStaffSmsMessages.Invitation(userName);
+        var activation = PlatformStaffSmsMessages.ActivationCode(userName, code);
+
+        Assert.Contains(userName, invitation);
+        Assert.Contains("موظف في إدارة منصة مدارسنا", invitation);
+        Assert.DoesNotContain(code, invitation);
+        Assert.DoesNotContain("رمز التفعيل:", invitation);
+        Assert.Equal("staff-invitation", PlatformStaffSmsMessages.InvitationType);
+        Assert.Contains(code, activation);
+        Assert.Contains("10 دقائق", activation);
+        Assert.Equal("otp", PlatformStaffSmsMessages.ActivationType);
+    }
+
+    [Fact]
     public async Task Staff_directory_rejects_invalid_page_before_querying()
     {
         var directory = new PlatformStaffDirectory(PlatformDb(), IdentityDb());

@@ -35,6 +35,7 @@ public sealed class PlatformLoginService(
         }
 
         var normalized = identifier.Trim();
+        var isPlatformUserName = !normalized.Contains('@') && !normalized.All(char.IsAsciiDigit);
         var identifierType = normalized.Contains('@')
             ? LoginIdentifierType.Email
             : LoginIdentifierType.Phone;
@@ -44,13 +45,21 @@ public sealed class PlatformLoginService(
             normalized = normalized.ToUpperInvariant();
         }
 
+        Guid? personId = null;
+        if (isPlatformUserName)
+        {
+            personId = await platformDb.LocalUsers.AsNoTracking()
+                .Where(x => x.NormalizedUserName == normalized.ToUpperInvariant())
+                .Select(x => (Guid?)x.PersonId).SingleOrDefaultAsync(cancellationToken);
+            if (personId is null) return null;
+        }
         var loginIdentifier = await identityDb.LoginIdentifiers
             .Include(x => x.Account)
             .SingleOrDefaultAsync(x =>
-                x.Type == identifierType &&
-                x.SchoolId == null &&
-                x.NormalizedValue == normalized &&
-                x.IsVerified,
+                x.Type == identifierType && x.SchoolId == null && x.IsVerified &&
+                (isPlatformUserName
+                    ? x.AccountId == personId && x.IsPrimary
+                    : x.NormalizedValue == normalized),
                 cancellationToken);
 
         var account = loginIdentifier?.Account;

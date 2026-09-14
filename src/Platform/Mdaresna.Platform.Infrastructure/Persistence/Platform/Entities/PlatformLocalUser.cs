@@ -17,6 +17,23 @@ public sealed class PlatformLocalUser
     public byte[] RowVersion { get; set; } = [];
     public PlatformLocalCredential? Credential { get; set; }
     public PlatformLocalPasswordResetChallenge? PasswordResetChallenge { get; set; }
+    public PlatformStaffInvitationChallenge? StaffInvitationChallenge { get; set; }
+}
+
+/// <summary>Platform-only, short-lived proof of an employee invitation.</summary>
+public sealed class PlatformStaffInvitationChallenge
+{
+    public Guid UserId { get; set; }
+    public byte[] CodeHash { get; set; } = [];
+    public DateTimeOffset CreatedAtUtc { get; set; }
+    public DateTimeOffset ExpiresAtUtc { get; set; }
+    public DateTimeOffset? ConsumedAtUtc { get; set; }
+    public DateTimeOffset LastSentAtUtc { get; set; }
+    public DateTimeOffset SendWindowStartUtc { get; set; }
+    public int SendCount { get; set; }
+    public int FailedAttempts { get; set; }
+    public byte[] RowVersion { get; set; } = [];
+    public PlatformLocalUser User { get; set; } = null!;
 }
 
 public sealed class PlatformLocalPasswordResetChallenge

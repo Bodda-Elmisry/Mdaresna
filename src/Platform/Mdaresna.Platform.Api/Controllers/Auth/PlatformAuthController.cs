@@ -5,6 +5,7 @@ using Mdaresna.Platform.Api.Errors;
 using Mdaresna.Platform.Infrastructure.IdentityAuth;
 using Mdaresna.Platform.Domain.Access;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform;
+using Mdaresna.Platform.Application.Access.Staff;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -18,7 +19,8 @@ public sealed class PlatformAuthController(
     PlatformLoginService loginService,
     AccountAppLanguageService languageService,
     IPlatformAccessTokenIssuer tokenIssuer,
-    PlatformDbContext platformDb) : ControllerBase
+    PlatformDbContext platformDb,
+    IPlatformStaffManagement staffManagement) : ControllerBase
 {
     [AllowAnonymous]
     [EnableRateLimiting("platform-login")]
@@ -152,6 +154,35 @@ public sealed class PlatformAuthController(
                     permissionCodes),
                 correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
     }
+
+    [AllowAnonymous]
+    [EnableRateLimiting("platform-login")]
+    [HttpPost("staff-activation/start")]
+    public async Task<IResult> StartStaffActivation(
+        [FromBody] StartStaffActivationRequest request, CancellationToken cancellationToken)
+    {
+        await staffManagement.StartActivationAsync(request.Phone, cancellationToken);
+        return ApiResponseWriter.ToResult(ApiResponse<object?>.Success(null, statusCode: 202,
+            message: "If this invitation is eligible, an activation code will be sent.",
+            correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
+    }
+
+    [AllowAnonymous]
+    [EnableRateLimiting("platform-login")]
+    [HttpPost("staff-activation/complete")]
+    public async Task<IResult> CompleteStaffActivation(
+        [FromBody] CompleteStaffActivationRequest request, CancellationToken cancellationToken)
+    {
+        var completed = await staffManagement.CompleteActivationAsync(
+            request.Phone, request.Code, request.Password, cancellationToken);
+        return completed
+            ? ApiResponseWriter.ToResult(ApiResponse<object?>.Success(null,
+                message: "Invitation accepted. Sign in with your Platform username and password.",
+                correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)))
+            : ApiResponseWriter.ToResult(ApiResponse<object?>.Failure(400,
+                "auth.staff_activation_invalid", "The invitation could not be completed.",
+                correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
+    }
 }
 
 public sealed record StartFirstOwnerActivationRequest(
@@ -186,3 +217,9 @@ public sealed record PlatformLoginResponse(
     IReadOnlyList<string> PermissionCodes);
 
 public sealed record PlatformLoginRole(string Key, string DisplayName);
+
+public sealed record StartStaffActivationRequest([Required, MaxLength(32)] string Phone);
+public sealed record CompleteStaffActivationRequest(
+    [Required, MaxLength(32)] string Phone,
+    [Required, StringLength(8, MinimumLength = 8)] string Code,
+    [Required, MinLength(12), MaxLength(1024)] string Password);

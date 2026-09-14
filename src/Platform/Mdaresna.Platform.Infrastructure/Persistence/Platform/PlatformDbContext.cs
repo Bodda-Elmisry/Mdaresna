@@ -21,6 +21,8 @@ public class PlatformDbContext(DbContextOptions options) : DbContext(options)
     public DbSet<PlatformLocalCredential> LocalCredentials => Set<PlatformLocalCredential>();
     public DbSet<PlatformLocalPasswordResetChallenge> LocalPasswordResetChallenges =>
         Set<PlatformLocalPasswordResetChallenge>();
+    public DbSet<PlatformStaffInvitationChallenge> StaffInvitationChallenges =>
+        Set<PlatformStaffInvitationChallenge>();
     public DbSet<PlatformAuditEntry> AuditEntries => Set<PlatformAuditEntry>();
     public DbSet<PlatformFeatureFlag> FeatureFlags => Set<PlatformFeatureFlag>();
     public DbSet<PlatformOutboxMessage> OutboxMessages => Set<PlatformOutboxMessage>();
@@ -47,6 +49,7 @@ public class PlatformDbContext(DbContextOptions options) : DbContext(options)
         modelBuilder.ApplyConfiguration(new Configurations.PlatformLocalUserConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.PlatformLocalCredentialConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.PlatformLocalPasswordResetChallengeConfiguration());
+        modelBuilder.ApplyConfiguration(new Configurations.PlatformStaffInvitationChallengeConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.PlatformAuditEntryConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.PlatformFeatureFlagConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.PlatformOutboxMessageConfiguration());

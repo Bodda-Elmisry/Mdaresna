@@ -76,3 +76,27 @@ internal sealed class PlatformLocalPasswordResetChallengeConfiguration :
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
+
+internal sealed class PlatformStaffInvitationChallengeConfiguration :
+    IEntityTypeConfiguration<PlatformStaffInvitationChallenge>
+{
+    public void Configure(EntityTypeBuilder<PlatformStaffInvitationChallenge> builder)
+    {
+        builder.ToTable("staff_invitation_challenges", "access", table =>
+        {
+            table.HasCheckConstraint("ck_access_staff_invitation_attempts",
+                "[SendCount] >= 0 AND [FailedAttempts] >= 0");
+        });
+        builder.HasKey(x => x.UserId);
+        builder.Property(x => x.CodeHash).HasMaxLength(32).IsRequired();
+        builder.Property(x => x.CreatedAtUtc).HasPrecision(3);
+        builder.Property(x => x.ExpiresAtUtc).HasPrecision(3);
+        builder.Property(x => x.ConsumedAtUtc).HasPrecision(3);
+        builder.Property(x => x.LastSentAtUtc).HasPrecision(3);
+        builder.Property(x => x.SendWindowStartUtc).HasPrecision(3);
+        builder.Property(x => x.RowVersion).IsRowVersion();
+        builder.HasOne(x => x.User).WithOne(x => x.StaffInvitationChallenge)
+            .HasForeignKey<PlatformStaffInvitationChallenge>(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}

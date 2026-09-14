@@ -1373,6 +1373,56 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Pla
                         });
                 });
 
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformStaffInvitationChallenge", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("bytea");
+
+                    b.Property<DateTimeOffset?>("ConsumedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<DateTimeOffset>("ExpiresAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<int>("FailedAttempts")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("LastSentAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bytea");
+
+                    b.Property<int>("SendCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("SendWindowStartUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("staff_invitation_challenges", "access", t =>
+                        {
+                            t.HasCheckConstraint("ck_access_staff_invitation_attempts", "\"SendCount\" >= 0 AND \"FailedAttempts\" >= 0");
+                        });
+                });
+
             modelBuilder.Entity("Mdaresna.Platform.Domain.Access.PlatformRoleAssignment", b =>
                 {
                     b.HasOne("Mdaresna.Platform.Domain.Access.PlatformRole", null)
@@ -1507,11 +1557,24 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Pla
                     b.Navigation("Provider");
                 });
 
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformStaffInvitationChallenge", b =>
+                {
+                    b.HasOne("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformLocalUser", "User")
+                        .WithOne("StaffInvitationChallenge")
+                        .HasForeignKey("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformStaffInvitationChallenge", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformLocalUser", b =>
                 {
                     b.Navigation("Credential");
 
                     b.Navigation("PasswordResetChallenge");
+
+                    b.Navigation("StaffInvitationChallenge");
                 });
 #pragma warning restore 612, 618
         }
