@@ -45,7 +45,7 @@ public sealed class PlatformActivationOptions
 
 /// <summary>
 /// First-owner activation only. No normal Platform token is issued until the
-/// phone code and the user-chosen password have been committed together.
+/// phone code is verified and a Platform-local password has been established.
 /// </summary>
 public sealed class PlatformFirstOwnerActivationService(
     IdentityDbContext identityDb,
@@ -92,8 +92,9 @@ public sealed class PlatformFirstOwnerActivationService(
             await DatabaseAdvisoryLock.AcquireAsync(identityDb, transaction,
                 $"mdaresna-platform-first-owner-activation:{identifier.AccountId:N}", cancellationToken);
             var account = await identityDb.Accounts
-                .Include(x => x.PasswordCredential)
                 .SingleOrDefaultAsync(x => x.Id == identifier.AccountId, cancellationToken);
+            var localUser = await platformDb.LocalUsers.AsNoTracking()
+                .SingleOrDefaultAsync(x => x.PersonId == identifier.AccountId, cancellationToken);
             var now = DateTimeOffset.UtcNow;
             var challenge = await identityDb.ActivationChallenges
                 .SingleOrDefaultAsync(x => x.AccountId == identifier.AccountId, cancellationToken);
@@ -110,7 +111,7 @@ public sealed class PlatformFirstOwnerActivationService(
             }
 
             if (account?.Status != AccountStatus.PendingVerification ||
-                account.PasswordCredential is not null ||
+                localUser is null || localUser.Status == "Disabled" ||
                 challenge is not null &&
                 (now - challenge.LastSentAtUtc < SendCooldown ||
                  now - challenge.SendWindowStartUtc < SendWindow &&
@@ -226,20 +227,22 @@ public sealed class PlatformFirstOwnerActivationService(
             var currentIdentifier = await identityDb.LoginIdentifiers
                 .SingleOrDefaultAsync(x => x.Id == identifier.Id, cancellationToken);
             var account = await identityDb.Accounts
-                .Include(x => x.PasswordCredential)
                 .SingleOrDefaultAsync(x => x.Id == identifier.AccountId, cancellationToken);
+            var localUser = await platformDb.LocalUsers
+                .Include(x => x.Credential)
+                .SingleOrDefaultAsync(x => x.PersonId == identifier.AccountId, cancellationToken);
             var challenge = await identityDb.ActivationChallenges
                 .SingleOrDefaultAsync(x => x.AccountId == identifier.AccountId, cancellationToken);
             var now = DateTimeOffset.UtcNow;
             if (completionCommittedOnPreviousAttempt &&
                 currentIdentifier?.IsVerified == true &&
                 account?.Status == AccountStatus.Active &&
-                account.PasswordCredential is { } previousCredential &&
+                localUser?.Credential is { } previousCredential &&
                 challenge?.ConsumedAtUtc is not null &&
                 CryptographicOperations.FixedTimeEquals(
                     challenge.CodeHash, HashCode(identifier.AccountId, code)) &&
                 passwordHasher.VerifyHashedPassword(
-                    account, previousCredential.PasswordHash, password) !=
+                account, previousCredential.PasswordHash, password) !=
                 PasswordVerificationResult.Failed)
             {
                 await transaction.CommitAsync(cancellationToken);
@@ -248,7 +251,7 @@ public sealed class PlatformFirstOwnerActivationService(
 
             if (currentIdentifier is null || currentIdentifier.IsVerified ||
                 account?.Status != AccountStatus.PendingVerification ||
-                account.PasswordCredential is not null || challenge is null ||
+                localUser is null || localUser.Status == "Disabled" || challenge is null ||
                 challenge.ConsumedAtUtc is not null || challenge.ExpiresAtUtc <= now ||
                 challenge.FailedAttempts >= MaximumFailedAttempts)
             {
@@ -270,11 +273,28 @@ public sealed class PlatformFirstOwnerActivationService(
                 return false;
             }
 
+            // Commit the local credential first. If the Identity commit fails,
+            // the central account remains pending and login stays closed; the
+            // same valid OTP/password can retry without replacing the hash.
+            if (localUser.Credential is null)
+            {
+                localUser.Credential = credentialFactory.CreateLocal(
+                    account, localUser, password, now);
+            }
+            else if (passwordHasher.VerifyHashedPassword(
+                         account, localUser.Credential.PasswordHash, password) ==
+                     PasswordVerificationResult.Failed)
+            {
+                return false;
+            }
+            localUser.Status = "Active";
+            localUser.UpdatedAtUtc = now;
+            await platformDb.SaveChangesAsync(cancellationToken);
+
             currentIdentifier.IsVerified = true;
             currentIdentifier.VerifiedAtUtc = now;
             account.Status = AccountStatus.Active;
             account.UpdatedAtUtc = now;
-            identityDb.PasswordCredentials.Add(credentialFactory.Create(account, password, now));
             challenge.ConsumedAtUtc = now;
             AddSecurityEvent(identifier.AccountId, "platform.first_owner.activation.completed", true, now);
             await identityDb.SaveChangesAsync(cancellationToken);

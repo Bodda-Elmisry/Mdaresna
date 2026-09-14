@@ -3,6 +3,7 @@ using System;
 using Mdaresna.Platform.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Identity
 {
     [DbContext(typeof(PostgreSqlIdentityDbContext))]
-    partial class PostgreSqlIdentityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260913212255_AddScopedLocalUsersAndSharedPersonProfile")]
+    partial class AddScopedLocalUsersAndSharedPersonProfile
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -160,54 +163,6 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Ide
                         });
                 });
 
-            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountContact", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasPrecision(3)
-                        .HasColumnType("timestamp(3) with time zone");
-
-                    b.Property<string>("NormalizedValue")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasPrecision(3)
-                        .HasColumnType("timestamp(3) with time zone");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccountId");
-
-                    b.HasIndex("AccountId", "Type", "NormalizedValue")
-                        .IsUnique()
-                        .HasFilter("\"Type\" IN ('Phone', 'Email')");
-
-                    b.ToTable("account_contacts", "identity", t =>
-                        {
-                            t.HasCheckConstraint("ck_identity_account_contacts_type", "\"Type\" IN ('Phone', 'Email', 'Address')");
-
-                            t.HasCheckConstraint("ck_identity_account_contacts_value", "\"Value\" <> '' AND \"NormalizedValue\" <> ''");
-                        });
-                });
-
             modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountPasswordResetChallenge", b =>
                 {
                     b.Property<Guid>("AccountId")
@@ -258,29 +213,6 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Ide
 
                             t.HasCheckConstraint("ck_identity_password_reset_challenge_expiry", "\"ExpiresAtUtc\" > \"CreatedAtUtc\"");
                         });
-                });
-
-            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountProfileImage", b =>
-                {
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("uuid");
-
-                    b.Property<byte[]>("Content")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasPrecision(3)
-                        .HasColumnType("timestamp(3) with time zone");
-
-                    b.HasKey("AccountId");
-
-                    b.ToTable("account_profile_images", "identity");
                 });
 
             modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.IdentityOutboxMessage", b =>
@@ -487,9 +419,6 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Ide
                         .HasMaxLength(320)
                         .HasColumnType("character varying(320)");
 
-                    b.Property<bool>("IsPrimary")
-                        .HasColumnType("boolean");
-
                     b.Property<bool>("IsVerified")
                         .HasColumnType("boolean");
 
@@ -520,10 +449,6 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Ide
 
                     b.HasIndex("AccountId");
 
-                    b.HasIndex("AccountId", "Type")
-                        .IsUnique()
-                        .HasFilter("\"IsPrimary\" = TRUE");
-
                     b.HasIndex("Type", "NormalizedValue")
                         .IsUnique()
                         .HasFilter("\"SchoolId\" IS NULL");
@@ -534,8 +459,6 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Ide
 
                     b.ToTable("login_identifiers", "identity", t =>
                         {
-                            t.HasCheckConstraint("ck_identity_login_identifiers_primary_scope", "\"IsPrimary\" = FALSE OR (\"Type\" IN ('Email', 'Phone') AND \"SchoolId\" IS NULL)");
-
                             t.HasCheckConstraint("ck_identity_login_identifiers_scope", "(\"Type\" IN ('Email', 'Phone') AND \"SchoolId\" IS NULL) OR (\"Type\" IN ('SchoolUsername', 'StudentCode') AND \"SchoolId\" IS NOT NULL)");
 
                             t.HasCheckConstraint("ck_identity_login_identifiers_timestamps", "TRUE AND (\"VerifiedAtUtc\" IS NULL OR (\"VerifiedAtUtc\" >= \"CreatedAtUtc\" AND TRUE))");
@@ -683,33 +606,11 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Ide
                     b.Navigation("Account");
                 });
 
-            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountContact", b =>
-                {
-                    b.HasOne("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.Account", "Account")
-                        .WithMany("Contacts")
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Account");
-                });
-
             modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountPasswordResetChallenge", b =>
                 {
                     b.HasOne("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.Account", "Account")
                         .WithOne("PasswordResetChallenge")
                         .HasForeignKey("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountPasswordResetChallenge", "AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Account");
-                });
-
-            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountProfileImage", b =>
-                {
-                    b.HasOne("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.Account", "Account")
-                        .WithOne("ProfileImage")
-                        .HasForeignKey("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountProfileImage", "AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -772,8 +673,6 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Ide
 
                     b.Navigation("AppLanguagePreferences");
 
-                    b.Navigation("Contacts");
-
                     b.Navigation("LoginIdentifiers");
 
                     b.Navigation("MfaMethods");
@@ -781,8 +680,6 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Ide
                     b.Navigation("PasswordCredential");
 
                     b.Navigation("PasswordResetChallenge");
-
-                    b.Navigation("ProfileImage");
 
                     b.Navigation("Sessions");
                 });

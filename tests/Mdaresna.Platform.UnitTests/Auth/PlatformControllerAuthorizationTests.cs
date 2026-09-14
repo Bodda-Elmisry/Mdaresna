@@ -38,11 +38,16 @@ public sealed class PlatformControllerAuthorizationTests
                     continue;
                 }
 
-                if (controller.Name == "PlatformAccountLanguageController")
+                if (controller.Name is "PlatformAccountLanguageController" or "PlatformAccountContactsController" or "PlatformAccountProfileController")
                 {
-                    // Every signed-in Platform account may edit only its own preference.
+                    // These endpoints access only the signed-in account's shared profile.
                     Assert.NotNull(controller.GetCustomAttribute<AuthorizeAttribute>());
-                    Assert.Contains(action.Name, new[] { "Get", "Put" });
+                    Assert.Contains(action.Name, controller.Name switch
+                    {
+                        "PlatformAccountLanguageController" => new[] { "Get", "Put" },
+                        "PlatformAccountContactsController" => new[] { "Get", "Create", "Update", "Delete" },
+                        _ => new[] { "Get", "Update", "GetImage", "UploadImage", "DeleteImage" }
+                    });
                     continue;
                 }
 

@@ -104,6 +104,19 @@ internal sealed class FirstOwnerBootstrapper(
         }
 
         platformDb.RoleAssignments.Add(assignment);
+        // The local Platform identity is created without a credential. Its
+        // password must be enrolled separately; no hash is copied from Identity.
+        platformDb.LocalUsers.Add(new PlatformLocalUser
+        {
+            Id = Guid.NewGuid(),
+            PersonId = account.Id,
+            UserName = $"platform-{account.Id:N}",
+            NormalizedUserName = $"PLATFORM-{account.Id:N}",
+            DisplayName = options.DisplayName,
+            Status = "PendingActivation",
+            CreatedAtUtc = now,
+            UpdatedAtUtc = now
+        });
         platformDb.AuditEntries.Add(new PlatformAuditEntry
         {
             Id = options.OperationId,
@@ -250,6 +263,7 @@ internal sealed class FirstOwnerBootstrapper(
             DisplayValue = options.Phone,
             SchoolId = null,
             IsVerified = false,
+            IsPrimary = true,
             VerifiedAtUtc = null,
             CreatedAtUtc = now
         });

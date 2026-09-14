@@ -49,7 +49,19 @@ try
         return 0;
     }
 
-    var options = BootstrapOptions.Parse(args);
+    var importLocalUsers = args.Length > 0 && args[0] == "--import-platform-local-users";
+    var importExecute = importLocalUsers && args.Length == 2 && args[1] == "--execute";
+    if (importLocalUsers && args.Length > 1 && !importExecute)
+        throw new BootstrapUsageException("Invalid local-account import argument.");
+    var moveCredential = args.Length > 0 && args[0] == "--move-platform-credential";
+    var moveExecute = moveCredential && args.Length == 4 && args[3] == "--execute";
+    if (moveCredential && (args.Length is not (3 or 4) ||
+        args[1] != "--person-id" ||
+        !Guid.TryParse(args[2], out var parsedPersonId) ||
+        parsedPersonId == Guid.Empty ||
+        args.Length == 4 && !moveExecute))
+        throw new BootstrapUsageException("Invalid credential-move argument.");
+    var options = importLocalUsers || moveCredential ? null : BootstrapOptions.Parse(args);
     var platformConnection = RequireConnection("ConnectionStrings__PlatformConnection");
     var identityConnection = RequireConnection("ConnectionStrings__IdentityConnection");
     EnsureSeparateDatabaseTargets(platformConnection, identityConnection, usePostgreSql);
@@ -72,9 +84,31 @@ try
             new DbContextOptionsBuilder<IdentityDbContext>()
                 .UseSqlServer(identityConnection, sql =>
                     sql.MigrationsHistoryTable("__EFMigrationsHistory", "identity")).Options);
+    if (importLocalUsers)
+    {
+        var import = await new PlatformLocalAccountImporter(identityDb, platformDb)
+            .RunAsync(dryRun: !importExecute);
+        Console.WriteLine($"Platform local accounts: total={import.Total}, " +
+            $"imported={import.Imported}, " +
+            $"unchanged={import.Skipped}, dryRun={import.DryRun}.");
+        return 0;
+    }
+    if (moveCredential)
+    {
+        var personId = Guid.Parse(args[2]);
+        var move = await new PlatformCredentialMover(identityDb, platformDb)
+            .RunAsync(personId, moveExecute);
+        Console.WriteLine(move.AlreadyMoved
+            ? "Platform credential was already local; no change made."
+            : move.Executed
+                ? "Platform credential moved; legacy Identity credential removed."
+                : "Credential move is eligible; dry-run only. Use --execute to move it.");
+        return 0;
+    }
+
     var bootstrapper = new FirstOwnerBootstrapper(identityDb, platformDb);
 
-    if (options.DryRun)
+    if (options!.DryRun)
     {
         Console.WriteLine(await bootstrapper.InspectAsync(options));
         return 0;
@@ -100,6 +134,12 @@ catch (BootstrapUsageException exception)
     Console.Error.WriteLine(
         "   or: dotnet run --project src/Platform/Mdaresna.Platform.Bootstrap -- " +
         "--seed-sms-provider [--dry-run]");
+    Console.Error.WriteLine(
+        "   or: dotnet run --project src/Platform/Mdaresna.Platform.Bootstrap -- " +
+        "--import-platform-local-users [--execute] (dry-run by default)");
+    Console.Error.WriteLine(
+        "   or: dotnet run --project src/Platform/Mdaresna.Platform.Bootstrap -- " +
+        "--move-platform-credential --person-id <GUID> [--execute] (dry-run by default)");
     Console.Error.WriteLine(
         "Provide ConnectionStrings__PlatformConnection for SMS provider seeding, " +
         "or both Platform and Identity connections for first-owner provisioning. " +

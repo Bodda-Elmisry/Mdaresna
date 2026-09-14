@@ -44,11 +44,11 @@ The hosts use two independent EF Core contexts and two independent databases:
 | Context | Development database | Schemas | Ownership |
 | --- | --- | --- | --- |
 | `PlatformDbContext` | `MdaresnaPlatformLocal` | `registry`, `access`, `operations`, `messaging`, `billing` | tenants, schools, Platform RBAC, school-to-platform payment requests/ledger, audit and integration reliability |
-| `IdentityDbContext` | `MdaresnaIdentityLocal` | `identity`, `messaging` | accounts, login identifiers, password hashes, sessions, MFA metadata and security events |
+| `IdentityDbContext` | `MdaresnaIdentityLocal` | `identity`, `messaging` | shared persons, verified phone/email identifiers, MFA metadata and security events; legacy credential tables remain only for compatibility |
 
 There are intentionally no database-to-database foreign keys. Platform role assignments retain the global account identifier, while account existence and authentication remain owned by Identity.
 
-Email and phone identifiers are global. School usernames and student codes are scoped by `SchoolId`; database constraints prevent mixing these two rules. A person keeps one central account and can later receive multiple School/Family memberships, so being both a teacher and a parent does not require two accounts.
+Email and phone identifiers are global. The old Identity schema still permits school-scoped usernames and student codes, but new School usernames and credentials belong in each school's database. A person keeps one central person ID and can later receive multiple School/Family local users, so being both a teacher and a parent does not require multiple person records. Platform passwords now live in `access.local_credentials` in the Platform database.
 
 ## Configuration
 

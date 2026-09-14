@@ -53,6 +53,10 @@ public sealed class PlatformStaffDirectory(
             .Where(x => rawIds.Contains(x.Id))
             .Select(x => new { x.Id, x.DisplayName, x.Status })
             .ToDictionaryAsync(x => x.Id, cancellationToken);
+        var localDisplayNames = await platformDb.LocalUsers.AsNoTracking()
+            .Where(x => rawIds.Contains(x.PersonId))
+            .Select(x => new { x.PersonId, x.DisplayName })
+            .ToDictionaryAsync(x => x.PersonId, x => x.DisplayName, cancellationToken);
         var emails = await identityDb.LoginIdentifiers
             .AsNoTracking()
             .Where(x => rawIds.Contains(x.AccountId) &&
@@ -105,6 +109,7 @@ public sealed class PlatformStaffDirectory(
         {
             var accountId = id.Value;
             accounts.TryGetValue(accountId, out var account);
+            localDisplayNames.TryGetValue(accountId, out var localDisplayName);
             emailByAccount.TryGetValue(accountId, out var email);
             phoneByAccount.TryGetValue(accountId, out var phone);
             rolesByAccount.TryGetValue(id, out var roles);
@@ -112,7 +117,7 @@ public sealed class PlatformStaffDirectory(
 
             return new PlatformStaffDirectoryItem(
                 accountId,
-                account?.DisplayName,
+                localDisplayName ?? account?.DisplayName,
                 email,
                 account?.Status.ToString() ?? "MissingIdentity",
                 account?.Status == AccountStatus.Active && roles.Count > 0,

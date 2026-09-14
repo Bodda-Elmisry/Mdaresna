@@ -3,9 +3,12 @@ using Mdaresna.Api.Contracts;
 using Mdaresna.Platform.Api.Auth;
 using Mdaresna.Platform.Api.Errors;
 using Mdaresna.Platform.Infrastructure.IdentityAuth;
+using Mdaresna.Platform.Domain.Access;
+using Mdaresna.Platform.Infrastructure.Persistence.Platform;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 
 namespace Mdaresna.Platform.Api.Controllers.Auth;
 
@@ -14,7 +17,8 @@ namespace Mdaresna.Platform.Api.Controllers.Auth;
 public sealed class PlatformAuthController(
     PlatformLoginService loginService,
     AccountAppLanguageService languageService,
-    IPlatformAccessTokenIssuer tokenIssuer) : ControllerBase
+    IPlatformAccessTokenIssuer tokenIssuer,
+    PlatformDbContext platformDb) : ControllerBase
 {
     [AllowAnonymous]
     [EnableRateLimiting("platform-login")]
@@ -117,6 +121,14 @@ public sealed class PlatformAuthController(
         var access = tokenIssuer.Issue(login);
         var preferredLanguage = await languageService.GetStoredAsync(
             login.AccountId, AccountAppLanguageService.PlatformApp, cancellationToken);
+        var accountId = IdentityAccountId.From(login.AccountId);
+        var roles = await (
+            from assignment in platformDb.RoleAssignments.AsNoTracking()
+            join role in platformDb.Roles.AsNoTracking() on assignment.RoleId equals role.Id
+            where assignment.AccountId == accountId && assignment.RevokedAtUtc == null && role.IsActive
+            orderby role.Key
+            select new PlatformLoginRole(role.Key, role.DisplayName))
+            .ToArrayAsync(cancellationToken);
         return ApiResponseWriter.ToResult(
             ApiResponse<PlatformLoginResponse>.Success(
                 new PlatformLoginResponse(
@@ -126,7 +138,8 @@ public sealed class PlatformAuthController(
                     access.ExpiresAtUtc,
                     login.AccountId,
                     login.DisplayName,
-                    preferredLanguage),
+                    preferredLanguage,
+                    roles),
                 correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
     }
 }
@@ -158,4 +171,7 @@ public sealed record PlatformLoginResponse(
     DateTimeOffset ExpiresAtUtc,
     Guid AccountId,
     string? DisplayName,
-    string? PreferredLanguage);
+    string? PreferredLanguage,
+    IReadOnlyList<PlatformLoginRole> Roles);
+
+public sealed record PlatformLoginRole(string Key, string DisplayName);

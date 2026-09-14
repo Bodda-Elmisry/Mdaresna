@@ -95,6 +95,17 @@ public sealed class PlatformFirstOwnerActivationIntegrationTests
                 });
                 platformDb.RoleAssignments.Add(PlatformRoleAssignment.Assign(
                     PlatformRoleAssignmentId.New(), ownerId, role.Id, ownerId, now));
+                platformDb.LocalUsers.Add(new PlatformLocalUser
+                {
+                    Id = Guid.NewGuid(),
+                    PersonId = accountId,
+                    UserName = $"platform-{accountId:N}",
+                    NormalizedUserName = $"PLATFORM-{accountId:N}",
+                    DisplayName = "App Manager",
+                    Status = "PendingActivation",
+                    CreatedAtUtc = now,
+                    UpdatedAtUtc = now
+                });
                 platformDb.AuditEntries.Add(new PlatformAuditEntry
                 {
                     Id = Guid.NewGuid(),
@@ -145,10 +156,16 @@ public sealed class PlatformFirstOwnerActivationIntegrationTests
                 var account = await identityDb.Accounts.Include(x => x.PasswordCredential)
                     .Include(x => x.LoginIdentifiers).SingleAsync(x => x.Id == accountId);
                 Assert.Equal(AccountStatus.Active, account.Status);
-                Assert.NotNull(account.PasswordCredential);
+                Assert.Null(account.PasswordCredential);
                 Assert.True(account.LoginIdentifiers.Single().IsVerified);
-                Assert.NotEqual(Password, account.PasswordCredential.PasswordHash);
                 Assert.NotNull((await identityDb.ActivationChallenges.SingleAsync()).ConsumedAtUtc);
+            }
+            await using (var platformDb = new PlatformDbContext(platformOptions))
+            {
+                var local = await platformDb.LocalUsers.Include(x => x.Credential).SingleAsync();
+                Assert.Equal("Active", local.Status);
+                Assert.NotNull(local.Credential);
+                Assert.NotEqual(Password, local.Credential.PasswordHash);
             }
 
             Assert.False(await CompleteAsync(identityOptions, platformOptions, sms,
@@ -156,20 +173,9 @@ public sealed class PlatformFirstOwnerActivationIntegrationTests
             Assert.True(await CanLoginAsync(identityOptions, platformOptions));
 
             string originalStamp;
-            var activeSessionId = Guid.NewGuid();
-            await using (var identityDb = new IdentityDbContext(identityOptions))
+            await using (var platformDb = new PlatformDbContext(platformOptions))
             {
-                originalStamp = (await identityDb.PasswordCredentials
-                    .SingleAsync(x => x.AccountId == accountId)).SecurityStamp;
-                identityDb.Sessions.Add(new IdentitySession
-                {
-                    Id = activeSessionId,
-                    AccountId = accountId,
-                    RefreshTokenHash = Guid.NewGuid().ToString("N"),
-                    CreatedAtUtc = DateTimeOffset.UtcNow,
-                    ExpiresAtUtc = DateTimeOffset.UtcNow.AddHours(1)
-                });
-                await identityDb.SaveChangesAsync();
+                originalStamp = (await platformDb.LocalCredentials.SingleAsync()).SecurityStamp;
             }
 
             await ResetStartAsync(identityOptions, platformOptions, sms, activationOptions);
@@ -185,16 +191,11 @@ public sealed class PlatformFirstOwnerActivationIntegrationTests
                 activationOptions, resetCode, changedPassword));
             Assert.False(await CanLoginAsync(identityOptions, platformOptions));
             Assert.True(await CanLoginAsync(identityOptions, platformOptions, changedPassword));
-            await using (var identityDb = new IdentityDbContext(identityOptions))
+            await using (var platformDb = new PlatformDbContext(platformOptions))
             {
-                var credential = await identityDb.PasswordCredentials
-                    .SingleAsync(x => x.AccountId == accountId);
+                var credential = await platformDb.LocalCredentials.SingleAsync();
                 Assert.NotEqual(originalStamp, credential.SecurityStamp);
-                Assert.NotNull((await identityDb.PasswordResetChallenges
-                    .SingleAsync(x => x.AccountId == accountId)).ConsumedAtUtc);
-                var session = await identityDb.Sessions.SingleAsync(x => x.Id == activeSessionId);
-                Assert.NotNull(session.RevokedAtUtc);
-                Assert.Equal("password-reset", session.RevocationReason);
+                Assert.NotNull((await platformDb.LocalPasswordResetChallenges.SingleAsync()).ConsumedAtUtc);
             }
         }
         finally

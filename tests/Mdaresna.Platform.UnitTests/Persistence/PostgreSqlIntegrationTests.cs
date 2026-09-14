@@ -7,6 +7,7 @@ using Mdaresna.Platform.Infrastructure.Persistence.Platform.Billing;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform.Registry;
 using Mdaresna.Platform.Infrastructure.IdentityAuth;
 using Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities;
+using Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities;
 using Mdaresna.Tenancy.Abstractions.Identifiers;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -15,6 +16,54 @@ namespace Mdaresna.Platform.UnitTests.Persistence;
 
 public sealed class PostgreSqlIntegrationTests
 {
+    [Fact]
+    public async Task Local_platform_credential_is_saved_in_platform_database_with_rowversions()
+    {
+        var connection = Environment.GetEnvironmentVariable("MDARESNA_POSTGRES_TEST_PLATFORM");
+        if (string.IsNullOrWhiteSpace(connection)) return;
+        var target = new NpgsqlConnectionStringBuilder(connection);
+        Assert.Equal("localhost", target.Host, ignoreCase: true);
+        Assert.StartsWith("mdaresna_pg_verify_", target.Database, StringComparison.OrdinalIgnoreCase);
+
+        var options = new DbContextOptionsBuilder<PostgreSqlPlatformDbContext>()
+            .UseNpgsql(connection).Options;
+        await using var db = new PostgreSqlPlatformDbContext(options);
+        await using var transaction = await db.Database.BeginTransactionAsync();
+        var now = DateTimeOffset.UtcNow;
+        var localId = Guid.NewGuid();
+        var local = new PlatformLocalUser
+        {
+            Id = localId,
+            PersonId = Guid.NewGuid(),
+            UserName = $"operator-{localId:N}",
+            NormalizedUserName = $"OPERATOR-{localId:N}",
+            Status = "Active",
+            CreatedAtUtc = now,
+            UpdatedAtUtc = now,
+            Credential = new PlatformLocalCredential
+            {
+                UserId = localId,
+                PasswordHash = "test-hash-not-a-real-credential",
+                HashingAlgorithm = "AspNetIdentityV3",
+                HashingVersion = 3,
+                SecurityStamp = Guid.NewGuid().ToString("N"),
+                ChangedAtUtc = now
+            }
+        };
+        db.LocalUsers.Add(local);
+        await db.SaveChangesAsync();
+
+        Assert.Equal(16, local.RowVersion.Length);
+        Assert.Equal(16, local.Credential.RowVersion.Length);
+        var priorVersion = local.RowVersion.ToArray();
+        local.DisplayName = "School liaison";
+        local.UpdatedAtUtc = now.AddMinutes(1);
+        await db.SaveChangesAsync();
+        Assert.False(priorVersion.SequenceEqual(local.RowVersion));
+        Assert.Equal(localId, (await db.LocalCredentials.SingleAsync()).UserId);
+        await transaction.RollbackAsync();
+    }
+
     [Fact]
     public async Task Account_language_is_independent_for_each_application()
     {

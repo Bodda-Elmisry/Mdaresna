@@ -28,6 +28,8 @@ public sealed class Account
     public Guid Id { get; set; }
     public AccountStatus Status { get; set; }
     public string? DisplayName { get; set; }
+    public string? GenderCode { get; set; }
+    public DateOnly? DateOfBirth { get; set; }
     public string? PreferredLocale { get; set; }
     public string? TimeZone { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
@@ -35,12 +37,44 @@ public sealed class Account
     public byte[] RowVersion { get; set; } = [];
 
     public ICollection<LoginIdentifier> LoginIdentifiers { get; set; } = [];
+    public ICollection<AccountContact> Contacts { get; set; } = [];
+    public AccountProfileImage? ProfileImage { get; set; }
     public ICollection<AccountAppLanguagePreference> AppLanguagePreferences { get; set; } = [];
     public PasswordCredential? PasswordCredential { get; set; }
     public ICollection<IdentitySession> Sessions { get; set; } = [];
     public ICollection<MfaMethod> MfaMethods { get; set; } = [];
     public AccountActivationChallenge? ActivationChallenge { get; set; }
     public AccountPasswordResetChallenge? PasswordResetChallenge { get; set; }
+}
+
+/// <summary>Image bytes are kept separate from the account row so normal identity reads stay small.</summary>
+public sealed class AccountProfileImage
+{
+    public Guid AccountId { get; set; }
+    public byte[] Content { get; set; } = [];
+    public string ContentType { get; set; } = string.Empty;
+    public DateTimeOffset UpdatedAtUtc { get; set; }
+    public Account Account { get; set; } = null!;
+}
+
+public enum AccountContactType
+{
+    Phone = 1,
+    Email = 2,
+    Address = 3
+}
+
+/// <summary>Supplementary profile contacts; these are never login identifiers.</summary>
+public sealed class AccountContact
+{
+    public Guid Id { get; set; }
+    public Guid AccountId { get; set; }
+    public AccountContactType Type { get; set; }
+    public string Value { get; set; } = string.Empty;
+    public string NormalizedValue { get; set; } = string.Empty;
+    public DateTimeOffset CreatedAtUtc { get; set; }
+    public DateTimeOffset UpdatedAtUtc { get; set; }
+    public Account Account { get; set; } = null!;
 }
 
 public sealed class AccountAppLanguagePreference
@@ -93,6 +127,7 @@ public sealed class LoginIdentifier
     public string DisplayValue { get; set; } = string.Empty;
     public Guid? SchoolId { get; set; }
     public bool IsVerified { get; set; }
+    public bool IsPrimary { get; set; }
     public DateTimeOffset? VerifiedAtUtc { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
     public byte[] RowVersion { get; set; } = [];

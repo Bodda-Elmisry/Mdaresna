@@ -912,6 +912,167 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Pla
                         });
                 });
 
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformLocalCredential", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("ChangedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<int>("FailedSignInCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("HashingAlgorithm")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("HashingVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("LockoutEndUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<bool>("MustChangePassword")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("SecurityStamp")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("local_credentials", "access", t =>
+                        {
+                            t.HasCheckConstraint("ck_access_local_credentials_failed_count", "\"FailedSignInCount\" >= 0");
+
+                            t.HasCheckConstraint("ck_access_local_credentials_hashing_version", "\"HashingVersion\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformLocalPasswordResetChallenge", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("bytea");
+
+                    b.Property<DateTimeOffset?>("ConsumedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<DateTimeOffset>("ExpiresAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<int>("FailedAttempts")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("LastSentAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bytea");
+
+                    b.Property<int>("SendCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("SendWindowStartUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("local_password_reset_challenges", "access", t =>
+                        {
+                            t.HasCheckConstraint("ck_access_local_password_reset_attempts", "\"SendCount\" >= 0 AND \"FailedAttempts\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformLocalUser", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<string>("DisplayName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique();
+
+                    b.HasIndex("PersonId")
+                        .IsUnique();
+
+                    b.ToTable("local_users", "access", t =>
+                        {
+                            t.HasCheckConstraint("ck_access_local_users_identifiers", "\"Id\" <> '00000000-0000-0000-0000-000000000000' AND \"PersonId\" <> '00000000-0000-0000-0000-000000000000'");
+
+                            t.HasCheckConstraint("ck_access_local_users_status", "\"Status\" IN ('PendingActivation', 'Active', 'Disabled')");
+                        });
+                });
+
             modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformOutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1299,6 +1460,28 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Pla
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformLocalCredential", b =>
+                {
+                    b.HasOne("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformLocalUser", "User")
+                        .WithOne("Credential")
+                        .HasForeignKey("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformLocalCredential", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformLocalPasswordResetChallenge", b =>
+                {
+                    b.HasOne("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformLocalUser", "User")
+                        .WithOne("PasswordResetChallenge")
+                        .HasForeignKey("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformLocalPasswordResetChallenge", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformRolePermissionRecord", b =>
                 {
                     b.HasOne("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformPermissionRecord", null)
@@ -1322,6 +1505,13 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Pla
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Provider");
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformLocalUser", b =>
+                {
+                    b.Navigation("Credential");
+
+                    b.Navigation("PasswordResetChallenge");
                 });
 #pragma warning restore 612, 618
         }

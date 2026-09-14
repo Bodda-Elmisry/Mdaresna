@@ -10,7 +10,7 @@ namespace Mdaresna.Platform.Infrastructure.IdentityAuth;
 public sealed record PlatformLoginResult(Guid AccountId, string SecurityStamp, string? DisplayName);
 
 /// <summary>
-/// Password sign-in for central accounts that currently have an active Platform role.
+/// Identity resolves the verified person; Platform owns the password and access.
 /// The same null result is used for all refusals to avoid account enumeration.
 /// </summary>
 public sealed class PlatformLoginService(
@@ -46,7 +46,6 @@ public sealed class PlatformLoginService(
 
         var loginIdentifier = await identityDb.LoginIdentifiers
             .Include(x => x.Account)
-                .ThenInclude(x => x.PasswordCredential)
             .SingleOrDefaultAsync(x =>
                 x.Type == identifierType &&
                 x.SchoolId == null &&
@@ -55,9 +54,14 @@ public sealed class PlatformLoginService(
                 cancellationToken);
 
         var account = loginIdentifier?.Account;
-        var credential = account?.PasswordCredential;
-        if (account is null || credential is null ||
-            account.Status != AccountStatus.Active ||
+        if (account?.Status != AccountStatus.Active)
+            return null;
+
+        var localUser = await platformDb.LocalUsers
+            .Include(x => x.Credential)
+            .SingleOrDefaultAsync(x => x.PersonId == account.Id, cancellationToken);
+        var credential = localUser?.Credential;
+        if (localUser?.Status != "Active" || credential is null ||
             credential.LockoutEndUtc > DateTimeOffset.UtcNow ||
             credential.MustChangePassword ||
             credential.HashingAlgorithm != PlatformPasswordCredentialFactory.Algorithm ||
@@ -67,8 +71,7 @@ public sealed class PlatformLoginService(
             return null;
         }
 
-        var verification = passwordHasher.VerifyHashedPassword(
-            account, credential.PasswordHash, password);
+        var verification = passwordHasher.VerifyHashedPassword(account, credential.PasswordHash, password);
         if (verification == PasswordVerificationResult.Failed)
         {
             var now = DateTimeOffset.UtcNow;
@@ -130,7 +133,8 @@ public sealed class PlatformLoginService(
             return null;
         }
 
-        return new PlatformLoginResult(account.Id, credential.SecurityStamp, account.DisplayName);
+        return new PlatformLoginResult(account.Id, credential.SecurityStamp,
+            localUser.DisplayName ?? account.DisplayName);
     }
 
     private void AddSecurityEvent(Guid accountId, string eventType, bool succeeded, DateTimeOffset now) =>
@@ -147,6 +151,7 @@ public sealed class PlatformLoginService(
     {
         try
         {
+            await platformDb.SaveChangesAsync(cancellationToken);
             await identityDb.SaveChangesAsync(cancellationToken);
             return true;
         }

@@ -127,6 +127,7 @@ public sealed class FirstOwnerBootstrapperIntegrationTests
         var phone = Assert.Single(account.LoginIdentifiers);
         Assert.Equal(BootstrapOptions.FirstOwnerPhone, phone.NormalizedValue);
         Assert.Equal(isVerified, phone.IsVerified);
+        Assert.True(phone.IsPrimary);
         Assert.Null(phone.VerifiedAtUtc);
 
         var role = await platformDb.Roles.AsNoTracking().SingleAsync();
@@ -136,6 +137,12 @@ public sealed class FirstOwnerBootstrapperIntegrationTests
         Assert.Equal(IdentityAccountId.From(accountId), assignment.AccountId);
         Assert.Equal(role.Id, assignment.RoleId);
         Assert.Null(assignment.RevokedAtUtc);
+        var localUser = await platformDb.LocalUsers.AsNoTracking()
+            .Include(x => x.Credential)
+            .SingleAsync();
+        Assert.Equal(accountId, localUser.PersonId);
+        Assert.Equal("PendingActivation", localUser.Status);
+        Assert.Null(localUser.Credential);
         Assert.Single(await platformDb.AuditEntries.AsNoTracking().ToListAsync());
     }
 

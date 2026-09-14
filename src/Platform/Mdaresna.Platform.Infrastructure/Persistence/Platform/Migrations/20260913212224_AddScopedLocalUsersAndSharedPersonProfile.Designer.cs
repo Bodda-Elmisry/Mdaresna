@@ -4,6 +4,7 @@ using Mdaresna.Platform.Infrastructure.Persistence.Platform;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Mdaresna.Platform.Infrastructure.Persistence.Platform.Migrations
 {
     [DbContext(typeof(PlatformDbContext))]
-    partial class PlatformDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260913212224_AddScopedLocalUsersAndSharedPersonProfile")]
+    partial class AddScopedLocalUsersAndSharedPersonProfile
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -970,56 +973,6 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Platform.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformLocalPasswordResetChallenge", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<byte[]>("CodeHash")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("varbinary(32)");
-
-                    b.Property<DateTimeOffset?>("ConsumedAtUtc")
-                        .HasPrecision(3)
-                        .HasColumnType("datetimeoffset(3)");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasPrecision(3)
-                        .HasColumnType("datetimeoffset(3)");
-
-                    b.Property<DateTimeOffset>("ExpiresAtUtc")
-                        .HasPrecision(3)
-                        .HasColumnType("datetimeoffset(3)");
-
-                    b.Property<int>("FailedAttempts")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset>("LastSentAtUtc")
-                        .HasPrecision(3)
-                        .HasColumnType("datetimeoffset(3)");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.Property<int>("SendCount")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset>("SendWindowStartUtc")
-                        .HasPrecision(3)
-                        .HasColumnType("datetimeoffset(3)");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("local_password_reset_challenges", "access", t =>
-                        {
-                            t.HasCheckConstraint("ck_access_local_password_reset_attempts", "[SendCount] >= 0 AND [FailedAttempts] >= 0");
-                        });
-                });
-
             modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformLocalUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1476,17 +1429,6 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Platform.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformLocalPasswordResetChallenge", b =>
-                {
-                    b.HasOne("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformLocalUser", "User")
-                        .WithOne("PasswordResetChallenge")
-                        .HasForeignKey("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformLocalPasswordResetChallenge", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformRolePermissionRecord", b =>
                 {
                     b.HasOne("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformPermissionRecord", null)
@@ -1515,8 +1457,6 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Platform.Migrations
             modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformLocalUser", b =>
                 {
                     b.Navigation("Credential");
-
-                    b.Navigation("PasswordResetChallenge");
                 });
 #pragma warning restore 612, 618
         }

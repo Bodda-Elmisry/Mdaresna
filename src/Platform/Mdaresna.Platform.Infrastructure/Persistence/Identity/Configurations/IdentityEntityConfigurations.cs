@@ -22,6 +22,8 @@ internal sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(x => x.DisplayName).HasMaxLength(200);
+        builder.Property(x => x.GenderCode).HasMaxLength(16);
+        builder.Property(x => x.DateOfBirth).HasColumnType("date");
         builder.Property(x => x.PreferredLocale).HasMaxLength(20);
         builder.Property(x => x.TimeZone).HasMaxLength(100);
         builder.Property(x => x.CreatedAtUtc).HasPrecision(3);
@@ -71,6 +73,9 @@ internal sealed class LoginIdentifierConfiguration : IEntityTypeConfiguration<Lo
                 "([IsVerified] = 1 AND [VerifiedAtUtc] IS NOT NULL) OR " +
                 "([IsVerified] = 0 AND [VerifiedAtUtc] IS NULL)");
             table.HasCheckConstraint(
+                "ck_identity_login_identifiers_primary_scope",
+                "[IsPrimary] = 0 OR ([Type] IN (N'Email', N'Phone') AND [SchoolId] IS NULL)");
+            table.HasCheckConstraint(
                 "ck_identity_login_identifiers_timestamps",
                 "DATEPART(TZOFFSET, [CreatedAtUtc]) = 0 AND " +
                 "([VerifiedAtUtc] IS NULL OR ([VerifiedAtUtc] >= [CreatedAtUtc] " +
@@ -96,6 +101,53 @@ internal sealed class LoginIdentifierConfiguration : IEntityTypeConfiguration<Lo
             .IsUnique()
             .HasFilter("[SchoolId] IS NOT NULL");
         builder.HasIndex(x => x.AccountId);
+        builder.HasIndex(x => new { x.AccountId, x.Type })
+            .IsUnique()
+            .HasFilter("[IsPrimary] = 1");
+    }
+}
+
+internal sealed class AccountContactConfiguration : IEntityTypeConfiguration<AccountContact>
+{
+    public void Configure(EntityTypeBuilder<AccountContact> builder)
+    {
+        builder.ToTable("account_contacts", "identity", table =>
+        {
+            table.HasCheckConstraint("ck_identity_account_contacts_type",
+                "[Type] IN (N'Phone', N'Email', N'Address')");
+            table.HasCheckConstraint("ck_identity_account_contacts_value",
+                "[Value] <> N'' AND [NormalizedValue] <> N''");
+        });
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Type).HasConversion<string>().HasMaxLength(16).IsRequired();
+        builder.Property(x => x.Value).HasMaxLength(500).IsRequired();
+        builder.Property(x => x.NormalizedValue).HasMaxLength(500).IsRequired();
+        builder.Property(x => x.CreatedAtUtc).HasPrecision(3);
+        builder.Property(x => x.UpdatedAtUtc).HasPrecision(3);
+        builder.HasOne(x => x.Account)
+            .WithMany(x => x.Contacts)
+            .HasForeignKey(x => x.AccountId)
+            .OnDelete(DeleteBehavior.Cascade);
+        builder.HasIndex(x => x.AccountId);
+        builder.HasIndex(x => new { x.AccountId, x.Type, x.NormalizedValue })
+            .IsUnique()
+            .HasFilter("[Type] IN (N'Phone', N'Email')");
+    }
+}
+
+internal sealed class AccountProfileImageConfiguration : IEntityTypeConfiguration<AccountProfileImage>
+{
+    public void Configure(EntityTypeBuilder<AccountProfileImage> builder)
+    {
+        builder.ToTable("account_profile_images", "identity");
+        builder.HasKey(x => x.AccountId);
+        builder.Property(x => x.Content).IsRequired();
+        builder.Property(x => x.ContentType).HasMaxLength(32).IsRequired();
+        builder.Property(x => x.UpdatedAtUtc).HasPrecision(3);
+        builder.HasOne(x => x.Account)
+            .WithOne(x => x.ProfileImage)
+            .HasForeignKey<AccountProfileImage>(x => x.AccountId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
 

@@ -32,10 +32,13 @@ internal sealed class PlatformPrincipalValidator(
 
         var account = await identityDb.Accounts
             .AsNoTracking()
-            .Include(x => x.PasswordCredential)
             .SingleOrDefaultAsync(x => x.Id == rawAccountId, cancellationToken);
-        var credential = account?.PasswordCredential;
+        var localUser = await platformDb.LocalUsers.AsNoTracking()
+            .Include(x => x.Credential)
+            .SingleOrDefaultAsync(x => x.PersonId == rawAccountId, cancellationToken);
+        var credential = localUser?.Credential;
         if (account?.Status != AccountStatus.Active ||
+            localUser?.Status != "Active" ||
             credential is null ||
             credential.SecurityStamp != stamp ||
             credential.HashingAlgorithm != PlatformPasswordCredentialFactory.Algorithm ||

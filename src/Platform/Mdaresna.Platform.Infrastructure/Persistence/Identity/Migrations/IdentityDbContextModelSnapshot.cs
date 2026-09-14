@@ -32,9 +32,16 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Identity.Migrations
                         .HasPrecision(3)
                         .HasColumnType("datetimeoffset(3)");
 
+                    b.Property<DateOnly?>("DateOfBirth")
+                        .HasColumnType("date");
+
                     b.Property<string>("DisplayName")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("GenderCode")
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
 
                     b.Property<string>("PreferredLocale")
                         .HasMaxLength(20)
@@ -153,6 +160,54 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Identity.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountContact", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("datetimeoffset(3)");
+
+                    b.Property<string>("NormalizedValue")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("datetimeoffset(3)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("AccountId", "Type", "NormalizedValue")
+                        .IsUnique()
+                        .HasFilter("[Type] IN (N'Phone', N'Email')");
+
+                    b.ToTable("account_contacts", "identity", t =>
+                        {
+                            t.HasCheckConstraint("ck_identity_account_contacts_type", "[Type] IN (N'Phone', N'Email', N'Address')");
+
+                            t.HasCheckConstraint("ck_identity_account_contacts_value", "[Value] <> N'' AND [NormalizedValue] <> N''");
+                        });
+                });
+
             modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountPasswordResetChallenge", b =>
                 {
                     b.Property<Guid>("AccountId")
@@ -203,6 +258,29 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Identity.Migrations
 
                             t.HasCheckConstraint("ck_identity_password_reset_challenge_expiry", "[ExpiresAtUtc] > [CreatedAtUtc]");
                         });
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountProfileImage", b =>
+                {
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("datetimeoffset(3)");
+
+                    b.HasKey("AccountId");
+
+                    b.ToTable("account_profile_images", "identity");
                 });
 
             modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.IdentityOutboxMessage", b =>
@@ -409,6 +487,9 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Identity.Migrations
                         .HasMaxLength(320)
                         .HasColumnType("nvarchar(320)");
 
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsVerified")
                         .HasColumnType("bit");
 
@@ -439,6 +520,10 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Identity.Migrations
 
                     b.HasIndex("AccountId");
 
+                    b.HasIndex("AccountId", "Type")
+                        .IsUnique()
+                        .HasFilter("[IsPrimary] = 1");
+
                     b.HasIndex("Type", "NormalizedValue")
                         .IsUnique()
                         .HasFilter("[SchoolId] IS NULL");
@@ -449,6 +534,8 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Identity.Migrations
 
                     b.ToTable("login_identifiers", "identity", t =>
                         {
+                            t.HasCheckConstraint("ck_identity_login_identifiers_primary_scope", "[IsPrimary] = 0 OR ([Type] IN (N'Email', N'Phone') AND [SchoolId] IS NULL)");
+
                             t.HasCheckConstraint("ck_identity_login_identifiers_scope", "([Type] IN (N'Email', N'Phone') AND [SchoolId] IS NULL) OR ([Type] IN (N'SchoolUsername', N'StudentCode') AND [SchoolId] IS NOT NULL)");
 
                             t.HasCheckConstraint("ck_identity_login_identifiers_timestamps", "DATEPART(TZOFFSET, [CreatedAtUtc]) = 0 AND ([VerifiedAtUtc] IS NULL OR ([VerifiedAtUtc] >= [CreatedAtUtc] AND DATEPART(TZOFFSET, [VerifiedAtUtc]) = 0))");
@@ -596,11 +683,33 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Identity.Migrations
                     b.Navigation("Account");
                 });
 
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountContact", b =>
+                {
+                    b.HasOne("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.Account", "Account")
+                        .WithMany("Contacts")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
             modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountPasswordResetChallenge", b =>
                 {
                     b.HasOne("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.Account", "Account")
                         .WithOne("PasswordResetChallenge")
                         .HasForeignKey("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountPasswordResetChallenge", "AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountProfileImage", b =>
+                {
+                    b.HasOne("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.Account", "Account")
+                        .WithOne("ProfileImage")
+                        .HasForeignKey("Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities.AccountProfileImage", "AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -663,6 +772,8 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Identity.Migrations
 
                     b.Navigation("AppLanguagePreferences");
 
+                    b.Navigation("Contacts");
+
                     b.Navigation("LoginIdentifiers");
 
                     b.Navigation("MfaMethods");
@@ -670,6 +781,8 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Identity.Migrations
                     b.Navigation("PasswordCredential");
 
                     b.Navigation("PasswordResetChallenge");
+
+                    b.Navigation("ProfileImage");
 
                     b.Navigation("Sessions");
                 });
