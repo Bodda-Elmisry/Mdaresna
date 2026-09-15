@@ -5,6 +5,21 @@ namespace Mdaresna.Platform.Application.Registry;
 
 internal static class ContractMappings
 {
+    public static SchoolType ToDomain(this SchoolTypeV1 value) => value switch
+    {
+        SchoolTypeV1.Private => SchoolType.Private,
+        SchoolTypeV1.Government => SchoolType.Government,
+        _ => throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown school type.")
+    };
+
+    public static DeploymentMode ToDomain(this SchoolDeploymentModeV1 value) => value switch
+    {
+        SchoolDeploymentModeV1.SharedSaaS => DeploymentMode.SharedSaaS,
+        SchoolDeploymentModeV1.DedicatedCloud => DeploymentMode.DedicatedCloud,
+        SchoolDeploymentModeV1.GovernmentOnPremises => DeploymentMode.GovernmentOnPremises,
+        _ => throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown deployment mode.")
+    };
+
     public static SchoolTypeV1 ToContract(this SchoolType value) => value switch
     {
         SchoolType.Private => SchoolTypeV1.Private,

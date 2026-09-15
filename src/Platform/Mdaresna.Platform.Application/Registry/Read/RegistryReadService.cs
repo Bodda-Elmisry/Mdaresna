@@ -42,14 +42,27 @@ public sealed class RegistryReadService(IRegistryReadStore store)
         ArgumentNullException.ThrowIfNull(query);
         ValidatePage(query.PageNumber, query.PageSize);
         ValidateSearch(query.Search);
+        ValidateSearch(query.DisplayName);
+        ValidateSearch(query.Address, 500);
+        ValidateSearch(query.UnitType);
+        ValidateSearch(query.Owner);
         if (query.TenantId is { IsEmpty: true } ||
+            query.UnitTypeId == Guid.Empty ||
+            query.CreatedFrom > query.CreatedTo ||
+            query.ActivatedFrom > query.ActivatedTo ||
             query.Status.HasValue && !Enum.IsDefined(query.Status.Value) ||
             query.SchoolType.HasValue && !Enum.IsDefined(query.SchoolType.Value))
         {
             throw new ArgumentOutOfRangeException(nameof(query));
         }
 
-        return store.ListSchoolsAsync(query with { Search = NormalizeSearch(query.Search) }, cancellationToken);
+        return store.ListSchoolsAsync(query with {
+            Search = NormalizeSearch(query.Search),
+            DisplayName = NormalizeSearch(query.DisplayName),
+            Address = NormalizeSearch(query.Address),
+            UnitType = NormalizeSearch(query.UnitType),
+            Owner = NormalizeSearch(query.Owner)
+        }, cancellationToken);
     }
 
     public async Task<SchoolReadModel> GetSchoolAsync(
@@ -78,9 +91,9 @@ public sealed class RegistryReadService(IRegistryReadStore store)
         }
     }
 
-    private static void ValidateSearch(string? search)
+    private static void ValidateSearch(string? search, int maximumLength = 200)
     {
-        if (search?.Trim().Length > 200)
+        if (search?.Trim().Length > maximumLength)
         {
             throw new ArgumentOutOfRangeException(nameof(search));
         }

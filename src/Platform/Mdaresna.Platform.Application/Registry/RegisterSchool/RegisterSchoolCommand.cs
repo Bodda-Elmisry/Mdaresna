@@ -14,4 +14,6 @@ public sealed record RegisterSchoolCommand(
     IdentityAccountId RequestedByAccountId,
     Guid CorrelationId,
     Guid? CausationId = null,
-    string? TraceParent = null);
+    string? TraceParent = null,
+    string? Address = null,
+    Guid? UnitTypeId = null);

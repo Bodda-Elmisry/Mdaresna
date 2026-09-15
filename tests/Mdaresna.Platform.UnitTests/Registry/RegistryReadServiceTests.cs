@@ -16,7 +16,8 @@ public sealed class RegistryReadServiceTests
 
         await service.ListTenantsAsync(new ListTenantsQuery("  academy  ", TenantStatus.Active, 2, 10));
         await service.ListSchoolsAsync(new ListSchoolsQuery(
-            tenantId, "  school  ", SchoolLifecycleStatus.Approved, SchoolType.Private, 3, 5));
+            tenantId, "  school  ", SchoolLifecycleStatus.Approved, SchoolType.Private, 3, 5,
+            DisplayName: "  academy  ", Address: "  cairo  ", UnitType: "  coin  ", Owner: "  owner  "));
 
         Assert.Equal("academy", store.LastTenantQuery?.Search);
         Assert.Equal(2, store.LastTenantQuery?.PageNumber);
@@ -24,6 +25,10 @@ public sealed class RegistryReadServiceTests
         Assert.Equal(tenantId, store.LastSchoolQuery?.TenantId);
         Assert.Equal(SchoolLifecycleStatus.Approved, store.LastSchoolQuery?.Status);
         Assert.Equal(3, store.LastSchoolQuery?.PageNumber);
+        Assert.Equal("academy", store.LastSchoolQuery?.DisplayName);
+        Assert.Equal("cairo", store.LastSchoolQuery?.Address);
+        Assert.Equal("coin", store.LastSchoolQuery?.UnitType);
+        Assert.Equal("owner", store.LastSchoolQuery?.Owner);
     }
 
     [Fact]

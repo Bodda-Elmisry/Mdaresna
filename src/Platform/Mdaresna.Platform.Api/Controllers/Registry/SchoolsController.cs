@@ -8,7 +8,9 @@ using Mdaresna.Platform.Application.Registry.Lifecycle;
 using Mdaresna.Platform.Application.Registry.Read;
 using Mdaresna.Platform.Application.Registry.RegisterSchool;
 using Mdaresna.Platform.Domain.Registry;
+using Mdaresna.Platform.Infrastructure.Persistence.Identity;
 using Mdaresna.Tenancy.Abstractions.Identifiers;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Platform.Api.Controllers.Registry;
@@ -20,6 +22,7 @@ public sealed class SchoolsController(
     RegisterSchoolCommandHandler registerSchool,
     TransitionSchoolCommandHandler transitionSchool,
     BeginSchoolProvisioningCommandHandler beginProvisioning,
+    IdentityDbContext identityDb,
     IConfiguration configuration) : ControllerBase
 {
     [HttpGet("schools")]
@@ -28,10 +31,21 @@ public sealed class SchoolsController(
         [FromQuery] string? search = null,
         [FromQuery] SchoolLifecycleStatus? status = null,
         [FromQuery] SchoolType? schoolType = null,
+        [FromQuery] string? displayName = null,
+        [FromQuery] string? address = null,
+        [FromQuery] DateOnly? createdFrom = null,
+        [FromQuery] DateOnly? createdTo = null,
+        [FromQuery] DateOnly? activatedFrom = null,
+        [FromQuery] DateOnly? activatedTo = null,
+        [FromQuery] Guid? unitTypeId = null,
+        [FromQuery] string? unitType = null,
+        [FromQuery] string? owner = null,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default) =>
-        ListCore(null, search, status, schoolType, pageNumber, pageSize, cancellationToken);
+        ListCore(null, search, status, schoolType, displayName, address,
+            createdFrom, createdTo, activatedFrom, activatedTo, unitTypeId,
+            unitType, owner, pageNumber, pageSize, cancellationToken);
 
     [HttpGet("tenants/{tenantId:guid}/schools")]
     [PlatformPermission("platform.schools.read")]
@@ -40,13 +54,23 @@ public sealed class SchoolsController(
         [FromQuery] string? search = null,
         [FromQuery] SchoolLifecycleStatus? status = null,
         [FromQuery] SchoolType? schoolType = null,
+        [FromQuery] string? displayName = null,
+        [FromQuery] string? address = null,
+        [FromQuery] DateOnly? createdFrom = null,
+        [FromQuery] DateOnly? createdTo = null,
+        [FromQuery] DateOnly? activatedFrom = null,
+        [FromQuery] DateOnly? activatedTo = null,
+        [FromQuery] Guid? unitTypeId = null,
+        [FromQuery] string? unitType = null,
+        [FromQuery] string? owner = null,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
         RegistryRequestContext.RequireId(tenantId, nameof(tenantId));
         return ListCore(TenantId.From(tenantId), search, status, schoolType,
-            pageNumber, pageSize, cancellationToken);
+            displayName, address, createdFrom, createdTo, activatedFrom,
+            activatedTo, unitTypeId, unitType, owner, pageNumber, pageSize, cancellationToken);
     }
 
     [HttpGet("schools/{schoolId:guid}")]
@@ -56,7 +80,8 @@ public sealed class SchoolsController(
         CancellationToken cancellationToken)
     {
         RegistryRequestContext.RequireId(schoolId, nameof(schoolId));
-        var school = await readService.GetSchoolAsync(SchoolId.From(schoolId), cancellationToken);
+        var school = await EnrichOwnerAsync(
+            await readService.GetSchoolAsync(SchoolId.From(schoolId), cancellationToken), cancellationToken);
         return Ok(ApiResponse<SchoolReadModel>.Success(
             school,
             correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
@@ -71,7 +96,8 @@ public sealed class SchoolsController(
     {
         RegistryRequestContext.RequireId(tenantId, nameof(tenantId));
         RegistryRequestContext.RequireId(schoolId, nameof(schoolId));
-        var school = await readService.GetSchoolAsync(SchoolId.From(schoolId), cancellationToken);
+        var school = await EnrichOwnerAsync(
+            await readService.GetSchoolAsync(SchoolId.From(schoolId), cancellationToken), cancellationToken);
         if (school.TenantId != TenantId.From(tenantId))
         {
             throw new PlatformResourceNotFoundException(
@@ -218,27 +244,91 @@ public sealed class SchoolsController(
         string? search,
         SchoolLifecycleStatus? status,
         SchoolType? schoolType,
+        string? displayName,
+        string? address,
+        DateOnly? createdFrom,
+        DateOnly? createdTo,
+        DateOnly? activatedFrom,
+        DateOnly? activatedTo,
+        Guid? unitTypeId,
+        string? unitType,
+        string? owner,
         int pageNumber,
         int pageSize,
         CancellationToken cancellationToken)
     {
         RegistryRequestContext.ValidateList(pageNumber, pageSize, search);
-        if (status.HasValue && !Enum.IsDefined(status.Value) ||
+        if (displayName?.Trim().Length > 200 || address?.Trim().Length > 500 ||
+            unitType?.Trim().Length > 200 ||
+            owner?.Trim().Length > 200 || unitTypeId == Guid.Empty ||
+            createdFrom > createdTo || activatedFrom > activatedTo ||
+            status.HasValue && !Enum.IsDefined(status.Value) ||
             schoolType.HasValue && !Enum.IsDefined(schoolType.Value))
         {
             throw new ValidationException("School filters are invalid.");
         }
 
+        var ownerIds = await FindOwnerIdsAsync(owner, cancellationToken);
+
         var page = await readService.ListSchoolsAsync(
-            new ListSchoolsQuery(tenantId, search, status, schoolType, pageNumber, pageSize),
+            new ListSchoolsQuery(tenantId, search, status, schoolType, pageNumber, pageSize,
+                displayName, address, createdFrom, createdTo, activatedFrom, activatedTo,
+                unitTypeId, unitType, owner, ownerIds),
             cancellationToken);
+        var items = await EnrichOwnersAsync(page.Items, cancellationToken);
         return Ok(PagedApiResponse<SchoolReadModel>.Success(
-            page.Items,
+            items,
             page.TotalCount,
             page.PageNumber,
             page.PageSize,
             correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
     }
+
+    private async Task<IReadOnlyCollection<Guid>?> FindOwnerIdsAsync(
+        string? owner,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(owner)) return null;
+        var normalized = owner.Trim();
+        var accounts = identityDb.Accounts.AsNoTracking()
+            .Where(account => account.DisplayName != null);
+        accounts = identityDb.Database.IsNpgsql()
+            ? accounts.Where(account => EF.Functions.ILike(account.DisplayName!,
+                $"%{EscapeLike(normalized)}%", "\\"))
+            : accounts.Where(account => account.DisplayName!.Contains(normalized));
+        return await accounts.Select(account => account.Id).ToArrayAsync(cancellationToken);
+    }
+
+    private async Task<SchoolReadModel> EnrichOwnerAsync(
+        SchoolReadModel school,
+        CancellationToken cancellationToken)
+    {
+        var name = await identityDb.Accounts.AsNoTracking()
+            .Where(account => account.Id == school.RequestedByAccountId)
+            .Select(account => account.DisplayName)
+            .SingleOrDefaultAsync(cancellationToken);
+        return school with { OwnerDisplayName = name };
+    }
+
+    private async Task<IReadOnlyList<SchoolReadModel>> EnrichOwnersAsync(
+        IReadOnlyList<SchoolReadModel> schools,
+        CancellationToken cancellationToken)
+    {
+        if (schools.Count == 0) return schools;
+        var ids = schools.Select(school => school.RequestedByAccountId).Distinct().ToArray();
+        var owners = await identityDb.Accounts.AsNoTracking()
+            .Where(account => ids.Contains(account.Id))
+            .Select(account => new { account.Id, account.DisplayName })
+            .ToDictionaryAsync(account => account.Id, account => account.DisplayName, cancellationToken);
+        return schools.Select(school => school with {
+            OwnerDisplayName = owners.GetValueOrDefault(school.RequestedByAccountId)
+        }).ToArray();
+    }
+
+    private static string EscapeLike(string value) =>
+        value.Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("%", "\\%", StringComparison.Ordinal)
+            .Replace("_", "\\_", StringComparison.Ordinal);
 
     private async Task<IActionResult> Transition(
         Guid tenantId,

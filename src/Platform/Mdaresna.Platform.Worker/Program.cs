@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddProblemDetails();
 builder.Services.AddSingleton<WorkerReadinessState>();
 builder.Services.AddHostedService<PlatformWorkerService>();
+builder.Services.AddHostedService<SchoolRegistrationRequestConsumerService>();
 
 builder.Services
     .AddHealthChecks()

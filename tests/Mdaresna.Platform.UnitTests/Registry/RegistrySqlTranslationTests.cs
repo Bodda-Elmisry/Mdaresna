@@ -1,6 +1,7 @@
 using Mdaresna.Platform.Application.Registry.Read;
 using Mdaresna.Platform.Domain.Registry;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform;
+using Mdaresna.Tenancy.Abstractions.Identifiers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Mdaresna.Platform.UnitTests.Registry;
@@ -32,7 +33,14 @@ public sealed class RegistrySqlTranslationTests
                 school.StatusReason,
                 school.CreatedAtUtc,
                 school.UpdatedAtUtc,
-                school.Version))
+                school.Version,
+                school.Address,
+                school.ActivatedAtUtc,
+                school.UnitTypeId,
+                null,
+                null,
+                null,
+                null))
             .ToQueryString();
 
         Assert.Contains("[registry].[schools]", sql);
@@ -61,6 +69,22 @@ public sealed class RegistrySqlTranslationTests
             .ToQueryString();
 
         Assert.Contains("[registry].[tenants]", sql);
+    }
+
+    [Fact]
+    public void School_database_endpoint_primary_lookup_translates_for_sql_server()
+    {
+        using var db = CreateDbContext();
+        var schoolId = SchoolId.New();
+
+        var sql = db.SchoolDatabaseEndpoints.AsNoTracking()
+            .Where(endpoint => endpoint.SchoolId == schoolId &&
+                endpoint.Purpose == SchoolDatabasePurpose.Operational &&
+                endpoint.IsPrimary &&
+                endpoint.Status == SchoolDatabaseEndpointStatus.Active)
+            .ToQueryString();
+
+        Assert.Contains("[registry].[school_database_endpoints]", sql);
     }
 
     private static PlatformDbContext CreateDbContext() => new(

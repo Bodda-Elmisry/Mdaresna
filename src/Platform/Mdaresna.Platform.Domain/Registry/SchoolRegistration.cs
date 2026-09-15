@@ -18,6 +18,9 @@ public sealed class SchoolRegistration : AggregateRoot
         Guid requestedByAccountId,
         Guid? provisioningOperationId,
         string? statusReason,
+        string? address,
+        Guid? unitTypeId,
+        DateTimeOffset? activatedAtUtc,
         DateTimeOffset createdAtUtc,
         DateTimeOffset updatedAtUtc,
         long version)
@@ -33,6 +36,9 @@ public sealed class SchoolRegistration : AggregateRoot
         RequestedByAccountId = requestedByAccountId;
         ProvisioningOperationId = provisioningOperationId;
         StatusReason = statusReason;
+        Address = address;
+        UnitTypeId = unitTypeId;
+        ActivatedAtUtc = activatedAtUtc;
         CreatedAtUtc = createdAtUtc;
         UpdatedAtUtc = updatedAtUtc;
         RestoreVersion(version);
@@ -60,6 +66,12 @@ public sealed class SchoolRegistration : AggregateRoot
 
     public string? StatusReason { get; private set; }
 
+    public string? Address { get; private set; }
+
+    public Guid? UnitTypeId { get; private set; }
+
+    public DateTimeOffset? ActivatedAtUtc { get; private set; }
+
     public DateTimeOffset CreatedAtUtc { get; }
 
     public DateTimeOffset UpdatedAtUtc { get; private set; }
@@ -73,7 +85,9 @@ public sealed class SchoolRegistration : AggregateRoot
         SchoolType schoolType,
         DeploymentMode deploymentMode,
         Guid requestedByAccountId,
-        DateTimeOffset occurredAtUtc)
+        DateTimeOffset occurredAtUtc,
+        string? address = null,
+        Guid? unitTypeId = null)
     {
         if (id.IsEmpty)
         {
@@ -98,6 +112,7 @@ public sealed class SchoolRegistration : AggregateRoot
         EnsureDefined(deploymentMode, nameof(deploymentMode));
         EnsureDeploymentMatchesSchoolType(schoolType, deploymentMode);
         var timestamp = DomainGuard.UtcTimestamp(occurredAtUtc, nameof(occurredAtUtc));
+        EnsureOptionalId(unitTypeId, nameof(unitTypeId));
 
         var registration = new SchoolRegistration(
             id,
@@ -111,6 +126,9 @@ public sealed class SchoolRegistration : AggregateRoot
             requestedByAccountId,
             provisioningOperationId: null,
             statusReason: null,
+            DomainGuard.OptionalText(address, 500, nameof(address)),
+            unitTypeId,
+            activatedAtUtc: null,
             timestamp,
             timestamp,
             version: 0);
@@ -209,13 +227,15 @@ public sealed class SchoolRegistration : AggregateRoot
         DateTimeOffset occurredAtUtc)
     {
         EnsureCurrentProvisioningOperation(operationId);
+        var activatedAt = DomainGuard.UtcTimestamp(occurredAtUtc, nameof(occurredAtUtc));
         TransitionTo(
             SchoolLifecycleStatus.Active,
             changedByAccountId,
-            occurredAtUtc,
+            activatedAt,
             reason: null,
             operationId,
             SchoolLifecycleStatus.Provisioning);
+        ActivatedAtUtc ??= activatedAt;
     }
 
     public void Suspend(string reason, Guid changedByAccountId, DateTimeOffset occurredAtUtc) =>
@@ -262,7 +282,10 @@ public sealed class SchoolRegistration : AggregateRoot
         string? statusReason,
         DateTimeOffset createdAtUtc,
         DateTimeOffset updatedAtUtc,
-        long version)
+        long version,
+        string? address = null,
+        Guid? unitTypeId = null,
+        DateTimeOffset? activatedAtUtc = null)
     {
         if (id.IsEmpty || tenantId.IsEmpty)
         {
@@ -295,10 +318,19 @@ public sealed class SchoolRegistration : AggregateRoot
 
         var createdAt = DomainGuard.UtcTimestamp(createdAtUtc, nameof(createdAtUtc));
         var updatedAt = DomainGuard.UtcTimestamp(updatedAtUtc, nameof(updatedAtUtc));
+        DateTimeOffset? activatedAt = activatedAtUtc.HasValue
+            ? DomainGuard.UtcTimestamp(activatedAtUtc.Value, nameof(activatedAtUtc))
+            : null;
+        EnsureOptionalId(unitTypeId, nameof(unitTypeId));
 
         if (updatedAt < createdAt)
         {
             throw new ArgumentException("UpdatedAtUtc cannot precede CreatedAtUtc.");
+        }
+
+        if (activatedAt < createdAt)
+        {
+            throw new ArgumentException("ActivatedAtUtc cannot precede CreatedAtUtc.");
         }
 
         return new SchoolRegistration(
@@ -313,6 +345,9 @@ public sealed class SchoolRegistration : AggregateRoot
             DomainGuard.NonEmptyGuid(requestedByAccountId, nameof(requestedByAccountId)),
             provisioningOperationId,
             DomainGuard.OptionalText(statusReason, 1000, nameof(statusReason)),
+            DomainGuard.OptionalText(address, 500, nameof(address)),
+            unitTypeId,
+            activatedAt,
             createdAt,
             updatedAt,
             version);
@@ -381,6 +416,14 @@ public sealed class SchoolRegistration : AggregateRoot
         if (!Enum.IsDefined(value))
         {
             throw new ArgumentOutOfRangeException(parameterName, value, "Unknown enum value.");
+        }
+    }
+
+    private static void EnsureOptionalId(Guid? value, string parameterName)
+    {
+        if (value == Guid.Empty)
+        {
+            throw new ArgumentException($"{parameterName} cannot be empty when supplied.", parameterName);
         }
     }
 

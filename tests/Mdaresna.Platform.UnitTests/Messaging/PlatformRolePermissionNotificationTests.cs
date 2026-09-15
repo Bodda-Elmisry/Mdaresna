@@ -94,6 +94,10 @@ public sealed class PlatformRolePermissionNotificationTests
     {
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
             db.SaveChangesAsync(cancellationToken);
+
+        public Task ExecuteInTransactionAsync(
+            Func<CancellationToken, Task> operation,
+            CancellationToken cancellationToken = default) => operation(cancellationToken);
     }
 
     private sealed class AllowAllPermissions : IPlatformPermissionEvaluator

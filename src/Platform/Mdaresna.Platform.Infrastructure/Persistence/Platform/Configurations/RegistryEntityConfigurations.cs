@@ -101,6 +101,9 @@ internal sealed class SchoolRegistrationConfiguration : IEntityTypeConfiguration
             .HasMaxLength(32)
             .IsRequired();
         builder.Property(x => x.DisplayName).HasMaxLength(200).IsRequired();
+        builder.Property(x => x.Address).HasMaxLength(500);
+        builder.Property(x => x.UnitTypeId).ValueGeneratedNever();
+        builder.Property(x => x.ActivatedAtUtc);
         builder.Property(x => x.SchoolType).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(x => x.DeploymentMode).HasConversion<string>().HasMaxLength(40).IsRequired();
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(40).IsRequired();
@@ -110,6 +113,11 @@ internal sealed class SchoolRegistrationConfiguration : IEntityTypeConfiguration
         builder.Property(x => x.CreatedAtUtc).HasPrecision(3);
         builder.Property(x => x.UpdatedAtUtc).HasPrecision(3);
         builder.Property(x => x.Version).IsConcurrencyToken();
+        builder.HasOne<Mdaresna.Platform.Domain.Billing.Units.UnitType>()
+            .WithMany()
+            .HasForeignKey(x => x.UnitTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(x => x.UnitTypeId);
         builder.Property<byte[]>("RowVersion").IsRequired().IsRowVersion();
         builder.Ignore(x => x.DomainEvents);
 
@@ -125,6 +133,74 @@ internal sealed class SchoolRegistrationConfiguration : IEntityTypeConfiguration
         builder.HasIndex(x => x.ProvisioningOperationId)
             .IsUnique()
             .HasFilter("[ProvisioningOperationId] IS NOT NULL");
+    }
+}
+
+internal sealed class SchoolDatabaseEndpointConfiguration :
+    IEntityTypeConfiguration<SchoolDatabaseEndpoint>
+{
+    public void Configure(EntityTypeBuilder<SchoolDatabaseEndpoint> builder)
+    {
+        builder.ToTable("school_database_endpoints", "registry", table =>
+        {
+            table.HasCheckConstraint(
+                "ck_registry_school_database_endpoints_purpose",
+                "[Purpose] IN (N'Operational', N'Reporting', N'Archive', N'ReadReplica')");
+            table.HasCheckConstraint(
+                "ck_registry_school_database_endpoints_provider",
+                "[Provider] IN (N'PostgreSql', N'SqlServer')");
+            table.HasCheckConstraint(
+                "ck_registry_school_database_endpoints_status",
+                "[Status] IN (N'Provisioning', N'Active', N'Unavailable', N'Retired')");
+            table.HasCheckConstraint(
+                "ck_registry_school_database_endpoints_port",
+                "[Port] >= 1 AND [Port] <= 65535");
+            table.HasCheckConstraint(
+                "ck_registry_school_database_endpoints_retired_primary",
+                "[Status] <> N'Retired' OR [IsPrimary] = 0");
+            table.HasCheckConstraint(
+                "ck_registry_school_database_endpoints_timestamps",
+                "[CreatedAtUtc] <= [UpdatedAtUtc] AND " +
+                "DATEPART(TZOFFSET, [CreatedAtUtc]) = 0 AND " +
+                "DATEPART(TZOFFSET, [UpdatedAtUtc]) = 0");
+            table.HasCheckConstraint(
+                "ck_registry_school_database_endpoints_version",
+                "[Version] >= 0");
+        });
+
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).ValueGeneratedNever();
+        builder.Property(x => x.SchoolId)
+            .HasConversion(id => id.Value, value => SchoolId.From(value))
+            .ValueGeneratedNever();
+        builder.Property(x => x.Purpose).HasConversion<string>().HasMaxLength(32).IsRequired();
+        builder.Property(x => x.Provider).HasConversion<string>().HasMaxLength(32).IsRequired();
+        builder.Property(x => x.Host).HasMaxLength(253).IsRequired();
+        builder.Property(x => x.Port).IsRequired();
+        builder.Property(x => x.DatabaseName).HasMaxLength(128).IsRequired();
+        builder.Property(x => x.CredentialSecretReference).HasMaxLength(500).IsRequired();
+        builder.Property(x => x.RequireTls).IsRequired();
+        builder.Property(x => x.IsPrimary).IsRequired();
+        builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
+        builder.Property(x => x.Region).HasMaxLength(100);
+        builder.Property(x => x.SchemaVersion).HasMaxLength(64);
+        builder.Property(x => x.CreatedAtUtc).HasPrecision(3);
+        builder.Property(x => x.UpdatedAtUtc).HasPrecision(3);
+        builder.Property(x => x.Version).IsConcurrencyToken();
+        builder.Property<byte[]>("RowVersion").IsRequired().IsRowVersion();
+        builder.Ignore(x => x.DomainEvents);
+
+        builder.HasOne<SchoolRegistration>()
+            .WithMany()
+            .HasForeignKey(x => x.SchoolId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(x => new { x.SchoolId, x.Host, x.Port, x.DatabaseName })
+            .IsUnique();
+        builder.HasIndex(x => new { x.SchoolId, x.Purpose, x.IsPrimary })
+            .IsUnique()
+            .HasFilter("[IsPrimary] = 1");
+        builder.HasIndex(x => new { x.SchoolId, x.Purpose, x.Status });
     }
 }
 

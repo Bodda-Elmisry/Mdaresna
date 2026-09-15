@@ -94,6 +94,66 @@ internal sealed class RegistryReadStore(PlatformDbContext dbContext) : IRegistry
             schools = schools.Where(school => school.SchoolType == schoolType);
         }
 
+        if (query.UnitTypeId is { } unitTypeId)
+        {
+            schools = schools.Where(school => school.UnitTypeId == unitTypeId);
+        }
+
+        if (query.UnitType is { } unitTypeSearch)
+        {
+            if (dbContext.Database.IsNpgsql())
+            {
+                var pattern = ToPostgreSqlContainsPattern(unitTypeSearch);
+                schools = schools.Where(school => school.UnitTypeId != null &&
+                    dbContext.UnitTypes.Any(unitType => unitType.Id == school.UnitTypeId &&
+                        (EF.Functions.ILike(unitType.Code, pattern, "\\") ||
+                         EF.Functions.ILike(unitType.DisplayName, pattern, "\\") ||
+                         EF.Functions.ILike(unitType.Currency, pattern, "\\"))));
+            }
+            else
+            {
+                schools = schools.Where(school => school.UnitTypeId != null &&
+                    dbContext.UnitTypes.Any(unitType => unitType.Id == school.UnitTypeId &&
+                        (unitType.Code.Contains(unitTypeSearch) ||
+                         unitType.DisplayName.Contains(unitTypeSearch) ||
+                         unitType.Currency.Contains(unitTypeSearch))));
+            }
+        }
+
+        if (query.OwnerAccountIds is { } ownerIds)
+        {
+            schools = ownerIds.Count == 0
+                ? schools.Where(_ => false)
+                : schools.Where(school => ownerIds.Contains(school.RequestedByAccountId));
+        }
+
+        schools = ApplySchoolNameFilter(schools, query.DisplayName);
+        schools = ApplySchoolAddressFilter(schools, query.Address);
+
+        if (query.CreatedFrom is { } createdFrom)
+        {
+            var start = UtcStart(createdFrom);
+            schools = schools.Where(school => school.CreatedAtUtc >= start);
+        }
+
+        if (query.CreatedTo is { } createdTo)
+        {
+            var end = UtcStart(createdTo.AddDays(1));
+            schools = schools.Where(school => school.CreatedAtUtc < end);
+        }
+
+        if (query.ActivatedFrom is { } activatedFrom)
+        {
+            var start = UtcStart(activatedFrom);
+            schools = schools.Where(school => school.ActivatedAtUtc >= start);
+        }
+
+        if (query.ActivatedTo is { } activatedTo)
+        {
+            var end = UtcStart(activatedTo.AddDays(1));
+            schools = schools.Where(school => school.ActivatedAtUtc < end);
+        }
+
         if (query.Search is { } search)
         {
             SchoolCode? code = null;
@@ -128,12 +188,12 @@ internal sealed class RegistryReadStore(PlatformDbContext dbContext) : IRegistry
             return new RegistryPage<SchoolReadModel>([], totalCount, query.PageNumber, query.PageSize);
         }
 
-        var page = await schools
-            .OrderBy(school => school.DisplayName)
-            .ThenBy(school => school.Id)
-            .Skip((int)skip)
-            .Take(query.PageSize)
-            .Select(school => new SchoolReadModel(
+        var page = await (from school in schools
+            join unitType in dbContext.UnitTypes.AsNoTracking()
+                on school.UnitTypeId equals (Guid?)unitType.Id into unitTypes
+            from unitType in unitTypes.DefaultIfEmpty()
+            orderby school.DisplayName, school.Id
+            select new SchoolReadModel(
                 school.Id,
                 school.TenantId,
                 school.RegistrationRequestId,
@@ -147,7 +207,16 @@ internal sealed class RegistryReadStore(PlatformDbContext dbContext) : IRegistry
                 school.StatusReason,
                 school.CreatedAtUtc,
                 school.UpdatedAtUtc,
-                school.Version))
+                school.Version,
+                school.Address,
+                school.ActivatedAtUtc,
+                school.UnitTypeId,
+                unitType == null ? null : unitType.Code,
+                unitType == null ? null : unitType.DisplayName,
+                unitType == null ? null : unitType.Currency,
+                null))
+            .Skip((int)skip)
+            .Take(query.PageSize)
             .ToArrayAsync(cancellationToken);
 
         return new RegistryPage<SchoolReadModel>(page, totalCount, query.PageNumber, query.PageSize);
@@ -156,9 +225,12 @@ internal sealed class RegistryReadStore(PlatformDbContext dbContext) : IRegistry
     public Task<SchoolReadModel?> FindSchoolAsync(
         SchoolId schoolId,
         CancellationToken cancellationToken = default) =>
-        dbContext.Schools.AsNoTracking()
-            .Where(school => school.Id == schoolId)
-            .Select(school => new SchoolReadModel(
+        (from school in dbContext.Schools.AsNoTracking()
+            join unitType in dbContext.UnitTypes.AsNoTracking()
+                on school.UnitTypeId equals (Guid?)unitType.Id into unitTypes
+            from unitType in unitTypes.DefaultIfEmpty()
+            where school.Id == schoolId
+            select new SchoolReadModel(
                 school.Id,
                 school.TenantId,
                 school.RegistrationRequestId,
@@ -172,8 +244,45 @@ internal sealed class RegistryReadStore(PlatformDbContext dbContext) : IRegistry
                 school.StatusReason,
                 school.CreatedAtUtc,
                 school.UpdatedAtUtc,
-                school.Version))
+                school.Version,
+                school.Address,
+                school.ActivatedAtUtc,
+                school.UnitTypeId,
+                unitType == null ? null : unitType.Code,
+                unitType == null ? null : unitType.DisplayName,
+                unitType == null ? null : unitType.Currency,
+                null))
             .SingleOrDefaultAsync(cancellationToken);
+
+    private IQueryable<SchoolRegistration> ApplySchoolNameFilter(
+        IQueryable<SchoolRegistration> schools,
+        string? value)
+    {
+        if (value is null) return schools;
+        if (dbContext.Database.IsNpgsql())
+        {
+            var pattern = ToPostgreSqlContainsPattern(value);
+            return schools.Where(school => EF.Functions.ILike(school.DisplayName, pattern, "\\"));
+        }
+        return schools.Where(school => school.DisplayName.Contains(value));
+    }
+
+    private IQueryable<SchoolRegistration> ApplySchoolAddressFilter(
+        IQueryable<SchoolRegistration> schools,
+        string? value)
+    {
+        if (value is null) return schools;
+        if (dbContext.Database.IsNpgsql())
+        {
+            var pattern = ToPostgreSqlContainsPattern(value);
+            return schools.Where(school => school.Address != null &&
+                EF.Functions.ILike(school.Address, pattern, "\\"));
+        }
+        return schools.Where(school => school.Address != null && school.Address.Contains(value));
+    }
+
+    private static DateTimeOffset UtcStart(DateOnly date) =>
+        new(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
 
     private static string ToPostgreSqlContainsPattern(string value) =>
         $"%{value.Replace("\\", "\\\\", StringComparison.Ordinal)

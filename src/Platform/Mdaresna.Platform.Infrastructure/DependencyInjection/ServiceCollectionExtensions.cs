@@ -6,6 +6,8 @@ using Mdaresna.Platform.Application.Registry.CreateTenant;
 using Mdaresna.Platform.Application.Registry.RegisterSchool;
 using Mdaresna.Platform.Application.Registry.Lifecycle;
 using Mdaresna.Platform.Application.Registry.Read;
+using Mdaresna.Platform.Application.Registry.DatabaseEndpoints;
+using Mdaresna.Platform.Application.Registry.ConsumeSchoolRegistrationRequest;
 using Mdaresna.Platform.Application.Billing;
 using Mdaresna.Platform.Application.Billing.SubmitSchoolPlatformPayment;
 using Mdaresna.Platform.Application.Billing.ReviewSchoolPlatformPayment;
@@ -21,6 +23,7 @@ using Mdaresna.Platform.Infrastructure.Persistence.Platform.Repositories;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform.Registry;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform.Billing;
 using Mdaresna.Platform.Infrastructure.IdentityAuth.Staff;
+using Mdaresna.Platform.Infrastructure.IdentityAuth;
 using Mdaresna.Platform.Infrastructure.Security;
 using Mdaresna.SharedKernel.Time;
 using Microsoft.EntityFrameworkCore;
@@ -71,13 +74,16 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<ITenantRepository, TenantRepository>();
         services.AddScoped<ISchoolRegistrationRepository, SchoolRegistrationRepository>();
+        services.AddScoped<ISchoolDatabaseEndpointRepository, SchoolDatabaseEndpointRepository>();
         services.AddScoped<IPlatformRoleRepository, PlatformRoleRepository>();
         services.AddScoped<IPlatformRoleAssignmentRepository, PlatformRoleAssignmentRepository>();
         services.AddScoped<IPlatformUnitOfWork, PlatformUnitOfWork>();
         services.AddScoped<IPlatformPermissionEvaluator, PlatformPermissionEvaluator>();
+        services.AddScoped<ISharedIdentityAccountLookup, SharedIdentityAccountLookup>();
         services.AddScoped<IPlatformOutboxWriter, PlatformOutboxWriter>();
         services.AddScoped<IPlatformSmsSender, PlatformDbSmsSender>();
         services.AddScoped<PlatformSmsLogEventIngestor>();
+        services.AddScoped<PlatformSchoolRegistrationRequestIngestor>();
         services.AddScoped<PlatformSmsSecretProtector>();
         services.AddScoped<PlatformSmsProviderService>();
         services.Configure<PlatformFirebaseOptions>(options =>
@@ -98,8 +104,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPlatformRegistryAuditWriter, PlatformRegistryAuditWriter>();
         services.AddScoped<CreateTenantCommandHandler>();
         services.AddScoped<RegisterSchoolCommandHandler>();
+        services.AddScoped<ConsumeSchoolRegistrationRequestHandler>();
         services.AddScoped<BeginSchoolProvisioningCommandHandler>();
         services.AddScoped<RegistryReadService>();
+        services.AddScoped<SchoolDatabaseEndpointRegistry>();
+        services.AddScoped<ISchoolDatabaseEndpointResolver, SchoolDatabaseEndpointResolver>();
         services.AddScoped<TransitionSchoolCommandHandler>();
         services.AddScoped<IPlatformPaymentRequestRepository, PlatformPaymentRequestRepository>();
         services.AddScoped<IPlatformBillingAuditWriter, PlatformBillingAuditWriter>();

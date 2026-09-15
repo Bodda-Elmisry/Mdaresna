@@ -27,4 +27,11 @@ public sealed record SchoolReadModel(
     string? StatusReason,
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset UpdatedAtUtc,
-    long Version);
+    long Version,
+    string? Address = null,
+    DateTimeOffset? ActivatedAtUtc = null,
+    Guid? UnitTypeId = null,
+    string? UnitTypeCode = null,
+    string? UnitTypeName = null,
+    string? Currency = null,
+    string? OwnerDisplayName = null);

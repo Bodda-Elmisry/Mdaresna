@@ -29,6 +29,15 @@ internal sealed class FakePlatformUnitOfWork(Exception? saveException = null) : 
 
         return Task.FromResult(1);
     }
+
+    public async Task ExecuteInTransactionAsync(
+        Func<CancellationToken, Task> operation,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(operation);
+        await operation(cancellationToken);
+    }
 }
 
 internal sealed class FakeOutboxWriter : IPlatformOutboxWriter
@@ -107,6 +116,73 @@ internal sealed class FakeSchoolRegistrationRepository(params SchoolRegistration
     {
         cancellationToken.ThrowIfCancellationRequested();
         Items.Add(registration);
+        return Task.CompletedTask;
+    }
+}
+
+internal sealed class FakeSchoolDatabaseEndpointRepository(
+    params SchoolDatabaseEndpoint[] endpoints) : ISchoolDatabaseEndpointRepository
+{
+    public List<SchoolDatabaseEndpoint> Items { get; } = [.. endpoints];
+
+    public Task<SchoolDatabaseEndpoint?> FindByIdAsync(
+        Guid endpointId,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(Items.SingleOrDefault(item => item.Id == endpointId));
+    }
+
+    public Task<IReadOnlyList<SchoolDatabaseEndpoint>> ListAsync(
+        SchoolId schoolId,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult<IReadOnlyList<SchoolDatabaseEndpoint>>(
+            Items.Where(item => item.SchoolId == schoolId).ToArray());
+    }
+
+    public Task<SchoolDatabaseEndpoint?> FindPrimaryActiveAsync(
+        SchoolId schoolId,
+        SchoolDatabasePurpose purpose,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(Items.SingleOrDefault(item =>
+            item.SchoolId == schoolId && item.Purpose == purpose &&
+            item.IsPrimary && item.Status == SchoolDatabaseEndpointStatus.Active));
+    }
+
+    public Task<SchoolDatabaseEndpoint?> FindPrimaryAsync(
+        SchoolId schoolId,
+        SchoolDatabasePurpose purpose,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(Items.SingleOrDefault(item =>
+            item.SchoolId == schoolId && item.Purpose == purpose && item.IsPrimary));
+    }
+
+    public Task<bool> TargetExistsAsync(
+        SchoolId schoolId,
+        string host,
+        int port,
+        string databaseName,
+        Guid? excludingEndpointId = null,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(Items.Any(item =>
+            item.SchoolId == schoolId && item.Host == host && item.Port == port &&
+            item.DatabaseName == databaseName && item.Id != excludingEndpointId));
+    }
+
+    public Task AddAsync(
+        SchoolDatabaseEndpoint endpoint,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        Items.Add(endpoint);
         return Task.CompletedTask;
     }
 }

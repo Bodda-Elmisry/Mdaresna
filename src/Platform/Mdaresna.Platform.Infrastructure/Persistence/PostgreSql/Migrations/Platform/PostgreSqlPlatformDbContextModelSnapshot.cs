@@ -539,10 +539,119 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Pla
                         });
                 });
 
+            modelBuilder.Entity("Mdaresna.Platform.Domain.Registry.SchoolDatabaseEndpoint", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<string>("CredentialSecretReference")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("DatabaseName")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("Host")
+                        .IsRequired()
+                        .HasMaxLength(253)
+                        .HasColumnType("character varying(253)");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Port")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Region")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("RequireTls")
+                        .HasColumnType("boolean");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("SchemaVersion")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("SchoolId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SchoolId", "Purpose", "IsPrimary")
+                        .IsUnique()
+                        .HasFilter("\"IsPrimary\" = TRUE");
+
+                    b.HasIndex("SchoolId", "Purpose", "Status");
+
+                    b.HasIndex("SchoolId", "Host", "Port", "DatabaseName")
+                        .IsUnique();
+
+                    b.ToTable("school_database_endpoints", "registry", t =>
+                        {
+                            t.HasCheckConstraint("ck_registry_school_database_endpoints_port", "\"Port\" >= 1 AND \"Port\" <= 65535");
+
+                            t.HasCheckConstraint("ck_registry_school_database_endpoints_provider", "\"Provider\" IN ('PostgreSql', 'SqlServer')");
+
+                            t.HasCheckConstraint("ck_registry_school_database_endpoints_purpose", "\"Purpose\" IN ('Operational', 'Reporting', 'Archive', 'ReadReplica')");
+
+                            t.HasCheckConstraint("ck_registry_school_database_endpoints_retired_primary", "\"Status\" <> 'Retired' OR \"IsPrimary\" = FALSE");
+
+                            t.HasCheckConstraint("ck_registry_school_database_endpoints_status", "\"Status\" IN ('Provisioning', 'Active', 'Unavailable', 'Retired')");
+
+                            t.HasCheckConstraint("ck_registry_school_database_endpoints_timestamps", "\"CreatedAtUtc\" <= \"UpdatedAtUtc\" AND TRUE AND TRUE");
+
+                            t.HasCheckConstraint("ck_registry_school_database_endpoints_version", "\"Version\" >= 0");
+                        });
+                });
+
             modelBuilder.Entity("Mdaresna.Platform.Domain.Registry.SchoolRegistration", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("ActivatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("Code")
                         .IsRequired()
@@ -595,6 +704,9 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Pla
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("UnitTypeId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTimeOffset>("UpdatedAtUtc")
                         .HasPrecision(3)
                         .HasColumnType("timestamp(3) with time zone");
@@ -617,6 +729,8 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Pla
 
                     b.HasIndex("TenantId")
                         .IsUnique();
+
+                    b.HasIndex("UnitTypeId");
 
                     b.HasIndex("TenantId", "Status");
 
@@ -1689,6 +1803,15 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Pla
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Mdaresna.Platform.Domain.Registry.SchoolDatabaseEndpoint", b =>
+                {
+                    b.HasOne("Mdaresna.Platform.Domain.Registry.SchoolRegistration", null)
+                        .WithMany()
+                        .HasForeignKey("SchoolId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Mdaresna.Platform.Domain.Registry.SchoolRegistration", b =>
                 {
                     b.HasOne("Mdaresna.Platform.Domain.Registry.Tenant", null)
@@ -1696,6 +1819,11 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Pla
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("Mdaresna.Platform.Domain.Billing.Units.UnitType", null)
+                        .WithMany()
+                        .HasForeignKey("UnitTypeId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.ExternalIdentifierMapping", b =>

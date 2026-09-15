@@ -18,13 +18,13 @@ internal sealed class PlatformWorkerService(
     private const string DeadExchange = "mdaresna.sms-audit.dead";
     private const string Queue = "platform.sms-log.v1";
     private const string DeadQueue = "platform.sms-log.v1.dead";
+    private const string ReadinessComponent = "sms-log";
     private const int MaximumEventBytes = 64 * 1024;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         if (!configuration.GetValue<bool>("SmsLogConsumer:Enabled"))
         {
-            readinessState.MarkReady();
             logger.LogInformation("Platform worker is running with SMS event consumption disabled.");
             try
             {
@@ -33,10 +33,6 @@ internal sealed class PlatformWorkerService(
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
                 // Normal shutdown.
-            }
-            finally
-            {
-                readinessState.MarkNotReady();
             }
             return;
         }
@@ -75,7 +71,7 @@ internal sealed class PlatformWorkerService(
                 while (!stoppingToken.IsCancellationRequested &&
                        connection.IsOpen && channel.IsOpen)
                 {
-                    readinessState.MarkReady();
+                    readinessState.MarkReady(ReadinessComponent);
                     await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
                 }
             }
@@ -91,7 +87,7 @@ internal sealed class PlatformWorkerService(
             }
             finally
             {
-                readinessState.MarkNotReady();
+                readinessState.MarkNotReady(ReadinessComponent);
             }
 
             try

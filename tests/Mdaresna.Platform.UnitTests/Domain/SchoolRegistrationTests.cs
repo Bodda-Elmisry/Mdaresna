@@ -79,6 +79,7 @@ public sealed class SchoolRegistrationTests
 
         Assert.Equal(SchoolLifecycleStatus.Active, school.Status);
         Assert.Equal(operationId, school.ProvisioningOperationId);
+        Assert.Equal(Now.AddMinutes(4), school.ActivatedAtUtc);
         Assert.Null(school.StatusReason);
         Assert.Equal(5, school.Version);
         Assert.Equal(5, school.DomainEvents.Count);

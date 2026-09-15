@@ -15,4 +15,14 @@ public sealed record ListSchoolsQuery(
     SchoolLifecycleStatus? Status = null,
     SchoolType? SchoolType = null,
     int PageNumber = 1,
-    int PageSize = 20);
+    int PageSize = 20,
+    string? DisplayName = null,
+    string? Address = null,
+    DateOnly? CreatedFrom = null,
+    DateOnly? CreatedTo = null,
+    DateOnly? ActivatedFrom = null,
+    DateOnly? ActivatedTo = null,
+    Guid? UnitTypeId = null,
+    string? UnitType = null,
+    string? Owner = null,
+    IReadOnlyCollection<Guid>? OwnerAccountIds = null);

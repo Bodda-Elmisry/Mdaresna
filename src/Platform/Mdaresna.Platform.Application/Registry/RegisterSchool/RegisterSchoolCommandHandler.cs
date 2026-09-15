@@ -92,7 +92,9 @@ public sealed class RegisterSchoolCommandHandler
             command.SchoolType,
             command.DeploymentMode,
             (Guid)command.RequestedByAccountId,
-            now);
+            now,
+            command.Address,
+            command.UnitTypeId);
 
         await _schools.AddAsync(registration, cancellationToken);
 
@@ -194,11 +196,26 @@ public sealed class RegisterSchoolCommandHandler
             !string.Equals(existing.DisplayName, displayName, StringComparison.Ordinal) ||
             existing.SchoolType != command.SchoolType ||
             existing.DeploymentMode != command.DeploymentMode ||
-            existing.RequestedByAccountId != (Guid)command.RequestedByAccountId)
+            existing.RequestedByAccountId != (Guid)command.RequestedByAccountId ||
+            !string.Equals(existing.Address, NormalizeOptional(command.Address, 500),
+                StringComparison.Ordinal) ||
+            existing.UnitTypeId != command.UnitTypeId)
         {
             throw new PlatformConflictException(
                 "request.idempotency_key_reused",
                 "RegistrationRequestId was already used with different registration data.");
         }
+    }
+
+    private static string? NormalizeOptional(string? value, int maximumLength) =>
+        string.IsNullOrWhiteSpace(value) ? null : Normalize(value, maximumLength, nameof(value));
+
+    private static string Normalize(string value, int maximumLength, string parameterName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(value, parameterName);
+        var normalized = value.Trim();
+        return normalized.Length <= maximumLength
+            ? normalized
+            : throw new ArgumentOutOfRangeException(parameterName);
     }
 }

@@ -12,6 +12,7 @@ public class PlatformDbContext(DbContextOptions options) : DbContext(options)
 {
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<SchoolRegistration> Schools => Set<SchoolRegistration>();
+    public DbSet<SchoolDatabaseEndpoint> SchoolDatabaseEndpoints => Set<SchoolDatabaseEndpoint>();
     public DbSet<ExternalIdentifierMapping> ExternalIdentifierMappings => Set<ExternalIdentifierMapping>();
     public DbSet<PlatformRole> Roles => Set<PlatformRole>();
     public DbSet<PlatformPermissionRecord> Permissions => Set<PlatformPermissionRecord>();
@@ -45,6 +46,7 @@ public class PlatformDbContext(DbContextOptions options) : DbContext(options)
 
         modelBuilder.ApplyConfiguration(new Configurations.TenantConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.SchoolRegistrationConfiguration());
+        modelBuilder.ApplyConfiguration(new Configurations.SchoolDatabaseEndpointConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.ExternalIdentifierMappingConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.PlatformRoleConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.PlatformPermissionRecordConfiguration());

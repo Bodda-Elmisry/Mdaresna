@@ -4,6 +4,7 @@ using Mdaresna.Platform.Infrastructure.Persistence.Platform;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Mdaresna.Platform.Infrastructure.Persistence.Platform.Migrations
 {
     [DbContext(typeof(PlatformDbContext))]
-    partial class PlatformDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260915160131_AddSchoolDirectoryFields")]
+    partial class AddSchoolDirectoryFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -541,108 +544,6 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Platform.Migrations
                             t.HasCheckConstraint("ck_billing_unit_type_timestamps", "[CreatedAtUtc] <= [UpdatedAtUtc] AND DATEPART(TZOFFSET, [CreatedAtUtc]) = 0 AND DATEPART(TZOFFSET, [UpdatedAtUtc]) = 0");
 
                             t.HasCheckConstraint("ck_billing_unit_type_version", "[Version] >= 0");
-                        });
-                });
-
-            modelBuilder.Entity("Mdaresna.Platform.Domain.Registry.SchoolDatabaseEndpoint", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasPrecision(3)
-                        .HasColumnType("datetimeoffset(3)");
-
-                    b.Property<string>("CredentialSecretReference")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("DatabaseName")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<string>("Host")
-                        .IsRequired()
-                        .HasMaxLength(253)
-                        .HasColumnType("nvarchar(253)");
-
-                    b.Property<bool>("IsPrimary")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("Port")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Provider")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("Purpose")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<string>("Region")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<bool>("RequireTls")
-                        .HasColumnType("bit");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.Property<string>("SchemaVersion")
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<Guid>("SchoolId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasPrecision(3)
-                        .HasColumnType("datetimeoffset(3)");
-
-                    b.Property<long>("Version")
-                        .IsConcurrencyToken()
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SchoolId", "Purpose", "IsPrimary")
-                        .IsUnique()
-                        .HasFilter("[IsPrimary] = 1");
-
-                    b.HasIndex("SchoolId", "Purpose", "Status");
-
-                    b.HasIndex("SchoolId", "Host", "Port", "DatabaseName")
-                        .IsUnique();
-
-                    b.ToTable("school_database_endpoints", "registry", t =>
-                        {
-                            t.HasCheckConstraint("ck_registry_school_database_endpoints_port", "[Port] >= 1 AND [Port] <= 65535");
-
-                            t.HasCheckConstraint("ck_registry_school_database_endpoints_provider", "[Provider] IN (N'PostgreSql', N'SqlServer')");
-
-                            t.HasCheckConstraint("ck_registry_school_database_endpoints_purpose", "[Purpose] IN (N'Operational', N'Reporting', N'Archive', N'ReadReplica')");
-
-                            t.HasCheckConstraint("ck_registry_school_database_endpoints_retired_primary", "[Status] <> N'Retired' OR [IsPrimary] = 0");
-
-                            t.HasCheckConstraint("ck_registry_school_database_endpoints_status", "[Status] IN (N'Provisioning', N'Active', N'Unavailable', N'Retired')");
-
-                            t.HasCheckConstraint("ck_registry_school_database_endpoints_timestamps", "[CreatedAtUtc] <= [UpdatedAtUtc] AND DATEPART(TZOFFSET, [CreatedAtUtc]) = 0 AND DATEPART(TZOFFSET, [UpdatedAtUtc]) = 0");
-
-                            t.HasCheckConstraint("ck_registry_school_database_endpoints_version", "[Version] >= 0");
                         });
                 });
 
@@ -1804,15 +1705,6 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Platform.Migrations
                         .WithMany()
                         .HasForeignKey("PaymentRequestId", "TenantId", "SchoolId", "Amount", "Currency")
                         .HasPrincipalKey("Id", "TenantId", "SchoolId", "Amount", "Currency")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Mdaresna.Platform.Domain.Registry.SchoolDatabaseEndpoint", b =>
-                {
-                    b.HasOne("Mdaresna.Platform.Domain.Registry.SchoolRegistration", null)
-                        .WithMany()
-                        .HasForeignKey("SchoolId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
