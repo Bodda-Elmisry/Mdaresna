@@ -65,13 +65,6 @@ public sealed partial class UnitType : AggregateRoot
         string currency,
         DateTimeOffset occurredAtUtc)
     {
-        if (!IsActive)
-        {
-            throw new PlatformDomainException(
-                "unit_type.inactive",
-                "An inactive unit type cannot be changed.");
-        }
-
         var normalizedName = DomainGuard.RequiredText(displayName, 200, nameof(displayName));
         var validatedPrice = ValidatePrice(unitPrice);
         var normalizedCurrency = NormalizeCurrency(currency);
@@ -97,6 +90,19 @@ public sealed partial class UnitType : AggregateRoot
         }
 
         IsActive = false;
+        UpdatedAtUtc = DomainGuard.UtcTimestamp(occurredAtUtc, nameof(occurredAtUtc));
+        MarkChanged();
+        return true;
+    }
+
+    public bool Activate(DateTimeOffset occurredAtUtc)
+    {
+        if (IsActive)
+        {
+            return false;
+        }
+
+        IsActive = true;
         UpdatedAtUtc = DomainGuard.UtcTimestamp(occurredAtUtc, nameof(occurredAtUtc));
         MarkChanged();
         return true;

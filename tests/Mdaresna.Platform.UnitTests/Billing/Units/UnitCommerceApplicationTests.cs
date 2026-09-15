@@ -35,15 +35,43 @@ public sealed class UnitCommerceApplicationTests
         var deactivated = await new DeactivateUnitTypeCommandHandler(types, audit, unitOfWork, clock)
             .HandleAsync(new DeactivateUnitTypeCommand(typeId, updated.Version,
                 actor, Guid.NewGuid()));
+        var activated = await new ActivateUnitTypeCommandHandler(types, audit, unitOfWork, clock)
+            .HandleAsync(new ActivateUnitTypeCommand(typeId, deactivated.Version,
+                actor, Guid.NewGuid()));
 
         Assert.True(created.Changed);
         Assert.False(replay.Changed);
         Assert.Equal(1, updated.Version);
         Assert.Equal(2, deactivated.Version);
         Assert.False(deactivated.IsActive);
-        Assert.Equal(3, unitOfWork.SaveCount);
-        Assert.Equal(3, audit.Records.Count);
+        Assert.True(activated.IsActive);
+        Assert.Equal(4, unitOfWork.SaveCount);
+        Assert.Equal(4, audit.Records.Count);
         Assert.All(audit.Records, record => Assert.Equal(actor, record.ActorId));
+    }
+
+    [Fact]
+    public async Task Catalog_delete_requires_an_unused_unit_type()
+    {
+        var actor = IdentityAccountId.New();
+        var type = UnitType.Create(Guid.NewGuid(), "UNIT-DELETE", "Delete me", 10m, "EGP", Now);
+        var types = new FakeUnitTypeRepository(type) { HasUsage = true };
+        var audit = new FakeUnitCommerceAuditWriter();
+        var unitOfWork = new FakeBillingUnitOfWork();
+        var handler = new DeleteUnitTypeCommandHandler(types, audit, unitOfWork, new FakeClock(Now));
+        var command = new DeleteUnitTypeCommand(
+            type.Id, type.Version, actor, Guid.NewGuid());
+
+        var conflict = await Assert.ThrowsAsync<PlatformConflictException>(() =>
+            handler.HandleAsync(command));
+        Assert.Equal("unit_type.in_use", conflict.Code);
+        Assert.Equal(0, unitOfWork.SaveCount);
+
+        types.HasUsage = false;
+        await handler.HandleAsync(command);
+        Assert.Null(await types.FindByIdAsync(type.Id));
+        Assert.Equal(1, unitOfWork.SaveCount);
+        Assert.Equal("platform.unit_type.deleted", Assert.Single(audit.Records).Action);
     }
 
     [Fact]
@@ -118,6 +146,7 @@ public sealed class UnitCommerceApplicationTests
     private sealed class FakeUnitTypeRepository(params UnitType[] types) : IUnitTypeRepository
     {
         private readonly List<UnitType> _types = [.. types];
+        public bool HasUsage { get; set; }
 
         public Task<UnitType?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
             Task.FromResult(_types.SingleOrDefault(item => item.Id == id));
@@ -130,6 +159,11 @@ public sealed class UnitCommerceApplicationTests
             _types.Add(type);
             return Task.CompletedTask;
         }
+
+        public Task<bool> HasUsageAsync(Guid unitTypeId,
+            CancellationToken cancellationToken = default) => Task.FromResult(HasUsage);
+
+        public void Remove(UnitType unitType) => _types.Remove(unitType);
 
         public Task<UnitTypePage> ListAsync(UnitTypeListQuery query,
             CancellationToken cancellationToken = default) =>

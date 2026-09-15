@@ -26,6 +26,26 @@ internal sealed class UnitTypeRepository(PlatformDbContext dbContext) : IUnitTyp
         await dbContext.UnitTypes.AddAsync(unitType, cancellationToken);
     }
 
+    public async Task<bool> HasUsageAsync(
+        Guid unitTypeId,
+        CancellationToken cancellationToken = default)
+    {
+        if (await dbContext.UnitPurchaseIntents.AsNoTracking().AnyAsync(
+                intent => intent.UnitTypeId == unitTypeId, cancellationToken))
+        {
+            return true;
+        }
+
+        return await dbContext.UnitGrants.AsNoTracking().AnyAsync(
+            grant => grant.UnitTypeId == unitTypeId, cancellationToken);
+    }
+
+    public void Remove(UnitType unitType)
+    {
+        ArgumentNullException.ThrowIfNull(unitType);
+        dbContext.UnitTypes.Remove(unitType);
+    }
+
     public async Task<UnitTypePage> ListAsync(
         UnitTypeListQuery query,
         CancellationToken cancellationToken = default)
@@ -62,6 +82,46 @@ internal sealed class UnitTypeRepository(PlatformDbContext dbContext) : IUnitTyp
             }
         }
 
+
+        var code = query.Code?.Trim();
+        if (!string.IsNullOrEmpty(code))
+        {
+            if (dbContext.Database.IsNpgsql())
+            {
+                var pattern = ContainsPattern(code);
+                unitTypes = unitTypes.Where(x => EF.Functions.ILike(x.Code, pattern, "\\"));
+            }
+            else
+            {
+                unitTypes = unitTypes.Where(x => x.Code.Contains(code));
+            }
+        }
+
+        var displayName = query.DisplayName?.Trim();
+        if (!string.IsNullOrEmpty(displayName))
+        {
+            if (dbContext.Database.IsNpgsql())
+            {
+                var pattern = ContainsPattern(displayName);
+                unitTypes = unitTypes.Where(x => EF.Functions.ILike(x.DisplayName, pattern, "\\"));
+            }
+            else
+            {
+                unitTypes = unitTypes.Where(x => x.DisplayName.Contains(displayName));
+            }
+        }
+
+        if (query.UnitPrice is decimal unitPrice)
+        {
+            unitTypes = unitTypes.Where(x => x.UnitPrice == unitPrice);
+        }
+
+        var currency = query.Currency?.Trim();
+        if (!string.IsNullOrEmpty(currency))
+        {
+            unitTypes = unitTypes.Where(x => x.Currency == currency);
+        }
+
         var totalCount = await unitTypes.CountAsync(cancellationToken);
         var skip = ((long)query.PageNumber - 1) * query.PageSize;
         var items = skip > int.MaxValue
@@ -76,4 +136,9 @@ internal sealed class UnitTypeRepository(PlatformDbContext dbContext) : IUnitTyp
 
         return new UnitTypePage(items, totalCount, query.PageNumber, query.PageSize);
     }
+
+    private static string ContainsPattern(string value) =>
+        $"%{value.Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("%", "\\%", StringComparison.Ordinal)
+            .Replace("_", "\\_", StringComparison.Ordinal)}%";
 }

@@ -26,6 +26,18 @@ public sealed record DeactivateUnitTypeCommand(
     IdentityAccountId RequestedByAccountId,
     Guid CorrelationId);
 
+public sealed record ActivateUnitTypeCommand(
+    Guid UnitTypeId,
+    long ExpectedVersion,
+    IdentityAccountId RequestedByAccountId,
+    Guid CorrelationId);
+
+public sealed record DeleteUnitTypeCommand(
+    Guid UnitTypeId,
+    long ExpectedVersion,
+    IdentityAccountId RequestedByAccountId,
+    Guid CorrelationId);
+
 public sealed record UnitTypeMutationResult(
     Guid UnitTypeId,
     long Version,

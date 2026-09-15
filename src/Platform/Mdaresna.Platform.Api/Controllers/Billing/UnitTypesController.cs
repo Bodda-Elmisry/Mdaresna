@@ -15,20 +15,28 @@ public sealed class UnitTypesController(
     ListUnitTypesQueryHandler list,
     CreateUnitTypeCommandHandler create,
     UpdateUnitTypeCommandHandler update,
-    DeactivateUnitTypeCommandHandler deactivate) : ControllerBase
+    DeactivateUnitTypeCommandHandler deactivate,
+    ActivateUnitTypeCommandHandler activate,
+    DeleteUnitTypeCommandHandler delete) : ControllerBase
 {
     [HttpGet]
     [PlatformPermission("platform.billing.read")]
     public async Task<IActionResult> List(
         [FromQuery] string? search = null,
+        [FromQuery] string? code = null,
+        [FromQuery] string? displayName = null,
+        [FromQuery] decimal? unitPrice = null,
+        [FromQuery] string? currency = null,
         [FromQuery] bool? isActive = null,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
-        UnitCommerceRequestContext.ValidateList(pageNumber, pageSize, search);
+        UnitCommerceRequestContext.ValidateList(
+            pageNumber, pageSize, search, code, displayName, unitPrice, currency);
         var page = await list.HandleAsync(
-            new UnitTypeListQuery(search, isActive, pageNumber, pageSize),
+            new UnitTypeListQuery(search, isActive, pageNumber, pageSize,
+                code, displayName, unitPrice, currency),
             cancellationToken);
         return Ok(PagedApiResponse<UnitTypeReadModel>.Success(
             page.Items, page.TotalCount, page.PageNumber, page.PageSize,
@@ -110,6 +118,48 @@ public sealed class UnitTypesController(
         return Ok(ApiResponse<UnitTypeMutationResult>.Success(
             result, correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
     }
+
+    [HttpPost("{unitTypeId:guid}/activate")]
+    [PlatformPermission("platform.billing.manage")]
+    public async Task<IActionResult> Activate(
+        Guid unitTypeId,
+        [FromBody] DeactivateUnitTypeRequest request,
+        CancellationToken cancellationToken)
+    {
+        UnitCommerceRequestContext.RequireId(unitTypeId, nameof(unitTypeId));
+        if (request.ExpectedVersion is null or < 0)
+        {
+            throw new ValidationException("ExpectedVersion must be supplied and non-negative.");
+        }
+
+        var result = await activate.HandleAsync(new ActivateUnitTypeCommand(
+            unitTypeId, request.ExpectedVersion.Value,
+            UnitCommerceRequestContext.Actor(HttpContext),
+            UnitCommerceRequestContext.CorrelationId(HttpContext)), cancellationToken);
+        return Ok(ApiResponse<UnitTypeMutationResult>.Success(
+            result, correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
+    }
+
+    [HttpDelete("{unitTypeId:guid}")]
+    [PlatformPermission("platform.billing.manage")]
+    public async Task<IActionResult> Delete(
+        Guid unitTypeId,
+        [FromQuery] long? expectedVersion,
+        CancellationToken cancellationToken)
+    {
+        UnitCommerceRequestContext.RequireId(unitTypeId, nameof(unitTypeId));
+        if (expectedVersion is null or < 0)
+        {
+            throw new ValidationException("ExpectedVersion must be supplied and non-negative.");
+        }
+
+        await delete.HandleAsync(new DeleteUnitTypeCommand(
+            unitTypeId, expectedVersion.Value,
+            UnitCommerceRequestContext.Actor(HttpContext),
+            UnitCommerceRequestContext.CorrelationId(HttpContext)), cancellationToken);
+        return Ok(ApiResponse<object?>.Success(
+            null, correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
+    }
 }
 
 public sealed record CreateUnitTypeRequest(
@@ -158,11 +208,20 @@ internal static class UnitCommerceRequestContext
         }
     }
 
-    public static void ValidateList(int pageNumber, int pageSize, string? search)
+    public static void ValidateList(
+        int pageNumber,
+        int pageSize,
+        string? search,
+        string? code,
+        string? displayName,
+        decimal? unitPrice,
+        string? currency)
     {
         if (pageNumber < 1 || pageSize is < 1 or > 100 ||
             ((long)pageNumber - 1) * pageSize > int.MaxValue ||
-            search?.Trim().Length > 200)
+            search?.Trim().Length > 200 || code?.Trim().Length > 32 ||
+            displayName?.Trim().Length > 200 || currency?.Trim().Length > 3 ||
+            unitPrice is <= 0 or > 9999999999999999.99m)
         {
             throw new ValidationException("Invalid unit type listing request.");
         }

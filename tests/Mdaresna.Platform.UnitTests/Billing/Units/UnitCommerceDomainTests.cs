@@ -25,8 +25,13 @@ public sealed class UnitCommerceDomainTests
         Assert.True(type.Deactivate(Now.AddMinutes(3)));
         Assert.Equal(2, type.Version);
         Assert.False(type.Deactivate(Now.AddMinutes(4)));
-        Assert.Throws<PlatformDomainException>(() =>
-            type.ChangeOffer("Another", 20m, "EGP", Now.AddMinutes(5)));
+        Assert.True(type.Activate(Now.AddMinutes(5)));
+        Assert.Equal(3, type.Version);
+        Assert.False(type.Activate(Now.AddMinutes(6)));
+        type.Deactivate(Now.AddMinutes(7));
+        Assert.True(type.ChangeOffer("Another", 20m, "EGP", Now.AddMinutes(8)));
+        Assert.False(type.IsActive);
+        Assert.Equal(5, type.Version);
     }
 
     [Fact]

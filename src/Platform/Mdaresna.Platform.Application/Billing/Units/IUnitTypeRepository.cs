@@ -7,6 +7,8 @@ public interface IUnitTypeRepository
     Task<UnitType?> FindByIdAsync(Guid unitTypeId, CancellationToken cancellationToken = default);
     Task<UnitType?> FindByCodeAsync(string normalizedCode, CancellationToken cancellationToken = default);
     Task AddAsync(UnitType unitType, CancellationToken cancellationToken = default);
+    Task<bool> HasUsageAsync(Guid unitTypeId, CancellationToken cancellationToken = default);
+    void Remove(UnitType unitType);
     Task<UnitTypePage> ListAsync(UnitTypeListQuery query, CancellationToken cancellationToken = default);
 }
 
@@ -14,7 +16,11 @@ public sealed record UnitTypeListQuery(
     string? Search = null,
     bool? IsActive = null,
     int PageNumber = 1,
-    int PageSize = 20);
+    int PageSize = 20,
+    string? Code = null,
+    string? DisplayName = null,
+    decimal? UnitPrice = null,
+    string? Currency = null);
 
 public sealed record UnitTypeReadModel(
     Guid Id,

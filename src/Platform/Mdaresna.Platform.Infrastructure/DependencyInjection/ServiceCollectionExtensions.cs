@@ -113,6 +113,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<CreateUnitTypeCommandHandler>();
         services.AddScoped<UpdateUnitTypeCommandHandler>();
         services.AddScoped<DeactivateUnitTypeCommandHandler>();
+        services.AddScoped<ActivateUnitTypeCommandHandler>();
+        services.AddScoped<DeleteUnitTypeCommandHandler>();
         services.AddScoped<ListUnitTypesQueryHandler>();
         services.AddScoped<SubmitUnitPurchaseCommandHandler>();
         services.AddScoped<IPlatformStaffDirectory, PlatformStaffDirectory>();
