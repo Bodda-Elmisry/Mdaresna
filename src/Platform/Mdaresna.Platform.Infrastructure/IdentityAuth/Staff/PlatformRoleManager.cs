@@ -7,6 +7,7 @@ using Mdaresna.Platform.Domain.Access;
 using Mdaresna.Platform.Infrastructure.Persistence;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities;
+using Mdaresna.Platform.Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 
 namespace Mdaresna.Platform.Infrastructure.IdentityAuth.Staff;
@@ -15,7 +16,8 @@ public sealed class PlatformRoleManager(
     PlatformDbContext db,
     IPlatformRoleRepository repository,
     IPlatformUnitOfWork unitOfWork,
-    IPlatformPermissionEvaluator permissionEvaluator) : IPlatformRoleManager
+    IPlatformPermissionEvaluator permissionEvaluator,
+    IPlatformNotificationService? notifications = null) : IPlatformRoleManager
 {
     public async Task<IReadOnlyList<string>> ListPermissionsAsync(CancellationToken cancellationToken = default)
     {
@@ -66,21 +68,20 @@ public sealed class PlatformRoleManager(
 
         var codes = ValidatePermissions(request);
         await EnsureKnownPermissionsAsync(codes, cancellationToken);
-        if (!role.Permissions.ToHashSet().SetEquals(codes) &&
-            (role.Permissions.Contains(PlatformPermissionCodes.AccessManage) ||
-             codes.Contains(PlatformPermissionCodes.AccessManage)) &&
-            await HasActiveAssignmentsAsync(role.Id, cancellationToken))
-            throw new PlatformConflictException("role.privileged_assigned",
-                "Permissions of an assigned access-management role cannot be changed.");
+        var permissionsChanged = !role.Permissions.ToHashSet().SetEquals(codes);
 
         var now = DateTimeOffset.UtcNow;
-        if (!string.Equals(role.DisplayName, request.DisplayName.Trim(), StringComparison.Ordinal))
+        var displayNameChanged = !string.Equals(
+            role.DisplayName, request.DisplayName.Trim(), StringComparison.Ordinal);
+        if (displayNameChanged)
             role.Rename(request.DisplayName, actor, now);
         foreach (var code in codes.Except(role.Permissions).ToArray()) role.Grant(code, actor, now);
         foreach (var code in role.Permissions.Except(codes).ToArray()) role.Revoke(code, actor, now);
-        if (db.Entry(role).State == EntityState.Modified)
+        if (displayNameChanged || permissionsChanged)
         {
             Audit(actor, "platform.role.updated", role, now, correlationId);
+            if (permissionsChanged)
+                await QueuePermissionsChangedAsync(role, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
             role.DequeueDomainEvents();
         }
@@ -103,6 +104,7 @@ public sealed class PlatformRoleManager(
         var now = DateTimeOffset.UtcNow;
         if (isActive) role.Activate(actor, now); else role.Deactivate(actor, now);
         Audit(actor, isActive ? "platform.role.activated" : "platform.role.deactivated", role, now, correlationId);
+        await QueuePermissionsChangedAsync(role, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         role.DequeueDomainEvents();
         return ToItem(role);
@@ -176,6 +178,24 @@ public sealed class PlatformRoleManager(
 
     private Task<bool> HasActiveAssignmentsAsync(PlatformRoleId roleId, CancellationToken cancellationToken) =>
         db.RoleAssignments.AsNoTracking().AnyAsync(x => x.RoleId == roleId && x.RevokedAtUtc == null, cancellationToken);
+
+    private async Task QueuePermissionsChangedAsync(PlatformRole role, CancellationToken cancellationToken)
+    {
+        if (notifications is null) return;
+        var accounts = await db.RoleAssignments.AsNoTracking()
+            .Where(x => x.RoleId == role.Id && x.RevokedAtUtc == null)
+            .Select(x => x.AccountId.Value)
+            .Distinct()
+            .ToArrayAsync(cancellationToken);
+        await notifications.QueueAsync(accounts, new PlatformNotificationInput(
+            "platform.permissions.changed",
+            "تم تغيير صلاحيتك",
+            "Your permissions changed",
+            "تم تغيير صلاحيات دورك داخل إدارة المنصة، وسيتم تحديث الأجزاء المتاحة لك الآن.",
+            "Your Platform role permissions changed. The available sections will refresh now.",
+            "/dashboard",
+            new Dictionary<string, string> { ["refreshPermissions"] = "true" }), cancellationToken);
+    }
 
     private static PlatformRoleCatalogItem ToItem(PlatformRole role) => new(
         role.Id.Value, role.Key, role.DisplayName, role.IsActive, role.IsSystem,

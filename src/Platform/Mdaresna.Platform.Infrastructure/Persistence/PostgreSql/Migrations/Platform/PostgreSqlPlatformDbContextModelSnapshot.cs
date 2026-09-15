@@ -1073,6 +1073,145 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Pla
                         });
                 });
 
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformNotification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ActionUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("BodyAr")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("BodyEn")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<string>("DataJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("ExpiresAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<string>("TitleAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("TitleEn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAtUtc");
+
+                    b.ToTable("notifications", "messaging", t =>
+                        {
+                            t.HasCheckConstraint("ck_messaging_notifications_timestamps", "TRUE AND (\"ExpiresAtUtc\" IS NULL OR (\"ExpiresAtUtc\" > \"CreatedAtUtc\" AND TRUE))");
+                        });
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformNotificationDelivery", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<Guid>("DeviceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FcmTokenSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTimeOffset?>("NextAttemptAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("SentAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NotificationId", "DeviceId")
+                        .IsUnique();
+
+                    b.HasIndex("Status", "NextAttemptAtUtc", "CreatedAtUtc");
+
+                    b.ToTable("notification_deliveries", "messaging", t =>
+                        {
+                            t.HasCheckConstraint("ck_messaging_notification_deliveries_attempts", "\"AttemptCount\" >= 0");
+
+                            t.HasCheckConstraint("ck_messaging_notification_deliveries_status", "\"Status\" IN ('Pending','Sent','Failed','Skipped')");
+                        });
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformNotificationRecipient", b =>
+                {
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<DateTimeOffset?>("ReadAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.HasKey("NotificationId", "AccountId");
+
+                    b.HasIndex("AccountId", "ReadAtUtc", "CreatedAtUtc");
+
+                    b.ToTable("notification_recipients", "messaging", t =>
+                        {
+                            t.HasCheckConstraint("ck_messaging_notification_recipients_timestamps", "TRUE AND (\"ReadAtUtc\" IS NULL OR (\"ReadAtUtc\" >= \"CreatedAtUtc\" AND TRUE))");
+                        });
+                });
+
             modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformOutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1423,6 +1562,71 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Pla
                         });
                 });
 
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformUserDevice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<string>("DeviceName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("FcmToken")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<string>("InstallationId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("LanguageCode")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)");
+
+                    b.Property<DateTimeOffset>("LastSeenAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<string>("Platform")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FcmToken")
+                        .IsUnique();
+
+                    b.HasIndex("AccountId", "InstallationId")
+                        .IsUnique();
+
+                    b.HasIndex("AccountId", "LastSeenAtUtc");
+
+                    b.ToTable("user_devices", "messaging", t =>
+                        {
+                            t.HasCheckConstraint("ck_messaging_user_devices_language", "\"LanguageCode\" IN ('ar','en')");
+
+                            t.HasCheckConstraint("ck_messaging_user_devices_platform", "\"Platform\" IN ('android','ios','web')");
+
+                            t.HasCheckConstraint("ck_messaging_user_devices_timestamps", "\"CreatedAtUtc\" <= \"UpdatedAtUtc\" AND \"UpdatedAtUtc\" <= \"LastSeenAtUtc\" AND TRUE AND TRUE AND TRUE");
+                        });
+                });
+
             modelBuilder.Entity("Mdaresna.Platform.Domain.Access.PlatformRoleAssignment", b =>
                 {
                     b.HasOne("Mdaresna.Platform.Domain.Access.PlatformRole", null)
@@ -1530,6 +1734,24 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Pla
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformNotificationDelivery", b =>
+                {
+                    b.HasOne("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformNotification", null)
+                        .WithMany()
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformNotificationRecipient", b =>
+                {
+                    b.HasOne("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformNotification", null)
+                        .WithMany()
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities.PlatformRolePermissionRecord", b =>

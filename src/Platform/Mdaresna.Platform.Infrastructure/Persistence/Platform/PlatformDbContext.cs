@@ -34,6 +34,10 @@ public class PlatformDbContext(DbContextOptions options) : DbContext(options)
     public DbSet<UnitGrant> UnitGrants => Set<UnitGrant>();
     public DbSet<PlatformSmsProvider> SmsProviders => Set<PlatformSmsProvider>();
     public DbSet<PlatformSmsLog> SmsLogs => Set<PlatformSmsLog>();
+    public DbSet<PlatformUserDevice> UserDevices => Set<PlatformUserDevice>();
+    public DbSet<PlatformNotification> Notifications => Set<PlatformNotification>();
+    public DbSet<PlatformNotificationRecipient> NotificationRecipients => Set<PlatformNotificationRecipient>();
+    public DbSet<PlatformNotificationDelivery> NotificationDeliveries => Set<PlatformNotificationDelivery>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -61,6 +65,10 @@ public class PlatformDbContext(DbContextOptions options) : DbContext(options)
         modelBuilder.ApplyConfiguration(new UnitGrantConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.PlatformSmsProviderConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.PlatformSmsLogConfiguration());
+        modelBuilder.ApplyConfiguration(new Configurations.PlatformUserDeviceConfiguration());
+        modelBuilder.ApplyConfiguration(new Configurations.PlatformNotificationConfiguration());
+        modelBuilder.ApplyConfiguration(new Configurations.PlatformNotificationRecipientConfiguration());
+        modelBuilder.ApplyConfiguration(new Configurations.PlatformNotificationDeliveryConfiguration());
         if (Database.IsNpgsql())
             PostgreSqlModelAdapter.Apply(modelBuilder);
     }

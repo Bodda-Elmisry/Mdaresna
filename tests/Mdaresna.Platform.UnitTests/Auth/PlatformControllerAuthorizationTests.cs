@@ -40,15 +40,23 @@ public sealed class PlatformControllerAuthorizationTests
                     continue;
                 }
 
-                if (controller.Name is "PlatformAccountLanguageController" or "PlatformAccountContactsController" or "PlatformAccountProfileController")
+                if (controller.Name is "PlatformAccountLanguageController" or "PlatformAccountContactsController" or
+                    "PlatformAccountProfileController" or "PlatformNotificationsController" or
+                    "PlatformCurrentAccessController")
                 {
-                    // These endpoints access only the signed-in account's shared profile.
+                    // These endpoints access only the signed-in account's own profile, device,
+                    // notifications, or effective access snapshot.
                     Assert.NotNull(controller.GetCustomAttribute<AuthorizeAttribute>());
                     Assert.Contains(action.Name, controller.Name switch
                     {
                         "PlatformAccountLanguageController" => new[] { "Get", "Put" },
                         "PlatformAccountContactsController" => new[] { "Get", "Create", "Update", "Delete" },
-                        _ => new[] { "Get", "Update", "GetImage", "UploadImage", "DeleteImage" }
+                        "PlatformAccountProfileController" => new[] { "Get", "Update", "GetImage", "UploadImage", "DeleteImage" },
+                        "PlatformNotificationsController" => new[]
+                        {
+                            "RegisterDevice", "RemoveDevice", "List", "UnreadCount", "MarkRead", "MarkAllRead"
+                        },
+                        _ => new[] { "Get" }
                     });
                     continue;
                 }

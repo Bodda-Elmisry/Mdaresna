@@ -9,6 +9,7 @@ using Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities;
 using Microsoft.EntityFrameworkCore;
+using Mdaresna.Platform.Infrastructure.Messaging;
 
 namespace Mdaresna.Platform.Infrastructure.IdentityAuth.Staff;
 
@@ -19,7 +20,8 @@ namespace Mdaresna.Platform.Infrastructure.IdentityAuth.Staff;
 public sealed class PlatformStaffRoleManager(
     PlatformDbContext platformDb,
     IdentityDbContext identityDb,
-    IPlatformPermissionEvaluator permissionEvaluator) : IPlatformStaffRoleManager
+    IPlatformPermissionEvaluator permissionEvaluator,
+    IPlatformNotificationService? notifications = null) : IPlatformStaffRoleManager
 {
     public async Task<PlatformStaffRoleAssignmentResult> AssignAsync(
         Guid actorAccountId,
@@ -100,6 +102,7 @@ public sealed class PlatformStaffRoleManager(
             roleId,
             now,
             correlationId);
+        await QueueAccessChangedAsync(targetAccountId, cancellationToken);
         try
         {
             await platformDb.SaveChangesAsync(cancellationToken);
@@ -178,6 +181,7 @@ public sealed class PlatformStaffRoleManager(
             assignment.RoleId.Value,
             now,
             correlationId);
+        await QueueAccessChangedAsync(assignment.AccountId.Value, cancellationToken);
         try
         {
             await platformDb.SaveChangesAsync(cancellationToken);
@@ -205,6 +209,17 @@ public sealed class PlatformStaffRoleManager(
             throw new PlatformStaffAccessDeniedException();
         }
     }
+
+    private Task QueueAccessChangedAsync(Guid accountId, CancellationToken cancellationToken) =>
+        notifications?.QueueAsync([accountId], new PlatformNotificationInput(
+            "platform.permissions.changed",
+            "تم تغيير صلاحيتك",
+            "Your permissions changed",
+            "تم تغيير أدوارك وصلاحياتك داخل إدارة المنصة، وسيتم تحديث الأجزاء المتاحة لك الآن.",
+            "Your roles and permissions in Platform administration changed. The available sections will refresh now.",
+            "/dashboard",
+            new Dictionary<string, string> { ["refreshPermissions"] = "true" }), cancellationToken)
+        ?? Task.CompletedTask;
 
     private void AddAudit(
         IdentityAccountId actor,

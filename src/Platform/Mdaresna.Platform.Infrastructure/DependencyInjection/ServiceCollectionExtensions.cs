@@ -80,6 +80,20 @@ public static class ServiceCollectionExtensions
         services.AddScoped<PlatformSmsLogEventIngestor>();
         services.AddScoped<PlatformSmsSecretProtector>();
         services.AddScoped<PlatformSmsProviderService>();
+        services.Configure<PlatformFirebaseOptions>(options =>
+        {
+            options.Enabled = bool.TryParse(
+                configuration[$"{PlatformFirebaseOptions.SectionName}:Enabled"], out var enabled) && enabled;
+            options.ProjectId = configuration[$"{PlatformFirebaseOptions.SectionName}:ProjectId"]?.Trim()
+                                ?? string.Empty;
+            if (int.TryParse(configuration[$"{PlatformFirebaseOptions.SectionName}:DispatchIntervalSeconds"],
+                    out var interval)) options.DispatchIntervalSeconds = interval;
+            if (int.TryParse(configuration[$"{PlatformFirebaseOptions.SectionName}:BatchSize"],
+                    out var batchSize)) options.BatchSize = batchSize;
+        });
+        services.AddSingleton<IPlatformPushSender, FirebasePlatformPushSender>();
+        services.AddScoped<IPlatformNotificationService, PlatformNotificationService>();
+        services.AddHostedService<PlatformNotificationDispatchWorker>();
         services.AddScoped<IRegistryReadStore, RegistryReadStore>();
         services.AddScoped<IPlatformRegistryAuditWriter, PlatformRegistryAuditWriter>();
         services.AddScoped<CreateTenantCommandHandler>();
