@@ -12,6 +12,7 @@ using Mdaresna.Platform.Infrastructure.Persistence.Identity;
 using Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities;
+using Mdaresna.Platform.Infrastructure.Messaging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -27,7 +28,8 @@ public sealed class PlatformStaffManagement(
     PlatformPasswordCredentialFactory credentialFactory,
     IPasswordHasher<Account> passwordHasher,
     PlatformActivationOptions activationOptions,
-    ILogger<PlatformStaffManagement> logger) : IPlatformStaffManagement
+    ILogger<PlatformStaffManagement> logger,
+    IPlatformNotificationService? notifications = null) : IPlatformStaffManagement
 {
     private const string ProvisionedEvent = "platform.staff.identity.provisioned";
     private const int MaximumFailedAttempts = 5;
@@ -271,6 +273,8 @@ public sealed class PlatformStaffManagement(
             try { await identityDb.SaveChangesAsync(cancellationToken); }
             catch (DbUpdateConcurrencyException) { return false; }
         }
+        await QueueStaffActivatedNotificationAsync(account.Id,
+            local.DisplayName ?? account.DisplayName ?? local.UserName, cancellationToken);
         return true;
     }
 
@@ -392,6 +396,43 @@ public sealed class PlatformStaffManagement(
             throw new PlatformConflictException("staff.invitation_sms_failed",
                 "The employee was added, but the invitation SMS could not be delivered.");
         }
+    }
+
+    private async Task QueueStaffActivatedNotificationAsync(
+        Guid activatedAccountId,
+        string displayName,
+        CancellationToken cancellationToken)
+    {
+        if (notifications is null) return;
+
+        var assignedManagers = await (
+            from assignment in platformDb.RoleAssignments.AsNoTracking()
+            join role in platformDb.Roles.AsNoTracking() on assignment.RoleId equals role.Id
+            where assignment.RevokedAtUtc == null && role.IsActive && role.Key == "app-manager"
+            select assignment.AccountId).Distinct().ToArrayAsync(cancellationToken);
+        var assignedManagerIds = assignedManagers.Select(accountId => accountId.Value)
+            .Where(accountId => accountId != activatedAccountId)
+            .ToArray();
+        if (assignedManagerIds.Length == 0) return;
+
+        var activeManagerIds = await platformDb.LocalUsers.AsNoTracking()
+            .Where(user => user.Status == "Active" && assignedManagerIds.Contains(user.PersonId))
+            .Select(user => user.PersonId)
+            .ToArrayAsync(cancellationToken);
+        if (activeManagerIds.Length == 0) return;
+
+        await notifications.QueueAsync(activeManagerIds, new PlatformNotificationInput(
+            "platform.staff.activated",
+            "تم تفعيل موظف جديد",
+            "A new employee was activated",
+            $"قام الموظف {displayName} بتفعيل حسابه في إدارة منصة مدارسنا لأول مرة.",
+            $"{displayName} activated their Mdaresna Platform administration account for the first time.",
+            "/staff",
+            new Dictionary<string, string>
+            {
+                ["staffAccountId"] = activatedAccountId.ToString("D")
+            }), cancellationToken);
+        await platformDb.SaveChangesAsync(cancellationToken);
     }
 
     private byte[] HashCode(Guid userId, string code) => HMACSHA256.HashData(
