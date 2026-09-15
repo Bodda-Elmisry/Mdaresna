@@ -4,6 +4,7 @@ using Mdaresna.Platform.Api.Auth;
 using Mdaresna.Platform.Api.Errors;
 using Mdaresna.Platform.Application.Access.Staff;
 using Mdaresna.Platform.Infrastructure.Persistence.Identity;
+using Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
@@ -42,6 +43,56 @@ public sealed class PlatformStaffController(
         var page = await directory.ListAsync(pageNumber, pageSize, cancellationToken, search, roleId);
         return Ok(PagedApiResponse<PlatformStaffDirectoryItem>.Success(
             page.Items, page.TotalCount, page.PageNumber, page.PageSize,
+            correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
+    }
+
+    [HttpGet("{accountId:guid}/profile")]
+    public async Task<IActionResult> Profile(Guid accountId, CancellationToken cancellationToken)
+    {
+        var isStaff = await platformDb.LocalUsers.AsNoTracking()
+            .AnyAsync(user => user.PersonId == accountId, cancellationToken);
+        if (!isStaff)
+            return NotFound(ApiResponse<object?>.Failure(404, "staff.not_found", "Staff member was not found.",
+                correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
+
+        var account = await identityDb.Accounts.AsNoTracking()
+            .Where(person => person.Id == accountId)
+            .Select(person => new { person.DisplayName, person.DateOfBirth, person.GenderCode })
+            .SingleOrDefaultAsync(cancellationToken);
+        if (account is null)
+            return NotFound(ApiResponse<object?>.Failure(404, "staff.profile_not_found", "Person profile was not found.",
+                correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
+
+        var identifiers = await identityDb.LoginIdentifiers.AsNoTracking()
+            .Where(identifier => identifier.AccountId == accountId && identifier.SchoolId == null &&
+                (identifier.Type == LoginIdentifierType.Phone || identifier.Type == LoginIdentifierType.Email))
+            .OrderBy(identifier => identifier.CreatedAtUtc).ThenBy(identifier => identifier.Id)
+            .Select(identifier => new { identifier.Id, identifier.Type, identifier.DisplayValue,
+                identifier.IsVerified, identifier.IsPrimary })
+            .ToArrayAsync(cancellationToken);
+        var primaryIds = identifiers.GroupBy(identifier => identifier.Type)
+            .Select(group => group.FirstOrDefault(identifier => identifier.IsPrimary)?.Id ?? group.First().Id)
+            .ToHashSet();
+        var loginContacts = identifiers.Select(identifier => new StaffProfileContact(
+            identifier.Type == LoginIdentifierType.Phone ? "phone" : "email",
+            identifier.DisplayValue, identifier.IsVerified, primaryIds.Contains(identifier.Id)));
+        var supplementaryContacts = await identityDb.AccountContacts.AsNoTracking()
+            .Where(contact => contact.AccountId == accountId)
+            .OrderBy(contact => contact.CreatedAtUtc).ThenBy(contact => contact.Id)
+            .Select(contact => new { contact.Type, contact.Value })
+            .ToArrayAsync(cancellationToken);
+        var contacts = loginContacts.Concat(supplementaryContacts.Select(contact => new StaffProfileContact(
+                contact.Type == AccountContactType.Phone ? "phone" :
+                contact.Type == AccountContactType.Email ? "email" : "address",
+                contact.Value, false, false)))
+            .OrderBy(contact => contact.Type == "phone" ? 0 : contact.Type == "email" ? 1 : 2)
+            .ThenByDescending(contact => contact.IsPrimary)
+            .ToArray();
+        var hasImage = await identityDb.AccountProfileImages.AsNoTracking()
+            .AnyAsync(image => image.AccountId == accountId, cancellationToken);
+
+        return Ok(ApiResponse<StaffProfileResponse>.Success(
+            new(account.DisplayName, account.DateOfBirth, account.GenderCode, hasImage, contacts),
             correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
     }
 
@@ -136,3 +187,6 @@ public sealed class PlatformStaffController(
 
 public sealed record AssignStaffRoleRequest(Guid RoleId);
 public sealed record SetStaffActiveRequest(bool IsActive);
+public sealed record StaffProfileContact(string Type, string Value, bool IsVerified, bool IsPrimary);
+public sealed record StaffProfileResponse(string? DisplayName, DateOnly? DateOfBirth, string? GenderCode,
+    bool HasImage, IReadOnlyList<StaffProfileContact> Contacts);
