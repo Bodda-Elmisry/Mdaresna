@@ -132,7 +132,10 @@ app.UseStatusCodePages(async statusCodeContext =>
         message,
         cancellationToken: httpContext.RequestAborted);
 });
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseCors(PlatformCorsPolicy.Name);
 
 if (app.Environment.IsDevelopment())

@@ -158,17 +158,16 @@ public sealed class PlatformStaffRoleManager(
             return result with { Changed = false };
         }
 
-        // Until a transactional recovery-owner workflow exists, privileged
-        // assignments cannot be revoked here. This protects the last admin.
         var grantsAccessManage = await platformDb.RolePermissions.AsNoTracking().AnyAsync(
             x => x.RoleId == assignment.RoleId &&
                  x.PermissionCode == PlatformPermissionCodes.AccessManage,
             cancellationToken);
-        if (grantsAccessManage)
+        if (grantsAccessManage &&
+            !await HasAnotherActiveAccessManagerAsync(assignment.Id, cancellationToken))
         {
             throw new PlatformConflictException(
-                "staff.privileged_revocation_requires_recovery_workflow",
-                "An access-management role cannot be revoked through this workflow.");
+                "staff.last_access_manager",
+                "The last active access manager cannot have their access-management role revoked.");
         }
 
         var now = DateTimeOffset.UtcNow;
@@ -208,6 +207,31 @@ public sealed class PlatformStaffRoleManager(
         {
             throw new PlatformStaffAccessDeniedException();
         }
+    }
+
+    private async Task<bool> HasAnotherActiveAccessManagerAsync(
+        PlatformRoleAssignmentId excludedAssignmentId,
+        CancellationToken cancellationToken)
+    {
+        var privilegedAccountIds = await (
+            from candidateAssignment in platformDb.RoleAssignments.AsNoTracking()
+            join role in platformDb.Roles.AsNoTracking()
+                on candidateAssignment.RoleId equals role.Id
+            join permission in platformDb.RolePermissions.AsNoTracking()
+                on role.Id equals permission.RoleId
+            where candidateAssignment.Id != excludedAssignmentId &&
+                  candidateAssignment.RevokedAtUtc == null &&
+                  role.IsActive &&
+                  permission.PermissionCode == PlatformPermissionCodes.AccessManage
+            select candidateAssignment.AccountId.Value)
+            .Distinct()
+            .ToArrayAsync(cancellationToken);
+
+        return privilegedAccountIds.Length > 0 &&
+               await platformDb.LocalUsers.AsNoTracking().AnyAsync(
+                   user => user.Status == "Active" &&
+                           privilegedAccountIds.Contains(user.PersonId),
+                   cancellationToken);
     }
 
     private Task QueueAccessChangedAsync(Guid accountId, CancellationToken cancellationToken) =>

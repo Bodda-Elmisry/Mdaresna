@@ -1,6 +1,6 @@
 # Platform Foundation
 
-Status: foundation and first authenticated business slice implemented. No legacy API route is switched to it. The Platform Worker has an opt-in SMS-audit RabbitMQ consumer, but no publisher or Schools/Family producer is live yet. See [Platform business first slice](platform-business-first-slice.md) for the API scope and remaining gates.
+Status: foundation and first authenticated business slice implemented. No legacy API route is switched to it. The Platform Worker has opt-in SMS-audit and [school-registration request](platform-school-registration-events.md) RabbitMQ consumers, but no producer is live in this repository yet. See [Platform business first slice](platform-business-first-slice.md) for the API scope and remaining gates.
 
 ## Responsibility
 
@@ -35,7 +35,7 @@ Mdaresna.Platform.Contracts          shared building blocks
 - `Application` owns use cases and persistence abstractions.
 - `Infrastructure` owns EF Core, SQL Server and outbox persistence.
 - `Api` is the authenticated control-plane HTTP host for the first business slice.
-- `Worker` can consume cross-system SMS-audit events when explicitly enabled; outbox publishing and other message consumers remain future work.
+- `Worker` can consume cross-system SMS-audit and Schools registration-request events when explicitly enabled; outbox publishing remains future work.
 
 ## Databases
 
@@ -92,7 +92,7 @@ dotnet run --project src/Platform/Mdaresna.Platform.Api
 dotnet run --project src/Platform/Mdaresna.Platform.Worker
 ```
 
-The API exposes `/health/live`, `/health/ready`, development-only Swagger and the first permission-protected business endpoints. The worker exposes loopback-only liveness and readiness endpoints. Its [SMS-audit consumer](platform-sms-event-logging.md) is disabled by default; RabbitMQ publishing and provisioning-result consumption are not active yet.
+The API exposes `/health/live`, `/health/ready`, development-only Swagger and the first permission-protected business endpoints. The worker exposes loopback-only liveness and readiness endpoints. Its [SMS-audit consumer](platform-sms-event-logging.md) and [school-registration request consumer](platform-school-registration-events.md) are disabled by default; RabbitMQ publishing and provisioning-result consumption are not active yet.
 
 New business routes use the shared [`ApiResponse<T>` / `PagedApiResponse<T>` contract](api-response-contract.md). Platform maps HTTP failures to the same envelope and real HTTP status. The legacy API and Flutter parsing remain unchanged until their endpoints are migrated together.
 

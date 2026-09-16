@@ -310,3 +310,4 @@ Mdaresna/Images/
 # Local secrets
 firebase-service-account.json
 Mdaresna/firebase-service-account.json
+/.codex_tmp
