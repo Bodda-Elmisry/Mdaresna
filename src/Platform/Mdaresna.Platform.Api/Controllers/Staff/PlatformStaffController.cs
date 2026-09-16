@@ -46,6 +46,14 @@ public sealed class PlatformStaffController(
             correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
     }
 
+    [HttpGet("summary")]
+    public async Task<IActionResult> Summary(CancellationToken cancellationToken = default)
+    {
+        var summary = await directory.SummaryAsync(cancellationToken);
+        return Ok(ApiResponse<PlatformStaffSummary>.Success(
+            summary, correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
+    }
+
     [HttpGet("{accountId:guid}/profile")]
     public async Task<IActionResult> Profile(Guid accountId, CancellationToken cancellationToken)
     {

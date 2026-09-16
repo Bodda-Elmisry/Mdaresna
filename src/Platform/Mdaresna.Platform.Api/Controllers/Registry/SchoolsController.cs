@@ -47,6 +47,15 @@ public sealed class SchoolsController(
             createdFrom, createdTo, activatedFrom, activatedTo, unitTypeId,
             unitType, owner, pageNumber, pageSize, cancellationToken);
 
+    [HttpGet("schools/summary")]
+    [PlatformPermission("platform.schools.read")]
+    public async Task<IActionResult> Summary(CancellationToken cancellationToken = default)
+    {
+        var summary = await readService.GetSchoolSummaryAsync(cancellationToken);
+        return Ok(ApiResponse<SchoolDirectorySummary>.Success(
+            summary, correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
+    }
+
     [HttpGet("tenants/{tenantId:guid}/schools")]
     [PlatformPermission("platform.schools.read")]
     public Task<IActionResult> ListTenantSchools(

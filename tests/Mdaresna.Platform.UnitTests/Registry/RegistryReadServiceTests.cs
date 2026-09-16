@@ -87,6 +87,10 @@ public sealed class RegistryReadServiceTests
             return Task.FromResult(new RegistryPage<SchoolReadModel>([], 0, query.PageNumber, query.PageSize));
         }
 
+        public Task<SchoolDirectorySummary> GetSchoolSummaryAsync(
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new SchoolDirectorySummary(0, []));
+
         public Task<SchoolReadModel?> FindSchoolAsync(
             SchoolId schoolId,
             CancellationToken cancellationToken = default) => Task.FromResult<SchoolReadModel?>(null);

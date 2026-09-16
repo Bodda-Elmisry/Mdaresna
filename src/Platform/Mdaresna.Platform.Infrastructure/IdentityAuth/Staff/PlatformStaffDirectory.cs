@@ -12,6 +12,65 @@ public sealed class PlatformStaffDirectory(
     PlatformDbContext platformDb,
     IdentityDbContext identityDb) : IPlatformStaffDirectory
 {
+    public async Task<PlatformStaffSummary> SummaryAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var staff = await platformDb.LocalUsers.AsNoTracking()
+            .Select(user => new { user.PersonId, user.Status })
+            .ToArrayAsync(cancellationToken);
+        if (staff.Length == 0) return new PlatformStaffSummary(0, 0, 0, 0, []);
+
+        var personIds = staff.Select(user => user.PersonId).ToArray();
+        var identityStatuses = await identityDb.Accounts.AsNoTracking()
+            .Where(account => personIds.Contains(account.Id))
+            .Select(account => new { account.Id, account.Status })
+            .ToDictionaryAsync(account => account.Id, account => account.Status, cancellationToken);
+        var localStatuses = staff.ToDictionary(user => user.PersonId, user => user.Status);
+        var typedPersonIds = personIds.Select(IdentityAccountId.From).ToArray();
+        var assignments = await (
+            from assignment in platformDb.RoleAssignments.AsNoTracking()
+            join role in platformDb.Roles.AsNoTracking() on assignment.RoleId equals role.Id
+            where assignment.RevokedAtUtc == null && typedPersonIds.Contains(assignment.AccountId)
+            select new
+            {
+                AccountId = assignment.AccountId.Value,
+                RoleId = role.Id.Value,
+                role.Key,
+                role.DisplayName,
+                role.IsActive
+            }).ToArrayAsync(cancellationToken);
+
+        bool IsActive(Guid accountId, bool hasActiveRole) =>
+            localStatuses.TryGetValue(accountId, out var localStatus) && localStatus == "Active" &&
+            identityStatuses.TryGetValue(accountId, out var identityStatus) &&
+            identityStatus == AccountStatus.Active && hasActiveRole;
+
+        var activeStaff = staff.Count(user => IsActive(user.PersonId,
+            assignments.Any(assignment => assignment.AccountId == user.PersonId && assignment.IsActive)));
+        var roleSummaries = assignments
+            .GroupBy(assignment => new
+            {
+                assignment.RoleId,
+                assignment.Key,
+                assignment.DisplayName,
+                assignment.IsActive
+            })
+            .Select(group =>
+            {
+                var members = group.GroupBy(assignment => assignment.AccountId)
+                    .Select(member => member.Key).ToArray();
+                var activeCount = members.Count(accountId => IsActive(accountId, group.Key.IsActive));
+                return new PlatformStaffRoleSummary(group.Key.RoleId, group.Key.Key,
+                    group.Key.DisplayName, activeCount, members.Length - activeCount);
+            })
+            .OrderBy(role => role.DisplayName)
+            .ThenBy(role => role.Key)
+            .ToArray();
+
+        return new PlatformStaffSummary(staff.Length, activeStaff, staff.Length - activeStaff,
+            roleSummaries.Sum(role => role.ActiveCount + role.InactiveCount), roleSummaries);
+    }
+
     public async Task<PlatformStaffDirectoryPage> ListAsync(
         int pageNumber, int pageSize, CancellationToken cancellationToken = default,
         string? search = null, Guid? roleId = null)

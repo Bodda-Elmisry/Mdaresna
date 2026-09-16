@@ -47,6 +47,20 @@ public sealed class RegistrySqlTranslationTests
     }
 
     [Fact]
+    public void School_dashboard_summary_grouping_translates_for_sql_server()
+    {
+        using var db = CreateDbContext();
+
+        var sql = db.Schools.AsNoTracking()
+            .GroupBy(school => new { school.Status, school.SchoolType })
+            .Select(group => new { group.Key.Status, group.Key.SchoolType, Count = group.Count() })
+            .ToQueryString();
+
+        Assert.Contains("GROUP BY", sql, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("[registry].[schools]", sql);
+    }
+
+    [Fact]
     public void Tenant_list_query_translates_for_sql_server()
     {
         using var db = CreateDbContext();

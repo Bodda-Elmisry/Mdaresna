@@ -16,6 +16,9 @@ public interface IRegistryReadStore
         ListSchoolsQuery query,
         CancellationToken cancellationToken = default);
 
+    Task<SchoolDirectorySummary> GetSchoolSummaryAsync(
+        CancellationToken cancellationToken = default);
+
     Task<SchoolReadModel?> FindSchoolAsync(
         SchoolId schoolId,
         CancellationToken cancellationToken = default);

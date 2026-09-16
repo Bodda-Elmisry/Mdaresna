@@ -65,6 +65,10 @@ public sealed class RegistryReadService(IRegistryReadStore store)
         }, cancellationToken);
     }
 
+    public Task<SchoolDirectorySummary> GetSchoolSummaryAsync(
+        CancellationToken cancellationToken = default) =>
+        store.GetSchoolSummaryAsync(cancellationToken);
+
     public async Task<SchoolReadModel> GetSchoolAsync(
         SchoolId schoolId,
         CancellationToken cancellationToken = default)

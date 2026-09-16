@@ -35,3 +35,16 @@ public sealed record SchoolReadModel(
     string? UnitTypeName = null,
     string? Currency = null,
     string? OwnerDisplayName = null);
+
+public sealed record SchoolTypeSummary(
+    SchoolType SchoolType,
+    int Count);
+
+public sealed record SchoolStatusSummary(
+    SchoolLifecycleStatus Status,
+    int TotalCount,
+    IReadOnlyList<SchoolTypeSummary> Types);
+
+public sealed record SchoolDirectorySummary(
+    int TotalSchools,
+    IReadOnlyList<SchoolStatusSummary> Statuses);

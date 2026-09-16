@@ -222,6 +222,25 @@ internal sealed class RegistryReadStore(PlatformDbContext dbContext) : IRegistry
         return new RegistryPage<SchoolReadModel>(page, totalCount, query.PageNumber, query.PageSize);
     }
 
+    public async Task<SchoolDirectorySummary> GetSchoolSummaryAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var groups = await dbContext.Schools.AsNoTracking()
+            .GroupBy(school => new { school.Status, school.SchoolType })
+            .Select(group => new { group.Key.Status, group.Key.SchoolType, Count = group.Count() })
+            .ToArrayAsync(cancellationToken);
+        var statuses = groups.GroupBy(group => group.Status)
+            .OrderBy(group => group.Key)
+            .Select(group => new SchoolStatusSummary(
+                group.Key,
+                group.Sum(item => item.Count),
+                group.OrderBy(item => item.SchoolType)
+                    .Select(item => new SchoolTypeSummary(item.SchoolType, item.Count))
+                    .ToArray()))
+            .ToArray();
+        return new SchoolDirectorySummary(groups.Sum(group => group.Count), statuses);
+    }
+
     public Task<SchoolReadModel?> FindSchoolAsync(
         SchoolId schoolId,
         CancellationToken cancellationToken = default) =>

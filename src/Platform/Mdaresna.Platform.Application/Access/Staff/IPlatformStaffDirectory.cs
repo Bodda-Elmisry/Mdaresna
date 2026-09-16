@@ -21,12 +21,29 @@ public sealed record PlatformStaffDirectoryPage(
     int PageNumber,
     int PageSize);
 
+public sealed record PlatformStaffRoleSummary(
+    Guid RoleId,
+    string Key,
+    string DisplayName,
+    int ActiveCount,
+    int InactiveCount);
+
+public sealed record PlatformStaffSummary(
+    int TotalStaff,
+    int ActiveStaff,
+    int InactiveStaff,
+    int TotalRoleAssignments,
+    IReadOnlyList<PlatformStaffRoleSummary> Roles);
+
 /// <summary>
 /// Lists identities that have ever been assigned a Platform role. A staff member is
 /// active only while the central account and at least one Platform role are active.
 /// </summary>
 public interface IPlatformStaffDirectory
 {
+    Task<PlatformStaffSummary> SummaryAsync(
+        CancellationToken cancellationToken = default);
+
     Task<PlatformStaffDirectoryPage> ListAsync(
         int pageNumber,
         int pageSize,

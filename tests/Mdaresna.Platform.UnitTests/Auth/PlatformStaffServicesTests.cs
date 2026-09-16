@@ -4,7 +4,9 @@ using Mdaresna.Platform.Application.Errors;
 using Mdaresna.Platform.Domain.Access;
 using Mdaresna.Platform.Infrastructure.IdentityAuth.Staff;
 using Mdaresna.Platform.Infrastructure.Persistence.Identity;
+using Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform;
+using Mdaresna.Platform.Infrastructure.Persistence.Platform.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Mdaresna.Platform.UnitTests.Auth;
@@ -39,6 +41,49 @@ public sealed class PlatformStaffServicesTests
             directory.ListAsync(0, 20));
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
             directory.ListAsync(1, 101));
+    }
+
+    [Fact]
+    public async Task Staff_summary_keeps_unique_staff_total_and_splits_each_role_by_status()
+    {
+        await using var platformDb = PlatformMemoryDb();
+        await using var identityDb = IdentityMemoryDb();
+        var actor = IdentityAccountId.New();
+        var activePersonId = Guid.NewGuid();
+        var disabledPersonId = Guid.NewGuid();
+        var now = DateTimeOffset.UtcNow;
+        var managerRole = PlatformRole.Create(PlatformRoleId.New(), "manager", "Manager", false,
+            [], actor, now);
+        var reviewerRole = PlatformRole.Create(PlatformRoleId.New(), "reviewer", "Reviewer", false,
+            [], actor, now);
+        platformDb.Roles.AddRange(managerRole, reviewerRole);
+        platformDb.LocalUsers.AddRange(
+            new PlatformLocalUser { Id = Guid.NewGuid(), PersonId = activePersonId, UserName = "active",
+                NormalizedUserName = "ACTIVE", Status = "Active", CreatedAtUtc = now, UpdatedAtUtc = now },
+            new PlatformLocalUser { Id = Guid.NewGuid(), PersonId = disabledPersonId, UserName = "disabled",
+                NormalizedUserName = "DISABLED", Status = "Disabled", CreatedAtUtc = now, UpdatedAtUtc = now });
+        platformDb.RoleAssignments.AddRange(
+            PlatformRoleAssignment.Assign(PlatformRoleAssignmentId.New(), IdentityAccountId.From(activePersonId),
+                managerRole.Id, actor, now),
+            PlatformRoleAssignment.Assign(PlatformRoleAssignmentId.New(), IdentityAccountId.From(activePersonId),
+                reviewerRole.Id, actor, now),
+            PlatformRoleAssignment.Assign(PlatformRoleAssignmentId.New(), IdentityAccountId.From(disabledPersonId),
+                managerRole.Id, actor, now));
+        identityDb.Accounts.AddRange(
+            new Account { Id = activePersonId, Status = AccountStatus.Active, CreatedAtUtc = now, UpdatedAtUtc = now },
+            new Account { Id = disabledPersonId, Status = AccountStatus.Active, CreatedAtUtc = now, UpdatedAtUtc = now });
+        await platformDb.SaveChangesAsync();
+        await identityDb.SaveChangesAsync();
+
+        var summary = await new PlatformStaffDirectory(platformDb, identityDb).SummaryAsync();
+
+        Assert.Equal(2, summary.TotalStaff);
+        Assert.Equal(1, summary.ActiveStaff);
+        Assert.Equal(1, summary.InactiveStaff);
+        Assert.Equal(3, summary.TotalRoleAssignments);
+        var manager = Assert.Single(summary.Roles, role => role.Key == "manager");
+        Assert.Equal(1, manager.ActiveCount);
+        Assert.Equal(1, manager.InactiveCount);
     }
 
     [Fact]
@@ -130,6 +175,16 @@ public sealed class PlatformStaffServicesTests
 
     private static IdentityDbContext IdentityDb() => new(
         new DbContextOptionsBuilder<IdentityDbContext>().Options);
+
+    private static PlatformDbContext PlatformMemoryDb() => new(
+        new DbContextOptionsBuilder<PlatformDbContext>()
+            .UseInMemoryDatabase($"platform-staff-summary-{Guid.NewGuid():N}",
+                database => database.EnableNullChecks(false)).Options);
+
+    private static IdentityDbContext IdentityMemoryDb() => new(
+        new DbContextOptionsBuilder<IdentityDbContext>()
+            .UseInMemoryDatabase($"identity-staff-summary-{Guid.NewGuid():N}",
+                database => database.EnableNullChecks(false)).Options);
 
     private sealed class DenyAllPermissions : IPlatformPermissionEvaluator
     {
