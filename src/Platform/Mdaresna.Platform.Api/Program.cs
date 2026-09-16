@@ -3,6 +3,7 @@ using Mdaresna.Platform.Api.Hosting;
 using Mdaresna.Platform.Api.Errors;
 using Mdaresna.Platform.Api.Auth;
 using Mdaresna.Platform.Api.Middleware;
+using Mdaresna.Platform.Api.Realtime;
 using Mdaresna.Platform.Infrastructure.DependencyInjection;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
@@ -45,6 +46,8 @@ builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
         };
     };
 });
+builder.Services.AddSignalR();
+builder.Services.AddHostedService<PlatformNotificationRealtimeDispatcher>();
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -170,6 +173,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 }).AllowAnonymous();
 
 app.MapControllers();
+app.MapHub<PlatformNotificationHub>(PlatformNotificationHub.Path);
 
 app.Run();
 

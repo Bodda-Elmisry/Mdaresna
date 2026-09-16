@@ -1,9 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using Mdaresna.Platform.Infrastructure.IdentityAuth;
-using Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities;
+using Mdaresna.Platform.Api.Realtime;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Mdaresna.Platform.Api.Auth;
@@ -19,11 +18,8 @@ public static class PlatformAuthenticationExtensions
 
         var jwt = PlatformJwtOptions.FromConfiguration(configuration);
         services.AddSingleton(jwt);
-        services.AddScoped<IPasswordHasher<Account>, PasswordHasher<Account>>();
-        services.AddScoped<PlatformPasswordCredentialFactory>();
         services.AddScoped<PlatformLoginService>();
         services.AddScoped<AccountAppLanguageService>();
-        services.AddSingleton(_ => PlatformActivationOptions.FromConfiguration(configuration));
         services.AddScoped<PlatformFirstOwnerActivationService>();
         services.AddScoped<PlatformPasswordResetService>();
         services.AddScoped<PlatformPrincipalValidator>();
@@ -50,6 +46,19 @@ public static class PlatformAuthenticationExtensions
                 };
                 options.Events = new JwtBearerEvents
                 {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        if (string.IsNullOrEmpty(context.Token) &&
+                            !string.IsNullOrEmpty(accessToken) &&
+                            context.HttpContext.Request.Path.StartsWithSegments(
+                                PlatformNotificationHub.Path))
+                        {
+                            context.Token = accessToken;
+                        }
+
+                        return Task.CompletedTask;
+                    },
                     OnTokenValidated = async context =>
                     {
                         if (context.Principal is null ||

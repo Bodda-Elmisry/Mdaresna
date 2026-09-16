@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "Platform API + Worker",
+    "Projects": [
+      {
+        "Path": "src\\Platform\\Mdaresna.Platform.Api\\Mdaresna.Platform.Api.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\Platform\\Mdaresna.Platform.Worker\\Mdaresna.Platform.Worker.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

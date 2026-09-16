@@ -66,12 +66,7 @@ public sealed class FirebasePlatformPushSender : IPlatformPushSender, IDisposabl
                 {
                     Aps = new Aps { Sound = "default", ContentAvailable = true }
                 },
-                Webpush = new WebpushConfig
-                {
-                    FcmOptions = data.TryGetValue("actionUrl", out var url) && Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out _)
-                        ? new WebpushFcmOptions { Link = url }
-                        : null
-                }
+                Webpush = CreateWebpushConfig(data)
             };
             await messaging.SendAsync(message, cancellationToken);
             return new(true, false, null);
@@ -90,6 +85,24 @@ public sealed class FirebasePlatformPushSender : IPlatformPushSender, IDisposabl
             logger.LogError(ex, "FCM delivery failed unexpectedly");
             return new(false, false, ex.GetType().Name);
         }
+    }
+
+    internal static WebpushConfig? CreateWebpushConfig(
+        IReadOnlyDictionary<string, string> data)
+    {
+        if (!data.TryGetValue("actionUrl", out var value) ||
+            !Uri.TryCreate(value, UriKind.Absolute, out var link) ||
+            !string.Equals(link.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        {
+            // Application routes such as /staff stay in Message.Data. FCM only
+            // accepts an absolute HTTPS URL in WebpushFcmOptions.Link.
+            return null;
+        }
+
+        return new WebpushConfig
+        {
+            FcmOptions = new WebpushFcmOptions { Link = link.AbsoluteUri }
+        };
     }
 
     private FirebaseApp GetOrCreateApp()

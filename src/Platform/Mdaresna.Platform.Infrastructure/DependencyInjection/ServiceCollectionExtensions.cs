@@ -24,6 +24,7 @@ using Mdaresna.Platform.Infrastructure.Persistence.Platform.Registry;
 using Mdaresna.Platform.Infrastructure.Persistence.Platform.Billing;
 using Mdaresna.Platform.Infrastructure.IdentityAuth.Staff;
 using Mdaresna.Platform.Infrastructure.IdentityAuth;
+using Mdaresna.Platform.Infrastructure.Persistence.Identity.Entities;
 using Mdaresna.Platform.Infrastructure.Security;
 using Mdaresna.SharedKernel.Time;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +32,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Identity;
 
 namespace Mdaresna.Platform.Infrastructure.DependencyInjection;
 
@@ -80,6 +82,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPlatformUnitOfWork, PlatformUnitOfWork>();
         services.AddScoped<IPlatformPermissionEvaluator, PlatformPermissionEvaluator>();
         services.AddScoped<ISharedIdentityAccountLookup, SharedIdentityAccountLookup>();
+        services.TryAddScoped<IPasswordHasher<Account>, PasswordHasher<Account>>();
+        services.TryAddScoped<PlatformPasswordCredentialFactory>();
+        services.TryAddSingleton(_ => PlatformActivationOptions.FromConfiguration(configuration));
         services.AddScoped<IPlatformOutboxWriter, PlatformOutboxWriter>();
         services.AddScoped<IPlatformSmsSender, PlatformDbSmsSender>();
         services.AddScoped<PlatformSmsLogEventIngestor>();
@@ -99,7 +104,6 @@ public static class ServiceCollectionExtensions
         });
         services.AddSingleton<IPlatformPushSender, FirebasePlatformPushSender>();
         services.AddScoped<IPlatformNotificationService, PlatformNotificationService>();
-        services.AddHostedService<PlatformNotificationDispatchWorker>();
         services.AddScoped<IRegistryReadStore, RegistryReadStore>();
         services.AddScoped<IPlatformRegistryAuditWriter, PlatformRegistryAuditWriter>();
         services.AddScoped<CreateTenantCommandHandler>();
@@ -152,6 +156,13 @@ public static class ServiceCollectionExtensions
                 tags: ["ready"],
                 timeout: TimeSpan.FromSeconds(5));
 
+        return services;
+    }
+
+    public static IServiceCollection AddPlatformNotificationDispatcher(
+        this IServiceCollection services)
+    {
+        services.AddHostedService<PlatformNotificationDispatchWorker>();
         return services;
     }
 

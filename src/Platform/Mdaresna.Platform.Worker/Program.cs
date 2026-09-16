@@ -22,6 +22,7 @@ builder.Services
         tags: [HealthCheckTags.Ready]);
 
 builder.Services.AddPlatformInfrastructure(builder.Configuration);
+builder.Services.AddPlatformNotificationDispatcher();
 
 var app = builder.Build();
 
