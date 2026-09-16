@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\Mdaresna.SharedKernel\Mdaresna.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\Mdaresna.Tenancy.Abstractions\Mdaresna.Tenancy.Abstractions.csproj" />
+  </ItemGroup>
+</Project>

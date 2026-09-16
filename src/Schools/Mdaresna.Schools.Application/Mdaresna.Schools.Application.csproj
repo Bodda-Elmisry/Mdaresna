@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Mdaresna.Schools.Contracts\Mdaresna.Schools.Contracts.csproj" />
+    <ProjectReference Include="..\Mdaresna.Schools.Domain\Mdaresna.Schools.Domain.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\Mdaresna.Messaging.Abstractions\Mdaresna.Messaging.Abstractions.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\Mdaresna.SharedKernel\Mdaresna.SharedKernel.csproj" />
+  </ItemGroup>
+</Project>

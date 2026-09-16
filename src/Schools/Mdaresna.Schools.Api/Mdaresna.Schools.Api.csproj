@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>Mdaresna.Schools.Api</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\Mdaresna.Api.Contracts\Mdaresna.Api.Contracts.csproj" />
+    <ProjectReference Include="..\Mdaresna.Schools.Application\Mdaresna.Schools.Application.csproj" />
+    <ProjectReference Include="..\Mdaresna.Schools.Infrastructure\Mdaresna.Schools.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

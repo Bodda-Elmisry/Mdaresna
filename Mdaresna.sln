@@ -59,6 +59,20 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mdaresna.Api.Contracts", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mdaresna.Api.Contracts.UnitTests", "tests\Mdaresna.Api.Contracts.UnitTests\Mdaresna.Api.Contracts.UnitTests.csproj", "{CC858F40-1F59-4116-ACBD-F15D21B8D880}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Schools", "Schools", "{D5100000-0000-4000-8000-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mdaresna.Schools.Domain", "src\Schools\Mdaresna.Schools.Domain\Mdaresna.Schools.Domain.csproj", "{D5100000-0000-4000-8000-000000000002}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mdaresna.Schools.Contracts", "src\Schools\Mdaresna.Schools.Contracts\Mdaresna.Schools.Contracts.csproj", "{D5100000-0000-4000-8000-000000000003}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mdaresna.Schools.Application", "src\Schools\Mdaresna.Schools.Application\Mdaresna.Schools.Application.csproj", "{D5100000-0000-4000-8000-000000000004}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mdaresna.Schools.Infrastructure", "src\Schools\Mdaresna.Schools.Infrastructure\Mdaresna.Schools.Infrastructure.csproj", "{D5100000-0000-4000-8000-000000000005}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mdaresna.Schools.Api", "src\Schools\Mdaresna.Schools.Api\Mdaresna.Schools.Api.csproj", "{D5100000-0000-4000-8000-000000000006}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mdaresna.Schools.UnitTests", "tests\Mdaresna.Schools.UnitTests\Mdaresna.Schools.UnitTests.csproj", "{D5100000-0000-4000-8000-000000000007}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -149,6 +163,30 @@ Global
 		{CC858F40-1F59-4116-ACBD-F15D21B8D880}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC858F40-1F59-4116-ACBD-F15D21B8D880}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC858F40-1F59-4116-ACBD-F15D21B8D880}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5100000-0000-4000-8000-000000000002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5100000-0000-4000-8000-000000000002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5100000-0000-4000-8000-000000000002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5100000-0000-4000-8000-000000000002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5100000-0000-4000-8000-000000000003}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5100000-0000-4000-8000-000000000003}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5100000-0000-4000-8000-000000000003}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5100000-0000-4000-8000-000000000003}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5100000-0000-4000-8000-000000000004}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5100000-0000-4000-8000-000000000004}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5100000-0000-4000-8000-000000000004}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5100000-0000-4000-8000-000000000004}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5100000-0000-4000-8000-000000000005}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5100000-0000-4000-8000-000000000005}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5100000-0000-4000-8000-000000000005}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5100000-0000-4000-8000-000000000005}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5100000-0000-4000-8000-000000000006}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5100000-0000-4000-8000-000000000006}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5100000-0000-4000-8000-000000000006}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5100000-0000-4000-8000-000000000006}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5100000-0000-4000-8000-000000000007}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5100000-0000-4000-8000-000000000007}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5100000-0000-4000-8000-000000000007}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5100000-0000-4000-8000-000000000007}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -170,6 +208,12 @@ Global
 		{B8A26F6D-0B1E-49D0-B8D6-9AD4B31EC5A7} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{920288EA-51DA-4ECE-9F51-AA25212C3202} = {7266C4A9-E384-DC00-0EB6-47F6002CFBA7}
 		{CC858F40-1F59-4116-ACBD-F15D21B8D880} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{D5100000-0000-4000-8000-000000000002} = {D5100000-0000-4000-8000-000000000001}
+		{D5100000-0000-4000-8000-000000000003} = {D5100000-0000-4000-8000-000000000001}
+		{D5100000-0000-4000-8000-000000000004} = {D5100000-0000-4000-8000-000000000001}
+		{D5100000-0000-4000-8000-000000000005} = {D5100000-0000-4000-8000-000000000001}
+		{D5100000-0000-4000-8000-000000000006} = {D5100000-0000-4000-8000-000000000001}
+		{D5100000-0000-4000-8000-000000000007} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BF92BD55-51F2-473B-B56E-6A7D40A08592}

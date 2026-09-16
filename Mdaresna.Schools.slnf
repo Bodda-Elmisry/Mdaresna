@@ -1,0 +1,19 @@
+{
+  "solution": {
+    "path": "Mdaresna.sln",
+    "projects": [
+      "src\\BuildingBlocks\\Mdaresna.Api.Contracts\\Mdaresna.Api.Contracts.csproj",
+      "src\\BuildingBlocks\\Mdaresna.IntegrationContracts\\Mdaresna.IntegrationContracts.csproj",
+      "src\\BuildingBlocks\\Mdaresna.Messaging.Abstractions\\Mdaresna.Messaging.Abstractions.csproj",
+      "src\\BuildingBlocks\\Mdaresna.SharedKernel\\Mdaresna.SharedKernel.csproj",
+      "src\\BuildingBlocks\\Mdaresna.Tenancy.Abstractions\\Mdaresna.Tenancy.Abstractions.csproj",
+      "src\\Schools\\Mdaresna.Schools.Api\\Mdaresna.Schools.Api.csproj",
+      "src\\Schools\\Mdaresna.Schools.Application\\Mdaresna.Schools.Application.csproj",
+      "src\\Schools\\Mdaresna.Schools.Contracts\\Mdaresna.Schools.Contracts.csproj",
+      "src\\Schools\\Mdaresna.Schools.Domain\\Mdaresna.Schools.Domain.csproj",
+      "src\\Schools\\Mdaresna.Schools.Infrastructure\\Mdaresna.Schools.Infrastructure.csproj",
+      "tests\\Mdaresna.ArchitectureTests\\Mdaresna.ArchitectureTests.csproj",
+      "tests\\Mdaresna.Schools.UnitTests\\Mdaresna.Schools.UnitTests.csproj"
+    ]
+  }
+}
