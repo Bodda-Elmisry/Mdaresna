@@ -266,31 +266,38 @@ public sealed class SchoolsController(
         int pageSize,
         CancellationToken cancellationToken)
     {
-        RegistryRequestContext.ValidateList(pageNumber, pageSize, search);
-        if (displayName?.Trim().Length > 200 || address?.Trim().Length > 500 ||
-            unitType?.Trim().Length > 200 ||
-            owner?.Trim().Length > 200 || unitTypeId == Guid.Empty ||
-            createdFrom > createdTo || activatedFrom > activatedTo ||
-            status.HasValue && !Enum.IsDefined(status.Value) ||
-            schoolType.HasValue && !Enum.IsDefined(schoolType.Value))
+        try
         {
-            throw new ValidationException("School filters are invalid.");
+            RegistryRequestContext.ValidateList(pageNumber, pageSize, search);
+            if (displayName?.Trim().Length > 200 || address?.Trim().Length > 500 ||
+                unitType?.Trim().Length > 200 ||
+                owner?.Trim().Length > 200 || unitTypeId == Guid.Empty ||
+                createdFrom > createdTo || activatedFrom > activatedTo ||
+                status.HasValue && !Enum.IsDefined(status.Value) ||
+                schoolType.HasValue && !Enum.IsDefined(schoolType.Value))
+            {
+                throw new ValidationException("School filters are invalid.");
+            }
+
+            var ownerIds = await FindOwnerIdsAsync(owner, cancellationToken);
+
+            var page = await readService.ListSchoolsAsync(
+                new ListSchoolsQuery(tenantId, search, status, schoolType, pageNumber, pageSize,
+                    displayName, address, createdFrom, createdTo, activatedFrom, activatedTo,
+                    unitTypeId, unitType, owner, ownerIds),
+                cancellationToken);
+            var items = await EnrichOwnersAsync(page.Items, cancellationToken);
+            return Ok(PagedApiResponse<SchoolReadModel>.Success(
+                items,
+                page.TotalCount,
+                page.PageNumber,
+                page.PageSize,
+                correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
         }
-
-        var ownerIds = await FindOwnerIdsAsync(owner, cancellationToken);
-
-        var page = await readService.ListSchoolsAsync(
-            new ListSchoolsQuery(tenantId, search, status, schoolType, pageNumber, pageSize,
-                displayName, address, createdFrom, createdTo, activatedFrom, activatedTo,
-                unitTypeId, unitType, owner, ownerIds),
-            cancellationToken);
-        var items = await EnrichOwnersAsync(page.Items, cancellationToken);
-        return Ok(PagedApiResponse<SchoolReadModel>.Success(
-            items,
-            page.TotalCount,
-            page.PageNumber,
-            page.PageSize,
-            correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
+        catch(Exception ex)
+        {
+            throw;
+        }
     }
 
     private async Task<IReadOnlyCollection<Guid>?> FindOwnerIdsAsync(

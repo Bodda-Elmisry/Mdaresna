@@ -3,12 +3,23 @@ using Mdaresna.Schools.Infrastructure.DependencyInjection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+var allowedOrigins = builder.Configuration
+    .GetSection("SchoolsHost:Cors:AllowedOrigins")
+    .Get<string[]>() ?? [];
+
+builder.Services.AddControllers().AddJsonOptions(options =>
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddProblemDetails();
 builder.Services.AddSchoolsInfrastructure(builder.Configuration);
+builder.Services.AddCors(options => options.AddPolicy("SchoolsWeb", policy =>
+{
+    if (allowedOrigins.Length > 0) policy.WithOrigins(allowedOrigins);
+    policy.AllowAnyHeader().AllowAnyMethod();
+}));
 builder.Services.AddHealthChecks().AddCheck(
     "self",
     () => HealthCheckResult.Healthy(),
@@ -28,6 +39,7 @@ if (builder.Environment.IsDevelopment())
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment()) app.UseHsts();
+app.UseCors("SchoolsWeb");
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

@@ -20,6 +20,7 @@ public sealed class SchoolRegistration : AggregateRoot
         string? statusReason,
         string? address,
         Guid? unitTypeId,
+        string? primaryPhone,
         DateTimeOffset? activatedAtUtc,
         DateTimeOffset createdAtUtc,
         DateTimeOffset updatedAtUtc,
@@ -38,6 +39,7 @@ public sealed class SchoolRegistration : AggregateRoot
         StatusReason = statusReason;
         Address = address;
         UnitTypeId = unitTypeId;
+        PrimaryPhone = primaryPhone;
         ActivatedAtUtc = activatedAtUtc;
         CreatedAtUtc = createdAtUtc;
         UpdatedAtUtc = updatedAtUtc;
@@ -70,6 +72,8 @@ public sealed class SchoolRegistration : AggregateRoot
 
     public Guid? UnitTypeId { get; private set; }
 
+    public string? PrimaryPhone { get; private set; }
+
     public DateTimeOffset? ActivatedAtUtc { get; private set; }
 
     public DateTimeOffset CreatedAtUtc { get; }
@@ -87,7 +91,8 @@ public sealed class SchoolRegistration : AggregateRoot
         Guid requestedByAccountId,
         DateTimeOffset occurredAtUtc,
         string? address = null,
-        Guid? unitTypeId = null)
+        Guid? unitTypeId = null,
+        string? primaryPhone = null)
     {
         if (id.IsEmpty)
         {
@@ -128,6 +133,7 @@ public sealed class SchoolRegistration : AggregateRoot
             statusReason: null,
             DomainGuard.OptionalText(address, 500, nameof(address)),
             unitTypeId,
+            NormalizeOptionalPhone(primaryPhone),
             activatedAtUtc: null,
             timestamp,
             timestamp,
@@ -285,6 +291,7 @@ public sealed class SchoolRegistration : AggregateRoot
         long version,
         string? address = null,
         Guid? unitTypeId = null,
+        string? primaryPhone = null,
         DateTimeOffset? activatedAtUtc = null)
     {
         if (id.IsEmpty || tenantId.IsEmpty)
@@ -347,6 +354,7 @@ public sealed class SchoolRegistration : AggregateRoot
             DomainGuard.OptionalText(statusReason, 1000, nameof(statusReason)),
             DomainGuard.OptionalText(address, 500, nameof(address)),
             unitTypeId,
+            NormalizeOptionalPhone(primaryPhone),
             activatedAt,
             createdAt,
             updatedAt,
@@ -425,6 +433,15 @@ public sealed class SchoolRegistration : AggregateRoot
         {
             throw new ArgumentException($"{parameterName} cannot be empty when supplied.", parameterName);
         }
+    }
+
+    private static string? NormalizeOptionalPhone(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        var phone = value.Trim();
+        return phone.Length is >= 8 and <= 16 && phone.All(char.IsAsciiDigit)
+            ? phone
+            : throw new ArgumentException("Primary phone must contain 8-16 ASCII digits.", nameof(value));
     }
 
     private static void EnsureDeploymentMatchesSchoolType(

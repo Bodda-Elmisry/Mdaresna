@@ -2,7 +2,7 @@ using System.Text;
 using System.Text.Json;
 using Mdaresna.IntegrationContracts.Serialization;
 using Mdaresna.Platform.Application.Errors;
-using Mdaresna.Platform.Contracts.Registry;
+using Mdaresna.Schools.Contracts.Registration;
 using Mdaresna.Platform.Infrastructure.Messaging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -13,13 +13,14 @@ internal sealed class SchoolRegistrationRequestConsumerService(
     WorkerReadinessState readinessState,
     IServiceScopeFactory scopeFactory,
     IConfiguration configuration,
+    IHostEnvironment environment,
     ILogger<SchoolRegistrationRequestConsumerService> logger) : BackgroundService
 {
     public const string Exchange = "mdaresna.school-registry";
-    public const string RoutingKey = "school.registration.requested";
-    public const string Queue = "platform.school-registration-requested.v1";
+    public const string RoutingKey = "school.registration.requested.v2";
+    public const string Queue = "platform.school-registration-requested.v2";
     private const string DeadExchange = "mdaresna.school-registry.dead";
-    private const string DeadQueue = "platform.school-registration-requested.v1.dead";
+    private const string DeadQueue = "platform.school-registration-requested.v2.dead";
     private const string ReadinessComponent = "school-registration";
     private const int MaximumEventBytes = 64 * 1024;
 
@@ -43,10 +44,11 @@ internal sealed class SchoolRegistrationRequestConsumerService(
 
         var configuredUri = configuration["SchoolRegistrationConsumer:BrokerUri"];
         if (!Uri.TryCreate(configuredUri, UriKind.Absolute, out var brokerUri) ||
-            brokerUri.Scheme != "amqps" || string.IsNullOrWhiteSpace(brokerUri.Host))
+            (brokerUri.Scheme != "amqps" && !(environment.IsDevelopment() && brokerUri.Scheme == "amqp")) ||
+            string.IsNullOrWhiteSpace(brokerUri.Host))
         {
             throw new InvalidOperationException(
-                "SchoolRegistrationConsumer:BrokerUri must be an AMQPS URI from the deployment secret store.");
+                "SchoolRegistrationConsumer:BrokerUri must use AMQPS (AMQP is allowed only in Development)." );
         }
 
         var factory = new ConnectionFactory
@@ -161,7 +163,7 @@ internal sealed class SchoolRegistrationRequestConsumerService(
 
             var json = Encoding.UTF8.GetString(delivery.Body.Span);
             var envelope = IntegrationJsonSerializer
-                .Deserialize<SchoolRegistrationRequestedV1>(json);
+                .Deserialize<SchoolRegistrationRequestedV2>(json);
             if (!string.Equals(envelope.Producer, "schools", StringComparison.Ordinal))
             {
                 throw new JsonException("Unexpected school registration producer.");
@@ -169,7 +171,7 @@ internal sealed class SchoolRegistrationRequestConsumerService(
 
             await using var scope = scopeFactory.CreateAsyncScope();
             var ingestor = scope.ServiceProvider
-                .GetRequiredService<PlatformSchoolRegistrationRequestIngestor>();
+                .GetRequiredService<PlatformSchoolRegistrationRequestV2Ingestor>();
             await ingestor.IngestAsync(envelope, stoppingToken);
             await channel.BasicAckAsync(
                 delivery.DeliveryTag, multiple: false, stoppingToken);

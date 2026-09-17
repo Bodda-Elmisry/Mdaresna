@@ -34,7 +34,8 @@ public sealed record SchoolReadModel(
     string? UnitTypeCode = null,
     string? UnitTypeName = null,
     string? Currency = null,
-    string? OwnerDisplayName = null);
+    string? OwnerDisplayName = null,
+    string? PrimaryPhone = null);
 
 public sealed record SchoolTypeSummary(
     SchoolType SchoolType,

@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Mdaresna.Platform.Contracts\Mdaresna.Platform.Contracts.csproj" />
     <ProjectReference Include="..\Mdaresna.Platform.Domain\Mdaresna.Platform.Domain.csproj" />
+    <ProjectReference Include="..\..\Schools\Mdaresna.Schools.Contracts\Mdaresna.Schools.Contracts.csproj" />
     <ProjectReference Include="..\..\BuildingBlocks\Mdaresna.Messaging.Abstractions\Mdaresna.Messaging.Abstractions.csproj" />
     <ProjectReference Include="..\..\BuildingBlocks\Mdaresna.SharedKernel\Mdaresna.SharedKernel.csproj" />
   </ItemGroup>

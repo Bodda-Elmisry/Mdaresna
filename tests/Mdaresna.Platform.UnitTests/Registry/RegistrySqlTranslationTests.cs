@@ -40,7 +40,8 @@ public sealed class RegistrySqlTranslationTests
                 null,
                 null,
                 null,
-                null))
+                null,
+                school.PrimaryPhone))
             .ToQueryString();
 
         Assert.Contains("[registry].[schools]", sql);

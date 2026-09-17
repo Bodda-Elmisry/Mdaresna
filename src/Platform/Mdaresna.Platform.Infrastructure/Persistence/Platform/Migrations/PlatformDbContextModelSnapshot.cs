@@ -677,6 +677,10 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Platform.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("PrimaryPhone")
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
                     b.Property<Guid?>("ProvisioningOperationId")
                         .HasColumnType("uniqueidentifier");
 

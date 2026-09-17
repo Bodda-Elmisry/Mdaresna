@@ -102,6 +102,7 @@ internal sealed class SchoolRegistrationConfiguration : IEntityTypeConfiguration
             .IsRequired();
         builder.Property(x => x.DisplayName).HasMaxLength(200).IsRequired();
         builder.Property(x => x.Address).HasMaxLength(500);
+        builder.Property(x => x.PrimaryPhone).HasMaxLength(16);
         builder.Property(x => x.UnitTypeId).ValueGeneratedNever();
         builder.Property(x => x.ActivatedAtUtc);
         builder.Property(x => x.SchoolType).HasConversion<string>().HasMaxLength(32).IsRequired();

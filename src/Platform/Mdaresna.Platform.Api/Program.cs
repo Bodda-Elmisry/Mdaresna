@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,26 +27,32 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<PlatformExceptionHandler>();
-builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
-{
-    options.InvalidModelStateResponseFactory = context =>
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
     {
-        var errors = context.ModelState
-            .Where(entry => entry.Value?.Errors.Count > 0)
-            .ToDictionary(
-                entry => entry.Key,
-                entry => entry.Value!.Errors.Select(error =>
-                    string.IsNullOrWhiteSpace(error.ErrorMessage)
-                        ? "The value is invalid."
-                        : error.ErrorMessage).ToArray());
-        return new Microsoft.AspNetCore.Mvc.JsonResult(
-            ApiResponse<object?>.Failure(400, "validation.failed", "Validation failed.", errors,
-                ApiResponseWriter.GetCorrelationId(context.HttpContext)))
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    })
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
         {
-            StatusCode = 400
+            var errors = context.ModelState
+                .Where(entry => entry.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    entry => entry.Key,
+                    entry => entry.Value!.Errors.Select(error =>
+                        string.IsNullOrWhiteSpace(error.ErrorMessage)
+                            ? "The value is invalid."
+                            : error.ErrorMessage).ToArray());
+            return new Microsoft.AspNetCore.Mvc.JsonResult(
+                ApiResponse<object?>.Failure(400, "validation.failed", "Validation failed.", errors,
+                    ApiResponseWriter.GetCorrelationId(context.HttpContext)))
+            {
+                StatusCode = 400
+            };
         };
-    };
-});
+    });
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<PlatformNotificationRealtimeDispatcher>();
 

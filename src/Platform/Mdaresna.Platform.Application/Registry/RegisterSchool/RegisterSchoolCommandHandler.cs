@@ -94,7 +94,8 @@ public sealed class RegisterSchoolCommandHandler
             (Guid)command.RequestedByAccountId,
             now,
             command.Address,
-            command.UnitTypeId);
+            command.UnitTypeId,
+            command.PrimaryPhone);
 
         await _schools.AddAsync(registration, cancellationToken);
 
@@ -199,7 +200,8 @@ public sealed class RegisterSchoolCommandHandler
             existing.RequestedByAccountId != (Guid)command.RequestedByAccountId ||
             !string.Equals(existing.Address, NormalizeOptional(command.Address, 500),
                 StringComparison.Ordinal) ||
-            existing.UnitTypeId != command.UnitTypeId)
+            existing.UnitTypeId != command.UnitTypeId ||
+            !string.Equals(existing.PrimaryPhone, NormalizeOptional(command.PrimaryPhone, 16), StringComparison.Ordinal))
         {
             throw new PlatformConflictException(
                 "request.idempotency_key_reused",

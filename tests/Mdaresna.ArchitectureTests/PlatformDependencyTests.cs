@@ -24,6 +24,7 @@ public sealed class PlatformDependencyTests
                 "Mdaresna.Messaging.Abstractions",
                 "Mdaresna.Platform.Contracts",
                 "Mdaresna.Platform.Domain",
+                "Mdaresna.Schools.Contracts",
                 "Mdaresna.SharedKernel"
             ],
             ["Mdaresna.Platform.Infrastructure"] =
@@ -40,7 +41,8 @@ public sealed class PlatformDependencyTests
             ["Mdaresna.Platform.Worker"] =
             [
                 "Mdaresna.Platform.Application",
-                "Mdaresna.Platform.Infrastructure"
+                "Mdaresna.Platform.Infrastructure",
+                "Mdaresna.Schools.Contracts"
             ]
         };
 

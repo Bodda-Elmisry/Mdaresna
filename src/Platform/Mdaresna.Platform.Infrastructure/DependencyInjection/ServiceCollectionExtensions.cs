@@ -82,6 +82,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPlatformUnitOfWork, PlatformUnitOfWork>();
         services.AddScoped<IPlatformPermissionEvaluator, PlatformPermissionEvaluator>();
         services.AddScoped<ISharedIdentityAccountLookup, SharedIdentityAccountLookup>();
+        services.AddScoped<ISharedIdentityAccountProvisioner, SharedIdentityAccountProvisioner>();
         services.TryAddScoped<IPasswordHasher<Account>, PasswordHasher<Account>>();
         services.TryAddScoped<PlatformPasswordCredentialFactory>();
         services.TryAddSingleton(_ => PlatformActivationOptions.FromConfiguration(configuration));
@@ -89,6 +90,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPlatformSmsSender, PlatformDbSmsSender>();
         services.AddScoped<PlatformSmsLogEventIngestor>();
         services.AddScoped<PlatformSchoolRegistrationRequestIngestor>();
+        services.AddScoped<PlatformSchoolRegistrationRequestV2Ingestor>();
         services.AddScoped<PlatformSmsSecretProtector>();
         services.AddScoped<PlatformSmsProviderService>();
         services.Configure<PlatformFirebaseOptions>(options =>
@@ -109,6 +111,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<CreateTenantCommandHandler>();
         services.AddScoped<RegisterSchoolCommandHandler>();
         services.AddScoped<ConsumeSchoolRegistrationRequestHandler>();
+        services.AddScoped<ConsumeSchoolRegistrationRequestV2Handler>();
         services.AddScoped<BeginSchoolProvisioningCommandHandler>();
         services.AddScoped<RegistryReadService>();
         services.AddScoped<SchoolDatabaseEndpointRegistry>();

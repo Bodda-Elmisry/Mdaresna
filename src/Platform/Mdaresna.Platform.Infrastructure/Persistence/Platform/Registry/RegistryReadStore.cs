@@ -214,7 +214,8 @@ internal sealed class RegistryReadStore(PlatformDbContext dbContext) : IRegistry
                 unitType == null ? null : unitType.Code,
                 unitType == null ? null : unitType.DisplayName,
                 unitType == null ? null : unitType.Currency,
-                null))
+                null,
+                school.PrimaryPhone))
             .Skip((int)skip)
             .Take(query.PageSize)
             .ToArrayAsync(cancellationToken);
@@ -270,7 +271,8 @@ internal sealed class RegistryReadStore(PlatformDbContext dbContext) : IRegistry
                 unitType == null ? null : unitType.Code,
                 unitType == null ? null : unitType.DisplayName,
                 unitType == null ? null : unitType.Currency,
-                null))
+                null,
+                school.PrimaryPhone))
             .SingleOrDefaultAsync(cancellationToken);
 
     private IQueryable<SchoolRegistration> ApplySchoolNameFilter(
