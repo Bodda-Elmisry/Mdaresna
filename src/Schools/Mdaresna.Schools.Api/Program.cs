@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
+using Mdaresna.Schools.Api.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddProblemDetails();
 builder.Services.AddSchoolsInfrastructure(builder.Configuration);
+builder.Services.AddSchoolAuthentication(builder.Configuration);
 builder.Services.AddCors(options => options.AddPolicy("SchoolsWeb", policy =>
 {
     if (allowedOrigins.Length > 0) policy.WithOrigins(allowedOrigins);
@@ -40,6 +42,8 @@ var app = builder.Build();
 
 if (!app.Environment.IsDevelopment()) app.UseHsts();
 app.UseCors("SchoolsWeb");
+app.UseAuthentication();
+app.UseAuthorization();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

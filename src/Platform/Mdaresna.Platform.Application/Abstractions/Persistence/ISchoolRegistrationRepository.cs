@@ -13,6 +13,10 @@ public interface ISchoolRegistrationRepository
         Guid registrationRequestId,
         CancellationToken cancellationToken = default);
 
+    Task<SchoolRegistration?> FindByCodeAsync(
+        SchoolCode schoolCode,
+        CancellationToken cancellationToken = default);
+
     Task<bool> IsSchoolCodeInUseAsync(
         SchoolCode schoolCode,
         CancellationToken cancellationToken = default);

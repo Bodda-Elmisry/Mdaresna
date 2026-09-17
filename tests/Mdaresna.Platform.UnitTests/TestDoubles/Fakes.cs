@@ -102,6 +102,14 @@ internal sealed class FakeSchoolRegistrationRepository(params SchoolRegistration
             item => item.RegistrationRequestId == registrationRequestId));
     }
 
+    public Task<SchoolRegistration?> FindByCodeAsync(
+        SchoolCode schoolCode,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(Items.SingleOrDefault(item => item.Code == schoolCode));
+    }
+
     public Task<bool> IsSchoolCodeInUseAsync(
         SchoolCode schoolCode,
         CancellationToken cancellationToken = default)

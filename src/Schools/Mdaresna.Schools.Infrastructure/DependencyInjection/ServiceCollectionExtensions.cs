@@ -2,6 +2,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Mdaresna.Schools.Application.Registration;
 using Mdaresna.Schools.Infrastructure.Messaging;
+using Mdaresna.Schools.Application.Identity;
+using Mdaresna.Schools.Domain.Identity;
+using Mdaresna.Schools.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 using Mdaresna.SharedKernel.Time;
 
 namespace Mdaresna.Schools.Infrastructure.DependencyInjection;
@@ -20,6 +24,11 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(configuration);
         services.AddScoped<ISchoolRegistrationRequestPublisher, RabbitMqSchoolRegistrationRequestPublisher>();
         services.AddScoped<SubmitSchoolRegistrationRequestHandler>();
+        services.AddHttpClient<ISchoolLoginTenantResolver, PlatformSchoolLoginTenantResolver>();
+        services.AddScoped<ISchoolLoginService, SchoolLocalLoginService>();
+        services.AddScoped<ISchoolDbContextFactory, SchoolDbContextFactory>();
+        services.AddScoped<ISchoolIdentityBootstrapper, SchoolIdentityBootstrapper>();
+        services.AddScoped<IPasswordHasher<LocalUserAccount>, PasswordHasher<LocalUserAccount>>();
         services.AddSingleton<IClock>(SystemClock.Instance);
         return services;
     }

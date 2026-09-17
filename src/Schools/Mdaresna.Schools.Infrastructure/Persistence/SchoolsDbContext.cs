@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Mdaresna.Schools.Domain.Identity;
 
 namespace Mdaresna.Schools.Infrastructure.Persistence;
 
@@ -9,12 +10,26 @@ namespace Mdaresna.Schools.Infrastructure.Persistence;
 /// </summary>
 public class SchoolsDbContext(DbContextOptions options) : DbContext(options)
 {
+    public DbSet<Person> Persons => Set<Person>();
+    public DbSet<PersonContact> PersonContacts => Set<PersonContact>();
+    public DbSet<LocalUserAccount> LocalUsers => Set<LocalUserAccount>();
+    public DbSet<LocalUserCredential> LocalUserCredentials => Set<LocalUserCredential>();
+    public DbSet<LocalUserSession> LocalUserSessions => Set<LocalUserSession>();
+    public DbSet<LocalRole> LocalRoles => Set<LocalRole>();
+    public DbSet<LocalPermission> LocalPermissions => Set<LocalPermission>();
+    public DbSet<LocalRolePermission> LocalRolePermissions => Set<LocalRolePermission>();
+    public DbSet<LocalUserRole> LocalUserRoles => Set<LocalUserRole>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasDefaultSchema("school");
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(SchoolsDbContext).Assembly);
     }
 }
 
 public sealed class PostgreSqlSchoolsDbContext(
     DbContextOptions<PostgreSqlSchoolsDbContext> options) : SchoolsDbContext(options);
+
+public sealed class SqlServerSchoolsDbContext(
+    DbContextOptions<SqlServerSchoolsDbContext> options) : SchoolsDbContext(options);

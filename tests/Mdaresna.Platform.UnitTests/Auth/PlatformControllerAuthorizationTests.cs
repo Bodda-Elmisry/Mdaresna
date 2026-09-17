@@ -24,6 +24,12 @@ public sealed class PlatformControllerAuthorizationTests
 
             foreach (var action in actions)
             {
+                if (controller.GetCustomAttribute<PlatformInternalServiceAttribute>() is not null)
+                {
+                    Assert.NotNull(controller.GetCustomAttribute<AllowAnonymousAttribute>());
+                    continue;
+                }
+
                 if (action.GetCustomAttribute<AllowAnonymousAttribute>() is not null)
                 {
                     Assert.Equal("PlatformAuthController", controller.Name);

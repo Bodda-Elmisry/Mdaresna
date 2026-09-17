@@ -20,6 +20,13 @@ internal sealed class SchoolRegistrationRepository(PlatformDbContext dbContext) 
             x => x.RegistrationRequestId == registrationRequestId,
             cancellationToken);
 
+    public Task<SchoolRegistration?> FindByCodeAsync(
+        SchoolCode schoolCode,
+        CancellationToken cancellationToken = default) =>
+        dbContext.Schools.AsNoTracking().SingleOrDefaultAsync(
+            x => x.Code == schoolCode,
+            cancellationToken);
+
     public Task<bool> IsSchoolCodeInUseAsync(
         SchoolCode schoolCode,
         CancellationToken cancellationToken = default) =>
