@@ -107,8 +107,8 @@ public sealed class SchoolProvisioningConsumerService(
             var completedAtUtc = target.ActivatedAtUtc;
             var result = new SchoolProvisionedV1(envelope.Data.OperationId, envelope.Data.TenantId,
                 envelope.Data.SchoolId, target.LocalSchoolId, "PostgreSql", target.Host, target.Port, target.DatabaseName,
-                target.CredentialSecretReference, target.RequireTls, "1", completedAtUtc,
-                target.OwnerFullUserName, target.OwnerActivationCode);
+                target.CredentialSecretReference, target.RequireTls, target.DatabaseSchemaVersion, completedAtUtc,
+                target.OwnerFullUserName);
             var resultEnvelope = new IntegrationMessageEnvelope<SchoolProvisionedV1>(
                 envelope.Data.OperationId, SchoolProvisionedV1.MessageType, SchoolProvisionedV1.SchemaVersion,
                 completedAtUtc, "mdaresna-schools", envelope.Scope, envelope.Aggregate,
@@ -170,6 +170,8 @@ public sealed class SchoolProvisioningConsumerService(
         await using var db = new PostgreSqlSchoolsDbContext(
             new DbContextOptionsBuilder<PostgreSqlSchoolsDbContext>().UseNpgsql(target.ConnectionString).Options);
         await db.Database.MigrateAsync(cancellationToken);
+        var databaseSchemaVersion = (await db.Database.GetAppliedMigrationsAsync(cancellationToken))
+            .LastOrDefault() ?? "none";
         var local = await db.SchoolInformation.SingleOrDefaultAsync(
             item => item.PlatformSchoolReferenceId == command.SchoolId.Value, cancellationToken);
         var activatedAtUtc = DateTimeOffset.UtcNow;
@@ -196,10 +198,10 @@ public sealed class SchoolProvisioningConsumerService(
         return new ProvisionedTarget(target.Host ?? throw new InvalidOperationException("PostgreSQL host is required."),
             target.Port, databaseName, secretReference,
             target.SslMode is SslMode.Require or SslMode.VerifyCA or SslMode.VerifyFull,
-            local.Id, activatedAtUtc, $"{owner.UserName}@{command.SchoolCode}", owner.ActivationCode);
+            local.Id, activatedAtUtc, $"{owner.UserName}@{command.SchoolCode}", databaseSchemaVersion);
     }
 
     private sealed record ProvisionedTarget(string Host, int Port, string DatabaseName,
         string CredentialSecretReference, bool RequireTls, Guid LocalSchoolId, DateTimeOffset ActivatedAtUtc,
-        string OwnerFullUserName, string OwnerActivationCode);
+        string OwnerFullUserName, string DatabaseSchemaVersion);
 }

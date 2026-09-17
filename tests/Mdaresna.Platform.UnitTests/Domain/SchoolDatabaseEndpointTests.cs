@@ -41,6 +41,24 @@ public sealed class SchoolDatabaseEndpointTests
         Assert.Equal("school_one", endpoint.DatabaseName);
         Assert.Equal("secret://schools/one/database", endpoint.CredentialSecretReference);
         Assert.Equal(SchoolDatabaseEndpointStatus.Provisioning, endpoint.Status);
+        Assert.Equal(SchoolDatabaseMigrationStatus.Succeeded, endpoint.MigrationStatus);
+    }
+
+    [Fact]
+    public void Active_endpoint_tracks_a_database_migration_to_completion()
+    {
+        var endpoint = Create("secret://schools/one/database", isPrimary: true);
+        endpoint.ChangeStatus(SchoolDatabaseEndpointStatus.Active, Now.AddMinutes(1));
+        var operationId = Guid.NewGuid();
+
+        endpoint.QueueMigration(operationId, Now.AddMinutes(2));
+        endpoint.CompleteMigration(operationId, true, "20260917165538_latest", null,
+            Now.AddMinutes(3));
+
+        Assert.Equal(SchoolDatabaseMigrationStatus.Succeeded, endpoint.MigrationStatus);
+        Assert.Equal(operationId, endpoint.LastMigrationOperationId);
+        Assert.Equal("20260917165538_latest", endpoint.SchemaVersion);
+        Assert.Null(endpoint.LastMigrationError);
     }
 
     private static SchoolDatabaseEndpoint Create(

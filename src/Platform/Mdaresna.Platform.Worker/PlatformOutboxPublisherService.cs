@@ -14,6 +14,7 @@ internal sealed class PlatformOutboxPublisherService(
 {
     internal const string Exchange = "mdaresna.platform-events";
     internal const string ProvisionQueue = "schools.provision-school.v1";
+    internal const string MigrationQueue = "schools.database-migrate.v1";
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -59,6 +60,10 @@ internal sealed class PlatformOutboxPublisherService(
         await channel.QueueDeclareAsync(ProvisionQueue, durable: true, exclusive: false, autoDelete: false,
             arguments: null, cancellationToken: cancellationToken);
         await channel.QueueBindAsync(ProvisionQueue, Exchange, ProvisionSchoolV1.MessageType,
+            arguments: null, cancellationToken: cancellationToken);
+        await channel.QueueDeclareAsync(MigrationQueue, durable: true, exclusive: false, autoDelete: false,
+            arguments: null, cancellationToken: cancellationToken);
+        await channel.QueueBindAsync(MigrationQueue, Exchange, MigrateSchoolDatabaseV1.MessageType,
             arguments: null, cancellationToken: cancellationToken);
     }
 

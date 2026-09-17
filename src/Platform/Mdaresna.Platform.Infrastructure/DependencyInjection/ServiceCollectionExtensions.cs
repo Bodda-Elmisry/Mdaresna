@@ -9,6 +9,7 @@ using Mdaresna.Platform.Application.Registry.Read;
 using Mdaresna.Platform.Application.Registry.DatabaseEndpoints;
 using Mdaresna.Platform.Application.Registry.ConsumeSchoolRegistrationRequest;
 using Mdaresna.Platform.Application.Registry.CompleteSchoolProvisioning;
+using Mdaresna.Platform.Application.Registry.DatabaseMigrations;
 using Mdaresna.Platform.Application.Billing;
 using Mdaresna.Platform.Application.Billing.SubmitSchoolPlatformPayment;
 using Mdaresna.Platform.Application.Billing.ReviewSchoolPlatformPayment;
@@ -116,6 +117,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ConsumeSchoolRegistrationRequestV2Handler>();
         services.AddScoped<BeginSchoolProvisioningCommandHandler>();
         services.AddScoped<CompleteSchoolProvisioningHandler>();
+        services.AddScoped<RequestSchoolDatabaseMigrationHandler>();
+        services.AddScoped<CompleteSchoolDatabaseMigrationHandler>();
         services.AddScoped<RegistryReadService>();
         services.AddScoped<SchoolDatabaseEndpointRegistry>();
         services.AddScoped<ISchoolDatabaseEndpointResolver, SchoolDatabaseEndpointResolver>();

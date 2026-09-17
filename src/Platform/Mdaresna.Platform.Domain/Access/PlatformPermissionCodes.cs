@@ -5,6 +5,7 @@ public static class PlatformPermissionCodes
     public static readonly PermissionCode SchoolsRead = PermissionCode.Create("platform.schools.read");
     public static readonly PermissionCode SchoolsManage = PermissionCode.Create("platform.schools.manage");
     public static readonly PermissionCode SchoolsActivate = PermissionCode.Create("platform.schools.activate");
+    public static readonly PermissionCode SchoolMigrationsExecute = PermissionCode.Create("platform.schools.migrations.execute");
     public static readonly PermissionCode AccessManage = PermissionCode.Create("platform.access.manage");
     public static readonly PermissionCode BillingRead = PermissionCode.Create("platform.billing.read");
     public static readonly PermissionCode BillingManage = PermissionCode.Create("platform.billing.manage");
@@ -18,6 +19,7 @@ public static class PlatformPermissionCodes
         SchoolsRead,
         SchoolsManage,
         SchoolsActivate,
+        SchoolMigrationsExecute,
         AccessManage,
         BillingRead,
         BillingManage,

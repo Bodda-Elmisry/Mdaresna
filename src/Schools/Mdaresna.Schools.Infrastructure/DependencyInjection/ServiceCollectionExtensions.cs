@@ -24,10 +24,13 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(configuration);
         services.AddScoped<ISchoolRegistrationRequestPublisher, RabbitMqSchoolRegistrationRequestPublisher>();
         services.AddHostedService<SchoolProvisioningConsumerService>();
+        services.AddHostedService<SchoolDatabaseMigrationConsumerService>();
         services.AddScoped<SubmitSchoolRegistrationRequestHandler>();
         services.AddHttpClient<ISchoolLoginTenantResolver, PlatformSchoolLoginTenantResolver>();
         services.AddScoped<ISchoolLoginService, SchoolLocalLoginService>();
         services.AddScoped<ISchoolDbContextFactory, SchoolDbContextFactory>();
+        services.AddHttpClient<ISchoolOwnerActivationCodeSender, PlatformSchoolOwnerActivationCodeSender>();
+        services.AddHttpClient<ISchoolUserIdentityGateway, PlatformSchoolUserIdentityGateway>();
         services.AddScoped<ISchoolIdentityBootstrapper, SchoolIdentityBootstrapper>();
         services.AddScoped<SchoolOwnerActivationService>();
         services.AddScoped<IPasswordHasher<LocalUserAccount>, PasswordHasher<LocalUserAccount>>();

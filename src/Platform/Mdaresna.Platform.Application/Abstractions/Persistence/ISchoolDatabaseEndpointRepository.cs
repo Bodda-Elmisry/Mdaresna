@@ -23,6 +23,9 @@ public interface ISchoolDatabaseEndpointRepository
         SchoolDatabasePurpose purpose,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<SchoolDatabaseEndpoint>> ListActivePrimaryOperationalAsync(
+        CancellationToken cancellationToken = default);
+
     Task<bool> TargetExistsAsync(
         SchoolId schoolId,
         string host,

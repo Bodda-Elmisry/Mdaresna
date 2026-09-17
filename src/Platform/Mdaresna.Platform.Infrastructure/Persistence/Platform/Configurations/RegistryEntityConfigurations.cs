@@ -167,6 +167,9 @@ internal sealed class SchoolDatabaseEndpointConfiguration :
             table.HasCheckConstraint(
                 "ck_registry_school_database_endpoints_version",
                 "[Version] >= 0");
+            table.HasCheckConstraint(
+                "ck_registry_school_database_endpoints_migration_status",
+                "[MigrationStatus] IN (N'NeverRun', N'Pending', N'Succeeded', N'Failed')");
         });
 
         builder.HasKey(x => x.Id);
@@ -185,6 +188,12 @@ internal sealed class SchoolDatabaseEndpointConfiguration :
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(x => x.Region).HasMaxLength(100);
         builder.Property(x => x.SchemaVersion).HasMaxLength(64);
+        builder.Property(x => x.MigrationStatus).HasConversion<string>().HasMaxLength(32).IsRequired()
+            .HasDefaultValue(SchoolDatabaseMigrationStatus.NeverRun);
+        builder.Property(x => x.LastMigrationOperationId);
+        builder.Property(x => x.LastMigrationRequestedAtUtc).HasPrecision(3);
+        builder.Property(x => x.LastMigrationCompletedAtUtc).HasPrecision(3);
+        builder.Property(x => x.LastMigrationError).HasMaxLength(2000);
         builder.Property(x => x.CreatedAtUtc).HasPrecision(3);
         builder.Property(x => x.UpdatedAtUtc).HasPrecision(3);
         builder.Property(x => x.Version).IsConcurrencyToken();
@@ -202,6 +211,7 @@ internal sealed class SchoolDatabaseEndpointConfiguration :
             .IsUnique()
             .HasFilter("[IsPrimary] = 1");
         builder.HasIndex(x => new { x.SchoolId, x.Purpose, x.Status });
+        builder.HasIndex(x => new { x.MigrationStatus, x.LastMigrationRequestedAtUtc });
     }
 }
 

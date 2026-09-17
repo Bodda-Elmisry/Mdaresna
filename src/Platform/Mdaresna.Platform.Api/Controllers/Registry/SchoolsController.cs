@@ -8,6 +8,7 @@ using Mdaresna.Platform.Application.Registry.BeginSchoolProvisioning;
 using Mdaresna.Platform.Application.Registry.Lifecycle;
 using Mdaresna.Platform.Application.Registry.Read;
 using Mdaresna.Platform.Application.Registry.RegisterSchool;
+using Mdaresna.Platform.Application.Registry.DatabaseMigrations;
 using Mdaresna.Platform.Domain.Registry;
 using Mdaresna.Platform.Infrastructure.Persistence.Identity;
 using Mdaresna.Tenancy.Abstractions.Identifiers;
@@ -24,6 +25,7 @@ public sealed class SchoolsController(
     RegisterSchoolCommandHandler registerSchool,
     TransitionSchoolCommandHandler transitionSchool,
     BeginSchoolProvisioningCommandHandler beginProvisioning,
+    RequestSchoolDatabaseMigrationHandler databaseMigrations,
     IdentityDbContext identityDb,
     IConfiguration configuration) : ControllerBase
 {
@@ -265,6 +267,39 @@ public sealed class SchoolsController(
                     ? "Provisioning request accepted."
                     : "Provisioning operation was already recorded.",
                 ApiResponseWriter.GetCorrelationId(HttpContext)));
+    }
+
+    [HttpPost("schools/{schoolId:guid}/database-migrations")]
+    [PlatformPermission("platform.schools.migrations.execute")]
+    public async Task<IActionResult> MigrateDatabase(
+        Guid schoolId,
+        CancellationToken cancellationToken)
+    {
+        RegistryRequestContext.RequireId(schoolId, nameof(schoolId));
+        var result = await databaseMigrations.HandleAsync(
+            new RequestSchoolDatabaseMigrationCommand(
+                SchoolId.From(schoolId),
+                RegistryRequestContext.Actor(HttpContext),
+                RegistryRequestContext.CorrelationId(HttpContext),
+                RegistryRequestContext.TraceParent), cancellationToken);
+        return Accepted(ApiResponse<SchoolDatabaseMigrationRequestResult>.Success(
+            result, StatusCodes.Status202Accepted, "Database migration was queued.",
+            ApiResponseWriter.GetCorrelationId(HttpContext)));
+    }
+
+    [HttpPost("schools/database-migrations")]
+    [PlatformPermission("platform.schools.migrations.execute")]
+    public async Task<IActionResult> MigrateAllDatabases(CancellationToken cancellationToken)
+    {
+        var results = await databaseMigrations.HandleAllAsync(
+            RegistryRequestContext.Actor(HttpContext),
+            RegistryRequestContext.CorrelationId(HttpContext),
+            RegistryRequestContext.TraceParent,
+            cancellationToken);
+        return Accepted(ApiResponse<IReadOnlyList<SchoolDatabaseMigrationRequestResult>>.Success(
+            results, StatusCodes.Status202Accepted,
+            $"Queued {results.Count} school database migration(s).",
+            ApiResponseWriter.GetCorrelationId(HttpContext)));
     }
 
     private async Task<IActionResult> ListCore(

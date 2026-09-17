@@ -13,6 +13,7 @@ public class SchoolsDbContext(DbContextOptions options) : DbContext(options)
 {
     public DbSet<Person> Persons => Set<Person>();
     public DbSet<PersonContact> PersonContacts => Set<PersonContact>();
+    public DbSet<PersonProfileImage> PersonProfileImages => Set<PersonProfileImage>();
     public DbSet<LocalUserAccount> LocalUsers => Set<LocalUserAccount>();
     public DbSet<LocalUserCredential> LocalUserCredentials => Set<LocalUserCredential>();
     public DbSet<LocalUserActivationChallenge> LocalUserActivationChallenges => Set<LocalUserActivationChallenge>();

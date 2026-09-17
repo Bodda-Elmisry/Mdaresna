@@ -188,6 +188,15 @@ internal sealed class FakeSchoolDatabaseEndpointRepository(
             item.SchoolId == schoolId && item.Purpose == purpose && item.IsPrimary));
     }
 
+    public Task<IReadOnlyList<SchoolDatabaseEndpoint>> ListActivePrimaryOperationalAsync(
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult<IReadOnlyList<SchoolDatabaseEndpoint>>(Items.Where(item =>
+            item.Purpose == SchoolDatabasePurpose.Operational && item.IsPrimary &&
+            item.Status == SchoolDatabaseEndpointStatus.Active).ToArray());
+    }
+
     public Task<bool> TargetExistsAsync(
         SchoolId schoolId,
         string host,

@@ -18,6 +18,11 @@ public sealed record SchoolDatabaseEndpointReadModel(
     SchoolDatabaseEndpointStatus Status,
     string? Region,
     string? SchemaVersion,
+    SchoolDatabaseMigrationStatus MigrationStatus,
+    Guid? LastMigrationOperationId,
+    DateTimeOffset? LastMigrationRequestedAtUtc,
+    DateTimeOffset? LastMigrationCompletedAtUtc,
+    string? LastMigrationError,
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset UpdatedAtUtc,
     long Version);
@@ -105,6 +110,11 @@ internal static class SchoolDatabaseEndpointMapping
             endpoint.Status,
             endpoint.Region,
             endpoint.SchemaVersion,
+            endpoint.MigrationStatus,
+            endpoint.LastMigrationOperationId,
+            endpoint.LastMigrationRequestedAtUtc,
+            endpoint.LastMigrationCompletedAtUtc,
+            endpoint.LastMigrationError,
             endpoint.CreatedAtUtc,
             endpoint.UpdatedAtUtc,
             endpoint.Version);

@@ -1,0 +1,81 @@
+# الحالة الحالية للمشروع
+
+آخر تحديث: 2026-09-18
+
+## التطبيقات
+
+- `Mdaresna`: Backend ويحتوي Platform API وPlatform Worker وSchools API والعقود المشتركة.
+- `Mdaresna_Platform_Web`: تطبيق إدارة المنصة باستخدام React.
+- `Mdaresna_Platform`: تطبيق إدارة المنصة باستخدام Flutter.
+- `Mdaresna_Schools_Web`: تطبيق المدارس باستخدام React.
+- `Mdaresna_Schools`: تطبيق المدارس باستخدام Flutter.
+
+## تعدد المدارس وقواعد البيانات
+
+- كل مدرسة تمثل Tenant ولها قاعدة بيانات تشغيلية مستقلة حاليًا.
+- Platform هو Control Plane ويحتفظ ببيانات المدرسة وموقع قاعدة بياناتها داخل `registry.school_database_endpoints`.
+- لا تُخزن بيانات الاعتماد داخل السجل؛ يستخدم `CredentialSecretReference` للإشارة إلى مصدر أسرار خارجي.
+- PostgreSQL هو المزود الافتراضي الحالي لقواعد المدارس.
+- إنشاء مدرسة جديدة يشغل أحدث Schools migrations أثناء provisioning قبل تفعيل المدرسة.
+- تحديث قواعد المدارس الموجودة يتم مركزيًا من Platform فقط، وليس أثناء تسجيل الدخول أو مع كل Request.
+
+## دورة إنشاء المدرسة
+
+1. المستخدم يرسل طلب إنشاء مدرسة من Schools Web أو Flutter.
+2. Schools ينشر event إلى RabbitMQ.
+3. Platform يستهلك الطلب، يتحقق من حساب المالك أو ينشئه، ويسجل المدرسة بحالة انتظار المراجعة.
+4. مسؤول Platform يقبل المدرسة ويختار نوع الوحدة.
+5. Platform ينشر أمر provisioning.
+6. Schools API consumer ينشئ قاعدة PostgreSQL، يشغل migrations، يضيف معلومات المدرسة، وينشئ المستخدم المحلي للمالك بحالة انتظار التفعيل.
+7. Schools يعيد نتيجة provisioning؛ Platform يسجل database endpoint ويفعّل المدرسة.
+8. المالك يستلم رسالة باسم الدخول الكامل فقط، بدون OTP.
+
+## هوية مستخدم المدرسة
+
+- `Person`: الشخص داخل نطاق المدرسة، وقد يكون طالبًا أو مستخدمًا.
+- `LocalUser`: شخص يستطيع تسجيل الدخول إلى تطبيق المدرسة مثل المالك أو المدير أو الموظف أو المدرس.
+- بيانات الدخول محلية داخل قاعدة المدرسة وليست Platform credentials.
+- صيغة الدخول: `username@schoolCode` مع كلمة مرور المدرسة المحلية.
+- التفعيل لأول مرة: يطلب المستخدم OTP بعد إدخال اسم الدخول، ثم يرسل OTP وكلمة المرور الجديدة.
+- OTP لا يُنشأ ولا يُرسل أثناء provisioning.
+- دور `School Admin` والصلاحيات المحلية والأدوار وعلاقات المستخدمين موجودة على مستوى قاعدة المدرسة.
+- Schools Web يحتفظ بجلسة تسجيل الدخول ويستخدم access token لقراءة بيانات المدرسة المحلية.
+- `GET /api/schools/v1/school-profile` يعيد بيانات `SchoolInformation` للمدرسة المحددة من claim كود المدرسة.
+- لوحة Schools Web تعرض اسم المدرسة الفعلي، وصفحة بيانات المدرسة تعرض بياناتها بدل النص التجريبي.
+- قائمتا الحساب والإشعارات في Schools Web تتبعان نفس نمط Platform Web؛ الحساب يحتوي هوية المستخدم والأدوار واللغة وتسجيل الخروج، والإشعارات تعرض empty state لحين إضافة School Notifications API.
+- إعدادات Schools Web مقسمة إلى بيانات شخصية وأدوار؛ الملف الشخصي وتخزين الصورة محليان داخل قاعدة المدرسة، وإدارة الأدوار محكومة بصلاحيتي `school.roles.view` و`school.roles.manage`.
+- البيانات الشخصية في Schools Web تجلب الهاتف الرئيسي مباشرة من Identity عبر Platform internal API، وتدمجه مع الهاتف والبريد والعنوان الإضافيين المخزنين في `school.person_contacts`؛ الهاتف الرئيسي يظهر للقراءة فقط ولا تستخدم الجهات الإضافية لتسجيل الدخول.
+- إعدادات Schools Web تحتوي تبويبي المدرسين والموظفين بقوائم paginated وعمليات الإضافة والتعديل والتفعيل/الإيقاف والحذف وفق صلاحيتي `school.users.view` و`school.users.manage`.
+- جدولا المدرسين والموظفين يتبعان نمط Data Grid الخاص بـPlatform: صورة وهوية المستخدم، role chips، حالات وإجراءات، اختيار حجم الصفحة، نطاق النتائج، وتنقل أول/سابق/تالي/أخير.
+- تصفية المستخدمين تتم Server-side بالبحث في الاسم أو اسم المستخدم أو الهاتف، وبالحالة والدور، وتدخل في إجمالي النتائج والـpagination.
+- الحساب الحالي لا يمكن تعديله أو تعطيله أو حذفه من شاشة إدارة المستخدمين؛ تعديلات بياناته الشخصية تتم من تبويب البيانات الشخصية.
+- يجب أن يوجد دائمًا موظف `Employee` فعال واحد على الأقل يحمل دور `School Admin`؛ تمنع الـAPI إزالة دوره أو تحويله إلى مدرس أو تعطيله أو حذفه إن كان الأخير.
+- إنشاء مدرس أو موظف يبدأ بحل رقم الهاتف الرئيسي داخل Identity المركزية؛ إن لم يوجد الحساب يُنشأ، ثم يُنشأ `Person` و`LocalUser` داخل قاعدة المدرسة بحالة `PendingActivation` وتُرسل رسالة باسم الدخول الكامل `username@schoolCode`.
+- مسار OTP وتعيين كلمة المرور لأول مرة متاح لكل مستخدم مدرسة في حالة انتظار التفعيل، وليس مقصورًا على مالك المدرسة؛ وبعد نجاحه يؤكد Schools للـPlatform أن الهاتف الرئيسي تم التحقق منه لتفعيل Identity account المعلق.
+- صور مستخدمي المدرسة محفوظة في `school.person_profile_images` ومقيدة بصيغ JPEG/PNG/WebP وحجم 2 MB.
+- المستخدم الذي لديه صورة يعرضها جدول المستخدمين عبر endpoint محمي بصلاحية `school.users.view`، مع fallback لأيقونة المستخدم.
+
+## تحديث قواعد بيانات المدارس
+
+- الصلاحية: `platform.schools.migrations.execute`.
+- يوجد Action لمدرسة واحدة وAction لكل المدارس الفعالة في Platform Web وPlatform Flutter.
+- Platform API يسجل العملية كـ`Pending` ويكتب الأمر في Outbox ثم يرجع HTTP 202.
+- Platform Worker ينشر الأمر إلى RabbitMQ.
+- Schools migration consumer يتحقق من tenant/database target ويشغل `Database.MigrateAsync()`.
+- النتيجة تعود إلى Platform Worker ويتم تحديث `MigrationStatus`, `SchemaVersion`, operation id، التواريخ، وآخر خطأ.
+- الحالات الحالية: `NeverRun`, `Pending`, `Succeeded`, `Failed`.
+- إذا كان RabbitMQ أو consumer متوقفًا تبقى الرسالة في Outbox/Queue وتُستكمل بعد عودة الخدمة.
+
+## الإشعارات
+
+- الإشعارات التي تحمل refresh signal تحدث حالة التطبيق فور وصولها في الواجهة الأمامية.
+- العداد يتجدد من listener الاستقبال بدل الاعتماد على فتح قائمة الإشعارات.
+- Web يطلب notification permission عند بدء التطبيق ويدعم browser notifications.
+- إشعار تفعيل مستخدم Platform الجديد يوجه إلى قائمة المستخدمين ولا يجبر التطبيق على refresh كامل.
+
+## إعدادات النشر الحساسة
+
+- لا تستخدم `dotnet user-secrets` داخل Docker أو بيئة الإنتاج.
+- الأسرار تُمرر كـenvironment variables أو من secret manager.
+- `PlatformSms__EncryptionKey` يجب أن تكون القيمة نفسها في Platform API وPlatform Worker.
+- إعدادات PostgreSQL وRabbitMQ وFirebase وSMS وInternal API key يجب إدراجها في خطة النشر بدون تسجيل قيمها في المستودع.

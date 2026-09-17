@@ -12,6 +12,7 @@ builder.Services.AddHostedService<PlatformWorkerService>();
 builder.Services.AddHostedService<SchoolRegistrationRequestConsumerService>();
 builder.Services.AddHostedService<PlatformOutboxPublisherService>();
 builder.Services.AddHostedService<SchoolProvisioningResultConsumerService>();
+builder.Services.AddHostedService<SchoolDatabaseMigrationResultConsumerService>();
 
 builder.Services
     .AddHealthChecks()

@@ -20,6 +20,22 @@ public sealed class SchoolAuthController(
     SchoolOwnerActivationService ownerActivation) : ControllerBase
 {
     [AllowAnonymous]
+    [HttpPost("owner-activation/start")]
+    public async Task<IActionResult> StartOwnerActivation(
+        [FromBody] StartSchoolOwnerActivationRequest request, CancellationToken cancellationToken)
+    {
+        var result = await ownerActivation.StartAsync(request.Login, cancellationToken);
+        return result == SchoolOwnerActivationStartResult.DeliveryFailed
+            ? StatusCode(StatusCodes.Status503ServiceUnavailable,
+                ApiResponse<object?>.Failure(503, "auth.activation_delivery_failed",
+                    "The activation code could not be delivered. Try again.",
+                    correlationId: HttpContext.TraceIdentifier))
+            : Accepted(ApiResponse<object?>.Success(null, statusCode: 202,
+                message: "If the account is eligible, an activation code will be sent.",
+                correlationId: HttpContext.TraceIdentifier));
+    }
+
+    [AllowAnonymous]
     [HttpPost("owner-activation/complete")]
     public async Task<IActionResult> CompleteOwnerActivation(
         [FromBody] CompleteSchoolOwnerActivationRequest request, CancellationToken cancellationToken)
@@ -105,6 +121,7 @@ public sealed class SchoolAuthController(
 }
 
 public sealed record SchoolLoginRequest([Required, MaxLength(140)] string Login, [Required, MaxLength(200)] string Password);
+public sealed record StartSchoolOwnerActivationRequest([Required, MaxLength(140)] string Login);
 public sealed record CompleteSchoolOwnerActivationRequest(
     [Required, MaxLength(140)] string Login,
     [Required, StringLength(8, MinimumLength = 8)] string Code,

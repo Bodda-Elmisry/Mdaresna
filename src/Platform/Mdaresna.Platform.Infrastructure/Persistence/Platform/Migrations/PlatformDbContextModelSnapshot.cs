@@ -571,6 +571,28 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Platform.Migrations
                     b.Property<bool>("IsPrimary")
                         .HasColumnType("bit");
 
+                    b.Property<DateTimeOffset?>("LastMigrationCompletedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("datetimeoffset(3)");
+
+                    b.Property<string>("LastMigrationError")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<Guid?>("LastMigrationOperationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("LastMigrationRequestedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("datetimeoffset(3)");
+
+                    b.Property<string>("MigrationStatus")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)")
+                        .HasDefaultValue("NeverRun");
+
                     b.Property<int>("Port")
                         .HasColumnType("int");
 
@@ -619,6 +641,8 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Platform.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("MigrationStatus", "LastMigrationRequestedAtUtc");
+
                     b.HasIndex("SchoolId", "Purpose", "IsPrimary")
                         .IsUnique()
                         .HasFilter("[IsPrimary] = 1");
@@ -630,6 +654,8 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Platform.Migrations
 
                     b.ToTable("school_database_endpoints", "registry", t =>
                         {
+                            t.HasCheckConstraint("ck_registry_school_database_endpoints_migration_status", "[MigrationStatus] IN (N'NeverRun', N'Pending', N'Succeeded', N'Failed')");
+
                             t.HasCheckConstraint("ck_registry_school_database_endpoints_port", "[Port] >= 1 AND [Port] <= 65535");
 
                             t.HasCheckConstraint("ck_registry_school_database_endpoints_provider", "[Provider] IN (N'PostgreSql', N'SqlServer')");
@@ -1425,6 +1451,10 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Platform.Migrations
                         new
                         {
                             Code = "platform.schools.activate"
+                        },
+                        new
+                        {
+                            Code = "platform.schools.migrations.execute"
                         },
                         new
                         {

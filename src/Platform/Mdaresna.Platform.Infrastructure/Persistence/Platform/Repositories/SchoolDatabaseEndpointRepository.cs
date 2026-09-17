@@ -46,6 +46,15 @@ internal sealed class SchoolDatabaseEndpointRepository(PlatformDbContext dbConte
                         endpoint.IsPrimary,
             cancellationToken);
 
+    public async Task<IReadOnlyList<SchoolDatabaseEndpoint>> ListActivePrimaryOperationalAsync(
+        CancellationToken cancellationToken = default) =>
+        await dbContext.SchoolDatabaseEndpoints
+            .Where(endpoint => endpoint.Purpose == SchoolDatabasePurpose.Operational &&
+                               endpoint.IsPrimary &&
+                               endpoint.Status == SchoolDatabaseEndpointStatus.Active)
+            .OrderBy(endpoint => endpoint.SchoolId)
+            .ToArrayAsync(cancellationToken);
+
     public Task<bool> TargetExistsAsync(
         SchoolId schoolId,
         string host,

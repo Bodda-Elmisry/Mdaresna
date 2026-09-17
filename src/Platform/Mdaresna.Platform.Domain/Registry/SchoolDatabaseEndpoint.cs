@@ -29,6 +29,15 @@ public enum SchoolDatabaseEndpointStatus
     Retired
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum SchoolDatabaseMigrationStatus
+{
+    NeverRun,
+    Pending,
+    Succeeded,
+    Failed
+}
+
 /// <summary>
 /// Platform control-plane metadata for locating a school's database.
 /// Credentials never belong in this aggregate; CredentialSecretReference points
@@ -50,6 +59,11 @@ public sealed class SchoolDatabaseEndpoint : AggregateRoot
         SchoolDatabaseEndpointStatus status,
         string? region,
         string? schemaVersion,
+        SchoolDatabaseMigrationStatus migrationStatus,
+        Guid? lastMigrationOperationId,
+        DateTimeOffset? lastMigrationRequestedAtUtc,
+        DateTimeOffset? lastMigrationCompletedAtUtc,
+        string? lastMigrationError,
         DateTimeOffset createdAtUtc,
         DateTimeOffset updatedAtUtc,
         long version)
@@ -67,6 +81,11 @@ public sealed class SchoolDatabaseEndpoint : AggregateRoot
         Status = status;
         Region = region;
         SchemaVersion = schemaVersion;
+        MigrationStatus = migrationStatus;
+        LastMigrationOperationId = lastMigrationOperationId;
+        LastMigrationRequestedAtUtc = lastMigrationRequestedAtUtc;
+        LastMigrationCompletedAtUtc = lastMigrationCompletedAtUtc;
+        LastMigrationError = lastMigrationError;
         CreatedAtUtc = createdAtUtc;
         UpdatedAtUtc = updatedAtUtc;
         RestoreVersion(version);
@@ -85,6 +104,11 @@ public sealed class SchoolDatabaseEndpoint : AggregateRoot
     public SchoolDatabaseEndpointStatus Status { get; private set; }
     public string? Region { get; private set; }
     public string? SchemaVersion { get; private set; }
+    public SchoolDatabaseMigrationStatus MigrationStatus { get; private set; }
+    public Guid? LastMigrationOperationId { get; private set; }
+    public DateTimeOffset? LastMigrationRequestedAtUtc { get; private set; }
+    public DateTimeOffset? LastMigrationCompletedAtUtc { get; private set; }
+    public string? LastMigrationError { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; }
     public DateTimeOffset UpdatedAtUtc { get; private set; }
 
@@ -122,6 +146,11 @@ public sealed class SchoolDatabaseEndpoint : AggregateRoot
             SchoolDatabaseEndpointStatus.Provisioning,
             DomainGuard.OptionalText(region, 100, nameof(region)),
             DomainGuard.OptionalText(schemaVersion, 64, nameof(schemaVersion)),
+            schemaVersion is null ? SchoolDatabaseMigrationStatus.NeverRun : SchoolDatabaseMigrationStatus.Succeeded,
+            schemaVersion is null ? null : id,
+            schemaVersion is null ? null : now,
+            schemaVersion is null ? null : now,
+            null,
             now,
             now,
             version: 0);
@@ -207,6 +236,51 @@ public sealed class SchoolDatabaseEndpoint : AggregateRoot
         return true;
     }
 
+    public bool QueueMigration(Guid operationId, DateTimeOffset occurredAtUtc)
+    {
+        EnsureNotRetired();
+        DomainGuard.NonEmptyGuid(operationId, nameof(operationId));
+        if (Status != SchoolDatabaseEndpointStatus.Active)
+            throw new PlatformDomainException("school_database_endpoint.not_active",
+                "Only an active school database endpoint can be migrated.");
+        if (MigrationStatus == SchoolDatabaseMigrationStatus.Pending)
+        {
+            if (LastMigrationOperationId == operationId) return false;
+            throw new PlatformDomainException("school_database_migration.in_progress",
+                "A database migration is already pending for this school.");
+        }
+
+        MigrationStatus = SchoolDatabaseMigrationStatus.Pending;
+        LastMigrationOperationId = operationId;
+        LastMigrationRequestedAtUtc = DomainGuard.UtcTimestamp(occurredAtUtc, nameof(occurredAtUtc));
+        LastMigrationCompletedAtUtc = null;
+        LastMigrationError = null;
+        Touch(occurredAtUtc);
+        return true;
+    }
+
+    public bool CompleteMigration(Guid operationId, bool succeeded, string? schemaVersion,
+        string? error, DateTimeOffset occurredAtUtc)
+    {
+        DomainGuard.NonEmptyGuid(operationId, nameof(operationId));
+        if (LastMigrationOperationId != operationId)
+            throw new PlatformDomainException("school_database_migration.operation_conflict",
+                "The migration result does not match the current operation.");
+        if (MigrationStatus != SchoolDatabaseMigrationStatus.Pending)
+            return false;
+
+        var completedAt = DomainGuard.UtcTimestamp(occurredAtUtc, nameof(occurredAtUtc));
+        MigrationStatus = succeeded
+            ? SchoolDatabaseMigrationStatus.Succeeded
+            : SchoolDatabaseMigrationStatus.Failed;
+        if (succeeded)
+            SchemaVersion = DomainGuard.OptionalText(schemaVersion, 64, nameof(schemaVersion));
+        LastMigrationError = succeeded ? null : DomainGuard.OptionalText(error, 2000, nameof(error));
+        LastMigrationCompletedAtUtc = completedAt;
+        Touch(completedAt);
+        return true;
+    }
+
     internal static SchoolDatabaseEndpoint Rehydrate(
         Guid id,
         SchoolId schoolId,
@@ -221,6 +295,11 @@ public sealed class SchoolDatabaseEndpoint : AggregateRoot
         SchoolDatabaseEndpointStatus status,
         string? region,
         string? schemaVersion,
+        SchoolDatabaseMigrationStatus migrationStatus,
+        Guid? lastMigrationOperationId,
+        DateTimeOffset? lastMigrationRequestedAtUtc,
+        DateTimeOffset? lastMigrationCompletedAtUtc,
+        string? lastMigrationError,
         DateTimeOffset createdAtUtc,
         DateTimeOffset updatedAtUtc,
         long version)
@@ -230,6 +309,7 @@ public sealed class SchoolDatabaseEndpoint : AggregateRoot
         EnsureEnum(purpose, nameof(purpose));
         EnsureEnum(provider, nameof(provider));
         EnsureEnum(status, nameof(status));
+        EnsureEnum(migrationStatus, nameof(migrationStatus));
         var created = DomainGuard.UtcTimestamp(createdAtUtc, nameof(createdAtUtc));
         var updated = DomainGuard.UtcTimestamp(updatedAtUtc, nameof(updatedAtUtc));
         if (updated < created)
@@ -256,6 +336,11 @@ public sealed class SchoolDatabaseEndpoint : AggregateRoot
             status,
             DomainGuard.OptionalText(region, 100, nameof(region)),
             DomainGuard.OptionalText(schemaVersion, 64, nameof(schemaVersion)),
+            migrationStatus,
+            lastMigrationOperationId,
+            lastMigrationRequestedAtUtc,
+            lastMigrationCompletedAtUtc,
+            DomainGuard.OptionalText(lastMigrationError, 2000, nameof(lastMigrationError)),
             created,
             updated,
             version);

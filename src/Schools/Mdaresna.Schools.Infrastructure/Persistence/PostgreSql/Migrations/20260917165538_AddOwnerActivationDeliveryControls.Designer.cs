@@ -3,6 +3,7 @@ using System;
 using Mdaresna.Schools.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
 {
     [DbContext(typeof(PostgreSqlSchoolsDbContext))]
-    partial class PostgreSqlSchoolsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260917165538_AddOwnerActivationDeliveryControls")]
+    partial class AddOwnerActivationDeliveryControls
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -278,11 +281,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Kind")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
 
                     b.Property<DateTimeOffset?>("LastLoginAtUtc")
                         .HasColumnType("timestamp with time zone");
@@ -561,28 +559,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.ToTable("person_contacts", "school");
                 });
 
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Identity.PersonProfileImage", b =>
-                {
-                    b.Property<Guid>("PersonId")
-                        .HasColumnType("uuid");
-
-                    b.Property<byte[]>("Content")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("PersonId");
-
-                    b.ToTable("person_profile_images", "school");
-                });
-
             modelBuilder.Entity("Mdaresna.Schools.Domain.School.SchoolInformation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -781,17 +757,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.Navigation("Person");
                 });
 
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Identity.PersonProfileImage", b =>
-                {
-                    b.HasOne("Mdaresna.Schools.Domain.Identity.Person", "Person")
-                        .WithOne("ProfileImage")
-                        .HasForeignKey("Mdaresna.Schools.Domain.Identity.PersonProfileImage", "PersonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Person");
-                });
-
             modelBuilder.Entity("Mdaresna.Schools.Domain.Identity.LocalPermission", b =>
                 {
                     b.Navigation("Roles");
@@ -817,8 +782,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
             modelBuilder.Entity("Mdaresna.Schools.Domain.Identity.Person", b =>
                 {
                     b.Navigation("Contacts");
-
-                    b.Navigation("ProfileImage");
 
                     b.Navigation("UserAccount");
                 });

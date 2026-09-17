@@ -32,7 +32,7 @@ public sealed class CompleteSchoolProvisioningHandler(
             throw new PlatformResourceNotFoundException("school.not_found", "Provisioned school tenant does not match.");
         if (school.Status == SchoolLifecycleStatus.Active && school.ProvisioningOperationId == result.OperationId)
         {
-            await SendOwnerActivationAsync(school, result, cancellationToken);
+            await SendOwnerReadyAsync(school, result, cancellationToken);
             return;
         }
         if (school.Status != SchoolLifecycleStatus.Provisioning || school.ProvisioningOperationId != result.OperationId)
@@ -71,19 +71,18 @@ public sealed class CompleteSchoolProvisioningHandler(
             { result.OperationId, result.LocalSchoolId, endpoint.Id, endpoint.DatabaseName, endpoint.Provider })));
         await unitOfWork.SaveChangesAsync(cancellationToken);
         school.DequeueDomainEvents();
-        await SendOwnerActivationAsync(school, result, cancellationToken);
+        await SendOwnerReadyAsync(school, result, cancellationToken);
     }
 
-    private async Task SendOwnerActivationAsync(SchoolRegistration school, SchoolProvisionedV1 result,
+    private async Task SendOwnerReadyAsync(SchoolRegistration school, SchoolProvisionedV1 result,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(result.OwnerFullUserName) ||
-            string.IsNullOrWhiteSpace(result.OwnerActivationCode)) return;
+        if (string.IsNullOrWhiteSpace(result.OwnerFullUserName)) return;
         var phone = await accountContacts.GetPrimaryPhoneAsync(
             IdentityAccountId.From(school.RequestedByAccountId), cancellationToken)
             ?? throw new InvalidOperationException("The school owner primary phone was not found.");
         await smsSender.SendAsync(phone,
-            $"Mdaresna school is ready. Login: {result.OwnerFullUserName}. Activation code: {result.OwnerActivationCode}. Code expires in 24 hours.",
-            "school-owner-activation", (Guid)school.Id, cancellationToken);
+            $"تم الانتهاء من إنشاء مدرستك على مدارسنا. اسم الدخول: {result.OwnerFullUserName}. افتح تطبيق المدارس واطلب كود التفعيل لإنشاء كلمة المرور.",
+            "school-owner-ready", (Guid)school.Id, cancellationToken);
     }
 }

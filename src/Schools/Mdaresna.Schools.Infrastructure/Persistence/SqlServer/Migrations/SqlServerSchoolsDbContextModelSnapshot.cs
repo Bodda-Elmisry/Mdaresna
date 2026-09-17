@@ -280,6 +280,11 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
                     b.Property<DateTimeOffset?>("LastLoginAtUtc")
                         .HasColumnType("datetimeoffset");
 
@@ -350,6 +355,15 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
 
                     b.Property<int>("FailedAttempts")
                         .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("LastSentAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("SendCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("SendWindowStartUtc")
+                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("UserId");
 
@@ -546,6 +560,28 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                         .IsUnique();
 
                     b.ToTable("person_contacts", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Identity.PersonProfileImage", b =>
+                {
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("PersonId");
+
+                    b.ToTable("person_profile_images", "school");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.School.SchoolInformation", b =>
@@ -746,6 +782,17 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.Navigation("Person");
                 });
 
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Identity.PersonProfileImage", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.Person", "Person")
+                        .WithOne("ProfileImage")
+                        .HasForeignKey("Mdaresna.Schools.Domain.Identity.PersonProfileImage", "PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Person");
+                });
+
             modelBuilder.Entity("Mdaresna.Schools.Domain.Identity.LocalPermission", b =>
                 {
                     b.Navigation("Roles");
@@ -771,6 +818,8 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
             modelBuilder.Entity("Mdaresna.Schools.Domain.Identity.Person", b =>
                 {
                     b.Navigation("Contacts");
+
+                    b.Navigation("ProfileImage");
 
                     b.Navigation("UserAccount");
                 });

@@ -1,5 +1,6 @@
 using Mdaresna.Schools.Application.Identity;
 using Mdaresna.Schools.Domain.Identity;
+using Mdaresna.Schools.Contracts.Provisioning;
 
 namespace Mdaresna.Schools.UnitTests;
 
@@ -28,5 +29,13 @@ public sealed class SchoolIdentityTests
         Assert.Contains(SchoolIdentitySeed.Permissions, x => x.Code == "school.roles.manage");
         Assert.Equal(SchoolIdentitySeed.Permissions.Length,
             SchoolIdentitySeed.Permissions.Select(x => x.Code).Distinct(StringComparer.Ordinal).Count());
+    }
+
+    [Fact]
+    public void Provisioning_result_exposes_login_without_transporting_an_activation_code()
+    {
+        Assert.Equal((ushort)3, SchoolProvisionedV1.SchemaVersion);
+        Assert.NotNull(typeof(SchoolProvisionedV1).GetProperty(nameof(SchoolProvisionedV1.OwnerFullUserName)));
+        Assert.Null(typeof(SchoolProvisionedV1).GetProperty("OwnerActivationCode"));
     }
 }

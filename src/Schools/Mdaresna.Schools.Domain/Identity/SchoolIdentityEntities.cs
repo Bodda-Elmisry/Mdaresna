@@ -3,6 +3,7 @@ namespace Mdaresna.Schools.Domain.Identity;
 public enum PersonStatus { Active = 1, Inactive = 2 }
 public enum PersonContactType { Phone = 1, Email = 2, Address = 3 }
 public enum LocalUserStatus { PendingActivation = 1, Active = 2, Locked = 3, Suspended = 4, Disabled = 5 }
+public enum SchoolUserKind { Employee = 1, Teacher = 2 }
 
 public sealed class Person
 {
@@ -19,6 +20,16 @@ public sealed class Person
     public byte[] RowVersion { get; set; } = [];
     public ICollection<PersonContact> Contacts { get; set; } = [];
     public LocalUserAccount? UserAccount { get; set; }
+    public PersonProfileImage? ProfileImage { get; set; }
+}
+
+public sealed class PersonProfileImage
+{
+    public Guid PersonId { get; set; }
+    public byte[] Content { get; set; } = [];
+    public string ContentType { get; set; } = string.Empty;
+    public DateTimeOffset UpdatedAtUtc { get; set; }
+    public Person Person { get; set; } = null!;
 }
 
 public sealed class PersonContact
@@ -42,6 +53,7 @@ public sealed class LocalUserAccount
     public Guid? PlatformAccountId { get; set; }
     public string UserName { get; set; } = string.Empty;
     public string NormalizedUserName { get; set; } = string.Empty;
+    public SchoolUserKind Kind { get; set; } = SchoolUserKind.Employee;
     public LocalUserStatus Status { get; set; } = LocalUserStatus.PendingActivation;
     public long PermissionsVersion { get; set; } = 1;
     public DateTimeOffset? LastLoginAtUtc { get; set; }
@@ -75,6 +87,9 @@ public sealed class LocalUserActivationChallenge
     public DateTimeOffset ExpiresAtUtc { get; set; }
     public DateTimeOffset? ConsumedAtUtc { get; set; }
     public int FailedAttempts { get; set; }
+    public DateTimeOffset? LastSentAtUtc { get; set; }
+    public DateTimeOffset? SendWindowStartUtc { get; set; }
+    public int SendCount { get; set; }
     public LocalUserAccount User { get; set; } = null!;
 }
 

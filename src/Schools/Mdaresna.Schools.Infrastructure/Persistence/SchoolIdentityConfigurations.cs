@@ -51,6 +51,18 @@ internal sealed class PersonContactConfiguration : IEntityTypeConfiguration<Pers
     }
 }
 
+internal sealed class PersonProfileImageConfiguration : IEntityTypeConfiguration<PersonProfileImage>
+{
+    public void Configure(EntityTypeBuilder<PersonProfileImage> b)
+    {
+        b.ToTable("person_profile_images"); b.HasKey(x => x.PersonId);
+        b.Property(x => x.Content).IsRequired();
+        b.Property(x => x.ContentType).HasMaxLength(100).IsRequired();
+        b.HasOne(x => x.Person).WithOne(x => x.ProfileImage).HasForeignKey<PersonProfileImage>(x => x.PersonId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
 internal sealed class LocalUserConfiguration : IEntityTypeConfiguration<LocalUserAccount>
 {
     public void Configure(EntityTypeBuilder<LocalUserAccount> b)
@@ -58,6 +70,7 @@ internal sealed class LocalUserConfiguration : IEntityTypeConfiguration<LocalUse
         b.ToTable("local_users"); b.HasKey(x => x.Id);
         b.Property(x => x.UserName).HasMaxLength(100).IsRequired();
         b.Property(x => x.NormalizedUserName).HasMaxLength(100).IsRequired();
+        b.Property(x => x.Kind).HasConversion<string>().HasMaxLength(32);
         b.Property(x => x.Status).HasConversion<string>().HasMaxLength(32);
         b.HasIndex(x => x.NormalizedUserName).IsUnique(); b.HasIndex(x => x.PersonId).IsUnique();
         b.HasOne(x => x.Person).WithOne(x => x.UserAccount).HasForeignKey<LocalUserAccount>(x => x.PersonId).OnDelete(DeleteBehavior.Restrict);
