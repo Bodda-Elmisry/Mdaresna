@@ -1,7 +1,9 @@
 using Mdaresna.Platform.Application.Registry.BeginSchoolProvisioning;
+using ProvisionSchoolCommand = Mdaresna.Schools.Contracts.Provisioning.ProvisionSchoolV1;
 using Mdaresna.Platform.Contracts.Registry;
 using Mdaresna.Platform.Domain.Access;
 using Mdaresna.Platform.Domain.Registry;
+using Mdaresna.Platform.Domain.Billing.Units;
 using Mdaresna.Platform.UnitTests.TestDoubles;
 using Mdaresna.Tenancy.Abstractions.Identifiers;
 
@@ -23,6 +25,7 @@ public sealed class BeginSchoolProvisioningCommandHandlerTests
         var unitOfWork = new FakePlatformUnitOfWork();
         var handler = new BeginSchoolProvisioningCommandHandler(
             schools,
+            new FakeUnitTypeRepository(UnitType.Create(school.UnitTypeId!.Value, "BASE", "Base unit", 1m, "EGP", Now.AddDays(-1))),
             outbox,
             audit,
             unitOfWork,
@@ -47,7 +50,7 @@ public sealed class BeginSchoolProvisioningCommandHandlerTests
         Assert.Equal(1, unitOfWork.SaveCount);
         Assert.Empty(school.DomainEvents);
 
-        var envelope = outbox.Single<ProvisionSchoolV1>();
+        var envelope = outbox.Single<ProvisionSchoolCommand>();
         Assert.Equal(operationId, envelope.Data.OperationId);
         Assert.Equal(school.Id, envelope.Scope.SchoolId);
 
@@ -72,7 +75,7 @@ public sealed class BeginSchoolProvisioningCommandHandlerTests
             actorId,
             Now.AddMinutes(-3));
         school.SubmitForVerification(actorId, Now.AddMinutes(-2));
-        school.Approve(actorId, Now.AddMinutes(-1));
+        school.Approve(Guid.NewGuid(), actorId, Now.AddMinutes(-1));
         return school;
     }
 }

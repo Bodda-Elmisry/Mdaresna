@@ -4,6 +4,8 @@ using Mdaresna.Platform.Contracts.Registry;
 using Mdaresna.Platform.Domain.Access;
 using Mdaresna.Platform.Domain.Common;
 using Mdaresna.Platform.Domain.Registry;
+using Mdaresna.Platform.Domain.Billing.Units;
+using ProvisionSchoolCommand = Mdaresna.Schools.Contracts.Provisioning.ProvisionSchoolV1;
 using Mdaresna.Platform.UnitTests.TestDoubles;
 using Mdaresna.Tenancy.Abstractions.Identifiers;
 
@@ -12,6 +14,7 @@ namespace Mdaresna.Platform.UnitTests.Registry;
 public sealed class TransitionSchoolCommandHandlerTests
 {
     private static readonly DateTimeOffset Now = new(2026, 9, 13, 10, 0, 0, TimeSpan.Zero);
+    private static readonly Guid UnitTypeId = Guid.Parse("db6be4cf-0475-4bb9-83dc-f124160e91dd");
 
     [Fact]
     public async Task Submitting_and_approving_stage_lifecycle_event_and_audit_atomically()
@@ -27,18 +30,26 @@ public sealed class TransitionSchoolCommandHandlerTests
         var approved = await handler.HandleAsync(Command(school, actor, SchoolLifecycleAction.Approve));
 
         Assert.Equal(SchoolLifecycleStatus.PendingVerification, submitted.Status);
-        Assert.Equal(SchoolLifecycleStatus.Approved, approved.Status);
+        Assert.Equal(SchoolLifecycleStatus.Provisioning, approved.Status);
+        Assert.Equal(UnitTypeId, school.UnitTypeId);
+        Assert.Equal(approved.Version, school.Version);
+        Assert.Equal(approved.Status, school.Status);
+        Assert.NotNull(school.ProvisioningOperationId);
         Assert.Equal(school.Version, approved.Version);
         Assert.Equal(2, unitOfWork.SaveCount);
-        Assert.Equal(2, audit.Records.Count);
-        Assert.Equal(2, outbox.Messages.Count);
+        Assert.Equal(3, audit.Records.Count);
+        Assert.Equal(4, outbox.Messages.Count);
         Assert.Empty(school.DomainEvents);
         var lifecycleMessages = outbox.Messages
-            .Cast<Mdaresna.IntegrationContracts.Messaging.IntegrationMessageEnvelope<SchoolLifecycleChangedV1>>()
+            .OfType<Mdaresna.IntegrationContracts.Messaging.IntegrationMessageEnvelope<SchoolLifecycleChangedV1>>()
             .ToArray();
         Assert.Equal(audit.Records[0].Id, lifecycleMessages[0].MessageId);
         Assert.Equal(audit.Records[1].Id, lifecycleMessages[1].MessageId);
         Assert.Equal(SchoolLifecycleStatusV1.Approved, lifecycleMessages[1].Data.CurrentStatus);
+        Assert.Equal(SchoolLifecycleStatusV1.Provisioning, lifecycleMessages[2].Data.CurrentStatus);
+        var provision = Assert.Single(outbox.Messages
+            .OfType<Mdaresna.IntegrationContracts.Messaging.IntegrationMessageEnvelope<ProvisionSchoolCommand>>());
+        Assert.Equal(school.ProvisioningOperationId, provision.Data.OperationId);
     }
 
     [Fact]
@@ -117,6 +128,7 @@ public sealed class TransitionSchoolCommandHandlerTests
         FakeRegistryAuditWriter audit,
         FakePlatformUnitOfWork unitOfWork) => new(
             new FakeSchoolRegistrationRepository(school),
+            new FakeUnitTypeRepository(UnitType.Create(UnitTypeId, "BASE", "Base units", 1m, "EGP", Now.AddDays(-1))),
             outbox,
             audit,
             unitOfWork,
@@ -133,7 +145,8 @@ public sealed class TransitionSchoolCommandHandlerTests
             actor,
             school.Version,
             Guid.NewGuid(),
-            reason);
+            reason,
+            UnitTypeId: action == SchoolLifecycleAction.Approve ? UnitTypeId : null);
 
     private static SchoolRegistration CreateDraftSchool(Guid actorId)
     {
@@ -156,7 +169,7 @@ public sealed class TransitionSchoolCommandHandlerTests
     {
         var school = CreateDraftSchool(actorId);
         school.SubmitForVerification(actorId, Now.AddMinutes(-9));
-        school.Approve(actorId, Now.AddMinutes(-8));
+        school.Approve(UnitTypeId, actorId, Now.AddMinutes(-8));
         var operationId = Guid.NewGuid();
         school.BeginProvisioning(operationId, actorId, Now.AddMinutes(-7));
         school.Activate(operationId, actorId, Now.AddMinutes(-6));

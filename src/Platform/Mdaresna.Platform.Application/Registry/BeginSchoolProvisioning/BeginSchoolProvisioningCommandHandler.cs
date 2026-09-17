@@ -7,6 +7,8 @@ using Mdaresna.Platform.Domain.Registry.Events;
 using Mdaresna.Platform.Application.Registry.Lifecycle;
 using System.Text.Json;
 using Mdaresna.SharedKernel.Time;
+using ProvisionSchoolCommand = Mdaresna.Schools.Contracts.Provisioning.ProvisionSchoolV1;
+using Mdaresna.Platform.Application.Billing.Units;
 
 namespace Mdaresna.Platform.Application.Registry.BeginSchoolProvisioning;
 
@@ -15,18 +17,21 @@ public sealed class BeginSchoolProvisioningCommandHandler
     private const string Producer = "mdaresna-platform";
     private readonly ISchoolRegistrationRepository _schools;
     private readonly IPlatformOutboxWriter _outbox;
+    private readonly IUnitTypeRepository _unitTypes;
     private readonly IPlatformRegistryAuditWriter _audit;
     private readonly IPlatformUnitOfWork _unitOfWork;
     private readonly IClock _clock;
 
     public BeginSchoolProvisioningCommandHandler(
         ISchoolRegistrationRepository schools,
+        IUnitTypeRepository unitTypes,
         IPlatformOutboxWriter outbox,
         IPlatformRegistryAuditWriter audit,
         IPlatformUnitOfWork unitOfWork,
         IClock clock)
     {
         _schools = schools;
+        _unitTypes = unitTypes;
         _outbox = outbox;
         _audit = audit;
         _unitOfWork = unitOfWork;
@@ -64,6 +69,11 @@ public sealed class BeginSchoolProvisioningCommandHandler
         }
 
         var now = _clock.UtcNow;
+        var unitType = school.UnitTypeId is { } unitTypeId
+            ? await _unitTypes.FindByIdAsync(unitTypeId, cancellationToken)
+            : null;
+        if (unitType is null)
+            throw new PlatformConflictException("unit_type.not_found", "School unit type was not found.");
         var existingDomainEventCount = school.DomainEvents.Count;
         school.BeginProvisioning(
             command.OperationId,
@@ -74,17 +84,27 @@ public sealed class BeginSchoolProvisioningCommandHandler
             .OfType<SchoolLifecycleChangedDomainEvent>()
             .Single();
 
-        var integrationCommand = new ProvisionSchoolV1(
+        var integrationCommand = new ProvisionSchoolCommand(
             command.OperationId,
             school.TenantId,
             school.Id,
+            school.RegistrationRequestId,
             school.Code.Value,
             school.DisplayName,
-            school.SchoolType.ToContract(),
-            school.DeploymentMode.ToContract(),
+            school.SchoolType.ToString(),
+            school.DeploymentMode.ToString(),
+            school.Address,
+            school.PrimaryPhone,
+            unitType.Id,
+            unitType.Code,
+            unitType.DisplayName,
+            unitType.UnitPrice,
+            unitType.Currency,
+            school.RequestedByAccountId,
+            school.CreatedAtUtc,
             now);
 
-        _outbox.Enqueue(IntegrationMessageEnvelope<ProvisionSchoolV1>.Create(
+        _outbox.Enqueue(IntegrationMessageEnvelope<ProvisionSchoolCommand>.Create(
             now,
             Producer,
             IntegrationMessageScope.ForSchool(school.TenantId, school.Id),

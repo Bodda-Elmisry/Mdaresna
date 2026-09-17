@@ -67,6 +67,17 @@ public sealed class LocalUserCredential
     public LocalUserAccount User { get; set; } = null!;
 }
 
+public sealed class LocalUserActivationChallenge
+{
+    public Guid UserId { get; set; }
+    public byte[] CodeHash { get; set; } = [];
+    public byte[] CodeSalt { get; set; } = [];
+    public DateTimeOffset ExpiresAtUtc { get; set; }
+    public DateTimeOffset? ConsumedAtUtc { get; set; }
+    public int FailedAttempts { get; set; }
+    public LocalUserAccount User { get; set; } = null!;
+}
+
 public sealed class LocalUserSession
 {
     public Guid Id { get; set; }

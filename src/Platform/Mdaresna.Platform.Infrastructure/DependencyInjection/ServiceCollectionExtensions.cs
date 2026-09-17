@@ -8,6 +8,7 @@ using Mdaresna.Platform.Application.Registry.Lifecycle;
 using Mdaresna.Platform.Application.Registry.Read;
 using Mdaresna.Platform.Application.Registry.DatabaseEndpoints;
 using Mdaresna.Platform.Application.Registry.ConsumeSchoolRegistrationRequest;
+using Mdaresna.Platform.Application.Registry.CompleteSchoolProvisioning;
 using Mdaresna.Platform.Application.Billing;
 using Mdaresna.Platform.Application.Billing.SubmitSchoolPlatformPayment;
 using Mdaresna.Platform.Application.Billing.ReviewSchoolPlatformPayment;
@@ -83,6 +84,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPlatformPermissionEvaluator, PlatformPermissionEvaluator>();
         services.AddScoped<ISharedIdentityAccountLookup, SharedIdentityAccountLookup>();
         services.AddScoped<ISharedIdentityAccountProvisioner, SharedIdentityAccountProvisioner>();
+        services.AddScoped<ISharedIdentityAccountContactReader, SharedIdentityAccountContactReader>();
         services.TryAddScoped<IPasswordHasher<Account>, PasswordHasher<Account>>();
         services.TryAddScoped<PlatformPasswordCredentialFactory>();
         services.TryAddSingleton(_ => PlatformActivationOptions.FromConfiguration(configuration));
@@ -113,6 +115,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ConsumeSchoolRegistrationRequestHandler>();
         services.AddScoped<ConsumeSchoolRegistrationRequestV2Handler>();
         services.AddScoped<BeginSchoolProvisioningCommandHandler>();
+        services.AddScoped<CompleteSchoolProvisioningHandler>();
         services.AddScoped<RegistryReadService>();
         services.AddScoped<SchoolDatabaseEndpointRegistry>();
         services.AddScoped<ISchoolDatabaseEndpointResolver, SchoolDatabaseEndpointResolver>();

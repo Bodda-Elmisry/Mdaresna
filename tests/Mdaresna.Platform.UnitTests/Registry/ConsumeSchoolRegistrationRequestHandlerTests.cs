@@ -37,7 +37,7 @@ public sealed class ConsumeSchoolRegistrationRequestHandlerTests
             new RegisterSchoolCommandHandler(
                 tenants, schools, outbox, audit, unitOfWork, clock),
             new TransitionSchoolCommandHandler(
-                schools, outbox, audit, unitOfWork, clock));
+                schools, new FakeUnitTypeRepository(), outbox, audit, unitOfWork, clock));
         var envelope = RequestEvent(requesterId);
 
         await handler.HandleAsync(envelope);
@@ -83,7 +83,7 @@ public sealed class ConsumeSchoolRegistrationRequestHandlerTests
             new RegisterSchoolCommandHandler(
                 tenants, schools, outbox, audit, unitOfWork, clock),
             new TransitionSchoolCommandHandler(
-                schools, outbox, audit, unitOfWork, clock));
+                schools, new FakeUnitTypeRepository(), outbox, audit, unitOfWork, clock));
 
         await Assert.ThrowsAsync<ArgumentException>(() => handler.HandleAsync(invalid));
         Assert.Empty(schools.Items);

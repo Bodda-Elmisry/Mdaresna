@@ -5,6 +5,8 @@ using Mdaresna.Platform.Domain.Registry;
 using Mdaresna.Platform.Application.Registry.Lifecycle;
 using Mdaresna.SharedKernel.Time;
 using Mdaresna.Tenancy.Abstractions.Identifiers;
+using Mdaresna.Platform.Application.Billing.Units;
+using Mdaresna.Platform.Domain.Billing.Units;
 
 namespace Mdaresna.Platform.UnitTests.TestDoubles;
 
@@ -38,6 +40,21 @@ internal sealed class FakePlatformUnitOfWork(Exception? saveException = null) : 
         ArgumentNullException.ThrowIfNull(operation);
         await operation(cancellationToken);
     }
+}
+
+internal sealed class FakeUnitTypeRepository(params UnitType[] types) : IUnitTypeRepository
+{
+    public List<UnitType> Items { get; } = [.. types];
+    public bool HasUsage { get; set; }
+    public Task<UnitType?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+        Task.FromResult(Items.SingleOrDefault(x => x.Id == id));
+    public Task<UnitType?> FindByCodeAsync(string code, CancellationToken cancellationToken = default) =>
+        Task.FromResult(Items.SingleOrDefault(x => x.Code == code));
+    public Task AddAsync(UnitType item, CancellationToken cancellationToken = default) { Items.Add(item); return Task.CompletedTask; }
+    public Task<bool> HasUsageAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(HasUsage);
+    public void Remove(UnitType item) => Items.Remove(item);
+    public Task<UnitTypePage> ListAsync(UnitTypeListQuery query, CancellationToken cancellationToken = default) =>
+        Task.FromResult(new UnitTypePage([], Items.Count, query.PageNumber, query.PageSize));
 }
 
 internal sealed class FakeOutboxWriter : IPlatformOutboxWriter

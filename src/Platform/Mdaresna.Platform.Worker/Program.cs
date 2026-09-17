@@ -10,6 +10,8 @@ builder.Services.AddProblemDetails();
 builder.Services.AddSingleton<WorkerReadinessState>();
 builder.Services.AddHostedService<PlatformWorkerService>();
 builder.Services.AddHostedService<SchoolRegistrationRequestConsumerService>();
+builder.Services.AddHostedService<PlatformOutboxPublisherService>();
+builder.Services.AddHostedService<SchoolProvisioningResultConsumerService>();
 
 builder.Services
     .AddHealthChecks()

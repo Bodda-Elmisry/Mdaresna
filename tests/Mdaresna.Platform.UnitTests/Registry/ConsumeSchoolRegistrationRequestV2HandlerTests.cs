@@ -29,7 +29,7 @@ public sealed class ConsumeSchoolRegistrationRequestV2HandlerTests
             owner, schools,
             new CreateTenantCommandHandler(tenants, outbox, audit, unitOfWork, clock),
             new RegisterSchoolCommandHandler(tenants, schools, outbox, audit, unitOfWork, clock),
-            new TransitionSchoolCommandHandler(schools, outbox, audit, unitOfWork, clock));
+            new TransitionSchoolCommandHandler(schools, new FakeUnitTypeRepository(), outbox, audit, unitOfWork, clock));
         var tenantId = TenantId.New();
         var data = new SchoolRegistrationRequestedV2(Guid.NewGuid(), tenantId, "SCH-1",
             "مدرسة النور", RequestedSchoolTypeV2.Private, "القاهرة", "00201111111111",

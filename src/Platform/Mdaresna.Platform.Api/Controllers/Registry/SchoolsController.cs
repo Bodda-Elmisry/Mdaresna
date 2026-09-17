@@ -3,6 +3,7 @@ using Mdaresna.Api.Contracts;
 using Mdaresna.Platform.Api.Auth;
 using Mdaresna.Platform.Api.Errors;
 using Mdaresna.Platform.Application.Errors;
+using Mdaresna.Platform.Application.Billing.Units;
 using Mdaresna.Platform.Application.Registry.BeginSchoolProvisioning;
 using Mdaresna.Platform.Application.Registry.Lifecycle;
 using Mdaresna.Platform.Application.Registry.Read;
@@ -19,12 +20,30 @@ namespace Mdaresna.Platform.Api.Controllers.Registry;
 [Route("api/platform/v1")]
 public sealed class SchoolsController(
     RegistryReadService readService,
+    ListUnitTypesQueryHandler listUnitTypes,
     RegisterSchoolCommandHandler registerSchool,
     TransitionSchoolCommandHandler transitionSchool,
     BeginSchoolProvisioningCommandHandler beginProvisioning,
     IdentityDbContext identityDb,
     IConfiguration configuration) : ControllerBase
 {
+    [HttpGet("schools/unit-types")]
+    [PlatformPermission("platform.schools.read")]
+    public async Task<IActionResult> ListActiveUnitTypes(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 100,
+        CancellationToken cancellationToken = default)
+    {
+        if (pageNumber < 1 || pageSize is < 1 or > 200)
+            throw new ValidationException("Pagination is invalid.");
+
+        var page = await listUnitTypes.HandleAsync(
+            new UnitTypeListQuery(null, true, pageNumber, pageSize), cancellationToken);
+        return Ok(PagedApiResponse<UnitTypeReadModel>.Success(
+            page.Items, page.TotalCount, page.PageNumber, page.PageSize,
+            correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
+    }
+
     [HttpGet("schools")]
     [PlatformPermission("platform.schools.read")]
     public Task<IActionResult> List(
@@ -356,7 +375,10 @@ public sealed class SchoolsController(
         RegistryRequestContext.RequireId(tenantId, nameof(tenantId));
         RegistryRequestContext.RequireId(schoolId, nameof(schoolId));
         if (request.ExpectedVersion is null or < 0 ||
-            request.Reason?.Trim().Length > 1000)
+            request.Reason?.Trim().Length > 1000 ||
+            (action == SchoolLifecycleAction.Approve &&
+                (!request.UnitTypeId.HasValue || request.UnitTypeId.Value == Guid.Empty)) ||
+            (action != SchoolLifecycleAction.Approve && request.UnitTypeId is not null))
         {
             throw new ValidationException("Lifecycle request data is invalid.");
         }
@@ -381,7 +403,8 @@ public sealed class SchoolsController(
             request.ExpectedVersion.Value,
             RegistryRequestContext.CorrelationId(HttpContext),
             request.Reason,
-            TraceParent: RegistryRequestContext.TraceParent), cancellationToken);
+            TraceParent: RegistryRequestContext.TraceParent,
+            UnitTypeId: request.UnitTypeId), cancellationToken);
         return Ok(ApiResponse<TransitionSchoolResult>.Success(
             result,
             correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
@@ -395,6 +418,6 @@ public sealed record RegisterSchoolRequest(
     SchoolType SchoolType,
     DeploymentMode DeploymentMode);
 
-public sealed record TransitionSchoolRequest(long? ExpectedVersion, string? Reason = null);
+public sealed record TransitionSchoolRequest(long? ExpectedVersion, string? Reason = null, Guid? UnitTypeId = null);
 
 public sealed record BeginProvisioningRequest(Guid OperationId);

@@ -1,8 +1,30 @@
 using Mdaresna.Schools.Domain.Identity;
+using Mdaresna.Schools.Domain.School;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Mdaresna.Schools.Infrastructure.Persistence;
+
+internal sealed class SchoolInformationConfiguration : IEntityTypeConfiguration<SchoolInformation>
+{
+    public void Configure(EntityTypeBuilder<SchoolInformation> b)
+    {
+        b.ToTable("school_information"); b.HasKey(x => x.Id);
+        b.HasIndex(x => x.PlatformSchoolReferenceId).IsUnique();
+        b.HasIndex(x => x.PlatformTenantReferenceId).IsUnique();
+        b.HasIndex(x => x.Code).IsUnique();
+        b.Property(x => x.Code).HasMaxLength(32).IsRequired();
+        b.Property(x => x.DisplayName).HasMaxLength(200).IsRequired();
+        b.Property(x => x.SchoolType).HasMaxLength(32).IsRequired();
+        b.Property(x => x.DeploymentMode).HasMaxLength(32).IsRequired();
+        b.Property(x => x.Status).HasMaxLength(32).IsRequired();
+        b.Property(x => x.Address).HasMaxLength(500); b.Property(x => x.PrimaryPhone).HasMaxLength(32);
+        b.Property(x => x.UnitTypeCode).HasMaxLength(32).IsRequired();
+        b.Property(x => x.UnitTypeName).HasMaxLength(200).IsRequired();
+        b.Property(x => x.UnitPrice).HasPrecision(18, 4);
+        b.Property(x => x.Currency).HasMaxLength(3).IsRequired();
+    }
+}
 
 internal sealed class PersonConfiguration : IEntityTypeConfiguration<Person>
 {
@@ -13,7 +35,6 @@ internal sealed class PersonConfiguration : IEntityTypeConfiguration<Person>
         b.Property(x => x.FirstName).HasMaxLength(100); b.Property(x => x.MiddleName).HasMaxLength(100);
         b.Property(x => x.LastName).HasMaxLength(100); b.Property(x => x.GenderCode).HasMaxLength(20);
         b.Property(x => x.Status).HasConversion<string>().HasMaxLength(32);
-        b.Property(x => x.RowVersion).IsRowVersion();
     }
 }
 
@@ -38,7 +59,6 @@ internal sealed class LocalUserConfiguration : IEntityTypeConfiguration<LocalUse
         b.Property(x => x.UserName).HasMaxLength(100).IsRequired();
         b.Property(x => x.NormalizedUserName).HasMaxLength(100).IsRequired();
         b.Property(x => x.Status).HasConversion<string>().HasMaxLength(32);
-        b.Property(x => x.RowVersion).IsRowVersion();
         b.HasIndex(x => x.NormalizedUserName).IsUnique(); b.HasIndex(x => x.PersonId).IsUnique();
         b.HasOne(x => x.Person).WithOne(x => x.UserAccount).HasForeignKey<LocalUserAccount>(x => x.PersonId).OnDelete(DeleteBehavior.Restrict);
     }
@@ -50,8 +70,20 @@ internal sealed class LocalUserCredentialConfiguration : IEntityTypeConfiguratio
     {
         b.ToTable("local_user_credentials"); b.HasKey(x => x.UserId);
         b.Property(x => x.PasswordHash).HasMaxLength(1000).IsRequired();
-        b.Property(x => x.SecurityStamp).HasMaxLength(100).IsRequired(); b.Property(x => x.RowVersion).IsRowVersion();
+        b.Property(x => x.SecurityStamp).HasMaxLength(100).IsRequired();
         b.HasOne(x => x.User).WithOne(x => x.Credential).HasForeignKey<LocalUserCredential>(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+internal sealed class LocalUserActivationChallengeConfiguration : IEntityTypeConfiguration<LocalUserActivationChallenge>
+{
+    public void Configure(EntityTypeBuilder<LocalUserActivationChallenge> b)
+    {
+        b.ToTable("local_user_activation_challenges"); b.HasKey(x => x.UserId);
+        b.Property(x => x.CodeHash).HasMaxLength(32).IsRequired();
+        b.Property(x => x.CodeSalt).HasMaxLength(32).IsRequired();
+        b.HasOne(x => x.User).WithOne().HasForeignKey<LocalUserActivationChallenge>(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
 
@@ -73,7 +105,6 @@ internal sealed class LocalRoleConfiguration : IEntityTypeConfiguration<LocalRol
         b.ToTable("local_roles"); b.HasKey(x => x.Id);
         b.Property(x => x.Code).HasMaxLength(100).IsRequired(); b.HasIndex(x => x.Code).IsUnique();
         b.Property(x => x.DisplayNameAr).HasMaxLength(150).IsRequired(); b.Property(x => x.DisplayNameEn).HasMaxLength(150).IsRequired();
-        b.Property(x => x.RowVersion).IsRowVersion();
         b.HasData(new { Id = SchoolIdentitySeed.SchoolAdminRoleId, Code = SchoolIdentitySeed.SchoolAdminRoleCode,
             DisplayNameAr = "مدير المدرسة", DisplayNameEn = "School Admin", IsSystem = true, IsActive = true,
             CreatedAtUtc = SchoolIdentitySeed.SeededAtUtc, UpdatedAtUtc = SchoolIdentitySeed.SeededAtUtc, RowVersion = Array.Empty<byte>() });

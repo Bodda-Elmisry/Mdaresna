@@ -16,8 +16,22 @@ namespace Mdaresna.Schools.Api.Controllers;
 public sealed class SchoolAuthController(
     ISchoolLoginService loginService,
     ISchoolAccessTokenIssuer tokenIssuer,
-    ISchoolDbContextFactory dbFactory) : ControllerBase
+    ISchoolDbContextFactory dbFactory,
+    SchoolOwnerActivationService ownerActivation) : ControllerBase
 {
+    [AllowAnonymous]
+    [HttpPost("owner-activation/complete")]
+    public async Task<IActionResult> CompleteOwnerActivation(
+        [FromBody] CompleteSchoolOwnerActivationRequest request, CancellationToken cancellationToken)
+    {
+        var completed = await ownerActivation.CompleteAsync(
+            request.Login, request.Code, request.Password, cancellationToken);
+        return completed
+            ? NoContent()
+            : BadRequest(ApiResponse<object?>.Failure(400, "auth.activation_invalid",
+                "Activation data is invalid or expired.", correlationId: HttpContext.TraceIdentifier));
+    }
+
     [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] SchoolLoginRequest request, CancellationToken cancellationToken)
@@ -91,6 +105,10 @@ public sealed class SchoolAuthController(
 }
 
 public sealed record SchoolLoginRequest([Required, MaxLength(140)] string Login, [Required, MaxLength(200)] string Password);
+public sealed record CompleteSchoolOwnerActivationRequest(
+    [Required, MaxLength(140)] string Login,
+    [Required, StringLength(8, MinimumLength = 8)] string Code,
+    [Required, MinLength(12), MaxLength(1024)] string Password);
 public sealed record SchoolLoginResponse(
     string AccessToken, string RefreshToken, int ExpiresInSeconds, DateTimeOffset ExpiresAtUtc,
     Guid UserId, Guid PersonId, Guid TenantId, Guid SchoolId, string SchoolCode,

@@ -186,7 +186,10 @@ public sealed class SchoolRegistration : AggregateRoot
             provisioningOperationId: null,
             SchoolLifecycleStatus.Draft);
 
-    public void Approve(Guid changedByAccountId, DateTimeOffset occurredAtUtc) =>
+    public void Approve(Guid unitTypeId, Guid changedByAccountId, DateTimeOffset occurredAtUtc)
+    {
+        DomainGuard.NonEmptyGuid(unitTypeId, nameof(unitTypeId));
+        UnitTypeId = unitTypeId;
         TransitionTo(
             SchoolLifecycleStatus.Approved,
             changedByAccountId,
@@ -194,6 +197,7 @@ public sealed class SchoolRegistration : AggregateRoot
             reason: null,
             provisioningOperationId: null,
             SchoolLifecycleStatus.PendingVerification);
+    }
 
     public void BeginProvisioning(
         Guid operationId,

@@ -327,6 +327,35 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.ToTable("local_users", "school");
                 });
 
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Identity.LocalUserActivationChallenge", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("varbinary(32)");
+
+                    b.Property<byte[]>("CodeSalt")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("varbinary(32)");
+
+                    b.Property<DateTimeOffset?>("ConsumedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("ExpiresAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("FailedAttempts")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("local_user_activation_challenges", "school");
+                });
+
             modelBuilder.Entity("Mdaresna.Schools.Domain.Identity.LocalUserCredential", b =>
                 {
                     b.Property<Guid>("UserId")
@@ -519,6 +548,111 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.ToTable("person_contacts", "school");
                 });
 
+            modelBuilder.Entity("Mdaresna.Schools.Domain.School.SchoolInformation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("ActivatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<string>("DeploymentMode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("OwnerPlatformAccountReferenceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("PlatformCreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("PlatformRegistrationRequestReferenceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PlatformSchoolReferenceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PlatformTenantReferenceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PlatformUnitTypeReferenceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PrimaryPhone")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("SchoolType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<string>("UnitTypeCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("UnitTypeName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("PlatformSchoolReferenceId")
+                        .IsUnique();
+
+                    b.HasIndex("PlatformTenantReferenceId")
+                        .IsUnique();
+
+                    b.ToTable("school_information", "school");
+                });
+
             modelBuilder.Entity("Mdaresna.Schools.Domain.Identity.LocalRolePermission", b =>
                 {
                     b.HasOne("Mdaresna.Schools.Domain.Identity.LocalPermission", "Permission")
@@ -547,6 +681,17 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                         .IsRequired();
 
                     b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Identity.LocalUserActivationChallenge", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "User")
+                        .WithOne()
+                        .HasForeignKey("Mdaresna.Schools.Domain.Identity.LocalUserActivationChallenge", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Identity.LocalUserCredential", b =>

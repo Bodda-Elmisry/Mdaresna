@@ -12,4 +12,5 @@ public sealed record TransitionSchoolCommand(
     Guid CorrelationId,
     string? Reason = null,
     Guid? CausationId = null,
-    string? TraceParent = null);
+    string? TraceParent = null,
+    Guid? UnitTypeId = null);

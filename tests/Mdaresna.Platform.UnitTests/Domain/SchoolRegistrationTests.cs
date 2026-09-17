@@ -73,7 +73,7 @@ public sealed class SchoolRegistrationTests
         var school = CreateGovernmentSchool(actorId);
 
         school.SubmitForVerification(actorId, Now.AddMinutes(1));
-        school.Approve(actorId, Now.AddMinutes(2));
+        school.Approve(Guid.NewGuid(), actorId, Now.AddMinutes(2));
         school.BeginProvisioning(operationId, actorId, Now.AddMinutes(3));
         school.Activate(operationId, actorId, Now.AddMinutes(4));
 
@@ -92,7 +92,7 @@ public sealed class SchoolRegistrationTests
         var school = CreateGovernmentSchool(actorId);
 
         var exception = Assert.Throws<PlatformDomainException>(() =>
-            school.Approve(actorId, Now.AddMinutes(1)));
+            school.Approve(Guid.NewGuid(), actorId, Now.AddMinutes(1)));
 
         Assert.Equal("school.invalid_status_transition", exception.Code);
         Assert.Equal(SchoolLifecycleStatus.Draft, school.Status);
@@ -119,7 +119,7 @@ public sealed class SchoolRegistrationTests
         var actorId = Guid.NewGuid();
         var school = CreateGovernmentSchool(actorId);
         school.SubmitForVerification(actorId, Now.AddMinutes(1));
-        school.Approve(actorId, Now.AddMinutes(2));
+        school.Approve(Guid.NewGuid(), actorId, Now.AddMinutes(2));
         school.BeginProvisioning(Guid.NewGuid(), actorId, Now.AddMinutes(3));
 
         var exception = Assert.Throws<PlatformDomainException>(() =>
