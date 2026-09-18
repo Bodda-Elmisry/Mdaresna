@@ -167,6 +167,22 @@ public static class SchoolIdentitySeed
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd04"), "school.users.view", "users", "عرض المستخدمين", "View users"),
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd05"), "school.users.manage", "users", "إدارة المستخدمين", "Manage users"),
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd06"), "school.roles.view", "access", "عرض الأدوار", "View roles"),
-        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd07"), "school.roles.manage", "access", "إدارة الأدوار والصلاحيات", "Manage roles and permissions")
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd07"), "school.roles.manage", "access", "إدارة الأدوار والصلاحيات", "Manage roles and permissions"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd08"), "school.facilities.view", "facilities", "عرض الهيكلة المادية", "View facilities"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd09"), "school.facilities.manage", "facilities", "إدارة الهيكلة المادية", "Manage facilities"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd0a"), "school.facilities.delete", "facilities", "حذف عناصر الهيكلة المادية", "Delete facilities"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd0b"), "school.facilities.restore", "facilities", "استعادة عناصر الهيكلة المادية", "Restore facilities"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd0c"), "school.academics.view", "academics", "عرض الهيكلة الأكاديمية", "View academic structure"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd0d"), "school.academics.manage", "academics", "إدارة الهيكلة الأكاديمية", "Manage academic structure"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd0e"), "school.academics.delete", "academics", "حذف عناصر الهيكلة الأكاديمية", "Delete academic structure"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd0f"), "school.academics.restore", "academics", "استعادة عناصر الهيكلة الأكاديمية", "Restore academic structure"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd10"), "school.operations.view", "operations", "عرض إعدادات التشغيل", "View operations"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd11"), "school.operations.manage", "operations", "إدارة إعدادات التشغيل", "Manage operations"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd12"), "school.operations.delete", "operations", "حذف إعدادات التشغيل", "Delete operations"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd13"), "school.operations.restore", "operations", "استعادة إعدادات التشغيل", "Restore operations"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd14"), "school.calendar.view", "calendar", "عرض التقويم المدرسي", "View school calendar"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd15"), "school.calendar.manage", "calendar", "إدارة التقويم المدرسي", "Manage school calendar"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd16"), "school.calendar.delete", "calendar", "حذف أحداث التقويم", "Delete calendar events"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd17"), "school.calendar.restore", "calendar", "استعادة أحداث التقويم", "Restore calendar events")
     ];
 }
