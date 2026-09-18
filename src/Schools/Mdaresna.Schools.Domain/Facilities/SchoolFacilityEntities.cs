@@ -1,5 +1,7 @@
 namespace Mdaresna.Schools.Domain.Facilities;
 
+using Mdaresna.Schools.Domain.Academics;
+
 public interface ISoftDeletableSchoolEntity
 {
     bool IsDeleted { get; set; }
@@ -68,6 +70,7 @@ public sealed class SchoolRoomType : ISoftDeletableSchoolEntity
     public string NameAr { get; set; } = string.Empty;
     public string NameEn { get; set; } = string.Empty;
     public bool IsLaboratory { get; set; }
+    public bool IsClassroom { get; set; }
     public bool IsActive { get; set; } = true;
     public bool IsDeleted { get; set; }
     public DateTimeOffset? DeletedAtUtc { get; set; }
@@ -114,6 +117,7 @@ public sealed class SchoolRoom : ISoftDeletableSchoolEntity
     public BuildingFloor Floor { get; set; } = null!;
     public SchoolRoomType RoomType { get; set; } = null!;
     public ICollection<SchoolRoomCapability> Capabilities { get; set; } = [];
+    public ICollection<ClassRoomAssignment> ClassAssignments { get; set; } = [];
 }
 
 public sealed class SchoolRoomCapability

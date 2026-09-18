@@ -39,6 +39,12 @@ public class SchoolsDbContext(DbContextOptions options) : DbContext(options)
     public DbSet<AcademicPeriod> AcademicPeriods => Set<AcademicPeriod>();
     public DbSet<SchoolDaySchedule> SchoolDaySchedules => Set<SchoolDaySchedule>();
     public DbSet<SchoolCalendarEvent> SchoolCalendarEvents => Set<SchoolCalendarEvent>();
+    public DbSet<EducationStage> EducationStages => Set<EducationStage>();
+    public DbSet<EducationTrack> EducationTracks => Set<EducationTrack>();
+    public DbSet<GradeLevel> GradeLevels => Set<GradeLevel>();
+    public DbSet<GradeOffering> GradeOfferings => Set<GradeOffering>();
+    public DbSet<ClassSection> ClassSections => Set<ClassSection>();
+    public DbSet<ClassRoomAssignment> ClassRoomAssignments => Set<ClassRoomAssignment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -74,6 +80,12 @@ public sealed class PostgreSqlSchoolsDbContext(
         ConfigurePostgreSqlConcurrency<AcademicPeriod>(modelBuilder, nameof(AcademicPeriod.RowVersion));
         ConfigurePostgreSqlConcurrency<SchoolDaySchedule>(modelBuilder, nameof(SchoolDaySchedule.RowVersion));
         ConfigurePostgreSqlConcurrency<SchoolCalendarEvent>(modelBuilder, nameof(SchoolCalendarEvent.RowVersion));
+        ConfigurePostgreSqlConcurrency<EducationStage>(modelBuilder, nameof(EducationStage.RowVersion));
+        ConfigurePostgreSqlConcurrency<EducationTrack>(modelBuilder, nameof(EducationTrack.RowVersion));
+        ConfigurePostgreSqlConcurrency<GradeLevel>(modelBuilder, nameof(GradeLevel.RowVersion));
+        ConfigurePostgreSqlConcurrency<GradeOffering>(modelBuilder, nameof(GradeOffering.RowVersion));
+        ConfigurePostgreSqlConcurrency<ClassSection>(modelBuilder, nameof(ClassSection.RowVersion));
+        ConfigurePostgreSqlConcurrency<ClassRoomAssignment>(modelBuilder, nameof(ClassRoomAssignment.RowVersion));
         ConfigureFacilityIndexes(modelBuilder, "\"IsDeleted\" = FALSE");
         ConfigureAcademicIndexes(modelBuilder, "\"IsDeleted\" = FALSE");
     }
@@ -97,6 +109,12 @@ public sealed class PostgreSqlSchoolsDbContext(
         modelBuilder.Entity<AcademicPeriod>().HasIndex(x => new { x.AcademicTermId, x.Code }).IsUnique().HasFilter(filter);
         modelBuilder.Entity<SchoolDaySchedule>().HasIndex(x => new { x.EducationProgramId, x.BranchId, x.DayOfWeek }).IsUnique().HasFilter(filter);
         modelBuilder.Entity<SchoolCalendarEvent>().HasIndex(x => x.Code).IsUnique().HasFilter(filter);
+        modelBuilder.Entity<EducationStage>().HasIndex(x => new { x.EducationProgramId, x.Code }).IsUnique().HasFilter(filter);
+        modelBuilder.Entity<EducationTrack>().HasIndex(x => new { x.EducationStageId, x.Code }).IsUnique().HasFilter(filter);
+        modelBuilder.Entity<GradeLevel>().HasIndex(x => new { x.EducationStageId, x.Code }).IsUnique().HasFilter(filter);
+        modelBuilder.Entity<GradeOffering>().HasIndex(x => new { x.ProgramAcademicYearId, x.GradeLevelId }).IsUnique().HasFilter(filter);
+        modelBuilder.Entity<ClassSection>().HasIndex(x => new { x.GradeOfferingId, x.Code }).IsUnique().HasFilter(filter);
+        modelBuilder.Entity<ClassRoomAssignment>().HasIndex(x => new { x.ClassSectionId, x.RoomId, x.EffectiveFrom, x.EffectiveTo }).IsUnique().HasFilter(filter);
     }
 
     private static void ConfigurePostgreSqlConcurrency<TEntity>(ModelBuilder modelBuilder, string rowVersionProperty)
@@ -134,6 +152,12 @@ public sealed class SqlServerSchoolsDbContext(
         modelBuilder.Entity<AcademicPeriod>().Property(x => x.RowVersion).IsRowVersion();
         modelBuilder.Entity<SchoolDaySchedule>().Property(x => x.RowVersion).IsRowVersion();
         modelBuilder.Entity<SchoolCalendarEvent>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<EducationStage>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<EducationTrack>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<GradeLevel>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<GradeOffering>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ClassSection>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ClassRoomAssignment>().Property(x => x.RowVersion).IsRowVersion();
         ConfigureFacilityIndexes(modelBuilder, "[IsDeleted] = 0");
         ConfigureAcademicIndexes(modelBuilder, "[IsDeleted] = 0");
     }
@@ -157,5 +181,11 @@ public sealed class SqlServerSchoolsDbContext(
         modelBuilder.Entity<AcademicPeriod>().HasIndex(x => new { x.AcademicTermId, x.Code }).IsUnique().HasFilter(filter);
         modelBuilder.Entity<SchoolDaySchedule>().HasIndex(x => new { x.EducationProgramId, x.BranchId, x.DayOfWeek }).IsUnique().HasFilter(filter);
         modelBuilder.Entity<SchoolCalendarEvent>().HasIndex(x => x.Code).IsUnique().HasFilter(filter);
+        modelBuilder.Entity<EducationStage>().HasIndex(x => new { x.EducationProgramId, x.Code }).IsUnique().HasFilter(filter);
+        modelBuilder.Entity<EducationTrack>().HasIndex(x => new { x.EducationStageId, x.Code }).IsUnique().HasFilter(filter);
+        modelBuilder.Entity<GradeLevel>().HasIndex(x => new { x.EducationStageId, x.Code }).IsUnique().HasFilter(filter);
+        modelBuilder.Entity<GradeOffering>().HasIndex(x => new { x.ProgramAcademicYearId, x.GradeLevelId }).IsUnique().HasFilter(filter);
+        modelBuilder.Entity<ClassSection>().HasIndex(x => new { x.GradeOfferingId, x.Code }).IsUnique().HasFilter(filter);
+        modelBuilder.Entity<ClassRoomAssignment>().HasIndex(x => new { x.ClassSectionId, x.RoomId, x.EffectiveFrom, x.EffectiveTo }).IsUnique().HasFilter(filter);
     }
 }

@@ -31,23 +31,23 @@ public sealed class SchoolFacilitiesController(ISchoolDbContextFactory dbFactory
         var result = new SchoolFacilitiesResponse(
             await branches.AsNoTracking().OrderBy(x => x.Code).Select(x =>
                 new FacilityItemResponse(x.Id, null, null, x.Code, x.NameAr, x.NameEn, x.IsActive, x.IsDeleted,
-                    x.DeletedAtUtc, x.Address, null, null, null, Array.Empty<Guid>(), null)).ToArrayAsync(cancellationToken),
+                    x.DeletedAtUtc, x.Address, null, null, null, Array.Empty<Guid>(), null, null)).ToArrayAsync(cancellationToken),
             await buildings.AsNoTracking().OrderBy(x => x.Code).Select(x =>
                 new FacilityItemResponse(x.Id, x.BranchId, null, x.Code, x.NameAr, x.NameEn, x.IsActive, x.IsDeleted,
-                    x.DeletedAtUtc, null, null, null, null, Array.Empty<Guid>(), null)).ToArrayAsync(cancellationToken),
+                    x.DeletedAtUtc, null, null, null, null, Array.Empty<Guid>(), null, null)).ToArrayAsync(cancellationToken),
             await floors.AsNoTracking().OrderBy(x => x.SortOrder).ThenBy(x => x.Code).Select(x =>
                 new FacilityItemResponse(x.Id, x.BuildingId, null, x.Code, x.NameAr, x.NameEn, x.IsActive, x.IsDeleted,
-                    x.DeletedAtUtc, null, x.SortOrder, null, null, Array.Empty<Guid>(), null)).ToArrayAsync(cancellationToken),
+                    x.DeletedAtUtc, null, x.SortOrder, null, null, Array.Empty<Guid>(), null, null)).ToArrayAsync(cancellationToken),
             await roomTypes.AsNoTracking().OrderBy(x => x.Code).Select(x =>
                 new FacilityItemResponse(x.Id, null, null, x.Code, x.NameAr, x.NameEn, x.IsActive, x.IsDeleted,
-                    x.DeletedAtUtc, null, null, x.IsLaboratory, null, Array.Empty<Guid>(), null)).ToArrayAsync(cancellationToken),
+                    x.DeletedAtUtc, null, null, x.IsLaboratory, null, Array.Empty<Guid>(), null, x.IsClassroom)).ToArrayAsync(cancellationToken),
             await capabilities.AsNoTracking().OrderBy(x => x.Code).Select(x =>
                 new FacilityItemResponse(x.Id, null, null, x.Code, x.NameAr, x.NameEn, x.IsActive, x.IsDeleted,
-                    x.DeletedAtUtc, null, null, null, null, Array.Empty<Guid>(), null)).ToArrayAsync(cancellationToken),
+                    x.DeletedAtUtc, null, null, null, null, Array.Empty<Guid>(), null, null)).ToArrayAsync(cancellationToken),
             await rooms.AsNoTracking().OrderBy(x => x.Code).Select(x =>
                 new FacilityItemResponse(x.Id, x.FloorId, x.RoomTypeId, x.Code, x.NameAr, x.NameEn, x.IsActive,
                     x.IsDeleted, x.DeletedAtUtc, null, null, null, x.Capacity,
-                    x.Capabilities.Select(c => c.CapabilityId).ToArray(), x.IsSchedulable)).ToArrayAsync(cancellationToken));
+                    x.Capabilities.Select(c => c.CapabilityId).ToArray(), x.IsSchedulable, null)).ToArrayAsync(cancellationToken));
         return Ok(ApiResponse<SchoolFacilitiesResponse>.Success(result, correlationId: HttpContext.TraceIdentifier));
     }
 
@@ -83,7 +83,8 @@ public sealed class SchoolFacilitiesController(ISchoolDbContextFactory dbFactory
             case FacilityKind.RoomType:
                 if (await db.SchoolRoomTypes.AnyAsync(x => x.Code == code, cancellationToken)) return Duplicate();
                 var roomType = new SchoolRoomType { Id = Guid.NewGuid(), Code = code, NameAr = ar, NameEn = en,
-                    IsLaboratory = request.IsLaboratory ?? false, IsActive = true, CreatedAtUtc = now, UpdatedAtUtc = now };
+                    IsLaboratory = request.IsLaboratory ?? false, IsClassroom = request.IsClassroom ?? false,
+                    IsActive = true, CreatedAtUtc = now, UpdatedAtUtc = now };
                 db.SchoolRoomTypes.Add(roomType); id = roomType.Id; break;
             case FacilityKind.Capability:
                 if (await db.RoomCapabilities.AnyAsync(x => x.Code == code, cancellationToken)) return Duplicate();
@@ -135,7 +136,10 @@ public sealed class SchoolFacilitiesController(ISchoolDbContextFactory dbFactory
                 floor.BuildingId = request.ParentId.Value; floor.Code = code; floor.NameAr = ar; floor.NameEn = en; floor.SortOrder = request.SortOrder ?? 0; floor.UpdatedAtUtc = now; break;
             case FacilityKind.RoomType:
                 var type = await db.SchoolRoomTypes.SingleOrDefaultAsync(x => x.Id == id, cancellationToken); if (type is null) return Missing();
-                type.Code = code; type.NameAr = ar; type.NameEn = en; type.IsLaboratory = request.IsLaboratory ?? false; type.UpdatedAtUtc = now; break;
+                if (!(request.IsClassroom ?? false) && await db.ClassRoomAssignments.AnyAsync(x => x.Room.RoomTypeId == id && x.IsActive, cancellationToken))
+                    return Conflict(Failure(409, "facilities.classroom_in_use", "This room type is used by active class assignments."));
+                type.Code = code; type.NameAr = ar; type.NameEn = en; type.IsLaboratory = request.IsLaboratory ?? false;
+                type.IsClassroom = request.IsClassroom ?? false; type.UpdatedAtUtc = now; break;
             case FacilityKind.Capability:
                 var capability = await db.RoomCapabilities.SingleOrDefaultAsync(x => x.Id == id, cancellationToken); if (capability is null) return Missing();
                 capability.Code = code; capability.NameAr = ar; capability.NameEn = en; capability.UpdatedAtUtc = now; break;
@@ -144,6 +148,10 @@ public sealed class SchoolFacilitiesController(ISchoolDbContextFactory dbFactory
                 if (!request.ParentId.HasValue || !request.RoomTypeId.HasValue || request.Capacity is < 0 or > 10000 ||
                     !await db.BuildingFloors.AnyAsync(x => x.Id == request.ParentId, cancellationToken) ||
                     !await db.SchoolRoomTypes.AnyAsync(x => x.Id == request.RoomTypeId && x.IsActive, cancellationToken)) return InvalidParent();
+                if (await db.ClassRoomAssignments.AnyAsync(x => x.RoomId == id && x.IsActive, cancellationToken) &&
+                    (!(request.IsSchedulable ?? true) || !await db.SchoolRoomTypes.AnyAsync(x => x.Id == request.RoomTypeId && x.IsClassroom, cancellationToken) ||
+                     await db.ClassRoomAssignments.AnyAsync(x => x.RoomId == id && x.IsActive && x.ClassSection.Capacity > (request.Capacity ?? 0), cancellationToken)))
+                    return Conflict(Failure(409, "facilities.room_in_use", "The room is assigned to an active class and must remain a schedulable classroom with enough capacity."));
                 var capabilityIds = request.CapabilityIds.Distinct().ToArray();
                 if (await db.RoomCapabilities.CountAsync(x => capabilityIds.Contains(x.Id) && x.IsActive, cancellationToken) != capabilityIds.Length) return InvalidCapabilities();
                 db.SchoolRoomCapabilities.RemoveRange(room.Capabilities);
@@ -162,10 +170,23 @@ public sealed class SchoolFacilitiesController(ISchoolDbContextFactory dbFactory
     [Authorize(Policy = SchoolPermissionPolicies.FacilitiesManage)]
     [HttpPut("{kind}/{id:guid}/status")]
     public async Task<IActionResult> Status(string kind, Guid id, [FromBody] ChangeFacilityStatusRequest request,
-        CancellationToken cancellationToken) => await Mutate(kind, id, cancellationToken, entity =>
+        CancellationToken cancellationToken)
+    {
+        var normalized = NormalizeKind(kind);
+        if (!request.IsActive && normalized is FacilityKind.Room or FacilityKind.RoomType)
+        {
+            await using var db = await RequireDb(cancellationToken); if (db is null) return Unauthorized();
+            var inUse = normalized == FacilityKind.Room
+                ? await db.ClassRoomAssignments.AnyAsync(x => x.RoomId == id && x.IsActive, cancellationToken)
+                : await db.ClassRoomAssignments.AnyAsync(x => x.Room.RoomTypeId == id && x.IsActive, cancellationToken);
+            if (inUse) return Conflict(Failure(409, "facilities.classroom_in_use",
+                "The classroom is used by an active class assignment."));
+        }
+        return await Mutate(kind, id, cancellationToken, entity =>
         {
             SetActive(entity, request.IsActive); SetUpdated(entity, DateTimeOffset.UtcNow); return null;
         });
+    }
 
     [Authorize(Policy = SchoolPermissionPolicies.FacilitiesDelete)]
     [HttpDelete("{kind}/{id:guid}")]
@@ -223,6 +244,7 @@ public sealed class SchoolFacilitiesController(ISchoolDbContextFactory dbFactory
         FacilityKind.Floor => db.SchoolRooms.AnyAsync(x => x.FloorId == id, ct),
         FacilityKind.RoomType => db.SchoolRooms.AnyAsync(x => x.RoomTypeId == id, ct),
         FacilityKind.Capability => db.SchoolRooms.AnyAsync(x => x.Capabilities.Any(c => c.CapabilityId == id), ct),
+        FacilityKind.Room => db.ClassRoomAssignments.AnyAsync(x => x.RoomId == id, ct),
         _ => Task.FromResult(false)
     };
 
@@ -285,7 +307,7 @@ public sealed class SchoolFacilitiesController(ISchoolDbContextFactory dbFactory
 
 public sealed record SaveFacilityItemRequest([Required] string Code, [Required] string NameAr, [Required] string NameEn,
     Guid? ParentId = null, Guid? RoomTypeId = null, string? Address = null, int? SortOrder = null,
-    bool? IsLaboratory = null, int? Capacity = null, bool? IsSchedulable = null,
+    bool? IsLaboratory = null, bool? IsClassroom = null, int? Capacity = null, bool? IsSchedulable = null,
     IReadOnlyList<Guid>? Capabilities = null)
 {
     public IReadOnlyList<Guid> CapabilityIds => Capabilities ?? [];
@@ -293,7 +315,8 @@ public sealed record SaveFacilityItemRequest([Required] string Code, [Required] 
 public sealed record ChangeFacilityStatusRequest(bool IsActive);
 public sealed record FacilityItemResponse(Guid Id, Guid? ParentId, Guid? RoomTypeId, string Code, string NameAr,
     string NameEn, bool IsActive, bool IsDeleted, DateTimeOffset? DeletedAtUtc, string? Address, int? SortOrder,
-    bool? IsLaboratory, int? Capacity, IReadOnlyList<Guid> CapabilityIds, bool? IsSchedulable = null);
+    bool? IsLaboratory, int? Capacity, IReadOnlyList<Guid> CapabilityIds, bool? IsSchedulable = null,
+    bool? IsClassroom = null);
 public sealed record SchoolFacilitiesResponse(IReadOnlyList<FacilityItemResponse> Branches,
     IReadOnlyList<FacilityItemResponse> Buildings, IReadOnlyList<FacilityItemResponse> Floors,
     IReadOnlyList<FacilityItemResponse> RoomTypes, IReadOnlyList<FacilityItemResponse> Capabilities,

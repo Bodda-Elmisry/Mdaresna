@@ -209,6 +209,133 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.ToTable("academic_year_definitions", "school");
                 });
 
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.ClassRoomAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ClassSectionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DeletedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("EffectiveFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("EffectiveTo")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly?>("EndsAt")
+                        .HasColumnType("time");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<TimeOnly?>("StartsAt")
+                        .HasColumnType("time");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoomId");
+
+                    b.HasIndex("ClassSectionId", "RoomId", "EffectiveFrom", "EffectiveTo")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("class_room_assignments", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.ClassSection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DeletedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("GradeOfferingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Shift")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GradeOfferingId", "Code")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("class_sections", "school");
+                });
+
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.EducationProgram", b =>
                 {
                     b.Property<Guid>("Id")
@@ -266,6 +393,261 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                         .HasFilter("[IsDeleted] = 0");
 
                     b.ToTable("education_programs", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.EducationStage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DeletedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("EducationProgramId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EducationProgramId", "Code")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("education_stages", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.EducationTrack", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DeletedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("EducationStageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EducationStageId", "Code")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("education_tracks", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.GradeLevel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DeletedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("EducationStageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("EducationTrackId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EducationTrackId");
+
+                    b.HasIndex("EducationStageId", "Code")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("grade_levels", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.GradeOffering", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DeletedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("GradeLevelId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<Guid>("ProgramAcademicYearId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GradeLevelId");
+
+                    b.HasIndex("ProgramAcademicYearId", "GradeLevelId")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("grade_offerings", "school");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.ProgramAcademicYear", b =>
@@ -810,6 +1192,9 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsClassroom")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
@@ -1806,6 +2191,95 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.Navigation("ProgramAcademicYear");
                 });
 
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.ClassRoomAssignment", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.ClassSection", "ClassSection")
+                        .WithMany("RoomAssignments")
+                        .HasForeignKey("ClassSectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Facilities.SchoolRoom", "Room")
+                        .WithMany("ClassAssignments")
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ClassSection");
+
+                    b.Navigation("Room");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.ClassSection", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.GradeOffering", "GradeOffering")
+                        .WithMany("ClassSections")
+                        .HasForeignKey("GradeOfferingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("GradeOffering");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.EducationStage", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.EducationProgram", "EducationProgram")
+                        .WithMany("Stages")
+                        .HasForeignKey("EducationProgramId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("EducationProgram");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.EducationTrack", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.EducationStage", "EducationStage")
+                        .WithMany("Tracks")
+                        .HasForeignKey("EducationStageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("EducationStage");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.GradeLevel", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.EducationStage", "EducationStage")
+                        .WithMany("GradeLevels")
+                        .HasForeignKey("EducationStageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.EducationTrack", "EducationTrack")
+                        .WithMany("GradeLevels")
+                        .HasForeignKey("EducationTrackId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("EducationStage");
+
+                    b.Navigation("EducationTrack");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.GradeOffering", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.GradeLevel", "GradeLevel")
+                        .WithMany("Offerings")
+                        .HasForeignKey("GradeLevelId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.ProgramAcademicYear", "ProgramAcademicYear")
+                        .WithMany("GradeOfferings")
+                        .HasForeignKey("ProgramAcademicYearId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("GradeLevel");
+
+                    b.Navigation("ProgramAcademicYear");
+                });
+
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.ProgramAcademicYear", b =>
                 {
                     b.HasOne("Mdaresna.Schools.Domain.Academics.AcademicYearDefinition", "AcademicYearDefinition")
@@ -2041,15 +2515,46 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.Navigation("ProgramYears");
                 });
 
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.ClassSection", b =>
+                {
+                    b.Navigation("RoomAssignments");
+                });
+
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.EducationProgram", b =>
                 {
                     b.Navigation("AcademicYears");
 
                     b.Navigation("Schedules");
+
+                    b.Navigation("Stages");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.EducationStage", b =>
+                {
+                    b.Navigation("GradeLevels");
+
+                    b.Navigation("Tracks");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.EducationTrack", b =>
+                {
+                    b.Navigation("GradeLevels");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.GradeLevel", b =>
+                {
+                    b.Navigation("Offerings");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.GradeOffering", b =>
+                {
+                    b.Navigation("ClassSections");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.ProgramAcademicYear", b =>
                 {
+                    b.Navigation("GradeOfferings");
+
                     b.Navigation("Terms");
                 });
 
@@ -2076,6 +2581,8 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
             modelBuilder.Entity("Mdaresna.Schools.Domain.Facilities.SchoolRoom", b =>
                 {
                     b.Navigation("Capabilities");
+
+                    b.Navigation("ClassAssignments");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Facilities.SchoolRoomType", b =>

@@ -45,3 +45,27 @@ internal sealed class SchoolCalendarEventConfiguration : IEntityTypeConfiguratio
 {
     public void Configure(EntityTypeBuilder<SchoolCalendarEvent> b) { b.ToTable("school_calendar_events"); b.HasKey(x => x.Id); AcademicConfiguration.Named(b); b.Property(x => x.EventType).HasConversion<string>().HasMaxLength(32); b.HasOne(x => x.EducationProgram).WithMany().HasForeignKey(x => x.EducationProgramId).OnDelete(DeleteBehavior.Restrict); b.HasOne(x => x.ProgramAcademicYear).WithMany().HasForeignKey(x => x.ProgramAcademicYearId).OnDelete(DeleteBehavior.Restrict); b.HasOne(x => x.Branch).WithMany().HasForeignKey(x => x.BranchId).OnDelete(DeleteBehavior.Restrict); }
 }
+internal sealed class EducationStageConfiguration : IEntityTypeConfiguration<EducationStage>
+{
+    public void Configure(EntityTypeBuilder<EducationStage> b) { b.ToTable("education_stages"); b.HasKey(x => x.Id); AcademicConfiguration.Named(b); b.HasOne(x => x.EducationProgram).WithMany(x => x.Stages).HasForeignKey(x => x.EducationProgramId).OnDelete(DeleteBehavior.Restrict); }
+}
+internal sealed class EducationTrackConfiguration : IEntityTypeConfiguration<EducationTrack>
+{
+    public void Configure(EntityTypeBuilder<EducationTrack> b) { b.ToTable("education_tracks"); b.HasKey(x => x.Id); AcademicConfiguration.Named(b); b.HasOne(x => x.EducationStage).WithMany(x => x.Tracks).HasForeignKey(x => x.EducationStageId).OnDelete(DeleteBehavior.Restrict); }
+}
+internal sealed class GradeLevelConfiguration : IEntityTypeConfiguration<GradeLevel>
+{
+    public void Configure(EntityTypeBuilder<GradeLevel> b) { b.ToTable("grade_levels"); b.HasKey(x => x.Id); AcademicConfiguration.Named(b); b.HasOne(x => x.EducationStage).WithMany(x => x.GradeLevels).HasForeignKey(x => x.EducationStageId).OnDelete(DeleteBehavior.Restrict); b.HasOne(x => x.EducationTrack).WithMany(x => x.GradeLevels).HasForeignKey(x => x.EducationTrackId).OnDelete(DeleteBehavior.Restrict); }
+}
+internal sealed class GradeOfferingConfiguration : IEntityTypeConfiguration<GradeOffering>
+{
+    public void Configure(EntityTypeBuilder<GradeOffering> b) { b.ToTable("grade_offerings"); b.HasKey(x => x.Id); AcademicConfiguration.Named(b); b.Property(x => x.Status).HasConversion<string>().HasMaxLength(24); b.HasOne(x => x.ProgramAcademicYear).WithMany(x => x.GradeOfferings).HasForeignKey(x => x.ProgramAcademicYearId).OnDelete(DeleteBehavior.Restrict); b.HasOne(x => x.GradeLevel).WithMany(x => x.Offerings).HasForeignKey(x => x.GradeLevelId).OnDelete(DeleteBehavior.Restrict); }
+}
+internal sealed class ClassSectionConfiguration : IEntityTypeConfiguration<ClassSection>
+{
+    public void Configure(EntityTypeBuilder<ClassSection> b) { b.ToTable("class_sections"); b.HasKey(x => x.Id); AcademicConfiguration.Named(b); b.Property(x => x.Shift).HasConversion<string>().HasMaxLength(24); b.HasOne(x => x.GradeOffering).WithMany(x => x.ClassSections).HasForeignKey(x => x.GradeOfferingId).OnDelete(DeleteBehavior.Restrict); }
+}
+internal sealed class ClassRoomAssignmentConfiguration : IEntityTypeConfiguration<ClassRoomAssignment>
+{
+    public void Configure(EntityTypeBuilder<ClassRoomAssignment> b) { b.ToTable("class_room_assignments"); b.HasKey(x => x.Id); AcademicConfiguration.Common(b); b.HasOne(x => x.ClassSection).WithMany(x => x.RoomAssignments).HasForeignKey(x => x.ClassSectionId).OnDelete(DeleteBehavior.Restrict); b.HasOne(x => x.Room).WithMany(x => x.ClassAssignments).HasForeignKey(x => x.RoomId).OnDelete(DeleteBehavior.Restrict); }
+}
