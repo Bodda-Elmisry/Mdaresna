@@ -36,6 +36,8 @@ public sealed class PlatformControllerAuthorizationTests
                     Assert.Contains(action.Name, new[]
                     {
                         "Login",
+                        "Refresh",
+                        "Logout",
                         "StartFirstOwnerActivation",
                         "CompleteFirstOwnerActivation",
                         "StartPasswordReset",

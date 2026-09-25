@@ -19,6 +19,7 @@ public static class PlatformAuthenticationExtensions
         var jwt = PlatformJwtOptions.FromConfiguration(configuration);
         services.AddSingleton(jwt);
         services.AddScoped<PlatformLoginService>();
+        services.AddScoped<PlatformSessionService>();
         services.AddScoped<AccountAppLanguageService>();
         services.AddScoped<PlatformFirstOwnerActivationService>();
         services.AddScoped<PlatformPasswordResetService>();

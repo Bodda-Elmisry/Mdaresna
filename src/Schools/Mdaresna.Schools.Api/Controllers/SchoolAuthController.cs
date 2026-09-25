@@ -57,7 +57,7 @@ public sealed class SchoolAuthController(
             return Unauthorized(ApiResponse<object?>.Failure(401, "auth.invalid_credentials",
                 "The login identifier or password is invalid.", correlationId: HttpContext.TraceIdentifier));
         var token = tokenIssuer.Issue(login);
-        var refresh = await CreateRefreshToken(login.SchoolCode, login.UserId, cancellationToken);
+        var refresh = await CreateRefreshToken(login.SchoolCode, login.UserId, request.RememberMe, cancellationToken);
         return Ok(ApiResponse<SchoolLoginResponse>.Success(new SchoolLoginResponse(
             token.Token, refresh, token.ExpiresInSeconds, token.ExpiresAtUtc, login.UserId, login.PersonId,
             login.TenantId, login.SchoolId, login.SchoolCode, login.UserName, login.DisplayName,
@@ -88,7 +88,7 @@ public sealed class SchoolAuthController(
         var login = new SchoolLoginResult(user.Id, user.PersonId, target.TenantId, target.SchoolId, target.SchoolCode,
             user.UserName, user.Person.DisplayName, user.Credential?.SecurityStamp ?? string.Empty, user.PermissionsVersion, roles, permissions);
         var access = tokenIssuer.Issue(login); var refresh = NewToken();
-        db.LocalUserSessions.Add(NewSession(user.Id, refresh, now)); await db.SaveChangesAsync(cancellationToken);
+        db.LocalUserSessions.Add(NewSession(user.Id, refresh, now, session.ExpiresAtUtc)); await db.SaveChangesAsync(cancellationToken);
         return Ok(ApiResponse<SchoolTokenRefreshResponse>.Success(new SchoolTokenRefreshResponse(
             access.Token, refresh, access.ExpiresInSeconds, access.ExpiresAtUtc, roles, permissions, user.PermissionsVersion),
             correlationId: HttpContext.TraceIdentifier));
@@ -107,20 +107,25 @@ public sealed class SchoolAuthController(
         return NoContent();
     }
 
-    private async Task<string> CreateRefreshToken(string schoolCode, Guid userId, CancellationToken ct)
+    private async Task<string> CreateRefreshToken(string schoolCode, Guid userId, bool rememberMe, CancellationToken ct)
     {
         await using var db = await dbFactory.CreateAsync(schoolCode, ct)
             ?? throw new InvalidOperationException("School database became unavailable after login.");
-        var token = NewToken(); db.LocalUserSessions.Add(NewSession(userId, token, DateTimeOffset.UtcNow)); await db.SaveChangesAsync(ct); return token;
+        var token = NewToken(); var now = DateTimeOffset.UtcNow;
+        db.LocalUserSessions.Add(NewSession(userId, token, now, now.AddDays(rememberMe ? 30 : 1)));
+        await db.SaveChangesAsync(ct); return token;
     }
-    private static LocalUserSession NewSession(Guid userId, string token, DateTimeOffset now) => new()
-    { Id = Guid.NewGuid(), UserId = userId, RefreshTokenHash = HashToken(token), CreatedAtUtc = now, ExpiresAtUtc = now.AddDays(30) };
+    private static LocalUserSession NewSession(Guid userId, string token, DateTimeOffset now, DateTimeOffset expiresAtUtc) => new()
+    { Id = Guid.NewGuid(), UserId = userId, RefreshTokenHash = HashToken(token), CreatedAtUtc = now, ExpiresAtUtc = expiresAtUtc };
     private static string NewToken() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
     private static string HashToken(string token) => Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(token)));
     private ApiResponse<object?> InvalidSession() => ApiResponse<object?>.Failure(401, "auth.invalid_session", "The session is invalid or expired.", correlationId: HttpContext.TraceIdentifier);
 }
 
-public sealed record SchoolLoginRequest([Required, MaxLength(140)] string Login, [Required, MaxLength(200)] string Password);
+public sealed record SchoolLoginRequest(
+    [Required, MaxLength(140)] string Login,
+    [Required, MaxLength(200)] string Password,
+    bool RememberMe = false);
 public sealed record StartSchoolOwnerActivationRequest([Required, MaxLength(140)] string Login);
 public sealed record CompleteSchoolOwnerActivationRequest(
     [Required, MaxLength(140)] string Login,

@@ -17,6 +17,7 @@ namespace Mdaresna.Platform.Api.Controllers.Auth;
 [Route("api/platform/v1/auth")]
 public sealed class PlatformAuthController(
     PlatformLoginService loginService,
+    PlatformSessionService sessionService,
     AccountAppLanguageService languageService,
     IPlatformAccessTokenIssuer tokenIssuer,
     PlatformDbContext platformDb,
@@ -121,6 +122,12 @@ public sealed class PlatformAuthController(
         }
 
         var access = tokenIssuer.Issue(login);
+        var refreshToken = await sessionService.CreateAsync(
+            login.AccountId,
+            request.RememberMe,
+            HttpContext.Connection.RemoteIpAddress?.ToString(),
+            Request.Headers.UserAgent.ToString(),
+            cancellationToken);
         var preferredLanguage = await languageService.GetStoredAsync(
             login.AccountId, AccountAppLanguageService.PlatformApp, cancellationToken);
         var accountId = IdentityAccountId.From(login.AccountId);
@@ -147,12 +154,83 @@ public sealed class PlatformAuthController(
                     "Bearer",
                     access.ExpiresInSeconds,
                     access.ExpiresAtUtc,
+                    refreshToken,
                     login.AccountId,
                     login.DisplayName,
                     preferredLanguage,
                     roles,
                     permissionCodes),
                 correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
+    }
+
+    [AllowAnonymous]
+    [EnableRateLimiting("platform-login")]
+    [HttpPost("refresh")]
+    public async Task<IResult> Refresh(
+        [FromBody] PlatformRefreshRequest request,
+        CancellationToken cancellationToken)
+    {
+        var rotated = await sessionService.RotateAsync(
+            request.RefreshToken,
+            HttpContext.Connection.RemoteIpAddress?.ToString(),
+            Request.Headers.UserAgent.ToString(),
+            cancellationToken);
+        if (rotated is null) return InvalidSession();
+
+        var login = await loginService.RestoreAsync(rotated.AccountId, cancellationToken);
+        if (login is null)
+        {
+            await sessionService.RevokeAsync(rotated.RefreshToken, cancellationToken);
+            return InvalidSession();
+        }
+
+        var access = tokenIssuer.Issue(login);
+        var preferredLanguage = await languageService.GetStoredAsync(
+            login.AccountId, AccountAppLanguageService.PlatformApp, cancellationToken);
+        var (roles, permissionCodes) = await ReadAccessAsync(login.AccountId, cancellationToken);
+        return ApiResponseWriter.ToResult(ApiResponse<PlatformLoginResponse>.Success(
+            new PlatformLoginResponse(
+                access.Token, "Bearer", access.ExpiresInSeconds, access.ExpiresAtUtc,
+                rotated.RefreshToken, login.AccountId, login.DisplayName, preferredLanguage,
+                roles, permissionCodes),
+            correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
+    }
+
+    [AllowAnonymous]
+    [HttpPost("logout")]
+    public async Task<IResult> Logout(
+        [FromBody] PlatformRefreshRequest request,
+        CancellationToken cancellationToken)
+    {
+        await sessionService.RevokeAsync(request.RefreshToken, cancellationToken);
+        return Results.NoContent();
+    }
+
+    private IResult InvalidSession() => ApiResponseWriter.ToResult(
+        ApiResponse<object?>.Failure(401, "auth.invalid_session", "The session is invalid or expired.",
+            correlationId: ApiResponseWriter.GetCorrelationId(HttpContext)));
+
+    private async Task<(IReadOnlyList<PlatformLoginRole> Roles, IReadOnlyList<string> Permissions)> ReadAccessAsync(
+        Guid rawAccountId,
+        CancellationToken cancellationToken)
+    {
+        var accountId = IdentityAccountId.From(rawAccountId);
+        var roles = await (
+            from assignment in platformDb.RoleAssignments.AsNoTracking()
+            join role in platformDb.Roles.AsNoTracking() on assignment.RoleId equals role.Id
+            where assignment.AccountId == accountId && assignment.RevokedAtUtc == null && role.IsActive
+            orderby role.Key
+            select new PlatformLoginRole(role.Key, role.DisplayName))
+            .ToArrayAsync(cancellationToken);
+        var permissions = await (
+            from assignment in platformDb.RoleAssignments.AsNoTracking()
+            join role in platformDb.Roles.AsNoTracking() on assignment.RoleId equals role.Id
+            join permission in platformDb.RolePermissions.AsNoTracking() on role.Id equals permission.RoleId
+            where assignment.AccountId == accountId && assignment.RevokedAtUtc == null && role.IsActive
+            select permission.PermissionCode.Value)
+            .ToArrayAsync(cancellationToken);
+        return (roles, permissions.Distinct(StringComparer.Ordinal)
+            .OrderBy(code => code, StringComparer.Ordinal).ToArray());
     }
 
     [AllowAnonymous]
@@ -203,13 +281,17 @@ public sealed record CompletePasswordResetRequest(
 
 public sealed record PlatformLoginRequest(
     [Required, MaxLength(320)] string Identifier,
-    [Required, MaxLength(1024)] string Password);
+    [Required, MaxLength(1024)] string Password,
+    bool RememberMe = false);
+
+public sealed record PlatformRefreshRequest([Required] string RefreshToken);
 
 public sealed record PlatformLoginResponse(
     string AccessToken,
     string TokenType,
     int ExpiresInSeconds,
     DateTimeOffset ExpiresAtUtc,
+    string RefreshToken,
     Guid AccountId,
     string? DisplayName,
     string? PreferredLanguage,

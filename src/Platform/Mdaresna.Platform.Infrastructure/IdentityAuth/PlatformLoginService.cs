@@ -146,6 +146,38 @@ public sealed class PlatformLoginService(
             localUser.DisplayName ?? account.DisplayName);
     }
 
+    public async Task<PlatformLoginResult?> RestoreAsync(
+        Guid accountId,
+        CancellationToken cancellationToken = default)
+    {
+        var account = await identityDb.Accounts.AsNoTracking()
+            .SingleOrDefaultAsync(x => x.Id == accountId, cancellationToken);
+        if (account?.Status != AccountStatus.Active) return null;
+
+        var localUser = await platformDb.LocalUsers.AsNoTracking()
+            .Include(x => x.Credential)
+            .SingleOrDefaultAsync(x => x.PersonId == accountId, cancellationToken);
+        var credential = localUser?.Credential;
+        if (localUser?.Status != "Active" || credential is null ||
+            credential.LockoutEndUtc > DateTimeOffset.UtcNow ||
+            credential.MustChangePassword || string.IsNullOrWhiteSpace(credential.SecurityStamp))
+            return null;
+
+        var identityAccountId = IdentityAccountId.From(accountId);
+        var hasPlatformRole = await (
+            from assignment in platformDb.RoleAssignments.AsNoTracking()
+            join role in platformDb.Roles.AsNoTracking() on assignment.RoleId equals role.Id
+            where assignment.AccountId == identityAccountId &&
+                  assignment.RevokedAtUtc == null && role.IsActive
+            select assignment).AnyAsync(cancellationToken);
+        if (!hasPlatformRole) return null;
+
+        return new PlatformLoginResult(
+            accountId,
+            credential.SecurityStamp,
+            localUser.DisplayName ?? account.DisplayName);
+    }
+
     private void AddSecurityEvent(Guid accountId, string eventType, bool succeeded, DateTimeOffset now) =>
         identityDb.SecurityEvents.Add(new IdentitySecurityEvent
         {
