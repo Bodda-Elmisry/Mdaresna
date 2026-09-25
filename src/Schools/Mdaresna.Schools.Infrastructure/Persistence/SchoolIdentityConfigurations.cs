@@ -19,6 +19,8 @@ internal sealed class SchoolInformationConfiguration : IEntityTypeConfiguration<
         b.Property(x => x.DeploymentMode).HasMaxLength(32).IsRequired();
         b.Property(x => x.Status).HasMaxLength(32).IsRequired();
         b.Property(x => x.Address).HasMaxLength(500); b.Property(x => x.PrimaryPhone).HasMaxLength(32);
+        b.Property(x => x.TimeZoneId).HasMaxLength(100);
+        b.Property(x => x.DefaultStudentAttendanceMode).HasConversion<string>().HasMaxLength(24);
         b.Property(x => x.UnitTypeCode).HasMaxLength(32).IsRequired();
         b.Property(x => x.UnitTypeName).HasMaxLength(200).IsRequired();
         b.Property(x => x.UnitPrice).HasPrecision(18, 4);

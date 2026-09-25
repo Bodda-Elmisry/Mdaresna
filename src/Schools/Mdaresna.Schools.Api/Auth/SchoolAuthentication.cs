@@ -56,6 +56,9 @@ public static class SchoolPermissionPolicies
     public const string StudentsManage = Prefix + "school.students.manage";
     public const string AdmissionsView = Prefix + "school.admissions.view";
     public const string AdmissionsManage = Prefix + "school.admissions.manage";
+    public const string AttendanceView = Prefix + "school.attendance.view";
+    public const string AttendanceRecord = Prefix + "school.attendance.record";
+    public const string AttendanceReopen = Prefix + "school.attendance.reopen";
 }
 
 internal sealed record SchoolPermissionRequirement(string Permission) : IAuthorizationRequirement;

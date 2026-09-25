@@ -8,6 +8,9 @@ public enum StudentEnrollmentStatus { Active, Suspended, Withdrawn, Transferred,
 public enum AdmissionApplicationStatus { Submitted, UnderReview, InterviewScheduled, Waitlisted, Accepted, Rejected, Withdrawn }
 public enum AdmissionApplicationSource { SchoolDesk, FamilyApp }
 public enum GuardianRelationship { Father, Mother, LegalGuardian, Relative, Other }
+public enum StudentAttendanceMode { Daily, PerSession }
+public enum StudentAttendanceStatus { Present, Absent, ExcusedAbsent, Late, LeftEarly }
+public enum StudentAttendanceRegisterStatus { Draft, Finalized }
 
 public sealed class Student
 {
@@ -78,6 +81,59 @@ public sealed class StudentEnrollment
     public Student Student { get; set; } = null!;
     public GradeOffering GradeOffering { get; set; } = null!;
     public ClassSection ClassSection { get; set; } = null!;
+}
+
+public sealed class StudentAttendanceRegister
+{
+    public Guid Id { get; set; }
+    public Guid ClassSectionId { get; set; }
+    public DateOnly AttendanceDate { get; set; }
+    public string UnitKey { get; set; } = string.Empty;
+    public StudentAttendanceMode Mode { get; set; }
+    public Guid? WeeklyTimetableSlotId { get; set; }
+    public string TimeZoneIdSnapshot { get; set; } = string.Empty;
+    public StudentAttendanceRegisterStatus Status { get; set; } = StudentAttendanceRegisterStatus.Finalized;
+    public Guid RecordedByUserId { get; set; }
+    public DateTimeOffset RecordedAtUtc { get; set; }
+    public Guid? FinalizedByUserId { get; set; }
+    public DateTimeOffset? FinalizedAtUtc { get; set; }
+    public DateTimeOffset CreatedAtUtc { get; set; }
+    public DateTimeOffset UpdatedAtUtc { get; set; }
+    public byte[] RowVersion { get; set; } = [];
+    public ClassSection ClassSection { get; set; } = null!;
+    public WeeklyTimetableSlot? WeeklyTimetableSlot { get; set; }
+    public LocalUserAccount RecordedByUser { get; set; } = null!;
+    public LocalUserAccount? FinalizedByUser { get; set; }
+    public ICollection<StudentAttendanceEntry> Entries { get; set; } = [];
+    public ICollection<StudentAttendanceAudit> AuditTrail { get; set; } = [];
+}
+
+public sealed class StudentAttendanceEntry
+{
+    public Guid Id { get; set; }
+    public Guid RegisterId { get; set; }
+    public Guid StudentEnrollmentId { get; set; }
+    public StudentAttendanceStatus Status { get; set; } = StudentAttendanceStatus.Present;
+    public TimeOnly? ArrivedAt { get; set; }
+    public TimeOnly? LeftAt { get; set; }
+    public string? Notes { get; set; }
+    public DateTimeOffset CreatedAtUtc { get; set; }
+    public DateTimeOffset UpdatedAtUtc { get; set; }
+    public byte[] RowVersion { get; set; } = [];
+    public StudentAttendanceRegister Register { get; set; } = null!;
+    public StudentEnrollment StudentEnrollment { get; set; } = null!;
+}
+
+public sealed class StudentAttendanceAudit
+{
+    public Guid Id { get; set; }
+    public Guid RegisterId { get; set; }
+    public string Action { get; set; } = string.Empty;
+    public Guid ActorUserId { get; set; }
+    public string? SnapshotJson { get; set; }
+    public DateTimeOffset CreatedAtUtc { get; set; }
+    public StudentAttendanceRegister Register { get; set; } = null!;
+    public LocalUserAccount ActorUser { get; set; } = null!;
 }
 
 public sealed class AdmissionApplication

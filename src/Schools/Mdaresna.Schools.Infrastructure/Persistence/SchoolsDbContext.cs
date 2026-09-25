@@ -77,6 +77,9 @@ public class SchoolsDbContext(DbContextOptions options) : DbContext(options)
     public DbSet<StudentEnrollment> StudentEnrollments => Set<StudentEnrollment>();
     public DbSet<AdmissionApplication> AdmissionApplications => Set<AdmissionApplication>();
     public DbSet<AdmissionApplicationGuardian> AdmissionApplicationGuardians => Set<AdmissionApplicationGuardian>();
+    public DbSet<StudentAttendanceRegister> StudentAttendanceRegisters => Set<StudentAttendanceRegister>();
+    public DbSet<StudentAttendanceEntry> StudentAttendanceEntries => Set<StudentAttendanceEntry>();
+    public DbSet<StudentAttendanceAudit> StudentAttendanceAudits => Set<StudentAttendanceAudit>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -147,6 +150,8 @@ public sealed class PostgreSqlSchoolsDbContext(
         ConfigurePostgreSqlConcurrency<StudentGuardian>(modelBuilder, nameof(StudentGuardian.RowVersion));
         ConfigurePostgreSqlConcurrency<StudentEnrollment>(modelBuilder, nameof(StudentEnrollment.RowVersion));
         ConfigurePostgreSqlConcurrency<AdmissionApplication>(modelBuilder, nameof(AdmissionApplication.RowVersion));
+        ConfigurePostgreSqlConcurrency<StudentAttendanceRegister>(modelBuilder, nameof(StudentAttendanceRegister.RowVersion));
+        ConfigurePostgreSqlConcurrency<StudentAttendanceEntry>(modelBuilder, nameof(StudentAttendanceEntry.RowVersion));
         ConfigureFacilityIndexes(modelBuilder, "\"IsDeleted\" = FALSE");
         ConfigureAcademicIndexes(modelBuilder, "\"IsDeleted\" = FALSE");
         ConfigureOrganizationIndexes(modelBuilder, "\"IsDeleted\" = FALSE", "\"IsDeleted\" = FALSE AND \"IsPrimary\" = TRUE");
@@ -279,6 +284,8 @@ public sealed class SqlServerSchoolsDbContext(
         modelBuilder.Entity<StudentGuardian>().Property(x => x.RowVersion).IsRowVersion();
         modelBuilder.Entity<StudentEnrollment>().Property(x => x.RowVersion).IsRowVersion();
         modelBuilder.Entity<AdmissionApplication>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<StudentAttendanceRegister>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<StudentAttendanceEntry>().Property(x => x.RowVersion).IsRowVersion();
         ConfigureFacilityIndexes(modelBuilder, "[IsDeleted] = 0");
         ConfigureAcademicIndexes(modelBuilder, "[IsDeleted] = 0");
         ConfigureOrganizationIndexes(modelBuilder, "[IsDeleted] = 0", "[IsDeleted] = 0 AND [IsPrimary] = 1");

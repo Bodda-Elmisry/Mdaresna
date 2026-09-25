@@ -1,3 +1,5 @@
+using Mdaresna.Schools.Domain.Students;
+
 namespace Mdaresna.Schools.Domain.School;
 
 public sealed class SchoolInformation
@@ -15,6 +17,8 @@ public sealed class SchoolInformation
     public string Status { get; private set; } = string.Empty;
     public string? Address { get; private set; }
     public string? PrimaryPhone { get; private set; }
+    public string? TimeZoneId { get; private set; }
+    public StudentAttendanceMode DefaultStudentAttendanceMode { get; private set; } = StudentAttendanceMode.Daily;
     public Guid PlatformUnitTypeReferenceId { get; private set; }
     public string UnitTypeCode { get; private set; } = string.Empty;
     public string UnitTypeName { get; private set; } = string.Empty;
@@ -51,6 +55,17 @@ public sealed class SchoolInformation
             Currency = Required(currency, 3).ToUpperInvariant(), OwnerPlatformAccountReferenceId = ownerPlatformAccountReferenceId,
             PlatformCreatedAtUtc = platformCreatedAtUtc, ActivatedAtUtc = activatedAtUtc,
             CreatedAtUtc = activatedAtUtc, UpdatedAtUtc = activatedAtUtc };
+    }
+
+    public void ConfigureStudentAttendance(string timeZoneId, StudentAttendanceMode defaultMode, DateTimeOffset updatedAtUtc)
+    {
+        if (string.IsNullOrWhiteSpace(timeZoneId) || timeZoneId.Trim().Length > 100)
+            throw new ArgumentException("The school time zone is invalid.", nameof(timeZoneId));
+        if (updatedAtUtc.Offset != TimeSpan.Zero)
+            throw new ArgumentException("The update timestamp must be UTC.", nameof(updatedAtUtc));
+        TimeZoneId = timeZoneId.Trim();
+        DefaultStudentAttendanceMode = defaultMode;
+        UpdatedAtUtc = updatedAtUtc;
     }
 
     private static string Required(string value, int max) => string.IsNullOrWhiteSpace(value) || value.Trim().Length > max

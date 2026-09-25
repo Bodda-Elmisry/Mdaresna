@@ -239,6 +239,9 @@ public static class SchoolIdentitySeed
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd1c"), "school.students.view", "students", "عرض الطلاب", "View students"),
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd1d"), "school.students.manage", "students", "إدارة الطلاب", "Manage students"),
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd1e"), "school.admissions.view", "admissions", "عرض طلبات التقديم", "View admission applications"),
-        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd1f"), "school.admissions.manage", "admissions", "إدارة طلبات التقديم", "Manage admission applications")
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd1f"), "school.admissions.manage", "admissions", "إدارة طلبات التقديم", "Manage admission applications"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd20"), "school.attendance.view", "attendance", "عرض حضور الطلاب", "View student attendance"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd21"), "school.attendance.record", "attendance", "تسجيل حضور الطلاب", "Record student attendance"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd22"), "school.attendance.reopen", "attendance", "إعادة فتح سجل حضور الطلاب", "Reopen student attendance")
     ];
 }

@@ -1,4 +1,5 @@
 using Mdaresna.Schools.Domain.Facilities;
+using Mdaresna.Schools.Domain.Students;
 
 namespace Mdaresna.Schools.Domain.Academics;
 
@@ -16,6 +17,7 @@ public sealed class EducationProgram : ISoftDeletableSchoolEntity
     public string NameAr { get; set; } = string.Empty;
     public string NameEn { get; set; } = string.Empty;
     public EducationProgramType ProgramType { get; set; }
+    public StudentAttendanceMode? StudentAttendanceModeOverride { get; set; }
     public bool IsActive { get; set; } = true;
     public bool IsDeleted { get; set; }
     public DateTimeOffset? DeletedAtUtc { get; set; }
@@ -165,6 +167,7 @@ public sealed class EducationStage : ISoftDeletableSchoolEntity
     public int SortOrder { get; set; }
     public int DailyLessonCount { get; set; }
     public int DailyBreakCount { get; set; }
+    public StudentAttendanceMode? StudentAttendanceModeOverride { get; set; }
     public bool IsActive { get; set; } = true;
     public bool IsDeleted { get; set; }
     public DateTimeOffset? DeletedAtUtc { get; set; }

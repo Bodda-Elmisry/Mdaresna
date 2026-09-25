@@ -19,7 +19,7 @@ internal static class AcademicConfiguration
 
 internal sealed class EducationProgramConfiguration : IEntityTypeConfiguration<EducationProgram>
 {
-    public void Configure(EntityTypeBuilder<EducationProgram> b) { b.ToTable("education_programs"); b.HasKey(x => x.Id); AcademicConfiguration.Named(b); b.Property(x => x.ProgramType).HasConversion<string>().HasMaxLength(40); }
+    public void Configure(EntityTypeBuilder<EducationProgram> b) { b.ToTable("education_programs"); b.HasKey(x => x.Id); AcademicConfiguration.Named(b); b.Property(x => x.ProgramType).HasConversion<string>().HasMaxLength(40); b.Property(x => x.StudentAttendanceModeOverride).HasConversion<string>().HasMaxLength(24); }
 }
 internal sealed class AcademicYearDefinitionConfiguration : IEntityTypeConfiguration<AcademicYearDefinition>
 {
@@ -47,7 +47,7 @@ internal sealed class SchoolCalendarEventConfiguration : IEntityTypeConfiguratio
 }
 internal sealed class EducationStageConfiguration : IEntityTypeConfiguration<EducationStage>
 {
-    public void Configure(EntityTypeBuilder<EducationStage> b) { b.ToTable("education_stages"); b.HasKey(x => x.Id); AcademicConfiguration.Named(b); b.HasOne(x => x.EducationProgram).WithMany(x => x.Stages).HasForeignKey(x => x.EducationProgramId).OnDelete(DeleteBehavior.Restrict); }
+    public void Configure(EntityTypeBuilder<EducationStage> b) { b.ToTable("education_stages"); b.HasKey(x => x.Id); AcademicConfiguration.Named(b); b.Property(x => x.StudentAttendanceModeOverride).HasConversion<string>().HasMaxLength(24); b.HasOne(x => x.EducationProgram).WithMany(x => x.Stages).HasForeignKey(x => x.EducationProgramId).OnDelete(DeleteBehavior.Restrict); }
 }
 internal sealed class EducationTrackConfiguration : IEntityTypeConfiguration<EducationTrack>
 {
