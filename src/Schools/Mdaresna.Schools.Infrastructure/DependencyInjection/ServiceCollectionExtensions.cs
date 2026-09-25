@@ -31,6 +31,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISchoolDbContextFactory, SchoolDbContextFactory>();
         services.AddHttpClient<ISchoolOwnerActivationCodeSender, PlatformSchoolOwnerActivationCodeSender>();
         services.AddHttpClient<ISchoolUserIdentityGateway, PlatformSchoolUserIdentityGateway>();
+        services.AddHttpClient<IGlobalStudentGateway, PlatformGlobalStudentGateway>();
         services.AddScoped<ISchoolIdentityBootstrapper, SchoolIdentityBootstrapper>();
         services.AddScoped<SchoolOwnerActivationService>();
         services.AddScoped<IPasswordHasher<LocalUserAccount>, PasswordHasher<LocalUserAccount>>();

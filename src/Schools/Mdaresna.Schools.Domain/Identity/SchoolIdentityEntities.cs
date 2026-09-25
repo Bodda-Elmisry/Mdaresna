@@ -1,9 +1,12 @@
+using Mdaresna.Schools.Domain.Facilities;
+
 namespace Mdaresna.Schools.Domain.Identity;
 
 public enum PersonStatus { Active = 1, Inactive = 2 }
 public enum PersonContactType { Phone = 1, Email = 2, Address = 3 }
 public enum LocalUserStatus { PendingActivation = 1, Active = 2, Locked = 3, Suspended = 4, Disabled = 5 }
 public enum SchoolUserKind { Employee = 1, Teacher = 2 }
+public enum StaffAbsenceType { Absence = 1, Permission = 2, SickLeave = 3, AnnualLeave = 4, EmergencyLeave = 5, Other = 6 }
 
 public sealed class Person
 {
@@ -64,6 +67,51 @@ public sealed class LocalUserAccount
     public LocalUserCredential Credential { get; set; } = null!;
     public ICollection<LocalUserRole> Roles { get; set; } = [];
     public ICollection<LocalUserSession> Sessions { get; set; } = [];
+    public ICollection<Mdaresna.Schools.Domain.Organization.DepartmentMembership> DepartmentMemberships { get; set; } = [];
+    public ICollection<StaffAbsence> Absences { get; set; } = [];
+    public ICollection<SchoolUserNotification> Notifications { get; set; } = [];
+}
+
+public sealed class StaffAbsence : ISoftDeletableSchoolEntity
+{
+    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
+    public StaffAbsenceType Type { get; set; }
+    public DateOnly StartsOn { get; set; }
+    public DateOnly EndsOn { get; set; }
+    public TimeOnly? StartsAt { get; set; }
+    public TimeOnly? EndsAt { get; set; }
+    public string? Notes { get; set; }
+    public string SourceType { get; set; } = "Manual";
+    public string? SourceReferenceId { get; set; }
+    public Guid CreatedByUserId { get; set; }
+    public bool IsActive { get; set; } = true;
+    public bool IsDeleted { get; set; }
+    public DateTimeOffset? DeletedAtUtc { get; set; }
+    public Guid? DeletedByUserId { get; set; }
+    public DateTimeOffset CreatedAtUtc { get; set; }
+    public DateTimeOffset UpdatedAtUtc { get; set; }
+    public byte[] RowVersion { get; set; } = [];
+    public LocalUserAccount User { get; set; } = null!;
+}
+
+public sealed class SchoolUserNotification
+{
+    public Guid Id { get; set; }
+    public Guid RecipientUserId { get; set; }
+    public string Type { get; set; } = string.Empty;
+    public string TitleAr { get; set; } = string.Empty;
+    public string TitleEn { get; set; } = string.Empty;
+    public string BodyAr { get; set; } = string.Empty;
+    public string BodyEn { get; set; } = string.Empty;
+    public string? RelatedEntityType { get; set; }
+    public string? RelatedEntityId { get; set; }
+    public bool IsRead { get; set; }
+    public DateTimeOffset? ReadAtUtc { get; set; }
+    public DateTimeOffset CreatedAtUtc { get; set; }
+    public DateTimeOffset UpdatedAtUtc { get; set; }
+    public byte[] RowVersion { get; set; } = [];
+    public LocalUserAccount RecipientUser { get; set; } = null!;
 }
 
 public sealed class LocalUserCredential
@@ -183,6 +231,14 @@ public static class SchoolIdentitySeed
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd14"), "school.calendar.view", "calendar", "عرض التقويم المدرسي", "View school calendar"),
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd15"), "school.calendar.manage", "calendar", "إدارة التقويم المدرسي", "Manage school calendar"),
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd16"), "school.calendar.delete", "calendar", "حذف أحداث التقويم", "Delete calendar events"),
-        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd17"), "school.calendar.restore", "calendar", "استعادة أحداث التقويم", "Restore calendar events")
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd17"), "school.calendar.restore", "calendar", "استعادة أحداث التقويم", "Restore calendar events"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd18"), "school.departments.view", "departments", "عرض الهيكل التنظيمي", "View organization departments"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd19"), "school.departments.manage", "departments", "إدارة الهيكل التنظيمي", "Manage organization departments"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd1a"), "school.departments.delete", "departments", "حذف الأقسام", "Delete departments"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd1b"), "school.departments.restore", "departments", "استعادة الأقسام", "Restore departments"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd1c"), "school.students.view", "students", "عرض الطلاب", "View students"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd1d"), "school.students.manage", "students", "إدارة الطلاب", "Manage students"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd1e"), "school.admissions.view", "admissions", "عرض طلبات التقديم", "View admission applications"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd1f"), "school.admissions.manage", "admissions", "إدارة طلبات التقديم", "Manage admission applications")
     ];
 }

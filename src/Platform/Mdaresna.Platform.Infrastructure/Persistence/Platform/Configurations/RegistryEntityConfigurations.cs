@@ -6,6 +6,28 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Mdaresna.Platform.Infrastructure.Persistence.Platform.Configurations;
 
+internal sealed class GlobalStudentRegistryConfiguration : IEntityTypeConfiguration<GlobalStudentRegistry>
+{
+    public void Configure(EntityTypeBuilder<GlobalStudentRegistry> builder)
+    {
+        builder.ToTable("global_students", "registry");
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).ValueGeneratedNever();
+        builder.Property(x => x.StudentCode).HasMaxLength(32).IsRequired();
+        builder.Property(x => x.FullName).HasMaxLength(200).IsRequired();
+        builder.Property(x => x.NormalizedName).HasMaxLength(200).IsRequired();
+        builder.Property(x => x.NationalId).HasMaxLength(40);
+        builder.Property(x => x.BirthCertificateNumber).HasMaxLength(80);
+        builder.Property(x => x.CreatedAtUtc).HasPrecision(3);
+        builder.Property(x => x.UpdatedAtUtc).HasPrecision(3);
+        builder.Property(x => x.RowVersion).IsRowVersion();
+        builder.HasIndex(x => x.StudentCode).IsUnique();
+        builder.HasIndex(x => x.NationalId).IsUnique().HasFilter("[NationalId] IS NOT NULL");
+        builder.HasIndex(x => x.BirthCertificateNumber).IsUnique().HasFilter("[BirthCertificateNumber] IS NOT NULL");
+        builder.HasIndex(x => new { x.NormalizedName, x.DateOfBirth });
+    }
+}
+
 internal sealed class TenantConfiguration : IEntityTypeConfiguration<Tenant>
 {
     public void Configure(EntityTypeBuilder<Tenant> builder)

@@ -77,6 +77,33 @@ internal sealed class LocalUserConfiguration : IEntityTypeConfiguration<LocalUse
     }
 }
 
+internal sealed class StaffAbsenceConfiguration : IEntityTypeConfiguration<StaffAbsence>
+{
+    public void Configure(EntityTypeBuilder<StaffAbsence> b)
+    {
+        b.ToTable("staff_absences"); b.HasKey(x => x.Id);
+        b.Property(x => x.Type).HasConversion<string>().HasMaxLength(32);
+        b.Property(x => x.Notes).HasMaxLength(1000);
+        b.Property(x => x.SourceType).HasMaxLength(50).IsRequired();
+        b.Property(x => x.SourceReferenceId).HasMaxLength(100);
+        b.HasOne(x => x.User).WithMany(x => x.Absences).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+    }
+}
+
+internal sealed class SchoolUserNotificationConfiguration : IEntityTypeConfiguration<SchoolUserNotification>
+{
+    public void Configure(EntityTypeBuilder<SchoolUserNotification> b)
+    {
+        b.ToTable("school_user_notifications"); b.HasKey(x => x.Id);
+        b.Property(x => x.Type).HasMaxLength(50).IsRequired();
+        b.Property(x => x.TitleAr).HasMaxLength(200).IsRequired(); b.Property(x => x.TitleEn).HasMaxLength(200).IsRequired();
+        b.Property(x => x.BodyAr).HasMaxLength(1000).IsRequired(); b.Property(x => x.BodyEn).HasMaxLength(1000).IsRequired();
+        b.Property(x => x.RelatedEntityType).HasMaxLength(50); b.Property(x => x.RelatedEntityId).HasMaxLength(100);
+        b.HasIndex(x => new { x.RecipientUserId, x.IsRead, x.CreatedAtUtc });
+        b.HasOne(x => x.RecipientUser).WithMany(x => x.Notifications).HasForeignKey(x => x.RecipientUserId).OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
 internal sealed class LocalUserCredentialConfiguration : IEntityTypeConfiguration<LocalUserCredential>
 {
     public void Configure(EntityTypeBuilder<LocalUserCredential> b)

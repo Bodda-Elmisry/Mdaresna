@@ -28,6 +28,8 @@ public static class SchoolPermissionPolicies
     public const string Prefix = "school-permission:";
     public const string UsersView = Prefix + "school.users.view";
     public const string UsersManage = Prefix + "school.users.manage";
+    public const string PeopleView = Prefix + "school.people.view";
+    public const string PeopleManage = Prefix + "school.people.manage";
     public const string RolesView = Prefix + "school.roles.view";
     public const string RolesManage = Prefix + "school.roles.manage";
     public const string FacilitiesView = Prefix + "school.facilities.view";
@@ -46,6 +48,14 @@ public static class SchoolPermissionPolicies
     public const string CalendarManage = Prefix + "school.calendar.manage";
     public const string CalendarDelete = Prefix + "school.calendar.delete";
     public const string CalendarRestore = Prefix + "school.calendar.restore";
+    public const string DepartmentsView = Prefix + "school.departments.view";
+    public const string DepartmentsManage = Prefix + "school.departments.manage";
+    public const string DepartmentsDelete = Prefix + "school.departments.delete";
+    public const string DepartmentsRestore = Prefix + "school.departments.restore";
+    public const string StudentsView = Prefix + "school.students.view";
+    public const string StudentsManage = Prefix + "school.students.manage";
+    public const string AdmissionsView = Prefix + "school.admissions.view";
+    public const string AdmissionsManage = Prefix + "school.admissions.manage";
 }
 
 internal sealed record SchoolPermissionRequirement(string Permission) : IAuthorizationRequirement;

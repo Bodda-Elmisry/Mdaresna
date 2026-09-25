@@ -3,6 +3,7 @@ using System;
 using Mdaresna.Schools.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
 {
     [DbContext(typeof(PostgreSqlSchoolsDbContext))]
-    partial class PostgreSqlSchoolsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260924100046_AddSchoolOrganizationDepartments")]
+    partial class AddSchoolOrganizationDepartments
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1640,15 +1643,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<string>("SourceReferenceId")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("SourceType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
                     b.Property<Guid>("SubstituteTeacherAssignmentId")
                         .HasColumnType("uuid");
 
@@ -1675,118 +1669,11 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.ToTable("teacher_substitutions", "school");
                 });
 
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.TemporaryClassMerge", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset?>("DeletedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("DeletedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<TimeOnly>("EndsAt")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<int>("ExpectedStudentCount")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateOnly>("MergeDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<Guid>("RoomId")
-                        .HasColumnType("uuid");
-
-                    b.Property<TimeOnly>("StartsAt")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<uint>("xmin")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("xid")
-                        .HasColumnName("xmin");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoomId", "MergeDate", "StartsAt", "EndsAt")
-                        .HasFilter("\"IsDeleted\" = FALSE");
-
-                    b.ToTable("temporary_class_merges", "school");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.TemporaryClassMergeSection", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ClassSectionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset?>("DeletedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("DeletedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<Guid>("TemporaryClassMergeId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<uint>("xmin")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("xid")
-                        .HasColumnName("xmin");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClassSectionId");
-
-                    b.HasIndex("TemporaryClassMergeId", "ClassSectionId")
-                        .IsUnique()
-                        .HasFilter("\"IsDeleted\" = FALSE");
-
-                    b.ToTable("temporary_class_merge_sections", "school");
-                });
-
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.WeeklyTimetableSlot", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.Property<bool>("AllowRoomSharing")
-                        .HasColumnType("boolean");
 
                     b.Property<Guid>("ClassSectionId")
                         .HasColumnType("uuid");
@@ -1823,9 +1710,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.Property<Guid?>("PrimaryTeacherScopeId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("RoomId")
-                        .HasColumnType("uuid");
-
                     b.Property<int>("SlotNumber")
                         .HasColumnType("integer");
 
@@ -1846,8 +1730,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.HasIndex("ClassSectionSubjectId");
 
                     b.HasIndex("PrimaryTeacherScopeId");
-
-                    b.HasIndex("RoomId");
 
                     b.HasIndex("ClassSectionId", "DayOfWeek", "SlotNumber")
                         .IsUnique()
@@ -2614,50 +2496,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                             IsActive = true,
                             Module = "departments",
                             UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd1c"),
-                            Code = "school.students.view",
-                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DisplayNameAr = "عرض الطلاب",
-                            DisplayNameEn = "View students",
-                            IsActive = true,
-                            Module = "students",
-                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd1d"),
-                            Code = "school.students.manage",
-                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DisplayNameAr = "إدارة الطلاب",
-                            DisplayNameEn = "Manage students",
-                            IsActive = true,
-                            Module = "students",
-                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd1e"),
-                            Code = "school.admissions.view",
-                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DisplayNameAr = "عرض طلبات التقديم",
-                            DisplayNameEn = "View admission applications",
-                            IsActive = true,
-                            Module = "admissions",
-                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd1f"),
-                            Code = "school.admissions.manage",
-                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DisplayNameAr = "إدارة طلبات التقديم",
-                            DisplayNameEn = "Manage admission applications",
-                            IsActive = true,
-                            Module = "admissions",
-                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         });
                 });
 
@@ -2902,30 +2740,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                         {
                             RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
                             PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd1b"),
-                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
-                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd1c"),
-                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
-                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd1d"),
-                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
-                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd1e"),
-                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
-                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd1f"),
                             GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         });
                 });
@@ -3241,147 +3055,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.HasKey("PersonId");
 
                     b.ToTable("person_profile_images", "school");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Identity.SchoolUserNotification", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("BodyAr")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<string>("BodyEn")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTimeOffset?>("ReadAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("RecipientUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("RelatedEntityId")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("RelatedEntityType")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("TitleAr")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("TitleEn")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<uint>("xmin")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("xid")
-                        .HasColumnName("xmin");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RecipientUserId", "IsRead", "CreatedAtUtc");
-
-                    b.ToTable("school_user_notifications", "school");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Identity.StaffAbsence", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("CreatedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset?>("DeletedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("DeletedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<TimeOnly?>("EndsAt")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<DateOnly>("EndsOn")
-                        .HasColumnType("date");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<string>("SourceReferenceId")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("SourceType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<TimeOnly?>("StartsAt")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<DateOnly>("StartsOn")
-                        .HasColumnType("date");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<uint>("xmin")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("xid")
-                        .HasColumnName("xmin");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId", "StartsOn", "EndsOn")
-                        .HasFilter("\"IsDeleted\" = FALSE");
-
-                    b.ToTable("staff_absences", "school");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Organization.AcademicDepartmentSubject", b =>
@@ -3795,387 +3468,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.ToTable("school_information", "school");
                 });
 
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.AdmissionApplication", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("AcceptedStudentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ApplicationNumber")
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)");
-
-                    b.Property<string>("BirthCertificateNumber")
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateOnly>("DateOfBirth")
-                        .HasColumnType("date");
-
-                    b.Property<string>("FullNameAr")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("FullNameEn")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("Gender")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
-
-                    b.Property<Guid?>("GlobalStudentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("GradeLevelId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("NationalId")
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)");
-
-                    b.Property<string>("NormalizedName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<Guid>("ProgramAcademicYearId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Source")
-                        .IsRequired()
-                        .HasMaxLength(24)
-                        .HasColumnType("character varying(24)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<string>("StudentCode")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<DateTimeOffset>("SubmittedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<uint>("xmin")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("xid")
-                        .HasColumnName("xmin");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AcceptedStudentId");
-
-                    b.HasIndex("ApplicationNumber")
-                        .IsUnique();
-
-                    b.HasIndex("GradeLevelId");
-
-                    b.HasIndex("NormalizedName", "DateOfBirth");
-
-                    b.HasIndex("ProgramAcademicYearId", "GradeLevelId");
-
-                    b.HasIndex("Status", "SubmittedAtUtc");
-
-                    b.ToTable("admission_applications", "school");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.AdmissionApplicationGuardian", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AdmissionApplicationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("CanPickup")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("GuardianId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsEmergencyContact")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsFinancialResponsible")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsPrimary")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Relationship")
-                        .IsRequired()
-                        .HasMaxLength(24)
-                        .HasColumnType("character varying(24)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AdmissionApplicationId")
-                        .IsUnique()
-                        .HasFilter("\"IsPrimary\" = TRUE");
-
-                    b.HasIndex("GuardianId");
-
-                    b.HasIndex("AdmissionApplicationId", "GuardianId")
-                        .IsUnique();
-
-                    b.ToTable("admission_application_guardians", "school");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.Guardian", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(254)
-                        .HasColumnType("character varying(254)");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("NationalId")
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<Guid?>("PlatformAccountId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<uint>("xmin")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("xid")
-                        .HasColumnName("xmin");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Phone");
-
-                    b.ToTable("guardians", "school");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.Student", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("BirthCertificateNumber")
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateOnly>("DateOfBirth")
-                        .HasColumnType("date");
-
-                    b.Property<string>("FullNameAr")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("FullNameEn")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("Gender")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
-
-                    b.Property<Guid>("GlobalStudentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("NationalId")
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)");
-
-                    b.Property<string>("NormalizedName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<Guid>("PersonId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("StudentCode")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<uint>("xmin")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("xid")
-                        .HasColumnName("xmin");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GlobalStudentId")
-                        .IsUnique();
-
-                    b.HasIndex("PersonId")
-                        .IsUnique();
-
-                    b.HasIndex("StudentCode")
-                        .IsUnique();
-
-                    b.HasIndex("NormalizedName", "DateOfBirth");
-
-                    b.ToTable("students", "school");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.StudentEnrollment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ClassSectionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateOnly>("EnrollmentDate")
-                        .HasColumnType("date");
-
-                    b.Property<Guid>("GradeOfferingId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(24)
-                        .HasColumnType("character varying(24)");
-
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<uint>("xmin")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("xid")
-                        .HasColumnName("xmin");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GradeOfferingId");
-
-                    b.HasIndex("ClassSectionId", "Status");
-
-                    b.HasIndex("StudentId", "GradeOfferingId")
-                        .IsUnique();
-
-                    b.ToTable("student_enrollments", "school");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.StudentGuardian", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("CanPickup")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("GuardianId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsEmergencyContact")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsFinancialResponsible")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsPrimary")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Relationship")
-                        .IsRequired()
-                        .HasMaxLength(24)
-                        .HasColumnType("character varying(24)");
-
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<uint>("xmin")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("xid")
-                        .HasColumnName("xmin");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GuardianId");
-
-                    b.HasIndex("StudentId")
-                        .IsUnique()
-                        .HasFilter("\"IsActive\" = TRUE AND \"IsPrimary\" = TRUE");
-
-                    b.HasIndex("StudentId", "GuardianId")
-                        .IsUnique();
-
-                    b.ToTable("student_guardians", "school");
-                });
-
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.AcademicPeriod", b =>
                 {
                     b.HasOne("Mdaresna.Schools.Domain.Academics.AcademicTerm", "AcademicTerm")
@@ -4545,36 +3837,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.Navigation("WeeklyTimetableSlot");
                 });
 
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.TemporaryClassMerge", b =>
-                {
-                    b.HasOne("Mdaresna.Schools.Domain.Facilities.SchoolRoom", "Room")
-                        .WithMany()
-                        .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Room");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.TemporaryClassMergeSection", b =>
-                {
-                    b.HasOne("Mdaresna.Schools.Domain.Academics.ClassSection", "ClassSection")
-                        .WithMany()
-                        .HasForeignKey("ClassSectionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Mdaresna.Schools.Domain.Academics.TemporaryClassMerge", "TemporaryClassMerge")
-                        .WithMany("Sections")
-                        .HasForeignKey("TemporaryClassMergeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("ClassSection");
-
-                    b.Navigation("TemporaryClassMerge");
-                });
-
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.WeeklyTimetableSlot", b =>
                 {
                     b.HasOne("Mdaresna.Schools.Domain.Academics.ClassSection", "ClassSection")
@@ -4593,18 +3855,11 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                         .HasForeignKey("PrimaryTeacherScopeId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Mdaresna.Schools.Domain.Facilities.SchoolRoom", "Room")
-                        .WithMany()
-                        .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("ClassSection");
 
                     b.Navigation("ClassSectionSubject");
 
                     b.Navigation("PrimaryTeacherScope");
-
-                    b.Navigation("Room");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.WeeklyTimetableSlotSubstituteTeacher", b =>
@@ -4790,28 +4045,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.Navigation("Person");
                 });
 
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Identity.SchoolUserNotification", b =>
-                {
-                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "RecipientUser")
-                        .WithMany("Notifications")
-                        .HasForeignKey("RecipientUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("RecipientUser");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Identity.StaffAbsence", b =>
-                {
-                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "User")
-                        .WithMany("Absences")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Mdaresna.Schools.Domain.Organization.AcademicDepartmentSubject", b =>
                 {
                     b.HasOne("Mdaresna.Schools.Domain.Organization.SchoolDepartment", "Department")
@@ -4859,7 +4092,7 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                         .IsRequired();
 
                     b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "User")
-                        .WithMany("DepartmentMemberships")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -4917,108 +4150,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.Navigation("EducationProgram");
 
                     b.Navigation("EducationStage");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.AdmissionApplication", b =>
-                {
-                    b.HasOne("Mdaresna.Schools.Domain.Students.Student", "AcceptedStudent")
-                        .WithMany()
-                        .HasForeignKey("AcceptedStudentId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Mdaresna.Schools.Domain.Academics.GradeLevel", "GradeLevel")
-                        .WithMany()
-                        .HasForeignKey("GradeLevelId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Mdaresna.Schools.Domain.Academics.ProgramAcademicYear", "ProgramAcademicYear")
-                        .WithMany()
-                        .HasForeignKey("ProgramAcademicYearId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("AcceptedStudent");
-
-                    b.Navigation("GradeLevel");
-
-                    b.Navigation("ProgramAcademicYear");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.AdmissionApplicationGuardian", b =>
-                {
-                    b.HasOne("Mdaresna.Schools.Domain.Students.AdmissionApplication", "AdmissionApplication")
-                        .WithMany("Guardians")
-                        .HasForeignKey("AdmissionApplicationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Mdaresna.Schools.Domain.Students.Guardian", "Guardian")
-                        .WithMany("Applications")
-                        .HasForeignKey("GuardianId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("AdmissionApplication");
-
-                    b.Navigation("Guardian");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.Student", b =>
-                {
-                    b.HasOne("Mdaresna.Schools.Domain.Identity.Person", "Person")
-                        .WithOne()
-                        .HasForeignKey("Mdaresna.Schools.Domain.Students.Student", "PersonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Person");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.StudentEnrollment", b =>
-                {
-                    b.HasOne("Mdaresna.Schools.Domain.Academics.ClassSection", "ClassSection")
-                        .WithMany()
-                        .HasForeignKey("ClassSectionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Mdaresna.Schools.Domain.Academics.GradeOffering", "GradeOffering")
-                        .WithMany()
-                        .HasForeignKey("GradeOfferingId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Mdaresna.Schools.Domain.Students.Student", "Student")
-                        .WithMany("Enrollments")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("ClassSection");
-
-                    b.Navigation("GradeOffering");
-
-                    b.Navigation("Student");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.StudentGuardian", b =>
-                {
-                    b.HasOne("Mdaresna.Schools.Domain.Students.Guardian", "Guardian")
-                        .WithMany("Students")
-                        .HasForeignKey("GuardianId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Mdaresna.Schools.Domain.Students.Student", "Student")
-                        .WithMany("Guardians")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Guardian");
-
-                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.AcademicTerm", b =>
@@ -5123,11 +4254,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.Navigation("CurriculumGrades");
                 });
 
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.TemporaryClassMerge", b =>
-                {
-                    b.Navigation("Sections");
-                });
-
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.WeeklyTimetableSlot", b =>
                 {
                     b.Navigation("SubstituteTeachers");
@@ -5179,14 +4305,8 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Identity.LocalUserAccount", b =>
                 {
-                    b.Navigation("Absences");
-
                     b.Navigation("Credential")
                         .IsRequired();
-
-                    b.Navigation("DepartmentMemberships");
-
-                    b.Navigation("Notifications");
 
                     b.Navigation("Roles");
 
@@ -5216,25 +4336,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.Navigation("Memberships");
 
                     b.Navigation("Subjects");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.AdmissionApplication", b =>
-                {
-                    b.Navigation("Guardians");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.Guardian", b =>
-                {
-                    b.Navigation("Applications");
-
-                    b.Navigation("Students");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.Student", b =>
-                {
-                    b.Navigation("Enrollments");
-
-                    b.Navigation("Guardians");
                 });
 #pragma warning restore 612, 618
         }
