@@ -62,14 +62,26 @@ public static class PlatformAuthenticationExtensions
                     },
                     OnTokenValidated = async context =>
                     {
-                        if (context.Principal is null ||
-                            !await context.HttpContext.RequestServices
-                                .GetRequiredService<PlatformPrincipalValidator>()
-                                .ValidateAsync(
-                                    context.Principal,
-                                    context.HttpContext.RequestAborted))
+                        try
                         {
-                            context.Fail("Platform account is not active or authorized.");
+                            if (context.Principal is null ||
+                                !await context.HttpContext.RequestServices
+                                    .GetRequiredService<PlatformPrincipalValidator>()
+                                    .ValidateAsync(
+                                        context.Principal,
+                                        context.HttpContext.RequestAborted))
+                            {
+                                context.Fail("Platform account is not active or authorized.");
+                            }
+                        }
+                        catch (OperationCanceledException)
+                            when (context.HttpContext.RequestAborted.IsCancellationRequested)
+                        {
+                            // A browser navigation, aborted fetch, or application shutdown can
+                            // cancel the request while Npgsql is opening a connection. This is not
+                            // an invalid JWT or a database outage, so do not report it as an
+                            // authentication failure. Genuine connection failures still propagate.
+                            context.NoResult();
                         }
                     }
                 };
