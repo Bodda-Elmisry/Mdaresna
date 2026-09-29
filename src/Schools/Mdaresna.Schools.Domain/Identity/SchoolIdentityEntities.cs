@@ -246,6 +246,11 @@ public static class SchoolIdentitySeed
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd23"), "school.homework.view", "homework", "عرض الواجبات", "View homework"),
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd24"), "school.homework.manage", "homework", "إدارة الواجبات", "Manage homework"),
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd25"), "school.homework.publish", "homework", "نشر وإغلاق الواجبات", "Publish and close homework"),
-        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd26"), "school.homework.grade", "homework", "تقييم واجبات الطلاب", "Grade student homework")
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd26"), "school.homework.grade", "homework", "تقييم واجبات الطلاب", "Grade student homework"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd27"), "school.activities.view", "activities", "عرض أنشطة الفصل", "View class activities"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd28"), "school.activities.manage", "activities", "إدارة أنشطة الفصل", "Manage class activities"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd29"), "school.activities.publish", "activities", "نشر وإلغاء أنشطة الفصل", "Publish and cancel class activities"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd2a"), "school.activities.grade", "activities", "تسجيل مشاركة وتقييم الأنشطة", "Record class activity participation and grades"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd2b"), "school.activities.reopen", "activities", "إعادة فتح تقييم أنشطة الفصل", "Reopen class activity evaluation")
     ];
 }

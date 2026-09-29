@@ -2749,6 +2749,61 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                             IsActive = true,
                             Module = "homework",
                             UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd27"),
+                            Code = "school.activities.view",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "عرض أنشطة الفصل",
+                            DisplayNameEn = "View class activities",
+                            IsActive = true,
+                            Module = "activities",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd28"),
+                            Code = "school.activities.manage",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "إدارة أنشطة الفصل",
+                            DisplayNameEn = "Manage class activities",
+                            IsActive = true,
+                            Module = "activities",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd29"),
+                            Code = "school.activities.publish",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "نشر وإلغاء أنشطة الفصل",
+                            DisplayNameEn = "Publish and cancel class activities",
+                            IsActive = true,
+                            Module = "activities",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd2a"),
+                            Code = "school.activities.grade",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "تسجيل مشاركة وتقييم الأنشطة",
+                            DisplayNameEn = "Record class activity participation and grades",
+                            IsActive = true,
+                            Module = "activities",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd2b"),
+                            Code = "school.activities.reopen",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "إعادة فتح تقييم أنشطة الفصل",
+                            DisplayNameEn = "Reopen class activity evaluation",
+                            IsActive = true,
+                            Module = "activities",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         });
                 });
 
@@ -3060,6 +3115,36 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                         {
                             RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
                             PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd26"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd27"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd28"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd29"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd2a"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd2b"),
                             GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         });
                 });
@@ -4087,6 +4172,221 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                         .IsUnique();
 
                     b.ToTable("admission_application_guardians", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.ClassActivity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("ActivityDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("AudienceMode")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
+
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTimeOffset?>("CancelledAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("CancelledByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
+
+                    b.Property<Guid>("ClassSectionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ClassSectionSubjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("CompletedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("CompletedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Details")
+                        .IsRequired()
+                        .HasMaxLength(6000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<TimeOnly?>("EndsAt")
+                        .HasColumnType("time");
+
+                    b.Property<bool>("IsGraded")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTimeOffset?>("PublishedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("PublishedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Scope")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<TimeOnly?>("StartsAt")
+                        .HasColumnType("time");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<string>("TimeZoneIdSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal?>("TotalScore")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CancelledByUserId");
+
+                    b.HasIndex("CompletedByUserId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("PublishedByUserId");
+
+                    b.HasIndex("ClassSectionSubjectId", "ActivityDate");
+
+                    b.HasIndex("ClassSectionId", "Status", "ActivityDate");
+
+                    b.ToTable("class_activities", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.ClassActivityAudienceStudent", b =>
+                {
+                    b.Property<Guid>("ClassActivityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("StudentEnrollmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("ClassActivityId", "StudentEnrollmentId");
+
+                    b.HasIndex("StudentEnrollmentId");
+
+                    b.ToTable("class_activity_audience_students", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.ClassActivityAudit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ClassActivityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("PayloadJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActorUserId");
+
+                    b.HasIndex("ClassActivityId", "CreatedAtUtc");
+
+                    b.ToTable("class_activity_audits", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.ClassActivityParticipant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ClassActivityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("EvaluatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("EvaluatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<decimal?>("Score")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
+
+                    b.Property<Guid>("StudentEnrollmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EvaluatedByUserId");
+
+                    b.HasIndex("StudentEnrollmentId");
+
+                    b.HasIndex("ClassActivityId", "StudentEnrollmentId")
+                        .IsUnique();
+
+                    b.ToTable("class_activity_participants", "school");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Students.Guardian", b =>
@@ -5769,6 +6069,117 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.Navigation("Guardian");
                 });
 
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.ClassActivity", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "CancelledByUser")
+                        .WithMany()
+                        .HasForeignKey("CancelledByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.ClassSection", "ClassSection")
+                        .WithMany()
+                        .HasForeignKey("ClassSectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.ClassSectionSubject", "ClassSectionSubject")
+                        .WithMany()
+                        .HasForeignKey("ClassSectionSubjectId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "CompletedByUser")
+                        .WithMany()
+                        .HasForeignKey("CompletedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "PublishedByUser")
+                        .WithMany()
+                        .HasForeignKey("PublishedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CancelledByUser");
+
+                    b.Navigation("ClassSection");
+
+                    b.Navigation("ClassSectionSubject");
+
+                    b.Navigation("CompletedByUser");
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("PublishedByUser");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.ClassActivityAudienceStudent", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Students.ClassActivity", "ClassActivity")
+                        .WithMany("AudienceStudents")
+                        .HasForeignKey("ClassActivityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Students.StudentEnrollment", "StudentEnrollment")
+                        .WithMany()
+                        .HasForeignKey("StudentEnrollmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ClassActivity");
+
+                    b.Navigation("StudentEnrollment");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.ClassActivityAudit", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "ActorUser")
+                        .WithMany()
+                        .HasForeignKey("ActorUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Students.ClassActivity", "ClassActivity")
+                        .WithMany("AuditTrail")
+                        .HasForeignKey("ClassActivityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ActorUser");
+
+                    b.Navigation("ClassActivity");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.ClassActivityParticipant", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Students.ClassActivity", "ClassActivity")
+                        .WithMany("Participants")
+                        .HasForeignKey("ClassActivityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "EvaluatedByUser")
+                        .WithMany()
+                        .HasForeignKey("EvaluatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Students.StudentEnrollment", "StudentEnrollment")
+                        .WithMany()
+                        .HasForeignKey("StudentEnrollmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ClassActivity");
+
+                    b.Navigation("EvaluatedByUser");
+
+                    b.Navigation("StudentEnrollment");
+                });
+
             modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkAssignment", b =>
                 {
                     b.HasOne("Mdaresna.Schools.Domain.Academics.ClassSectionSubject", "ClassSectionSubject")
@@ -6301,6 +6712,15 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
             modelBuilder.Entity("Mdaresna.Schools.Domain.Students.AdmissionApplication", b =>
                 {
                     b.Navigation("Guardians");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.ClassActivity", b =>
+                {
+                    b.Navigation("AudienceStudents");
+
+                    b.Navigation("AuditTrail");
+
+                    b.Navigation("Participants");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Students.Guardian", b =>

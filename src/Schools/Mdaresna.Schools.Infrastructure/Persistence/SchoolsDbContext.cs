@@ -91,6 +91,10 @@ public class SchoolsDbContext(DbContextOptions options) : DbContext(options)
     public DbSet<HomeworkStudentSelectedOption> HomeworkStudentSelectedOptions => Set<HomeworkStudentSelectedOption>();
     public DbSet<HomeworkStudentBlankAnswer> HomeworkStudentBlankAnswers => Set<HomeworkStudentBlankAnswer>();
     public DbSet<HomeworkAudit> HomeworkAudits => Set<HomeworkAudit>();
+    public DbSet<ClassActivity> ClassActivities => Set<ClassActivity>();
+    public DbSet<ClassActivityAudienceStudent> ClassActivityAudienceStudents => Set<ClassActivityAudienceStudent>();
+    public DbSet<ClassActivityParticipant> ClassActivityParticipants => Set<ClassActivityParticipant>();
+    public DbSet<ClassActivityAudit> ClassActivityAudits => Set<ClassActivityAudit>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

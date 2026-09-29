@@ -27,6 +27,11 @@ public sealed class SchoolIdentityTests
         Assert.Equal("school-admin", SchoolIdentitySeed.SchoolAdminRoleCode);
         Assert.Contains(SchoolIdentitySeed.Permissions, x => x.Code == "school.users.manage");
         Assert.Contains(SchoolIdentitySeed.Permissions, x => x.Code == "school.roles.manage");
+        Assert.Contains(SchoolIdentitySeed.Permissions, x => x.Code == "school.activities.view");
+        Assert.Contains(SchoolIdentitySeed.Permissions, x => x.Code == "school.activities.manage");
+        Assert.Contains(SchoolIdentitySeed.Permissions, x => x.Code == "school.activities.publish");
+        Assert.Contains(SchoolIdentitySeed.Permissions, x => x.Code == "school.activities.grade");
+        Assert.Contains(SchoolIdentitySeed.Permissions, x => x.Code == "school.activities.reopen");
         Assert.Equal(SchoolIdentitySeed.Permissions.Length,
             SchoolIdentitySeed.Permissions.Select(x => x.Code).Distinct(StringComparer.Ordinal).Count());
     }

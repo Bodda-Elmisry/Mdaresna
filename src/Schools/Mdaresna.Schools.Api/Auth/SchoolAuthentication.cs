@@ -63,6 +63,11 @@ public static class SchoolPermissionPolicies
     public const string HomeworkManage = Prefix + "school.homework.manage";
     public const string HomeworkPublish = Prefix + "school.homework.publish";
     public const string HomeworkGrade = Prefix + "school.homework.grade";
+    public const string ActivitiesView = Prefix + "school.activities.view";
+    public const string ActivitiesManage = Prefix + "school.activities.manage";
+    public const string ActivitiesPublish = Prefix + "school.activities.publish";
+    public const string ActivitiesGrade = Prefix + "school.activities.grade";
+    public const string ActivitiesReopen = Prefix + "school.activities.reopen";
 }
 
 internal sealed record SchoolPermissionRequirement(string Permission) : IAuthorizationRequirement;
