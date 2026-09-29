@@ -179,13 +179,15 @@ public sealed class SchoolHomeworkController(ISchoolDbContextFactory dbFactory) 
 
     private async Task<IActionResult?> Validate(SchoolsDbContext db, SaveHomeworkRequest request, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(request.Title) || request.Title.Trim().Length > 200 || string.IsNullOrWhiteSpace(request.Instructions) || request.Instructions.Trim().Length > 6000 || request.DueAtUtc <= DateTimeOffset.UtcNow || request.MaximumAttempts is < 1 or > 20)
+        if (string.IsNullOrWhiteSpace(request.Title) || request.Title.Trim().Length > 200 || string.IsNullOrWhiteSpace(request.Instructions) || request.Instructions.Trim().Length > 6000 || request.DueAtUtc <= DateTimeOffset.UtcNow || request.TotalScore is <= 0 or > 10000 || request.MaximumAttempts is < 1 or > 20)
             return BadRequest(Failure(400, "homework.invalid", "Enter valid homework data and a future due date."));
         if (request.CurriculumSubjectBookId.HasValue && !await db.CurriculumSubjectBooks.AsNoTracking().AnyAsync(x => x.Id == request.CurriculumSubjectBookId && x.IsActive && !x.IsDeleted &&
             x.CurriculumGradeSubjectId == db.ClassSectionSubjects.Where(s => s.Id == request.ClassSectionSubjectId).Select(s => s.GradeSubjectOffering.CurriculumGradeSubjectId).FirstOrDefault(), ct))
             return BadRequest(Failure(400, "homework.book_invalid", "Select a book assigned to this subject."));
         if (request.Questions is null) return BadRequest(Failure(400, "homework.questions_invalid", "Questions are invalid."));
         if (request.DeliveryMode == HomeworkDeliveryMode.Online && request.Questions.Count == 0) return BadRequest(Failure(400, "homework.questions_required", "Online homework requires at least one question."));
+        if (request.DeliveryMode == HomeworkDeliveryMode.Online && request.Questions.Sum(x => x.MaxScore) != request.TotalScore)
+            return BadRequest(Failure(400, "homework.total_score_mismatch", "The homework total must equal the sum of question scores."));
         if (request.Questions.Select(x => x.SortOrder).Distinct().Count() != request.Questions.Count || request.Questions.Any(x => string.IsNullOrWhiteSpace(x.Prompt) || x.MaxScore <= 0)) return BadRequest(Failure(400, "homework.questions_invalid", "Check question prompts, order and scores."));
         foreach (var q in request.Questions)
         {
@@ -205,7 +207,7 @@ public sealed class SchoolHomeworkController(ISchoolDbContextFactory dbFactory) 
     {
         entity.DeliveryMode = request.DeliveryMode; entity.Title = request.Title.Trim(); entity.Instructions = request.Instructions.Trim();
         entity.CurriculumSubjectBookId = request.CurriculumSubjectBookId; entity.BookReference = Clean(request.BookReference, 300); entity.DueAtUtc = request.DueAtUtc.ToUniversalTime();
-        entity.TotalScore = request.Questions.Sum(x => x.MaxScore); entity.AllowLateSubmission = request.AllowLateSubmission; entity.MaximumAttempts = request.MaximumAttempts;
+        entity.TotalScore = request.TotalScore; entity.AllowLateSubmission = request.AllowLateSubmission; entity.MaximumAttempts = request.MaximumAttempts;
         entity.AllowUnsubmitBeforeDue = request.AllowUnsubmitBeforeDue; entity.ShowCorrectAnswersAfter = request.ShowCorrectAnswersAfter; entity.ShuffleQuestions = request.ShuffleQuestions; entity.ShuffleOptions = request.ShuffleOptions; entity.UpdatedAtUtc = now;
         foreach (var question in request.Questions.OrderBy(x => x.SortOrder))
         {
@@ -260,7 +262,7 @@ public sealed record HomeworkQuestionResponse(Guid Id, HomeworkQuestionType Type
 public sealed record HomeworkOptionResponse(Guid Id, string Text, int SortOrder, bool IsCorrect);
 public sealed record HomeworkBlankResponse(Guid Id, string Token, int SortOrder, decimal MaxScore, bool IgnoreCase, bool IgnoreDiacritics, bool CollapseWhitespace, bool SendUnmatchedToManualReview, IReadOnlyList<string> AcceptedAnswers);
 public sealed record StudentHomeworkResponse(Guid Id, Guid StudentId, string StudentCode, string FullNameAr, string FullNameEn, StudentHomeworkStatus Status, decimal? FinalScore, string? TeacherFeedback);
-public sealed record SaveHomeworkRequest(Guid ClassSectionSubjectId, HomeworkDeliveryMode DeliveryMode, string Title, string Instructions, Guid? CurriculumSubjectBookId, string? BookReference, DateTimeOffset DueAtUtc, bool AllowLateSubmission, int MaximumAttempts, bool AllowUnsubmitBeforeDue, HomeworkCorrectAnswersPolicy ShowCorrectAnswersAfter, bool ShuffleQuestions, bool ShuffleOptions, IReadOnlyList<SaveHomeworkQuestionRequest> Questions);
+public sealed record SaveHomeworkRequest(Guid ClassSectionSubjectId, HomeworkDeliveryMode DeliveryMode, string Title, string Instructions, Guid? CurriculumSubjectBookId, string? BookReference, DateTimeOffset DueAtUtc, decimal TotalScore, bool AllowLateSubmission, int MaximumAttempts, bool AllowUnsubmitBeforeDue, HomeworkCorrectAnswersPolicy ShowCorrectAnswersAfter, bool ShuffleQuestions, bool ShuffleOptions, IReadOnlyList<SaveHomeworkQuestionRequest> Questions);
 public sealed record SaveHomeworkQuestionRequest(HomeworkQuestionType Type, string Prompt, int SortOrder, bool IsRequired, decimal MaxScore, string? ModelAnswer, string? Explanation, IReadOnlyList<SaveHomeworkOptionRequest>? Options, IReadOnlyList<SaveHomeworkBlankRequest>? Blanks);
 public sealed record SaveHomeworkOptionRequest(string Text, int SortOrder, bool IsCorrect);
 public sealed record SaveHomeworkBlankRequest(string Token, int SortOrder, decimal MaxScore, bool IgnoreCase, bool IgnoreDiacritics, bool CollapseWhitespace, bool SendUnmatchedToManualReview, IReadOnlyList<string> AcceptedAnswers);
