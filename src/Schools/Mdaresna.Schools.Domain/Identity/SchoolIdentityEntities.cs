@@ -242,6 +242,10 @@ public static class SchoolIdentitySeed
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd1f"), "school.admissions.manage", "admissions", "إدارة طلبات التقديم", "Manage admission applications"),
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd20"), "school.attendance.view", "attendance", "عرض حضور الطلاب", "View student attendance"),
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd21"), "school.attendance.record", "attendance", "تسجيل حضور الطلاب", "Record student attendance"),
-        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd22"), "school.attendance.reopen", "attendance", "إعادة فتح سجل حضور الطلاب", "Reopen student attendance")
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd22"), "school.attendance.reopen", "attendance", "إعادة فتح سجل حضور الطلاب", "Reopen student attendance"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd23"), "school.homework.view", "homework", "عرض الواجبات", "View homework"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd24"), "school.homework.manage", "homework", "إدارة الواجبات", "Manage homework"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd25"), "school.homework.publish", "homework", "نشر وإغلاق الواجبات", "Publish and close homework"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd26"), "school.homework.grade", "homework", "تقييم واجبات الطلاب", "Grade student homework")
     ];
 }

@@ -1,0 +1,190 @@
+name: mdaresna
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env.docker}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.docker}
+      POSTGRES_DB: postgres
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - mdaresna-postgres:/var/lib/postgresql/data
+      - ./deploy/postgres/init.sql:/docker-entrypoint-initdb.d/10-mdaresna-databases.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?Set RABBITMQ_USER in .env.docker}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env.docker}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - mdaresna-rabbitmq:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  platform-api:
+    image: ${CONTAINER_REGISTRY:-local}/mdaresna-platform-api:${IMAGE_TAG:-dev}
+    build:
+      context: .
+      dockerfile: src/Platform/Mdaresna.Platform.Api/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ASPNETCORE_URLS: http://+:8080
+      AllowedHosts: ${PLATFORM_ALLOWED_HOSTS:-*}
+      PlatformDatabase__Provider: PostgreSql
+      ConnectionStrings__PlatformConnection: ${PLATFORM_DB_CONNECTION:?Set PLATFORM_DB_CONNECTION in .env.docker}
+      ConnectionStrings__IdentityConnection: ${IDENTITY_DB_CONNECTION:?Set IDENTITY_DB_CONNECTION in .env.docker}
+      PlatformHost__Cors__AllowedOrigins__0: ${PLATFORM_WEB_ORIGIN:-http://localhost:8082}
+      PlatformAuth__Issuer: ${PLATFORM_JWT_ISSUER:-mdaresna-platform}
+      PlatformAuth__Audience: ${PLATFORM_JWT_AUDIENCE:-mdaresna-platform-api}
+      PlatformAuth__SigningKey: ${PLATFORM_JWT_SIGNING_KEY:?Set PLATFORM_JWT_SIGNING_KEY in .env.docker}
+      PlatformAuth__AccessTokenMinutes: ${PLATFORM_ACCESS_TOKEN_MINUTES:-15}
+      PlatformActivation__CodeHashKey: ${PLATFORM_ACTIVATION_CODE_HASH_KEY:?Set PLATFORM_ACTIVATION_CODE_HASH_KEY in .env.docker}
+      InternalServices__ApiKey: ${INTERNAL_API_KEY:?Set INTERNAL_API_KEY in .env.docker}
+      PlatformFeatures__SchoolProvisioningEnabled: ${SCHOOL_PROVISIONING_ENABLED:-true}
+      PlatformSms__ApiUrlTemplate: ${PLATFORM_SMS_API_URL_TEMPLATE:-}
+      PlatformSms__Username: ${PLATFORM_SMS_USERNAME:-}
+      PlatformSms__Password: ${PLATFORM_SMS_PASSWORD:-}
+      PlatformSms__SenderName: ${PLATFORM_SMS_SENDER_NAME:-}
+      PlatformSms__SuccessResponsePrefix: ${PLATFORM_SMS_SUCCESS_RESPONSE_PREFIX:-}
+      PlatformSms__EncryptionKey: ${PLATFORM_SMS_ENCRYPTION_KEY:-}
+      Notifications__Firebase__Enabled: ${FIREBASE_NOTIFICATIONS_ENABLED:-false}
+      Notifications__Firebase__ProjectId: ${FIREBASE_PROJECT_ID:-}
+      GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-}
+    ports:
+      - "${PLATFORM_API_PORT:-5241}:8080"
+    volumes:
+      - type: bind
+        source: ${FIREBASE_CREDENTIALS_HOST_PATH:-./deploy/empty-firebase-credentials.json}
+        target: /run/secrets/firebase-service-account.json
+        read_only: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  platform-worker:
+    image: ${CONTAINER_REGISTRY:-local}/mdaresna-platform-worker:${IMAGE_TAG:-dev}
+    build:
+      context: .
+      dockerfile: src/Platform/Mdaresna.Platform.Worker/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ASPNETCORE_URLS: http://+:8080
+      Urls: http://+:8080
+      PlatformDatabase__Provider: PostgreSql
+      ConnectionStrings__PlatformConnection: ${PLATFORM_DB_CONNECTION:?Set PLATFORM_DB_CONNECTION in .env.docker}
+      ConnectionStrings__IdentityConnection: ${IDENTITY_DB_CONNECTION:?Set IDENTITY_DB_CONNECTION in .env.docker}
+      SmsLogConsumer__Enabled: ${SMS_LOG_CONSUMER_ENABLED:-false}
+      SmsLogConsumer__BrokerUri: ${RABBITMQ_BROKER_URI:?Set RABBITMQ_BROKER_URI in .env.docker}
+      SchoolRegistrationConsumer__Enabled: ${SCHOOL_REGISTRATION_CONSUMER_ENABLED:-true}
+      SchoolRegistrationConsumer__BrokerUri: ${RABBITMQ_BROKER_URI:?Set RABBITMQ_BROKER_URI in .env.docker}
+      PlatformOutboxPublisher__Enabled: ${PLATFORM_OUTBOX_PUBLISHER_ENABLED:-true}
+      PlatformOutboxPublisher__BrokerUri: ${RABBITMQ_BROKER_URI:?Set RABBITMQ_BROKER_URI in .env.docker}
+      SchoolProvisioningResultConsumer__Enabled: ${SCHOOL_PROVISIONING_RESULT_CONSUMER_ENABLED:-true}
+      SchoolProvisioningResultConsumer__BrokerUri: ${RABBITMQ_BROKER_URI:?Set RABBITMQ_BROKER_URI in .env.docker}
+      PlatformSms__EncryptionKey: ${PLATFORM_SMS_ENCRYPTION_KEY:-}
+      Notifications__Firebase__Enabled: ${FIREBASE_NOTIFICATIONS_ENABLED:-false}
+      Notifications__Firebase__ProjectId: ${FIREBASE_PROJECT_ID:-}
+      GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-}
+    ports:
+      - "${PLATFORM_WORKER_HEALTH_PORT:-5081}:8080"
+    volumes:
+      - type: bind
+        source: ${FIREBASE_CREDENTIALS_HOST_PATH:-./deploy/empty-firebase-credentials.json}
+        target: /run/secrets/firebase-service-account.json
+        read_only: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  schools-api:
+    image: ${CONTAINER_REGISTRY:-local}/mdaresna-schools-api:${IMAGE_TAG:-dev}
+    build:
+      context: .
+      dockerfile: src/Schools/Mdaresna.Schools.Api/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ASPNETCORE_URLS: http://+:8080
+      AllowedHosts: ${SCHOOLS_ALLOWED_HOSTS:-*}
+      SchoolsHost__Cors__AllowedOrigins__0: ${SCHOOLS_WEB_ORIGIN:-http://localhost:8083}
+      SchoolRegistrationPublisher__BrokerUri: ${RABBITMQ_BROKER_URI:?Set RABBITMQ_BROKER_URI in .env.docker}
+      SchoolProvisioningConsumer__Enabled: ${SCHOOL_PROVISIONING_CONSUMER_ENABLED:-true}
+      SchoolProvisioningConsumer__BrokerUri: ${RABBITMQ_BROKER_URI:?Set RABBITMQ_BROKER_URI in .env.docker}
+      SchoolProvisioningDatabase__Provider: PostgreSql
+      SchoolProvisioningDatabase__AdminConnectionString: ${SCHOOL_DB_ADMIN_CONNECTION:?Set SCHOOL_DB_ADMIN_CONNECTION in .env.docker}
+      SchoolProvisioningDatabase__DatabaseNamePrefix: ${SCHOOL_DB_NAME_PREFIX:-mdaresna_school_}
+      SchoolProvisioningDatabase__CredentialSecretReference: env:SCHOOL_DATABASE_CREDENTIALS
+      SchoolIdentity__PlatformBaseUrl: http://platform-api:8080
+      SchoolIdentity__InternalApiKey: ${INTERNAL_API_KEY:?Set INTERNAL_API_KEY in .env.docker}
+      SCHOOL_DATABASE_CREDENTIALS: ${SCHOOL_DB_CREDENTIAL_FRAGMENT:?Set SCHOOL_DB_CREDENTIAL_FRAGMENT in .env.docker}
+      SchoolIdentity__Jwt__Issuer: ${SCHOOLS_JWT_ISSUER:-mdaresna-schools}
+      SchoolIdentity__Jwt__Audience: ${SCHOOLS_JWT_AUDIENCE:-mdaresna-schools-api}
+      SchoolIdentity__Jwt__SigningKey: ${SCHOOLS_JWT_SIGNING_KEY:?Set SCHOOLS_JWT_SIGNING_KEY in .env.docker}
+      SchoolIdentity__Jwt__AccessTokenMinutes: ${SCHOOLS_ACCESS_TOKEN_MINUTES:-15}
+    ports:
+      - "${SCHOOLS_API_PORT:-5251}:8080"
+    depends_on:
+      platform-api:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  platform-web:
+    image: ${CONTAINER_REGISTRY:-local}/mdaresna-platform-web:${IMAGE_TAG:-dev}
+    build:
+      context: ../Mdaresna_Platform_Web
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      PLATFORM_API_BASE_URL: ${PLATFORM_API_PUBLIC_URL:-http://localhost:5241/}
+      FIREBASE_API_KEY: ${FIREBASE_WEB_API_KEY:-}
+      FIREBASE_AUTH_DOMAIN: ${FIREBASE_WEB_AUTH_DOMAIN:-}
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
+      FIREBASE_STORAGE_BUCKET: ${FIREBASE_WEB_STORAGE_BUCKET:-}
+      FIREBASE_MESSAGING_SENDER_ID: ${FIREBASE_WEB_MESSAGING_SENDER_ID:-}
+      FIREBASE_APP_ID: ${FIREBASE_WEB_APP_ID:-}
+      FIREBASE_VAPID_KEY: ${FIREBASE_WEB_VAPID_KEY:-}
+    ports:
+      - "${PLATFORM_WEB_PORT:-8082}:80"
+    depends_on:
+      platform-api:
+        condition: service_healthy
+
+  schools-web:
+    image: ${CONTAINER_REGISTRY:-local}/mdaresna-schools-web:${IMAGE_TAG:-dev}
+    build:
+      context: ../Mdaresna_Schools_Web
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      SCHOOLS_API_BASE_URL: ${SCHOOLS_API_PUBLIC_URL:-http://localhost:5251}
+    ports:
+      - "${SCHOOLS_WEB_PORT:-8083}:80"
+    depends_on:
+      schools-api:
+        condition: service_healthy
+
+volumes:
+  mdaresna-postgres:
+  mdaresna-rabbitmq:

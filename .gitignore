@@ -310,4 +310,5 @@ Mdaresna/Images/
 # Local secrets
 firebase-service-account.json
 Mdaresna/firebase-service-account.json
+.env.docker
 /.codex_tmp

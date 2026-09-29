@@ -2705,6 +2705,50 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                             IsActive = true,
                             Module = "attendance",
                             UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd23"),
+                            Code = "school.homework.view",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "عرض الواجبات",
+                            DisplayNameEn = "View homework",
+                            IsActive = true,
+                            Module = "homework",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd24"),
+                            Code = "school.homework.manage",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "إدارة الواجبات",
+                            DisplayNameEn = "Manage homework",
+                            IsActive = true,
+                            Module = "homework",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd25"),
+                            Code = "school.homework.publish",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "نشر وإغلاق الواجبات",
+                            DisplayNameEn = "Publish and close homework",
+                            IsActive = true,
+                            Module = "homework",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd26"),
+                            Code = "school.homework.grade",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "تقييم واجبات الطلاب",
+                            DisplayNameEn = "Grade student homework",
+                            IsActive = true,
+                            Module = "homework",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         });
                 });
 
@@ -2992,6 +3036,30 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                         {
                             RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
                             PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd22"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd23"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd24"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd25"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd26"),
                             GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         });
                 });
@@ -4067,6 +4135,454 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.ToTable("guardians", "school");
                 });
 
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("AllowLateSubmission")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("AllowUnsubmitBeforeDue")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("BookReference")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<Guid>("ClassSectionSubjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("ClosedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CurriculumSubjectBookId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DeliveryMode")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<DateTimeOffset>("DueAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Instructions")
+                        .IsRequired()
+                        .HasMaxLength(6000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MaximumAttempts")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("PublishedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("PublishedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("ShowCorrectAnswersAfter")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
+
+                    b.Property<bool>("ShuffleOptions")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("ShuffleQuestions")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<string>("TimeZoneIdSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal>("TotalScore")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("CurriculumSubjectBookId");
+
+                    b.HasIndex("PublishedByUserId");
+
+                    b.HasIndex("ClassSectionSubjectId", "Status", "DueAtUtc");
+
+                    b.ToTable("homework_assignments", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkAudit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("HomeworkAssignmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PayloadJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("StudentHomeworkId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActorUserId");
+
+                    b.HasIndex("StudentHomeworkId");
+
+                    b.HasIndex("HomeworkAssignmentId", "CreatedAtUtc");
+
+                    b.ToTable("homework_audits", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkBlankAcceptedAnswer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Answer")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<Guid>("HomeworkQuestionBlankId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("NormalizedAnswer")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HomeworkQuestionBlankId", "SortOrder")
+                        .IsUnique();
+
+                    b.ToTable("homework_blank_accepted_answers", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkQuestion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Explanation")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<Guid>("HomeworkAssignmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("MaxScore")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("ModelAnswer")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("Prompt")
+                        .IsRequired()
+                        .HasMaxLength(3000)
+                        .HasColumnType("nvarchar(3000)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HomeworkAssignmentId", "SortOrder")
+                        .IsUnique();
+
+                    b.ToTable("homework_questions", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkQuestionBlank", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("CollapseWhitespace")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("HomeworkQuestionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IgnoreCase")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IgnoreDiacritics")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("MaxScore")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<bool>("SendUnmatchedToManualReview")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HomeworkQuestionId", "SortOrder")
+                        .IsUnique();
+
+                    b.ToTable("homework_question_blanks", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkQuestionOption", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("HomeworkQuestionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsCorrect")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HomeworkQuestionId", "SortOrder")
+                        .IsUnique();
+
+                    b.ToTable("homework_question_options", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkStudentAnswer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("GradedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("GradedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("GradingStatus")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<Guid>("HomeworkQuestionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("HomeworkSubmissionAttemptId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("Score")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("TeacherFeedback")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("TextAnswer")
+                        .HasMaxLength(6000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GradedByUserId");
+
+                    b.HasIndex("HomeworkQuestionId");
+
+                    b.HasIndex("HomeworkSubmissionAttemptId", "HomeworkQuestionId")
+                        .IsUnique();
+
+                    b.ToTable("homework_student_answers", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkStudentBlankAnswer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Answer")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<Guid>("HomeworkQuestionBlankId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("HomeworkStudentAnswerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsManualOverride")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsMatched")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NormalizedAnswer")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<decimal?>("Score")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HomeworkQuestionBlankId");
+
+                    b.HasIndex("HomeworkStudentAnswerId", "HomeworkQuestionBlankId")
+                        .IsUnique();
+
+                    b.ToTable("homework_student_blank_answers", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkStudentSelectedOption", b =>
+                {
+                    b.Property<Guid>("HomeworkStudentAnswerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("HomeworkQuestionOptionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("HomeworkStudentAnswerId", "HomeworkQuestionOptionId");
+
+                    b.HasIndex("HomeworkQuestionOptionId");
+
+                    b.ToTable("homework_student_selected_options", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkSubmissionAttempt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AttemptNumber")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("AutoScore")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal?>("FinalScore")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<Guid>("StudentHomeworkId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("SubmittedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("SubmittedByActorType")
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
+
+                    b.Property<Guid?>("SubmittedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentHomeworkId", "AttemptNumber")
+                        .IsUnique();
+
+                    b.ToTable("homework_submission_attempts", "school");
+                });
+
             modelBuilder.Entity("Mdaresna.Schools.Domain.Students.Student", b =>
                 {
                     b.Property<Guid>("Id")
@@ -4403,6 +4919,66 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                         .IsUnique();
 
                     b.ToTable("student_guardians", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.StudentHomework", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("CurrentAttemptId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ExcuseReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<decimal?>("FinalScore")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTimeOffset?>("GradedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("GradedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("HomeworkAssignmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<Guid>("StudentEnrollmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("TeacherFeedback")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GradedByUserId");
+
+                    b.HasIndex("StudentEnrollmentId");
+
+                    b.HasIndex("HomeworkAssignmentId", "StudentEnrollmentId")
+                        .IsUnique();
+
+                    b.ToTable("student_homework", "school");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.AcademicPeriod", b =>
@@ -5193,6 +5769,184 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.Navigation("Guardian");
                 });
 
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkAssignment", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.ClassSectionSubject", "ClassSectionSubject")
+                        .WithMany()
+                        .HasForeignKey("ClassSectionSubjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.CurriculumSubjectBook", "CurriculumSubjectBook")
+                        .WithMany()
+                        .HasForeignKey("CurriculumSubjectBookId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "PublishedByUser")
+                        .WithMany()
+                        .HasForeignKey("PublishedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ClassSectionSubject");
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("CurriculumSubjectBook");
+
+                    b.Navigation("PublishedByUser");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkAudit", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "ActorUser")
+                        .WithMany()
+                        .HasForeignKey("ActorUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Students.HomeworkAssignment", "HomeworkAssignment")
+                        .WithMany("AuditTrail")
+                        .HasForeignKey("HomeworkAssignmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Students.StudentHomework", "StudentHomework")
+                        .WithMany()
+                        .HasForeignKey("StudentHomeworkId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ActorUser");
+
+                    b.Navigation("HomeworkAssignment");
+
+                    b.Navigation("StudentHomework");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkBlankAcceptedAnswer", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Students.HomeworkQuestionBlank", "HomeworkQuestionBlank")
+                        .WithMany("AcceptedAnswers")
+                        .HasForeignKey("HomeworkQuestionBlankId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HomeworkQuestionBlank");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkQuestion", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Students.HomeworkAssignment", "HomeworkAssignment")
+                        .WithMany("Questions")
+                        .HasForeignKey("HomeworkAssignmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HomeworkAssignment");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkQuestionBlank", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Students.HomeworkQuestion", "HomeworkQuestion")
+                        .WithMany("Blanks")
+                        .HasForeignKey("HomeworkQuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HomeworkQuestion");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkQuestionOption", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Students.HomeworkQuestion", "HomeworkQuestion")
+                        .WithMany("Options")
+                        .HasForeignKey("HomeworkQuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HomeworkQuestion");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkStudentAnswer", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "GradedByUser")
+                        .WithMany()
+                        .HasForeignKey("GradedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Students.HomeworkQuestion", "HomeworkQuestion")
+                        .WithMany("Answers")
+                        .HasForeignKey("HomeworkQuestionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Students.HomeworkSubmissionAttempt", "Attempt")
+                        .WithMany("Answers")
+                        .HasForeignKey("HomeworkSubmissionAttemptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Attempt");
+
+                    b.Navigation("GradedByUser");
+
+                    b.Navigation("HomeworkQuestion");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkStudentBlankAnswer", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Students.HomeworkQuestionBlank", "HomeworkQuestionBlank")
+                        .WithMany("StudentAnswers")
+                        .HasForeignKey("HomeworkQuestionBlankId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Students.HomeworkStudentAnswer", "HomeworkStudentAnswer")
+                        .WithMany("BlankAnswers")
+                        .HasForeignKey("HomeworkStudentAnswerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HomeworkQuestionBlank");
+
+                    b.Navigation("HomeworkStudentAnswer");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkStudentSelectedOption", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Students.HomeworkQuestionOption", "HomeworkQuestionOption")
+                        .WithMany("SelectedByAnswers")
+                        .HasForeignKey("HomeworkQuestionOptionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Students.HomeworkStudentAnswer", "HomeworkStudentAnswer")
+                        .WithMany("SelectedOptions")
+                        .HasForeignKey("HomeworkStudentAnswerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HomeworkQuestionOption");
+
+                    b.Navigation("HomeworkStudentAnswer");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkSubmissionAttempt", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Students.StudentHomework", "StudentHomework")
+                        .WithMany("Attempts")
+                        .HasForeignKey("StudentHomeworkId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("StudentHomework");
+                });
+
             modelBuilder.Entity("Mdaresna.Schools.Domain.Students.Student", b =>
                 {
                     b.HasOne("Mdaresna.Schools.Domain.Identity.Person", "Person")
@@ -5319,6 +6073,32 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.Navigation("Guardian");
 
                     b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.StudentHomework", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "GradedByUser")
+                        .WithMany()
+                        .HasForeignKey("GradedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Students.HomeworkAssignment", "HomeworkAssignment")
+                        .WithMany("Students")
+                        .HasForeignKey("HomeworkAssignmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Students.StudentEnrollment", "StudentEnrollment")
+                        .WithMany()
+                        .HasForeignKey("StudentEnrollmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("GradedByUser");
+
+                    b.Navigation("HomeworkAssignment");
+
+                    b.Navigation("StudentEnrollment");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.AcademicTerm", b =>
@@ -5530,6 +6310,48 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.Navigation("Students");
                 });
 
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkAssignment", b =>
+                {
+                    b.Navigation("AuditTrail");
+
+                    b.Navigation("Questions");
+
+                    b.Navigation("Students");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkQuestion", b =>
+                {
+                    b.Navigation("Answers");
+
+                    b.Navigation("Blanks");
+
+                    b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkQuestionBlank", b =>
+                {
+                    b.Navigation("AcceptedAnswers");
+
+                    b.Navigation("StudentAnswers");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkQuestionOption", b =>
+                {
+                    b.Navigation("SelectedByAnswers");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkStudentAnswer", b =>
+                {
+                    b.Navigation("BlankAnswers");
+
+                    b.Navigation("SelectedOptions");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.HomeworkSubmissionAttempt", b =>
+                {
+                    b.Navigation("Answers");
+                });
+
             modelBuilder.Entity("Mdaresna.Schools.Domain.Students.Student", b =>
                 {
                     b.Navigation("Enrollments");
@@ -5542,6 +6364,11 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.Navigation("AuditTrail");
 
                     b.Navigation("Entries");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.StudentHomework", b =>
+                {
+                    b.Navigation("Attempts");
                 });
 #pragma warning restore 612, 618
         }

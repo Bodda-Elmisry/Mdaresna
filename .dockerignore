@@ -1,0 +1,17 @@
+**/bin/
+**/obj/
+**/TestResults/
+.git/
+.vs/
+.codex_tmp/
+docs/
+tests/
+*.user
+*.suo
+*.md
+**/.env
+**/.env.*
+**/*credentials*.json
+**/*service-account*.json
+Mdaresna/Images/
+Mdaresna/Logs/
