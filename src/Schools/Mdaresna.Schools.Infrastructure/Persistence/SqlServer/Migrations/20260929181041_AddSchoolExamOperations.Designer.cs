@@ -4,6 +4,7 @@ using Mdaresna.Schools.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
 {
     [DbContext(typeof(SqlServerSchoolsDbContext))]
-    partial class SqlServerSchoolsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260929181041_AddSchoolExamOperations")]
+    partial class AddSchoolExamOperations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2818,9 +2821,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.Property<Guid?>("ApprovedByUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateOnly?>("AssessmentMonth")
-                        .HasColumnType("date");
-
                     b.Property<string>("CancellationReason")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
@@ -2855,9 +2855,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
 
                     b.Property<DateTimeOffset?>("DeletedAtUtc")
                         .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid?>("EducationStageId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ExternalAuthorityName")
                         .HasMaxLength(250)
@@ -2905,9 +2902,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
-                    b.Property<Guid?>("ParentExamSeriesId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("PolicySnapshotJson")
                         .HasColumnType("nvarchar(max)");
 
@@ -2920,11 +2914,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.Property<Guid?>("PublishedByUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Purpose")
-                        .IsRequired()
-                        .HasMaxLength(24)
-                        .HasColumnType("nvarchar(24)");
-
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -2935,16 +2924,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                         .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
-
-                    b.Property<Guid?>("ScopeClassSectionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("ScopeGradeOfferingId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ScopeLevel")
-                        .HasMaxLength(24)
-                        .HasColumnType("nvarchar(24)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -2965,14 +2944,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
 
                     b.HasIndex("CreatedByUserId");
 
-                    b.HasIndex("EducationStageId");
-
-                    b.HasIndex("ParentExamSeriesId");
-
-                    b.HasIndex("ScopeClassSectionId");
-
-                    b.HasIndex("ScopeGradeOfferingId");
-
                     b.HasIndex("ProgramAcademicYearId", "Code")
                         .IsUnique();
 
@@ -2981,10 +2952,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                         .HasFilter("[ExternalSourceCode] IS NOT NULL AND [ExternalReferenceId] IS NOT NULL AND [ExternalRevision] IS NOT NULL");
 
                     b.HasIndex("Status", "Kind", "CreatedAtUtc");
-
-                    b.HasIndex("ProgramAcademicYearId", "AcademicTermId", "AssessmentMonth", "Kind");
-
-                    b.HasIndex("ScopeLevel", "EducationStageId", "ScopeGradeOfferingId", "ScopeClassSectionId");
 
                     b.ToTable("exam_series", "school");
                 });
@@ -7601,45 +7568,17 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Mdaresna.Schools.Domain.Academics.EducationStage", "EducationStage")
-                        .WithMany()
-                        .HasForeignKey("EducationStageId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamSeries", "ParentExamSeries")
-                        .WithMany()
-                        .HasForeignKey("ParentExamSeriesId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Mdaresna.Schools.Domain.Academics.ProgramAcademicYear", "ProgramAcademicYear")
                         .WithMany()
                         .HasForeignKey("ProgramAcademicYearId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Mdaresna.Schools.Domain.Academics.ClassSection", "ScopeClassSection")
-                        .WithMany()
-                        .HasForeignKey("ScopeClassSectionId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Mdaresna.Schools.Domain.Academics.GradeOffering", "ScopeGradeOffering")
-                        .WithMany()
-                        .HasForeignKey("ScopeGradeOfferingId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("AcademicTerm");
 
                     b.Navigation("CreatedByUser");
 
-                    b.Navigation("EducationStage");
-
-                    b.Navigation("ParentExamSeries");
-
                     b.Navigation("ProgramAcademicYear");
-
-                    b.Navigation("ScopeClassSection");
-
-                    b.Navigation("ScopeGradeOffering");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamSeriesTarget", b =>

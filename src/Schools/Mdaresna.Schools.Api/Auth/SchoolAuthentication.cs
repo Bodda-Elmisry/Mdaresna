@@ -68,6 +68,23 @@ public static class SchoolPermissionPolicies
     public const string ActivitiesPublish = Prefix + "school.activities.publish";
     public const string ActivitiesGrade = Prefix + "school.activities.grade";
     public const string ActivitiesReopen = Prefix + "school.activities.reopen";
+    public const string ExamsView = Prefix + "school.exams.view";
+    public const string ExamsManage = Prefix + "school.exams.manage";
+    public const string ExamsSchedule = Prefix + "school.exams.schedule";
+    public const string ExamsApprove = Prefix + "school.exams.approve";
+    public const string ExamsPublish = Prefix + "school.exams.publish";
+    public const string ExamsAttendanceRecord = Prefix + "school.exams.attendance.record";
+    public const string ExamsResultsEnter = Prefix + "school.exams.results.enter";
+    public const string ExamsResultsApprove = Prefix + "school.exams.results.approve";
+    public const string ExamsResultsPublish = Prefix + "school.exams.results.publish";
+    public const string ExamsResultsReopen = Prefix + "school.exams.results.reopen";
+    public const string ExamsCancel = Prefix + "school.exams.cancel";
+    public const string ExamsPolicyManage = Prefix + "school.exams.policy.manage";
+    public const string ExamsCommitteesManage = Prefix + "school.exams.committees.manage";
+    public const string ExamsSeatingManage = Prefix + "school.exams.seating.manage";
+    public const string ExamsInvigilatorsManage = Prefix + "school.exams.invigilators.manage";
+    public const string ExamsReports = Prefix + "school.exams.reports";
+    public const string ExamsOverrideWarnings = Prefix + "school.exams.override_warnings";
 }
 
 internal sealed record SchoolPermissionRequirement(string Permission) : IAuthorizationRequirement;

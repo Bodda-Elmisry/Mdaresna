@@ -5,6 +5,7 @@ using Mdaresna.Schools.Domain.Facilities;
 using Mdaresna.Schools.Domain.Academics;
 using Mdaresna.Schools.Domain.Organization;
 using Mdaresna.Schools.Domain.Students;
+using Mdaresna.Schools.Domain.Exams;
 
 namespace Mdaresna.Schools.Infrastructure.Persistence;
 
@@ -95,6 +96,26 @@ public class SchoolsDbContext(DbContextOptions options) : DbContext(options)
     public DbSet<ClassActivityAudienceStudent> ClassActivityAudienceStudents => Set<ClassActivityAudienceStudent>();
     public DbSet<ClassActivityParticipant> ClassActivityParticipants => Set<ClassActivityParticipant>();
     public DbSet<ClassActivityAudit> ClassActivityAudits => Set<ClassActivityAudit>();
+    public DbSet<ExamPolicy> ExamPolicies => Set<ExamPolicy>();
+    public DbSet<ExamSeries> ExamSeries => Set<ExamSeries>();
+    public DbSet<ExamSeriesTarget> ExamSeriesTargets => Set<ExamSeriesTarget>();
+    public DbSet<ExamPaper> ExamPapers => Set<ExamPaper>();
+    public DbSet<ExamPaperTarget> ExamPaperTargets => Set<ExamPaperTarget>();
+    public DbSet<ExamScheduleWindow> ExamScheduleWindows => Set<ExamScheduleWindow>();
+    public DbSet<ExamSitting> ExamSittings => Set<ExamSitting>();
+    public DbSet<ExamWindowVenue> ExamWindowVenues => Set<ExamWindowVenue>();
+    public DbSet<ExamSittingVenue> ExamSittingVenues => Set<ExamSittingVenue>();
+    public DbSet<ExamCandidate> ExamCandidates => Set<ExamCandidate>();
+    public DbSet<ExamPaperCandidate> ExamPaperCandidates => Set<ExamPaperCandidate>();
+    public DbSet<ExamCandidateSittingAssignment> ExamCandidateSittingAssignments => Set<ExamCandidateSittingAssignment>();
+    public DbSet<ExamAttendance> ExamAttendance => Set<ExamAttendance>();
+    public DbSet<ExamResultAttempt> ExamResultAttempts => Set<ExamResultAttempt>();
+    public DbSet<ExamCommittee> ExamCommittees => Set<ExamCommittee>();
+    public DbSet<ExamInvigilatorAssignment> ExamInvigilatorAssignments => Set<ExamInvigilatorAssignment>();
+    public DbSet<ExamResultAppeal> ExamResultAppeals => Set<ExamResultAppeal>();
+    public DbSet<ExamApproval> ExamApprovals => Set<ExamApproval>();
+    public DbSet<ExamAudit> ExamAudits => Set<ExamAudit>();
+    public DbSet<ExamCalendarProjection> ExamCalendarProjections => Set<ExamCalendarProjection>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -167,12 +188,30 @@ public sealed class PostgreSqlSchoolsDbContext(
         ConfigurePostgreSqlConcurrency<AdmissionApplication>(modelBuilder, nameof(AdmissionApplication.RowVersion));
         ConfigurePostgreSqlConcurrency<StudentAttendanceRegister>(modelBuilder, nameof(StudentAttendanceRegister.RowVersion));
         ConfigurePostgreSqlConcurrency<StudentAttendanceEntry>(modelBuilder, nameof(StudentAttendanceEntry.RowVersion));
+        ConfigurePostgreSqlConcurrency<ExamPolicy>(modelBuilder, nameof(ExamPolicy.RowVersion));
+        ConfigurePostgreSqlConcurrency<ExamSeries>(modelBuilder, nameof(Mdaresna.Schools.Domain.Exams.ExamSeries.RowVersion));
+        ConfigurePostgreSqlConcurrency<ExamPaper>(modelBuilder, nameof(ExamPaper.RowVersion));
+        ConfigurePostgreSqlConcurrency<ExamScheduleWindow>(modelBuilder, nameof(ExamScheduleWindow.RowVersion));
+        ConfigurePostgreSqlConcurrency<ExamSitting>(modelBuilder, nameof(ExamSitting.RowVersion));
+        ConfigurePostgreSqlConcurrency<ExamWindowVenue>(modelBuilder, nameof(ExamWindowVenue.RowVersion));
+        ConfigurePostgreSqlConcurrency<ExamSittingVenue>(modelBuilder, nameof(ExamSittingVenue.RowVersion));
+        ConfigurePostgreSqlConcurrency<ExamCandidate>(modelBuilder, nameof(ExamCandidate.RowVersion));
+        ConfigurePostgreSqlConcurrency<ExamPaperCandidate>(modelBuilder, nameof(ExamPaperCandidate.RowVersion));
+        ConfigurePostgreSqlConcurrency<ExamCandidateSittingAssignment>(modelBuilder, nameof(ExamCandidateSittingAssignment.RowVersion));
+        ConfigurePostgreSqlConcurrency<ExamAttendance>(modelBuilder, nameof(Mdaresna.Schools.Domain.Exams.ExamAttendance.RowVersion));
+        ConfigurePostgreSqlConcurrency<ExamResultAttempt>(modelBuilder, nameof(ExamResultAttempt.RowVersion));
+        ConfigurePostgreSqlConcurrency<ExamCommittee>(modelBuilder, nameof(ExamCommittee.RowVersion));
+        ConfigurePostgreSqlConcurrency<ExamInvigilatorAssignment>(modelBuilder, nameof(ExamInvigilatorAssignment.RowVersion));
+        ConfigurePostgreSqlConcurrency<ExamResultAppeal>(modelBuilder, nameof(ExamResultAppeal.RowVersion));
+        ConfigurePostgreSqlConcurrency<ExamApproval>(modelBuilder, nameof(ExamApproval.RowVersion));
+        ConfigurePostgreSqlConcurrency<ExamCalendarProjection>(modelBuilder, nameof(ExamCalendarProjection.RowVersion));
         ConfigureFacilityIndexes(modelBuilder, "\"IsDeleted\" = FALSE");
         ConfigureAcademicIndexes(modelBuilder, "\"IsDeleted\" = FALSE");
         ConfigureOrganizationIndexes(modelBuilder, "\"IsDeleted\" = FALSE", "\"IsDeleted\" = FALSE AND \"IsPrimary\" = TRUE");
         modelBuilder.Entity<StaffAbsence>().HasIndex(x => new { x.UserId, x.StartsOn, x.EndsOn }).HasFilter("\"IsDeleted\" = FALSE");
         modelBuilder.Entity<StudentGuardian>().HasIndex(x => x.StudentId).IsUnique().HasFilter("\"IsActive\" = TRUE AND \"IsPrimary\" = TRUE");
         modelBuilder.Entity<AdmissionApplicationGuardian>().HasIndex(x => x.AdmissionApplicationId).IsUnique().HasFilter("\"IsPrimary\" = TRUE");
+        ConfigureExamIndexes(modelBuilder, "\"ExternalSourceCode\" IS NOT NULL AND \"ExternalReferenceId\" IS NOT NULL AND \"ExternalRevision\" IS NOT NULL", "\"IsFinal\" = TRUE");
     }
 
     private static void ConfigureFacilityIndexes(ModelBuilder modelBuilder, string filter)
@@ -227,6 +266,13 @@ public sealed class PostgreSqlSchoolsDbContext(
         modelBuilder.Entity<DepartmentLeadership>().HasIndex(x => new { x.DepartmentId, x.Role }).IsUnique().HasFilter(filter);
         modelBuilder.Entity<AcademicDepartmentSubject>().HasIndex(x => new { x.DepartmentId, x.SubjectId }).IsUnique().HasFilter(filter);
         modelBuilder.Entity<SubjectCoordinatorAssignment>().HasIndex(x => new { x.DepartmentSubjectId, x.EducationProgramId, x.EducationStageId }).IsUnique().HasFilter(filter);
+    }
+
+    private static void ConfigureExamIndexes(ModelBuilder modelBuilder, string externalFilter, string finalResultFilter)
+    {
+        modelBuilder.Entity<ExamSeries>().HasIndex(x => new { x.ExternalSourceCode, x.ExternalReferenceId, x.ExternalRevision })
+            .IsUnique().HasFilter(externalFilter);
+        modelBuilder.Entity<ExamResultAttempt>().HasIndex(x => x.ExamPaperCandidateId).IsUnique().HasFilter(finalResultFilter);
     }
 
     private static void ConfigurePostgreSqlConcurrency<TEntity>(ModelBuilder modelBuilder, string rowVersionProperty)
@@ -301,12 +347,30 @@ public sealed class SqlServerSchoolsDbContext(
         modelBuilder.Entity<AdmissionApplication>().Property(x => x.RowVersion).IsRowVersion();
         modelBuilder.Entity<StudentAttendanceRegister>().Property(x => x.RowVersion).IsRowVersion();
         modelBuilder.Entity<StudentAttendanceEntry>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ExamPolicy>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ExamSeries>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ExamPaper>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ExamScheduleWindow>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ExamSitting>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ExamWindowVenue>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ExamSittingVenue>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ExamCandidate>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ExamPaperCandidate>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ExamCandidateSittingAssignment>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ExamAttendance>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ExamResultAttempt>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ExamCommittee>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ExamInvigilatorAssignment>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ExamResultAppeal>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ExamApproval>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<ExamCalendarProjection>().Property(x => x.RowVersion).IsRowVersion();
         ConfigureFacilityIndexes(modelBuilder, "[IsDeleted] = 0");
         ConfigureAcademicIndexes(modelBuilder, "[IsDeleted] = 0");
         ConfigureOrganizationIndexes(modelBuilder, "[IsDeleted] = 0", "[IsDeleted] = 0 AND [IsPrimary] = 1");
         modelBuilder.Entity<StudentGuardian>().HasIndex(x => x.StudentId).IsUnique().HasFilter("[IsActive] = 1 AND [IsPrimary] = 1");
         modelBuilder.Entity<AdmissionApplicationGuardian>().HasIndex(x => x.AdmissionApplicationId).IsUnique().HasFilter("[IsPrimary] = 1");
         modelBuilder.Entity<StaffAbsence>().HasIndex(x => new { x.UserId, x.StartsOn, x.EndsOn }).HasFilter("[IsDeleted] = 0");
+        ConfigureExamIndexes(modelBuilder, "[ExternalSourceCode] IS NOT NULL AND [ExternalReferenceId] IS NOT NULL AND [ExternalRevision] IS NOT NULL", "[IsFinal] = 1");
     }
 
     private static void ConfigureFacilityIndexes(ModelBuilder modelBuilder, string filter)
@@ -361,5 +425,12 @@ public sealed class SqlServerSchoolsDbContext(
         modelBuilder.Entity<DepartmentLeadership>().HasIndex(x => new { x.DepartmentId, x.Role }).IsUnique().HasFilter(filter);
         modelBuilder.Entity<AcademicDepartmentSubject>().HasIndex(x => new { x.DepartmentId, x.SubjectId }).IsUnique().HasFilter(filter);
         modelBuilder.Entity<SubjectCoordinatorAssignment>().HasIndex(x => new { x.DepartmentSubjectId, x.EducationProgramId, x.EducationStageId }).IsUnique().HasFilter(filter);
+    }
+
+    private static void ConfigureExamIndexes(ModelBuilder modelBuilder, string externalFilter, string finalResultFilter)
+    {
+        modelBuilder.Entity<ExamSeries>().HasIndex(x => new { x.ExternalSourceCode, x.ExternalReferenceId, x.ExternalRevision })
+            .IsUnique().HasFilter(externalFilter);
+        modelBuilder.Entity<ExamResultAttempt>().HasIndex(x => x.ExamPaperCandidateId).IsUnique().HasFilter(finalResultFilter);
     }
 }

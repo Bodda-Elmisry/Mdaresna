@@ -1911,6 +1911,1258 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.ToTable("weekly_timetable_slot_substitute_teachers", "school");
                 });
 
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamApproval", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ApproverUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("DecidedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DecisionReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<Guid?>("ExamPaperId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ExamSeriesId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Stage")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<int>("StepOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamPaperId");
+
+                    b.HasIndex("ExamSeriesId", "ExamPaperId", "Stage", "StepOrder")
+                        .IsUnique();
+
+                    b.ToTable("exam_approvals", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamAttendance", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<TimeOnly?>("ArrivedAt")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ExamCandidateSittingAssignmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("FinalizedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("FinalizedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTimeOffset?>("RecordedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("RecordedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamCandidateSittingAssignmentId")
+                        .IsUnique();
+
+                    b.ToTable("exam_attendance", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamAudit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ExamPaperId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ExamSeriesId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ExamSittingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PayloadJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActorUserId");
+
+                    b.HasIndex("ExamSeriesId", "CreatedAtUtc");
+
+                    b.ToTable("exam_audits", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamCalendarProjection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ExamScheduleWindowId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("LastProjectedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ProjectionVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("SchoolCalendarEventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamScheduleWindowId")
+                        .IsUnique();
+
+                    b.HasIndex("SchoolCalendarEventId")
+                        .IsUnique();
+
+                    b.ToTable("exam_calendar_projections", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamCandidate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ClassSectionIdSnapshot")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ExamNumber")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<Guid>("ExamSeriesId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("GlobalStudentIdSnapshot")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("GradeOfferingIdSnapshot")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("NameArSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<string>("NameEnSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<string>("StudentCodeSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<Guid>("StudentEnrollmentIdSnapshot")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentEnrollmentIdSnapshot");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("ExamSeriesId", "ExamNumber");
+
+                    b.HasIndex("ExamSeriesId", "StudentId")
+                        .IsUnique();
+
+                    b.ToTable("exam_candidates", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamCandidateSittingAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("AssignedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("AssignedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DeskOrSeatLabel")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<Guid>("ExamPaperCandidateId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ExamPaperId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ExamSittingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ExamSittingVenueId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("SeatNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasAlternateKey("Id", "ExamPaperCandidateId");
+
+                    b.HasIndex("ExamPaperCandidateId", "ExamPaperId");
+
+                    b.HasIndex("ExamSittingId", "ExamPaperCandidateId")
+                        .IsUnique();
+
+                    b.HasIndex("ExamSittingId", "ExamPaperId");
+
+                    b.HasIndex("ExamSittingVenueId", "ExamSittingId");
+
+                    b.ToTable("exam_candidate_sitting_assignments", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamCommittee", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ExamScheduleWindowId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ExamSeriesId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamScheduleWindowId", "SortOrder")
+                        .IsUnique();
+
+                    b.HasIndex("ExamSeriesId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("exam_committees", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamInvigilatorAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("AssignedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("AssignedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ExamCommitteeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<Guid?>("ReplacesAssignmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReplacesAssignmentId");
+
+                    b.HasIndex("ExamCommitteeId", "UserId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "Status");
+
+                    b.ToTable("exam_invigilator_assignments", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamPaper", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ContentOwnerUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("ExamSeriesId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Format")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<string>("GradeNameArSnapshot")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("GradeNameEnSnapshot")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("GradeSubjectOfferingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Instructions")
+                        .HasMaxLength(6000)
+                        .HasColumnType("character varying(6000)");
+
+                    b.Property<string>("PaperCode")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<decimal?>("PassScore")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<int>("ResultsRevision")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ResultsStatus")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SubjectCodeSnapshot")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<string>("SubjectNameArSnapshot")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("SubjectNameEnSnapshot")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("TitleAr")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<string>("TitleEn")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<decimal>("TotalScore")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentOwnerUserId");
+
+                    b.HasIndex("GradeSubjectOfferingId");
+
+                    b.HasIndex("ExamSeriesId", "PaperCode")
+                        .IsUnique();
+
+                    b.ToTable("exam_papers", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamPaperCandidate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Eligibility")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<Guid>("ExamCandidateId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ExamPaperId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamCandidateId");
+
+                    b.HasIndex("ExamPaperId", "ExamCandidateId")
+                        .IsUnique();
+
+                    b.ToTable("exam_paper_candidates", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamPaperTarget", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ClassSectionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ClassSectionSubjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ExamPaperId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("GradeOfferingId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClassSectionId");
+
+                    b.HasIndex("ClassSectionSubjectId");
+
+                    b.HasIndex("GradeOfferingId");
+
+                    b.HasIndex("ExamPaperId", "ClassSectionId", "ClassSectionSubjectId")
+                        .IsUnique();
+
+                    b.ToTable("exam_paper_targets", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamPolicy", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("AllowScheduleWarningOverride")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DefaultAdministrationMode")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<bool>("DepartmentApprovalRequired")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("EducationProgramId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("EducationStageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("EffectiveFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("EffectiveTo")
+                        .HasColumnType("date");
+
+                    b.Property<string>("ExamKind")
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("ResultApprovalRequired")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("SchoolApprovalRequired")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("TeacherCanCreate")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("TeacherCanPublishWithoutApproval")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EducationStageId");
+
+                    b.HasIndex("EducationProgramId", "EducationStageId", "ExamKind", "Version")
+                        .IsUnique();
+
+                    b.ToTable("exam_policies", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamResultAppeal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DecisionNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<Guid>("ExamPaperCandidateId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("PreviousScore")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTimeOffset>("RequestedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RequestedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("ReviewedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ReviewedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("RevisedScore")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamPaperCandidateId", "Status");
+
+                    b.ToTable("exam_result_appeals", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamResultAttempt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("ApprovedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ApprovedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AttemptNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Disposition")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<Guid?>("ExamCandidateSittingAssignmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ExamPaperCandidateId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsFinal")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("MarkedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("MarkerUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("ModeratedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ModeratorUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTimeOffset?>("PublishedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("Score")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamCandidateSittingAssignmentId");
+
+                    b.HasIndex("ExamPaperCandidateId")
+                        .IsUnique()
+                        .HasFilter("\"IsFinal\" = TRUE");
+
+                    b.HasIndex("ExamPaperCandidateId", "AttemptNumber")
+                        .IsUnique();
+
+                    b.ToTable("exam_result_attempts", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamScheduleWindow", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<TimeOnly>("EndsAtLocal")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<DateTimeOffset>("EndsAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ExamSeriesId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsScheduleLocked")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateOnly>("LocalDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("PostponementReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<Guid?>("RescheduledFromWindowId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ScheduledByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<TimeOnly>("StartsAtLocal")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<DateTimeOffset>("StartsAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<string>("TimeZoneIdSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamSeriesId");
+
+                    b.HasIndex("RescheduledFromWindowId");
+
+                    b.HasIndex("LocalDate", "StartsAtUtc", "EndsAtUtc", "Status");
+
+                    b.ToTable("exam_schedule_windows", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamSeries", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AcademicTermId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("ApprovedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ApprovedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly?>("AssessmentMonth")
+                        .HasColumnType("date");
+
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTimeOffset?>("CancelledAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CancelledByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("ClosedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ClosedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DefaultAdministrationMode")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<DateTimeOffset?>("DeletedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("EducationStageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ExternalAuthorityName")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<string>("ExternalPayloadHash")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("ExternalReferenceId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("ExternalRevision")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ExternalSourceCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsExternalScheduleLocked")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("IssuingAuthority")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<Guid?>("ParentExamSeriesId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PolicySnapshotJson")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ProgramAcademicYearId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("PublishedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("PublishedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<string>("SchedulingAuthority")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<Guid?>("ScopeClassSectionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ScopeGradeOfferingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ScopeLevel")
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<string>("TimeZoneIdSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicTermId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("EducationStageId");
+
+                    b.HasIndex("ParentExamSeriesId");
+
+                    b.HasIndex("ScopeClassSectionId");
+
+                    b.HasIndex("ScopeGradeOfferingId");
+
+                    b.HasIndex("ProgramAcademicYearId", "Code")
+                        .IsUnique();
+
+                    b.HasIndex("ExternalSourceCode", "ExternalReferenceId", "ExternalRevision")
+                        .IsUnique()
+                        .HasFilter("\"ExternalSourceCode\" IS NOT NULL AND \"ExternalReferenceId\" IS NOT NULL AND \"ExternalRevision\" IS NOT NULL");
+
+                    b.HasIndex("Status", "Kind", "CreatedAtUtc");
+
+                    b.HasIndex("ProgramAcademicYearId", "AcademicTermId", "AssessmentMonth", "Kind");
+
+                    b.HasIndex("ScopeLevel", "EducationStageId", "ScopeGradeOfferingId", "ScopeClassSectionId");
+
+                    b.ToTable("exam_series", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamSeriesTarget", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ClassSectionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ExamSeriesId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("GradeOfferingId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClassSectionId");
+
+                    b.HasIndex("GradeOfferingId");
+
+                    b.HasIndex("ExamSeriesId", "GradeOfferingId", "ClassSectionId")
+                        .IsUnique();
+
+                    b.ToTable("exam_series_targets", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamSitting", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AdministrationMode")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<DateTimeOffset?>("CompletedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CompletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DurationMinutesSnapshot")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("ExamPaperId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ExamScheduleWindowId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ExecutionStatus")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<Guid?>("ParentSittingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<DateTimeOffset?>("StartedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("StartedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("StartsAtOffsetMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamPaperId");
+
+                    b.HasIndex("ParentSittingId");
+
+                    b.HasIndex("ExamScheduleWindowId", "ExamPaperId")
+                        .IsUnique();
+
+                    b.ToTable("exam_sittings", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamSittingVenue", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ExamSittingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ExamWindowVenueId")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamWindowVenueId");
+
+                    b.HasIndex("ExamSittingId", "ExamWindowVenueId")
+                        .IsUnique();
+
+                    b.ToTable("exam_sitting_venues", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamWindowVenue", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("CapacitySnapshot")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("ClassSectionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ExamCommitteeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ExamScheduleWindowId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("RoomId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("VenueLabel")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClassSectionId");
+
+                    b.HasIndex("ExamCommitteeId");
+
+                    b.HasIndex("RoomId");
+
+                    b.HasIndex("ExamScheduleWindowId", "ClassSectionId");
+
+                    b.HasIndex("ExamScheduleWindowId", "ExamCommitteeId")
+                        .IsUnique();
+
+                    b.ToTable("exam_window_venues", "school");
+                });
+
             modelBuilder.Entity("Mdaresna.Schools.Domain.Facilities.BuildingFloor", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2798,6 +4050,193 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                             IsActive = true,
                             Module = "activities",
                             UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd2c"),
+                            Code = "school.exams.view",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "عرض الاختبارات",
+                            DisplayNameEn = "View exams",
+                            IsActive = true,
+                            Module = "exams",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd2d"),
+                            Code = "school.exams.manage",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "إدارة الاختبارات",
+                            DisplayNameEn = "Manage exams",
+                            IsActive = true,
+                            Module = "exams",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd2e"),
+                            Code = "school.exams.schedule",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "جدولة الاختبارات",
+                            DisplayNameEn = "Schedule exams",
+                            IsActive = true,
+                            Module = "exams",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd2f"),
+                            Code = "school.exams.approve",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "اعتماد الاختبارات",
+                            DisplayNameEn = "Approve exams",
+                            IsActive = true,
+                            Module = "exams",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd30"),
+                            Code = "school.exams.publish",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "نشر الاختبارات",
+                            DisplayNameEn = "Publish exams",
+                            IsActive = true,
+                            Module = "exams",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd31"),
+                            Code = "school.exams.attendance.record",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "تسجيل حضور الاختبارات",
+                            DisplayNameEn = "Record exam attendance",
+                            IsActive = true,
+                            Module = "exams",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd32"),
+                            Code = "school.exams.results.enter",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "رصد درجات الاختبارات",
+                            DisplayNameEn = "Enter exam results",
+                            IsActive = true,
+                            Module = "exams",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd33"),
+                            Code = "school.exams.results.approve",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "اعتماد نتائج الاختبارات",
+                            DisplayNameEn = "Approve exam results",
+                            IsActive = true,
+                            Module = "exams",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd34"),
+                            Code = "school.exams.results.publish",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "نشر نتائج الاختبارات",
+                            DisplayNameEn = "Publish exam results",
+                            IsActive = true,
+                            Module = "exams",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd35"),
+                            Code = "school.exams.results.reopen",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "إعادة فتح نتائج الاختبارات",
+                            DisplayNameEn = "Reopen exam results",
+                            IsActive = true,
+                            Module = "exams",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd36"),
+                            Code = "school.exams.cancel",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "إلغاء الاختبارات",
+                            DisplayNameEn = "Cancel exams",
+                            IsActive = true,
+                            Module = "exams",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd37"),
+                            Code = "school.exams.reports",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "تقارير الاختبارات",
+                            DisplayNameEn = "Exam reports",
+                            IsActive = true,
+                            Module = "exams",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd38"),
+                            Code = "school.exams.override_warnings",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "تجاوز تحذيرات الاختبارات",
+                            DisplayNameEn = "Override exam warnings",
+                            IsActive = true,
+                            Module = "exams",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd39"),
+                            Code = "school.exams.policy.manage",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "إدارة سياسات الاختبارات",
+                            DisplayNameEn = "Manage exam policies",
+                            IsActive = true,
+                            Module = "exams",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd3a"),
+                            Code = "school.exams.committees.manage",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "إدارة لجان الاختبارات",
+                            DisplayNameEn = "Manage exam committees",
+                            IsActive = true,
+                            Module = "exams",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd3b"),
+                            Code = "school.exams.seating.manage",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "إدارة أرقام الجلوس والمقاعد",
+                            DisplayNameEn = "Manage exam seating",
+                            IsActive = true,
+                            Module = "exams",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd3c"),
+                            Code = "school.exams.invigilators.manage",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "إدارة مراقبي الاختبارات",
+                            DisplayNameEn = "Manage exam invigilators",
+                            IsActive = true,
+                            Module = "exams",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         });
                 });
 
@@ -3138,6 +4577,108 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                         {
                             RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
                             PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd2b"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd2c"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd2d"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd2e"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd2f"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd30"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd31"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd32"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd33"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd34"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd35"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd36"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd37"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd38"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd39"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd3a"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd3b"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd3c"),
                             GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         });
                 });
@@ -5724,6 +7265,474 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.Navigation("WeeklyTimetableSlot");
                 });
 
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamApproval", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamPaper", "ExamPaper")
+                        .WithMany()
+                        .HasForeignKey("ExamPaperId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamSeries", "ExamSeries")
+                        .WithMany("Approvals")
+                        .HasForeignKey("ExamSeriesId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ExamPaper");
+
+                    b.Navigation("ExamSeries");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamAttendance", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamCandidateSittingAssignment", "ExamCandidateSittingAssignment")
+                        .WithOne("Attendance")
+                        .HasForeignKey("Mdaresna.Schools.Domain.Exams.ExamAttendance", "ExamCandidateSittingAssignmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ExamCandidateSittingAssignment");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamAudit", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "ActorUser")
+                        .WithMany()
+                        .HasForeignKey("ActorUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamSeries", "ExamSeries")
+                        .WithMany("AuditTrail")
+                        .HasForeignKey("ExamSeriesId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ActorUser");
+
+                    b.Navigation("ExamSeries");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamCalendarProjection", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamScheduleWindow", "ExamScheduleWindow")
+                        .WithOne("CalendarProjection")
+                        .HasForeignKey("Mdaresna.Schools.Domain.Exams.ExamCalendarProjection", "ExamScheduleWindowId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.SchoolCalendarEvent", "SchoolCalendarEvent")
+                        .WithMany()
+                        .HasForeignKey("SchoolCalendarEventId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ExamScheduleWindow");
+
+                    b.Navigation("SchoolCalendarEvent");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamCandidate", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamSeries", "ExamSeries")
+                        .WithMany("Candidates")
+                        .HasForeignKey("ExamSeriesId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Students.StudentEnrollment", "StudentEnrollmentSnapshot")
+                        .WithMany()
+                        .HasForeignKey("StudentEnrollmentIdSnapshot")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Students.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ExamSeries");
+
+                    b.Navigation("Student");
+
+                    b.Navigation("StudentEnrollmentSnapshot");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamCandidateSittingAssignment", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamPaperCandidate", "ExamPaperCandidate")
+                        .WithMany("SittingAssignments")
+                        .HasForeignKey("ExamPaperCandidateId", "ExamPaperId")
+                        .HasPrincipalKey("Id", "ExamPaperId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamSitting", "ExamSitting")
+                        .WithMany("CandidateAssignments")
+                        .HasForeignKey("ExamSittingId", "ExamPaperId")
+                        .HasPrincipalKey("Id", "ExamPaperId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamSittingVenue", "ExamSittingVenue")
+                        .WithMany("CandidateAssignments")
+                        .HasForeignKey("ExamSittingVenueId", "ExamSittingId")
+                        .HasPrincipalKey("Id", "ExamSittingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ExamPaperCandidate");
+
+                    b.Navigation("ExamSitting");
+
+                    b.Navigation("ExamSittingVenue");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamCommittee", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamScheduleWindow", "ExamScheduleWindow")
+                        .WithMany("Committees")
+                        .HasForeignKey("ExamScheduleWindowId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamSeries", "ExamSeries")
+                        .WithMany("Committees")
+                        .HasForeignKey("ExamSeriesId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ExamScheduleWindow");
+
+                    b.Navigation("ExamSeries");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamInvigilatorAssignment", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamCommittee", "ExamCommittee")
+                        .WithMany("Invigilators")
+                        .HasForeignKey("ExamCommitteeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamInvigilatorAssignment", "ReplacesAssignment")
+                        .WithMany()
+                        .HasForeignKey("ReplacesAssignmentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ExamCommittee");
+
+                    b.Navigation("ReplacesAssignment");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamPaper", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "ContentOwnerUser")
+                        .WithMany()
+                        .HasForeignKey("ContentOwnerUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamSeries", "ExamSeries")
+                        .WithMany("Papers")
+                        .HasForeignKey("ExamSeriesId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.GradeSubjectOffering", "GradeSubjectOffering")
+                        .WithMany()
+                        .HasForeignKey("GradeSubjectOfferingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ContentOwnerUser");
+
+                    b.Navigation("ExamSeries");
+
+                    b.Navigation("GradeSubjectOffering");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamPaperCandidate", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamCandidate", "ExamCandidate")
+                        .WithMany("Papers")
+                        .HasForeignKey("ExamCandidateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamPaper", "ExamPaper")
+                        .WithMany("Candidates")
+                        .HasForeignKey("ExamPaperId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ExamCandidate");
+
+                    b.Navigation("ExamPaper");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamPaperTarget", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.ClassSection", "ClassSection")
+                        .WithMany()
+                        .HasForeignKey("ClassSectionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.ClassSectionSubject", "ClassSectionSubject")
+                        .WithMany()
+                        .HasForeignKey("ClassSectionSubjectId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamPaper", "ExamPaper")
+                        .WithMany("Targets")
+                        .HasForeignKey("ExamPaperId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.GradeOffering", "GradeOffering")
+                        .WithMany()
+                        .HasForeignKey("GradeOfferingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ClassSection");
+
+                    b.Navigation("ClassSectionSubject");
+
+                    b.Navigation("ExamPaper");
+
+                    b.Navigation("GradeOffering");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamPolicy", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.EducationProgram", "EducationProgram")
+                        .WithMany()
+                        .HasForeignKey("EducationProgramId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.EducationStage", "EducationStage")
+                        .WithMany()
+                        .HasForeignKey("EducationStageId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("EducationProgram");
+
+                    b.Navigation("EducationStage");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamResultAppeal", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamPaperCandidate", "ExamPaperCandidate")
+                        .WithMany("Appeals")
+                        .HasForeignKey("ExamPaperCandidateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ExamPaperCandidate");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamResultAttempt", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamCandidateSittingAssignment", "ExamCandidateSittingAssignment")
+                        .WithMany("ResultAttempts")
+                        .HasForeignKey("ExamCandidateSittingAssignmentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamPaperCandidate", "ExamPaperCandidate")
+                        .WithMany("ResultAttempts")
+                        .HasForeignKey("ExamPaperCandidateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ExamCandidateSittingAssignment");
+
+                    b.Navigation("ExamPaperCandidate");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamScheduleWindow", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamSeries", "ExamSeries")
+                        .WithMany("ScheduleWindows")
+                        .HasForeignKey("ExamSeriesId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamScheduleWindow", "RescheduledFromWindow")
+                        .WithMany()
+                        .HasForeignKey("RescheduledFromWindowId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ExamSeries");
+
+                    b.Navigation("RescheduledFromWindow");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamSeries", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.AcademicTerm", "AcademicTerm")
+                        .WithMany()
+                        .HasForeignKey("AcademicTermId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.EducationStage", "EducationStage")
+                        .WithMany()
+                        .HasForeignKey("EducationStageId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamSeries", "ParentExamSeries")
+                        .WithMany()
+                        .HasForeignKey("ParentExamSeriesId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.ProgramAcademicYear", "ProgramAcademicYear")
+                        .WithMany()
+                        .HasForeignKey("ProgramAcademicYearId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.ClassSection", "ScopeClassSection")
+                        .WithMany()
+                        .HasForeignKey("ScopeClassSectionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.GradeOffering", "ScopeGradeOffering")
+                        .WithMany()
+                        .HasForeignKey("ScopeGradeOfferingId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("AcademicTerm");
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("EducationStage");
+
+                    b.Navigation("ParentExamSeries");
+
+                    b.Navigation("ProgramAcademicYear");
+
+                    b.Navigation("ScopeClassSection");
+
+                    b.Navigation("ScopeGradeOffering");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamSeriesTarget", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.ClassSection", "ClassSection")
+                        .WithMany()
+                        .HasForeignKey("ClassSectionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamSeries", "ExamSeries")
+                        .WithMany("Targets")
+                        .HasForeignKey("ExamSeriesId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.GradeOffering", "GradeOffering")
+                        .WithMany()
+                        .HasForeignKey("GradeOfferingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ClassSection");
+
+                    b.Navigation("ExamSeries");
+
+                    b.Navigation("GradeOffering");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamSitting", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamPaper", "ExamPaper")
+                        .WithMany("Sittings")
+                        .HasForeignKey("ExamPaperId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamScheduleWindow", "ExamScheduleWindow")
+                        .WithMany("Sittings")
+                        .HasForeignKey("ExamScheduleWindowId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamSitting", "ParentSitting")
+                        .WithMany()
+                        .HasForeignKey("ParentSittingId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ExamPaper");
+
+                    b.Navigation("ExamScheduleWindow");
+
+                    b.Navigation("ParentSitting");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamSittingVenue", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamSitting", "ExamSitting")
+                        .WithMany("Venues")
+                        .HasForeignKey("ExamSittingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamWindowVenue", "ExamWindowVenue")
+                        .WithMany("Sittings")
+                        .HasForeignKey("ExamWindowVenueId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ExamSitting");
+
+                    b.Navigation("ExamWindowVenue");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamWindowVenue", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.ClassSection", "ClassSection")
+                        .WithMany()
+                        .HasForeignKey("ClassSectionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamCommittee", "ExamCommittee")
+                        .WithMany("Venues")
+                        .HasForeignKey("ExamCommitteeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamScheduleWindow", "ExamScheduleWindow")
+                        .WithMany("Venues")
+                        .HasForeignKey("ExamScheduleWindowId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Facilities.SchoolRoom", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ClassSection");
+
+                    b.Navigation("ExamCommittee");
+
+                    b.Navigation("ExamScheduleWindow");
+
+                    b.Navigation("Room");
+                });
+
             modelBuilder.Entity("Mdaresna.Schools.Domain.Facilities.BuildingFloor", b =>
                 {
                     b.HasOne("Mdaresna.Schools.Domain.Facilities.SchoolBuilding", "Building")
@@ -6615,6 +8624,88 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.WeeklyTimetableSlot", b =>
                 {
                     b.Navigation("SubstituteTeachers");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamCandidate", b =>
+                {
+                    b.Navigation("Papers");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamCandidateSittingAssignment", b =>
+                {
+                    b.Navigation("Attendance");
+
+                    b.Navigation("ResultAttempts");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamCommittee", b =>
+                {
+                    b.Navigation("Invigilators");
+
+                    b.Navigation("Venues");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamPaper", b =>
+                {
+                    b.Navigation("Candidates");
+
+                    b.Navigation("Sittings");
+
+                    b.Navigation("Targets");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamPaperCandidate", b =>
+                {
+                    b.Navigation("Appeals");
+
+                    b.Navigation("ResultAttempts");
+
+                    b.Navigation("SittingAssignments");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamScheduleWindow", b =>
+                {
+                    b.Navigation("CalendarProjection");
+
+                    b.Navigation("Committees");
+
+                    b.Navigation("Sittings");
+
+                    b.Navigation("Venues");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamSeries", b =>
+                {
+                    b.Navigation("Approvals");
+
+                    b.Navigation("AuditTrail");
+
+                    b.Navigation("Candidates");
+
+                    b.Navigation("Committees");
+
+                    b.Navigation("Papers");
+
+                    b.Navigation("ScheduleWindows");
+
+                    b.Navigation("Targets");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamSitting", b =>
+                {
+                    b.Navigation("CandidateAssignments");
+
+                    b.Navigation("Venues");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamSittingVenue", b =>
+                {
+                    b.Navigation("CandidateAssignments");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamWindowVenue", b =>
+                {
+                    b.Navigation("Sittings");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Facilities.BuildingFloor", b =>

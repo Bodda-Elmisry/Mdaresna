@@ -251,6 +251,23 @@ public static class SchoolIdentitySeed
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd28"), "school.activities.manage", "activities", "إدارة أنشطة الفصل", "Manage class activities"),
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd29"), "school.activities.publish", "activities", "نشر وإلغاء أنشطة الفصل", "Publish and cancel class activities"),
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd2a"), "school.activities.grade", "activities", "تسجيل مشاركة وتقييم الأنشطة", "Record class activity participation and grades"),
-        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd2b"), "school.activities.reopen", "activities", "إعادة فتح تقييم أنشطة الفصل", "Reopen class activity evaluation")
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd2b"), "school.activities.reopen", "activities", "إعادة فتح تقييم أنشطة الفصل", "Reopen class activity evaluation"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd2c"), "school.exams.view", "exams", "عرض الاختبارات", "View exams"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd2d"), "school.exams.manage", "exams", "إدارة الاختبارات", "Manage exams"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd2e"), "school.exams.schedule", "exams", "جدولة الاختبارات", "Schedule exams"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd2f"), "school.exams.approve", "exams", "اعتماد الاختبارات", "Approve exams"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd30"), "school.exams.publish", "exams", "نشر الاختبارات", "Publish exams"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd31"), "school.exams.attendance.record", "exams", "تسجيل حضور الاختبارات", "Record exam attendance"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd32"), "school.exams.results.enter", "exams", "رصد درجات الاختبارات", "Enter exam results"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd33"), "school.exams.results.approve", "exams", "اعتماد نتائج الاختبارات", "Approve exam results"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd34"), "school.exams.results.publish", "exams", "نشر نتائج الاختبارات", "Publish exam results"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd35"), "school.exams.results.reopen", "exams", "إعادة فتح نتائج الاختبارات", "Reopen exam results"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd36"), "school.exams.cancel", "exams", "إلغاء الاختبارات", "Cancel exams"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd37"), "school.exams.reports", "exams", "تقارير الاختبارات", "Exam reports"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd38"), "school.exams.override_warnings", "exams", "تجاوز تحذيرات الاختبارات", "Override exam warnings"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd39"), "school.exams.policy.manage", "exams", "إدارة سياسات الاختبارات", "Manage exam policies"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd3a"), "school.exams.committees.manage", "exams", "إدارة لجان الاختبارات", "Manage exam committees"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd3b"), "school.exams.seating.manage", "exams", "إدارة أرقام الجلوس والمقاعد", "Manage exam seating"),
+        (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd3c"), "school.exams.invigilators.manage", "exams", "إدارة مراقبي الاختبارات", "Manage exam invigilators")
     ];
 }
