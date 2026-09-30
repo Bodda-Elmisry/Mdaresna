@@ -70,6 +70,9 @@ public static class SchoolPermissionPolicies
     public const string ActivitiesReopen = Prefix + "school.activities.reopen";
     public const string LessonNotesView = Prefix + "school.lesson_notes.view";
     public const string LessonNotesManage = Prefix + "school.lesson_notes.manage";
+    public const string LessonEvaluationsView = Prefix + "school.lesson_evaluations.view";
+    public const string LessonEvaluationsManage = Prefix + "school.lesson_evaluations.manage";
+    public const string LessonEvaluationsReopen = Prefix + "school.lesson_evaluations.reopen";
     public const string ExamsView = Prefix + "school.exams.view";
     public const string ExamsManage = Prefix + "school.exams.manage";
     public const string ExamsSchedule = Prefix + "school.exams.schedule";

@@ -98,6 +98,9 @@ public class SchoolsDbContext(DbContextOptions options) : DbContext(options)
     public DbSet<ClassActivityAudit> ClassActivityAudits => Set<ClassActivityAudit>();
     public DbSet<StudentLessonNote> StudentLessonNotes => Set<StudentLessonNote>();
     public DbSet<StudentLessonNoteAudit> StudentLessonNoteAudits => Set<StudentLessonNoteAudit>();
+    public DbSet<StudentLessonEvaluationRegister> StudentLessonEvaluationRegisters => Set<StudentLessonEvaluationRegister>();
+    public DbSet<StudentLessonEvaluationEntry> StudentLessonEvaluationEntries => Set<StudentLessonEvaluationEntry>();
+    public DbSet<StudentLessonEvaluationAudit> StudentLessonEvaluationAudits => Set<StudentLessonEvaluationAudit>();
     public DbSet<ExamPolicy> ExamPolicies => Set<ExamPolicy>();
     public DbSet<ExamSeries> ExamSeries => Set<ExamSeries>();
     public DbSet<ExamSeriesTarget> ExamSeriesTargets => Set<ExamSeriesTarget>();

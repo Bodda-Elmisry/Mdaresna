@@ -271,5 +271,8 @@ public static class SchoolIdentitySeed
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd3c"), "school.exams.invigilators.manage", "exams", "إدارة مراقبي الاختبارات", "Manage exam invigilators")
         ,(Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd3d"), "school.lesson_notes.view", "lesson_notes", "عرض ملاحظات الطلاب داخل الحصة", "View student lesson notes")
         ,(Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd3e"), "school.lesson_notes.manage", "lesson_notes", "إدارة ملاحظات الطلاب داخل الحصة", "Manage student lesson notes")
+        ,(Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd3f"), "school.lesson_evaluations.view", "lesson_evaluations", "عرض تقييم أداء الطلاب داخل الحصة", "View student lesson evaluations")
+        ,(Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd40"), "school.lesson_evaluations.manage", "lesson_evaluations", "تسجيل تقييم أداء الطلاب داخل الحصة", "Record student lesson evaluations")
+        ,(Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd41"), "school.lesson_evaluations.reopen", "lesson_evaluations", "إعادة فتح تقييم أداء الطلاب داخل الحصة", "Reopen student lesson evaluations")
     ];
 }
