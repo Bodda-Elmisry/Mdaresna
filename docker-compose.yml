@@ -140,8 +140,12 @@ services:
       SchoolIdentity__Jwt__Audience: ${SCHOOLS_JWT_AUDIENCE:-mdaresna-schools-api}
       SchoolIdentity__Jwt__SigningKey: ${SCHOOLS_JWT_SIGNING_KEY:?Set SCHOOLS_JWT_SIGNING_KEY in .env.docker}
       SchoolIdentity__Jwt__AccessTokenMinutes: ${SCHOOLS_ACCESS_TOKEN_MINUTES:-15}
+      SchoolDocuments__StorageRoot: /data/school-documents
+      SchoolDocuments__MaxFileSizeBytes: ${SCHOOL_DOCUMENT_MAX_FILE_SIZE_BYTES:-26214400}
     ports:
       - "${SCHOOLS_API_PORT:-5251}:8080"
+    volumes:
+      - mdaresna-school-documents:/data/school-documents
     depends_on:
       platform-api:
         condition: service_healthy
@@ -188,3 +192,4 @@ services:
 volumes:
   mdaresna-postgres:
   mdaresna-rabbitmq:
+  mdaresna-school-documents:

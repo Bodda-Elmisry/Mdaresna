@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 using Mdaresna.Schools.Api.Auth;
 using Mdaresna.Schools.Api.Time;
+using Mdaresna.Schools.Api.Documents;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,7 @@ builder.Services.AddSchoolsInfrastructure(builder.Configuration);
 builder.Services.AddSchoolAuthentication(builder.Configuration);
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<SchoolClock>();
+builder.Services.AddSingleton<ISchoolDocumentStorage, LocalSchoolDocumentStorage>();
 builder.Services.AddCors(options => options.AddPolicy("SchoolsWeb", policy =>
 {
     if (allowedOrigins.Length > 0) policy.WithOrigins(allowedOrigins);

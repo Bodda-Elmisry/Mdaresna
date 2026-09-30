@@ -6,6 +6,7 @@ using Mdaresna.Schools.Domain.Academics;
 using Mdaresna.Schools.Domain.Organization;
 using Mdaresna.Schools.Domain.Students;
 using Mdaresna.Schools.Domain.Exams;
+using Mdaresna.Schools.Domain.Documents;
 
 namespace Mdaresna.Schools.Infrastructure.Persistence;
 
@@ -121,6 +122,14 @@ public class SchoolsDbContext(DbContextOptions options) : DbContext(options)
     public DbSet<ExamApproval> ExamApprovals => Set<ExamApproval>();
     public DbSet<ExamAudit> ExamAudits => Set<ExamAudit>();
     public DbSet<ExamCalendarProjection> ExamCalendarProjections => Set<ExamCalendarProjection>();
+    public DbSet<SchoolDocument> Documents => Set<SchoolDocument>();
+    public DbSet<SchoolDocumentVersion> DocumentVersions => Set<SchoolDocumentVersion>();
+    public DbSet<SchoolDocumentAudit> DocumentAudits => Set<SchoolDocumentAudit>();
+    public DbSet<TeachingPlan> TeachingPlans => Set<TeachingPlan>();
+    public DbSet<TeachingPlanTarget> TeachingPlanTargets => Set<TeachingPlanTarget>();
+    public DbSet<TeachingPlanItem> TeachingPlanItems => Set<TeachingPlanItem>();
+    public DbSet<TeachingPlanDocument> TeachingPlanDocuments => Set<TeachingPlanDocument>();
+    public DbSet<TeachingPlanAudit> TeachingPlanAudits => Set<TeachingPlanAudit>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -210,6 +219,7 @@ public sealed class PostgreSqlSchoolsDbContext(
         ConfigurePostgreSqlConcurrency<ExamResultAppeal>(modelBuilder, nameof(ExamResultAppeal.RowVersion));
         ConfigurePostgreSqlConcurrency<ExamApproval>(modelBuilder, nameof(ExamApproval.RowVersion));
         ConfigurePostgreSqlConcurrency<ExamCalendarProjection>(modelBuilder, nameof(ExamCalendarProjection.RowVersion));
+        ConfigurePostgreSqlConcurrency<TeachingPlan>(modelBuilder, nameof(TeachingPlan.RowVersion));
         ConfigureFacilityIndexes(modelBuilder, "\"IsDeleted\" = FALSE");
         ConfigureAcademicIndexes(modelBuilder, "\"IsDeleted\" = FALSE");
         ConfigureOrganizationIndexes(modelBuilder, "\"IsDeleted\" = FALSE", "\"IsDeleted\" = FALSE AND \"IsPrimary\" = TRUE");
@@ -369,6 +379,7 @@ public sealed class SqlServerSchoolsDbContext(
         modelBuilder.Entity<ExamResultAppeal>().Property(x => x.RowVersion).IsRowVersion();
         modelBuilder.Entity<ExamApproval>().Property(x => x.RowVersion).IsRowVersion();
         modelBuilder.Entity<ExamCalendarProjection>().Property(x => x.RowVersion).IsRowVersion();
+        modelBuilder.Entity<TeachingPlan>().Property(x => x.RowVersion).IsRowVersion();
         ConfigureFacilityIndexes(modelBuilder, "[IsDeleted] = 0");
         ConfigureAcademicIndexes(modelBuilder, "[IsDeleted] = 0");
         ConfigureOrganizationIndexes(modelBuilder, "[IsDeleted] = 0", "[IsDeleted] = 0 AND [IsPrimary] = 1");

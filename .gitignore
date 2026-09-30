@@ -306,6 +306,7 @@
 # Runtime-generated app content
 Mdaresna/Logs/
 Mdaresna/Images/
+**/App_Data/school-documents/
 
 # Local secrets
 firebase-service-account.json
