@@ -269,5 +269,7 @@ public static class SchoolIdentitySeed
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd3a"), "school.exams.committees.manage", "exams", "إدارة لجان الاختبارات", "Manage exam committees"),
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd3b"), "school.exams.seating.manage", "exams", "إدارة أرقام الجلوس والمقاعد", "Manage exam seating"),
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd3c"), "school.exams.invigilators.manage", "exams", "إدارة مراقبي الاختبارات", "Manage exam invigilators")
+        ,(Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd3d"), "school.lesson_notes.view", "lesson_notes", "عرض ملاحظات الطلاب داخل الحصة", "View student lesson notes")
+        ,(Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd3e"), "school.lesson_notes.manage", "lesson_notes", "إدارة ملاحظات الطلاب داخل الحصة", "Manage student lesson notes")
     ];
 }

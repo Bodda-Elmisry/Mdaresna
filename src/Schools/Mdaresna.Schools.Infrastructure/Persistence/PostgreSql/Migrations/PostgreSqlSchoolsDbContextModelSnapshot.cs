@@ -4237,6 +4237,28 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                             IsActive = true,
                             Module = "exams",
                             UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd3d"),
+                            Code = "school.lesson_notes.view",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "عرض ملاحظات الطلاب داخل الحصة",
+                            DisplayNameEn = "View student lesson notes",
+                            IsActive = true,
+                            Module = "lesson_notes",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd3e"),
+                            Code = "school.lesson_notes.manage",
+                            CreatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DisplayNameAr = "إدارة ملاحظات الطلاب داخل الحصة",
+                            DisplayNameEn = "Manage student lesson notes",
+                            IsActive = true,
+                            Module = "lesson_notes",
+                            UpdatedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         });
                 });
 
@@ -4679,6 +4701,18 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                         {
                             RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
                             PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd3c"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd3d"),
+                            GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            RoleId = new Guid("62f4655a-20af-4acc-bb74-c42733e4f713"),
+                            PermissionId = new Guid("73d1e183-1cad-4fe2-99c5-b39dc7fffd3e"),
                             GrantedAtUtc = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         });
                 });
@@ -6815,6 +6849,120 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.ToTable("student_homework", "school");
                 });
 
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.StudentLessonNote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<Guid>("ClassSectionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("DeletedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateOnly>("LessonDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("NoteText")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int?>("RatingLevel")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("RequiresFollowUp")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("StudentEnrollmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Visibility")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<Guid>("WeeklyTimetableSlotId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("DeletedByUserId");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.HasIndex("WeeklyTimetableSlotId");
+
+                    b.HasIndex("StudentEnrollmentId", "LessonDate");
+
+                    b.HasIndex("ClassSectionId", "LessonDate", "WeeklyTimetableSlotId");
+
+                    b.ToTable("student_lesson_notes", "school", t =>
+                        {
+                            t.HasCheckConstraint("CK_student_lesson_notes_rating", "\"RatingLevel\" IS NULL OR (\"RatingLevel\" >= 1 AND \"RatingLevel\" <= 5)");
+                        });
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.StudentLessonNoteAudit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SnapshotJson")
+                        .IsRequired()
+                        .HasMaxLength(6000)
+                        .HasColumnType("character varying(6000)");
+
+                    b.Property<Guid>("StudentLessonNoteId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActorUserId");
+
+                    b.HasIndex("StudentLessonNoteId", "CreatedAtUtc");
+
+                    b.ToTable("student_lesson_note_audits", "school");
+                });
+
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.AcademicPeriod", b =>
                 {
                     b.HasOne("Mdaresna.Schools.Domain.Academics.AcademicTerm", "AcademicTerm")
@@ -8514,6 +8662,75 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.Navigation("StudentEnrollment");
                 });
 
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.StudentLessonNote", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.ClassSection", "ClassSection")
+                        .WithMany()
+                        .HasForeignKey("ClassSectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "DeletedByUser")
+                        .WithMany()
+                        .HasForeignKey("DeletedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Students.StudentEnrollment", "StudentEnrollment")
+                        .WithMany()
+                        .HasForeignKey("StudentEnrollmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.WeeklyTimetableSlot", "WeeklyTimetableSlot")
+                        .WithMany()
+                        .HasForeignKey("WeeklyTimetableSlotId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ClassSection");
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("DeletedByUser");
+
+                    b.Navigation("StudentEnrollment");
+
+                    b.Navigation("UpdatedByUser");
+
+                    b.Navigation("WeeklyTimetableSlot");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.StudentLessonNoteAudit", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "ActorUser")
+                        .WithMany()
+                        .HasForeignKey("ActorUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Students.StudentLessonNote", "StudentLessonNote")
+                        .WithMany("AuditTrail")
+                        .HasForeignKey("StudentLessonNoteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ActorUser");
+
+                    b.Navigation("StudentLessonNote");
+                });
+
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.AcademicTerm", b =>
                 {
                     b.Navigation("Periods");
@@ -8873,6 +9090,11 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
             modelBuilder.Entity("Mdaresna.Schools.Domain.Students.StudentHomework", b =>
                 {
                     b.Navigation("Attempts");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Students.StudentLessonNote", b =>
+                {
+                    b.Navigation("AuditTrail");
                 });
 #pragma warning restore 612, 618
         }

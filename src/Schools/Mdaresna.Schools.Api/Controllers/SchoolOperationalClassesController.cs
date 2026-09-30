@@ -25,6 +25,8 @@ public sealed class SchoolOperationalClassesController(ISchoolDbContextFactory d
         if (currentUserId == Guid.Empty) return Unauthorized();
         var isSchoolAdmin = await db.LocalUserRoles.AsNoTracking().AnyAsync(x =>
             x.UserId == currentUserId && x.RoleId == SchoolIdentitySeed.SchoolAdminRoleId && x.Role.IsActive, ct);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var managedDepartmentIds = isSchoolAdmin ? [] : await SchoolDepartmentScope.ManagedDepartmentIdsAsync(User, db, today, ct);
 
         var query = db.ClassSections.AsNoTracking().Where(x =>
             x.IsActive && x.GradeOffering.IsActive && x.GradeOffering.Status != GradeOfferingStatus.Closed);
@@ -33,7 +35,10 @@ public sealed class SchoolOperationalClassesController(ISchoolDbContextFactory d
             query = query.Where(section => db.ClassSectionTeacherScopes.Any(scope =>
                 scope.ClassSectionId == section.Id && scope.IsActive &&
                 scope.TeacherGradeSubjectScope.IsActive &&
-                scope.TeacherGradeSubjectScope.TeacherUserId == currentUserId));
+                (scope.TeacherGradeSubjectScope.TeacherUserId == currentUserId ||
+                 scope.TeacherGradeSubjectScope.TeacherUser.DepartmentMemberships.Any(m =>
+                    managedDepartmentIds.Contains(m.DepartmentId) && m.IsActive && !m.IsDeleted && m.StartsOn <= today &&
+                    (!m.EndsOn.HasValue || m.EndsOn >= today)))));
         }
 
         var rows = await query
@@ -79,7 +84,11 @@ public sealed class SchoolOperationalClassesController(ISchoolDbContextFactory d
                 .ToArrayAsync(ct)
             : await db.ClassSectionTeacherScopes.AsNoTracking()
                 .Where(x => sectionIds.Contains(x.ClassSectionId) && x.IsActive &&
-                    x.TeacherGradeSubjectScope.IsActive && x.TeacherGradeSubjectScope.TeacherUserId == currentUserId)
+                    x.TeacherGradeSubjectScope.IsActive &&
+                    (x.TeacherGradeSubjectScope.TeacherUserId == currentUserId ||
+                     x.TeacherGradeSubjectScope.TeacherUser.DepartmentMemberships.Any(m =>
+                        managedDepartmentIds.Contains(m.DepartmentId) && m.IsActive && !m.IsDeleted && m.StartsOn <= today &&
+                        (!m.EndsOn.HasValue || m.EndsOn >= today))))
                 .Select(x => new OperationalClassSubjectRow(x.ClassSectionId,
                     x.TeacherGradeSubjectScope.GradeSubjectOffering.CurriculumGradeSubject.Subject.NameAr,
                     x.TeacherGradeSubjectScope.GradeSubjectOffering.CurriculumGradeSubject.Subject.NameEn))

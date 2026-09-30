@@ -96,6 +96,8 @@ public class SchoolsDbContext(DbContextOptions options) : DbContext(options)
     public DbSet<ClassActivityAudienceStudent> ClassActivityAudienceStudents => Set<ClassActivityAudienceStudent>();
     public DbSet<ClassActivityParticipant> ClassActivityParticipants => Set<ClassActivityParticipant>();
     public DbSet<ClassActivityAudit> ClassActivityAudits => Set<ClassActivityAudit>();
+    public DbSet<StudentLessonNote> StudentLessonNotes => Set<StudentLessonNote>();
+    public DbSet<StudentLessonNoteAudit> StudentLessonNoteAudits => Set<StudentLessonNoteAudit>();
     public DbSet<ExamPolicy> ExamPolicies => Set<ExamPolicy>();
     public DbSet<ExamSeries> ExamSeries => Set<ExamSeries>();
     public DbSet<ExamSeriesTarget> ExamSeriesTargets => Set<ExamSeriesTarget>();
