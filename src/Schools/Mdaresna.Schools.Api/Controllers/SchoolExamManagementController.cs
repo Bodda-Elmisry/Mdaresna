@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Mdaresna.Api.Contracts;
 using Mdaresna.Schools.Api.Auth;
+using Mdaresna.Schools.Api.Exams;
 using Mdaresna.Schools.Api.Time;
 using Mdaresna.Schools.Domain.Academics;
 using Mdaresna.Schools.Domain.Exams;
@@ -78,6 +79,23 @@ public sealed class SchoolExamManagementController(ISchoolDbContextFactory dbFac
         return Ok(ApiResponse<IReadOnlyList<ExamPolicyResponse>>.Success(rows, correlationId: HttpContext.TraceIdentifier));
     }
 
+    [HttpGet("policies/{id:guid}/workflow-defaults"), Authorize(Policy = SchoolPermissionPolicies.ExamsView)]
+    public async Task<IActionResult> WorkflowDefaults(Guid id, CancellationToken ct) {
+        await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
+        var policy = await db.ExamPolicies.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id, ct);
+        return policy is null ? NotFound() : Ok(ApiResponse<object>.Success(JsonSerializer.Deserialize<WorkflowDefault[]>(policy.WorkflowDefaultsJson ?? "[]") ?? []));
+    }
+    [HttpPut("policies/{id:guid}/workflow-defaults"), Authorize(Policy = SchoolPermissionPolicies.ExamsPolicyManage)]
+    public async Task<IActionResult> SaveWorkflowDefaults(Guid id, IReadOnlyList<WorkflowDefault> defaults, CancellationToken ct) {
+        await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
+        var policy = await db.ExamPolicies.SingleOrDefaultAsync(x => x.Id == id, ct); if (policy is null) return NotFound();
+        if (defaults.Count > 5 || defaults.Any(x => x is null || !Enum.IsDefined(x.Stage)) || defaults.Select(x => x.Stage).Distinct().Count() != defaults.Count)
+            return BadRequest(Failure(400, "exams.workflow_invalid", "Invalid workflow defaults."));
+        foreach (var d in defaults) if (!await ExamWorkflowEngine.Permission(db, d.AssigneeUserId, ExamWorkflowRules.Permission(d.Stage), ct) || !await ExamWorkflowEngine.Permission(db, d.AssigneeUserId, "school.exams.view", ct))
+            return BadRequest(Failure(400, "exams.workflow_assignee_invalid", "The assignee is not eligible."));
+        policy.WorkflowDefaultsJson = JsonSerializer.Serialize(defaults); policy.UpdatedAtUtc = DateTimeOffset.UtcNow;
+        await db.SaveChangesAsync(ct); return Ok(ApiResponse<object?>.Success(null));
+    }
     [HttpPost("policies"), Authorize(Policy = SchoolPermissionPolicies.ExamsPolicyManage)]
     public async Task<IActionResult> SavePolicy([FromBody] SaveExamPolicyRequest request, CancellationToken ct)
     {
@@ -104,6 +122,7 @@ public sealed class SchoolExamManagementController(ISchoolDbContextFactory dbFac
             TeacherCanPublishWithoutApproval = request.TeacherCanPublishWithoutApproval,
             DepartmentApprovalRequired = request.DepartmentApprovalRequired, SchoolApprovalRequired = request.SchoolApprovalRequired,
             ResultApprovalRequired = request.ResultApprovalRequired, AllowScheduleWarningOverride = request.AllowScheduleWarningOverride,
+            WorkflowDefaultsJson = superseded.OrderByDescending(x => x.Version).FirstOrDefault()?.WorkflowDefaultsJson,
             EffectiveFrom = request.EffectiveFrom, EffectiveTo = request.EffectiveTo, Version = latestVersion + 1,
             IsActive = true, CreatedAtUtc = now, UpdatedAtUtc = now };
         db.ExamPolicies.Add(policy); await db.SaveChangesAsync(ct);
@@ -249,7 +268,7 @@ public sealed class SchoolExamManagementController(ISchoolDbContextFactory dbFac
                 applicablePolicy.Version, applicablePolicy.DefaultAdministrationMode, applicablePolicy.TeacherCanCreate,
                 applicablePolicy.TeacherCanPublishWithoutApproval, applicablePolicy.DepartmentApprovalRequired,
                 applicablePolicy.SchoolApprovalRequired, applicablePolicy.ResultApprovalRequired,
-                applicablePolicy.AllowScheduleWarningOverride)),
+                applicablePolicy.AllowScheduleWarningOverride, applicablePolicy.WorkflowDefaultsJson)),
             ExternalSourceCode = Clean(request.ExternalSourceCode, 100), ExternalAuthorityName = Clean(request.ExternalAuthorityName, 250),
             ExternalReferenceId = Clean(request.ExternalReferenceId, 200), ExternalRevision = Clean(request.ExternalRevision, 100),
             IsExternalScheduleLocked = request.IsExternalScheduleLocked, CreatedByUserId = actor, CreatedAtUtc = now, UpdatedAtUtc = now };
@@ -433,7 +452,11 @@ public sealed class SchoolExamManagementController(ISchoolDbContextFactory dbFac
             .SingleOrDefaultAsync(x => x.Id == windowId, ct);
         if (window is null) return NotFound(Failure(404, "exams.window_not_found", "Exam window was not found."));
         if (window.IsScheduleLocked) return Conflict(Failure(409, "exams.external_schedule_locked", "This external schedule is locked."));
+        if (window.ExamSeries.Status is ExamSeriesStatus.Closed or ExamSeriesStatus.Cancelled) return Conflict(Failure(409, "exams.workflow_locked", "The exam is closed or cancelled."));
+        var paperIds = await db.ExamPapers.Where(x => x.ExamSeriesId == window.ExamSeriesId).Select(x => x.Id).ToArrayAsync(ct);
+        if (!await ExamWorkflowEngine.Eligible(db, CurrentUserId(), ExamWorkflowStage.Schedule, paperIds, ct)) return Forbid();
         var zone = SchoolClock.Resolve(window.TimeZoneIdSnapshot); var now = DateTimeOffset.UtcNow;
+        var oldDate = $"{window.LocalDate:yyyy-MM-dd} {window.StartsAtLocal:HH:mm}";
         window.LocalDate = request.Date; window.StartsAtLocal = request.StartsAt; window.EndsAtLocal = request.EndsAt;
         window.StartsAtUtc = ToUtc(request.Date, request.StartsAt, zone); window.EndsAtUtc = ToUtc(request.Date, request.EndsAt, zone);
         window.Status = window.ExamSeries.Status == ExamSeriesStatus.Published ? ExamScheduleWindowStatus.Scheduled : ExamScheduleWindowStatus.Draft;
@@ -442,6 +465,7 @@ public sealed class SchoolExamManagementController(ISchoolDbContextFactory dbFac
             window.CalendarProjection.SchoolCalendarEvent.EndDate = request.Date; window.CalendarProjection.SchoolCalendarEvent.UpdatedAtUtc = now;
             window.CalendarProjection.ProjectionVersion++; window.CalendarProjection.LastProjectedAtUtc = now; }
         AddAudit(db, window.ExamSeries, "WindowRescheduled", now, request.Reason, payload: JsonSerializer.Serialize(request));
+        await ExamWorkflowEngine.Rescheduled(db, window.ExamSeries, CurrentUserId(), oldDate, $"{request.Date:yyyy-MM-dd} {request.StartsAt:HH:mm}", request.Reason.Trim(), ct);
         await db.SaveChangesAsync(ct); return Ok(ApiResponse<object?>.Success(null, correlationId: HttpContext.TraceIdentifier));
     }
 
@@ -727,4 +751,4 @@ internal sealed record CentralGradeSubject(Guid Id, Guid GradeOfferingId, Guid S
 internal sealed record LocalizedExamName(string Ar, string En);
 internal sealed record ExamPolicySnapshot(Guid Id, int Version, ExamAdministrationMode DefaultAdministrationMode,
     bool TeacherCanCreate, bool TeacherCanPublishWithoutApproval, bool DepartmentApprovalRequired,
-    bool SchoolApprovalRequired, bool ResultApprovalRequired, bool AllowScheduleWarningOverride);
+    bool SchoolApprovalRequired, bool ResultApprovalRequired, bool AllowScheduleWarningOverride, string? WorkflowDefaultsJson = null);

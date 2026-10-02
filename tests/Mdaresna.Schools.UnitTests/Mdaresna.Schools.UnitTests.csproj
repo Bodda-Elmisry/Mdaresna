@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Schools\Mdaresna.Schools.Application\Mdaresna.Schools.Application.csproj" />
+    <ProjectReference Include="..\..\src\Schools\Mdaresna.Schools.Api\Mdaresna.Schools.Api.csproj" />
     <ProjectReference Include="..\..\src\Schools\Mdaresna.Schools.Domain\Mdaresna.Schools.Domain.csproj" />
   </ItemGroup>
 </Project>

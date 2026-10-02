@@ -4,6 +4,7 @@ using Mdaresna.Schools.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
 {
     [DbContext(typeof(SqlServerSchoolsDbContext))]
-    partial class SqlServerSchoolsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261002121052_AddSchoolPresentation")]
+    partial class AddSchoolPresentation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2687,41 +2690,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.ToTable("exam_invigilator_assignments", "school");
                 });
 
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamNotificationOutbox", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Attempts")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("DeliveredAtUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("EventKey")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<Guid>("NotificationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DeliveredAtUtc");
-
-                    b.HasIndex("EventKey")
-                        .IsUnique();
-
-                    b.HasIndex("NotificationId");
-
-                    b.ToTable("exam_notification_outbox", "school");
-                });
-
             modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamPaper", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2961,9 +2929,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
 
                     b.Property<int>("Version")
                         .HasColumnType("int");
-
-                    b.Property<string>("WorkflowDefaultsJson")
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -3556,96 +3521,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                         .HasFilter("[ExamCommitteeId] IS NOT NULL");
 
                     b.ToTable("exam_window_venues", "school");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamWorkflow", b =>
-                {
-                    b.Property<Guid>("ExamSeriesId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CreatedByUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Revision")
-                        .IsConcurrencyToken()
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(24)
-                        .HasColumnType("nvarchar(24)");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.HasKey("ExamSeriesId");
-
-                    b.ToTable("exam_workflows", "school");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamWorkflowStep", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AssigneeUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("BackupUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset?>("CompletedAtUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("DueAtUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("EscalatedAtUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid?>("ExamPaperId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ExamSeriesId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset?>("RemindedAtUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("ReturnReason")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("Stage")
-                        .IsRequired()
-                        .HasMaxLength(24)
-                        .HasColumnType("nvarchar(24)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(24)
-                        .HasColumnType("nvarchar(24)");
-
-                    b.Property<Guid?>("SupervisorUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BackupUserId");
-
-                    b.HasIndex("ExamPaperId");
-
-                    b.HasIndex("ExamSeriesId");
-
-                    b.HasIndex("SupervisorUserId");
-
-                    b.HasIndex("AssigneeUserId", "Status", "DueAtUtc");
-
-                    b.ToTable("exam_workflow_steps", "school");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Facilities.BuildingFloor", b =>
@@ -8527,15 +8402,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamNotificationOutbox", b =>
-                {
-                    b.HasOne("Mdaresna.Schools.Domain.Identity.SchoolUserNotification", null)
-                        .WithMany()
-                        .HasForeignKey("NotificationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamPaper", b =>
                 {
                     b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "ContentOwnerUser")
@@ -8833,49 +8699,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.Navigation("ExamScheduleWindow");
 
                     b.Navigation("Room");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamWorkflow", b =>
-                {
-                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamSeries", "Series")
-                        .WithMany()
-                        .HasForeignKey("ExamSeriesId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Series");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamWorkflowStep", b =>
-                {
-                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", null)
-                        .WithMany()
-                        .HasForeignKey("AssigneeUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", null)
-                        .WithMany()
-                        .HasForeignKey("BackupUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamPaper", null)
-                        .WithMany()
-                        .HasForeignKey("ExamPaperId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Mdaresna.Schools.Domain.Exams.ExamWorkflow", "Workflow")
-                        .WithMany("Steps")
-                        .HasForeignKey("ExamSeriesId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", null)
-                        .WithMany()
-                        .HasForeignKey("SupervisorUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Workflow");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Facilities.BuildingFloor", b =>
@@ -10043,11 +9866,6 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
             modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamWindowVenue", b =>
                 {
                     b.Navigation("Sittings");
-                });
-
-            modelBuilder.Entity("Mdaresna.Schools.Domain.Exams.ExamWorkflow", b =>
-                {
-                    b.Navigation("Steps");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Facilities.BuildingFloor", b =>

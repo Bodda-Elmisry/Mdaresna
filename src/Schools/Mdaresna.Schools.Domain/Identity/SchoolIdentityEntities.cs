@@ -209,6 +209,7 @@ public static class SchoolIdentitySeed
 
     public static readonly (Guid Id, string Code, string Module, string Ar, string En)[] Permissions =
     [
+        (Guid.Parse("7d0640b1-113c-4206-b0ae-6c04fe0eed01"), "school.profile.manage", "profile", "إدارة تعريف المدرسة وصورها", "Manage school presentation and images"),
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd01"), "school.dashboard.view", "dashboard", "عرض لوحة التحكم", "View dashboard"),
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd02"), "school.people.view", "people", "عرض الأشخاص", "View people"),
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd03"), "school.people.manage", "people", "إدارة الأشخاص", "Manage people"),

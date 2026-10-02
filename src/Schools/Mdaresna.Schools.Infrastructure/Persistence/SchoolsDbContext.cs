@@ -31,6 +31,8 @@ public class SchoolsDbContext(DbContextOptions options) : DbContext(options)
     public DbSet<StaffAbsence> StaffAbsences => Set<StaffAbsence>();
     public DbSet<SchoolUserNotification> SchoolUserNotifications => Set<SchoolUserNotification>();
     public DbSet<SchoolInformation> SchoolInformation => Set<SchoolInformation>();
+    public DbSet<SchoolPresentation> SchoolPresentations => Set<SchoolPresentation>();
+    public DbSet<SchoolProfileImage> SchoolProfileImages => Set<SchoolProfileImage>();
     public DbSet<SchoolBranch> SchoolBranches => Set<SchoolBranch>();
     public DbSet<SchoolBuilding> SchoolBuildings => Set<SchoolBuilding>();
     public DbSet<BuildingFloor> BuildingFloors => Set<BuildingFloor>();
@@ -120,6 +122,9 @@ public class SchoolsDbContext(DbContextOptions options) : DbContext(options)
     public DbSet<ExamInvigilatorAssignment> ExamInvigilatorAssignments => Set<ExamInvigilatorAssignment>();
     public DbSet<ExamResultAppeal> ExamResultAppeals => Set<ExamResultAppeal>();
     public DbSet<ExamApproval> ExamApprovals => Set<ExamApproval>();
+    public DbSet<ExamWorkflow> ExamWorkflows => Set<ExamWorkflow>();
+    public DbSet<ExamWorkflowStep> ExamWorkflowSteps => Set<ExamWorkflowStep>();
+    public DbSet<ExamNotificationOutbox> ExamNotificationOutbox => Set<ExamNotificationOutbox>();
     public DbSet<ExamAudit> ExamAudits => Set<ExamAudit>();
     public DbSet<ExamCalendarProjection> ExamCalendarProjections => Set<ExamCalendarProjection>();
     public DbSet<SchoolDocument> Documents => Set<SchoolDocument>();

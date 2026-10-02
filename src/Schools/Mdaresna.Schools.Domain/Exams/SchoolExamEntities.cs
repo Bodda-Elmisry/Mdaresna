@@ -59,6 +59,7 @@ public static class SchoolExamRules
 
 public sealed class ExamPolicy
 {
+    public string? WorkflowDefaultsJson { get; set; }
     public Guid Id { get; set; }
     public Guid? EducationProgramId { get; set; }
     public Guid? EducationStageId { get; set; }

@@ -26,6 +26,7 @@ public static class SchoolClaimTypes
 public static class SchoolPermissionPolicies
 {
     public const string Prefix = "school-permission:";
+    public const string ProfileManage = Prefix + "school.profile.manage";
     public const string UsersView = Prefix + "school.users.view";
     public const string UsersManage = Prefix + "school.users.manage";
     public const string PeopleView = Prefix + "school.people.view";

@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using Mdaresna.Api.Contracts;
 using Mdaresna.Schools.Api.Auth;
 using Mdaresna.Schools.Api.Time;
+using Mdaresna.Schools.Api.Exams;
 using Mdaresna.Schools.Domain.Academics;
 using Mdaresna.Schools.Domain.Exams;
 using Mdaresna.Schools.Domain.Identity;
@@ -18,7 +19,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Mdaresna.Schools.Api.Controllers;
 
 [ApiController, Authorize, Route("api/schools/v1")]
-public sealed class SchoolExamsController(ISchoolDbContextFactory dbFactory, SchoolClock clock) : ControllerBase
+public sealed partial class SchoolExamsController(ISchoolDbContextFactory dbFactory, SchoolClock clock) : ControllerBase
 {
     [HttpGet("exams/options"), Authorize(Policy = SchoolPermissionPolicies.ExamsView)]
     public IActionResult Options() => Ok(ApiResponse<object>.Success(new
@@ -218,7 +219,7 @@ public sealed class SchoolExamsController(ISchoolDbContextFactory dbFactory, Sch
                 applicablePolicy.Version, applicablePolicy.DefaultAdministrationMode, applicablePolicy.TeacherCanCreate,
                 applicablePolicy.TeacherCanPublishWithoutApproval, applicablePolicy.DepartmentApprovalRequired,
                 applicablePolicy.SchoolApprovalRequired, applicablePolicy.ResultApprovalRequired,
-                applicablePolicy.AllowScheduleWarningOverride)),
+                applicablePolicy.AllowScheduleWarningOverride, applicablePolicy.WorkflowDefaultsJson)),
             ExternalSourceCode = Clean(request.ExternalSourceCode, 100), ExternalAuthorityName = Clean(request.ExternalAuthorityName, 250),
             ExternalReferenceId = Clean(request.ExternalReferenceId, 200), ExternalRevision = Clean(request.ExternalRevision, 100),
             IsExternalScheduleLocked = request.IsExternalScheduleLocked, CreatedByUserId = CurrentUserId(), CreatedAtUtc = now, UpdatedAtUtc = now
@@ -278,6 +279,10 @@ public sealed class SchoolExamsController(ISchoolDbContextFactory dbFactory, Sch
         var series = await LoadSeries(db, id, ct); if (series is null) return NotFound(Failure(404, "exams.not_found", "Exam series was not found."));
         if (!await CanAccessSeries(db, id, ct)) return Forbid();
         if (series.Status != ExamSeriesStatus.Draft) return Conflict(Failure(409, "exams.not_draft", "Only a draft exam can be deleted."));
+        var workflow = await db.ExamWorkflows.Include(x => x.Steps).SingleOrDefaultAsync(x => x.ExamSeriesId == id, ct);
+        if (workflow?.Status == ExamWorkflowStatus.Active) return Conflict(Failure(409, "exams.workflow_locked", "Cancel the active workflow before removing the exam."));
+        if (workflow is not null) { db.ExamWorkflowSteps.RemoveRange(workflow.Steps); db.ExamWorkflows.Remove(workflow); }
+        db.ExamApprovals.RemoveRange(await db.ExamApprovals.Where(x => x.ExamSeriesId == id).ToListAsync(ct));
         db.ExamInvigilatorAssignments.RemoveRange(series.Committees.SelectMany(x => x.Invigilators));
         db.ExamSittingVenues.RemoveRange(series.ScheduleWindows.SelectMany(x => x.Sittings).SelectMany(x => x.Venues));
         db.ExamWindowVenues.RemoveRange(series.ScheduleWindows.SelectMany(x => x.Venues)); db.ExamCommittees.RemoveRange(series.Committees);
@@ -323,6 +328,7 @@ public sealed class SchoolExamsController(ISchoolDbContextFactory dbFactory, Sch
         foreach (var sitting in series.Papers.SelectMany(x => x.Sittings)) { sitting.ExecutionStatus = ExamSittingExecutionStatus.Cancelled; sitting.UpdatedAtUtc = now; }
         foreach (var projection in series.ScheduleWindows.Where(x => x.CalendarProjection != null).Select(x => x.CalendarProjection!))
         { projection.SchoolCalendarEvent.IsActive = false; projection.SchoolCalendarEvent.UpdatedAtUtc = now; }
+        await ExamWorkflowEngine.Cancelled(db, series, CurrentUserId(), ct);
         AddAudit(db, series, "Cancelled", now, request.Reason); await db.SaveChangesAsync(ct);
         return Ok(ApiResponse<object?>.Success(null, correlationId: HttpContext.TraceIdentifier));
     }
@@ -498,6 +504,7 @@ public sealed class SchoolExamsController(ISchoolDbContextFactory dbFactory, Sch
     {
         var series = await LoadSeries(db, id, ct); if (series is null) return NotFound(Failure(404, "exams.not_found", "Exam series was not found."));
         if (!SchoolExamRules.CanPublish(series.Status)) return Conflict(Failure(409, "exams.publish_not_allowed", "Only a draft or approved exam can be published."));
+        if (!await ExamWorkflowEngine.CanPublish(db, id, CurrentUserId(), ct)) return Conflict(Failure(409, "exams.workflow_publish_blocked", "Complete all workflow steps and publish as the assigned publisher."));
         if (series.Status == ExamSeriesStatus.Draft && !string.IsNullOrWhiteSpace(series.PolicySnapshotJson))
         {
             var approvalRequired = PolicyFlag(series, "DepartmentApprovalRequired") || PolicyFlag(series, "SchoolApprovalRequired");
@@ -597,6 +604,7 @@ public sealed class SchoolExamsController(ISchoolDbContextFactory dbFactory, Sch
                 ExamScheduleWindow = window, SchoolCalendarEvent = calendar, LastProjectedAtUtc = now });
         }
         series.Status = ExamSeriesStatus.Published; series.PublishedByUserId = CurrentUserId(); series.PublishedAtUtc = now; series.UpdatedAtUtc = now;
+        await ExamWorkflowEngine.Published(db, series, CurrentUserId(), ct);
         AddAudit(db, series, "Published", now, payload: JsonSerializer.Serialize(new { CandidateCount = series.Candidates.Count }));
         try
         {
@@ -648,9 +656,17 @@ public sealed class SchoolExamsController(ISchoolDbContextFactory dbFactory, Sch
         await using var db = await RequireDb(ct); if (db is null) return Unauthorized(); var series = await LoadSeries(db, id, ct);
         if (series is null) return NotFound(Failure(404, "exams.not_found", "Exam series was not found."));
         if (!await CanAccessSeries(db, id, ct)) return Forbid(); if (series.Status != expected) return Conflict(Failure(409, "exams.transition_invalid", "The exam is not in the required state."));
-        var now = DateTimeOffset.UtcNow; series.Status = next; series.UpdatedAtUtc = now;
-        if (next == ExamSeriesStatus.Approved) { series.ApprovedByUserId = CurrentUserId(); series.ApprovedAtUtc = now; }
-        AddAudit(db, series, action, now, reason); await db.SaveChangesAsync(ct); return Ok(ApiResponse<object?>.Success(null, correlationId: HttpContext.TraceIdentifier));
+        var workflow = await db.ExamWorkflows.Include(x => x.Steps).Include(x => x.Series).SingleOrDefaultAsync(x => x.ExamSeriesId == id, ct);
+        if (workflow is null) return Conflict(Failure(409, "exams.workflow_required", "Configure workflow responsibilities first."));
+        if (next == ExamSeriesStatus.PendingApproval) {
+            if (workflow.Status is not (ExamWorkflowStatus.Configured or ExamWorkflowStatus.Returned)) return WorkflowConflict();
+            workflow.Revision++; workflow.Status = ExamWorkflowStatus.Active; workflow.UpdatedAtUtc = DateTimeOffset.UtcNow;
+            ExamWorkflowEngine.Advance(db, workflow, CurrentUserId()); AddAudit(db, series, "WorkflowStarted", workflow.UpdatedAtUtc);
+            return await SaveWorkflow(db, ct);
+        }
+        var step = workflow.Steps.FirstOrDefault(x => x.Status == ExamWorkflowStepStatus.Active && x.AssigneeUserId == CurrentUserId() && (x.Stage == ExamWorkflowStage.DepartmentReview || x.Stage == ExamWorkflowStage.SchoolApproval));
+        if (step is null) return Forbid();
+        return await WorkflowAction(id, step.Id, next == ExamSeriesStatus.Approved ? "complete" : "return", new WorkflowActionRequest(workflow.Revision, reason, null), ct);
     }
 
     private async Task<IActionResult> ChangeSittingStatus(Guid id, ExamSittingExecutionStatus expected,
