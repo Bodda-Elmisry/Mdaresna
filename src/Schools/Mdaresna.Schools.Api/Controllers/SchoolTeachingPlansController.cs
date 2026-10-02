@@ -144,7 +144,7 @@ public sealed class SchoolTeachingPlansController(
     }
 
     [Authorize(Policy = SchoolPermissionPolicies.AcademicsManage), RequestSizeLimit(30_000_000), HttpPost("{planId:guid}/documents")]
-    public async Task<IActionResult> Upload(Guid planId, [FromForm] IFormFile file, [FromForm] TeachingPlanDocumentPurpose purpose = TeachingPlanDocumentPurpose.Supporting, CancellationToken ct = default)
+    public async Task<IActionResult> Upload(Guid planId, IFormFile file, [FromForm] TeachingPlanDocumentPurpose purpose = TeachingPlanDocumentPurpose.Supporting, CancellationToken ct = default)
     {
         await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
         var plan = await db.TeachingPlans.SingleOrDefaultAsync(x => x.Id == planId, ct);

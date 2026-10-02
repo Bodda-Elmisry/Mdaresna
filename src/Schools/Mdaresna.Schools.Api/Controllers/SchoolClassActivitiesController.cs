@@ -47,9 +47,10 @@ public sealed class SchoolClassActivitiesController(ISchoolDbContextFactory dbFa
     [HttpGet("class-workspace/{classSectionId:guid}/activities"), Authorize(Policy = SchoolPermissionPolicies.ActivitiesView)]
     public async Task<IActionResult> List(Guid classSectionId, [FromQuery] ActivityScope? scope, [FromQuery] Guid? classSectionSubjectId,
         [FromQuery] ClassActivityStatus? status, [FromQuery] ActivityCategory? category, [FromQuery] DateOnly? from,
-        [FromQuery] DateOnly? to, CancellationToken ct)
+        [FromQuery] DateOnly? to, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
     {
         await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
+        if (pageNumber < 1 || pageSize is < 1 or > 100) return BadRequest(Failure(400, "activities.paging_invalid", "Invalid paging values."));
         if (!await ClassExists(db, classSectionId, ct)) return NotFound(Failure(404, "activities.class_not_found", "Class section was not found."));
         if (!await CanAccessClass(db, classSectionId, ct)) return Forbid();
         if (from.HasValue && to.HasValue && from > to) return BadRequest(Failure(400, "activities.date_range_invalid", "The date range is invalid."));
@@ -69,7 +70,9 @@ public sealed class SchoolClassActivitiesController(ISchoolDbContextFactory dbFa
         if (category.HasValue) query = query.Where(x => x.Category == category);
         if (from.HasValue) query = query.Where(x => x.ActivityDate >= from);
         if (to.HasValue) query = query.Where(x => x.ActivityDate <= to);
-        var rows = await query.OrderByDescending(x => x.ActivityDate).ThenByDescending(x => x.CreatedAtUtc)
+        var total = await query.CountAsync(ct);
+        var rows = await query.OrderByDescending(x => x.ActivityDate).ThenByDescending(x => x.CreatedAtUtc).ThenByDescending(x => x.Id)
+            .Skip((pageNumber - 1) * pageSize).Take(pageSize)
             .Select(x => new ClassActivityListItemResponse(x.Id, x.ClassSectionId, x.ClassSectionSubjectId,
                 x.ClassSectionSubject == null ? null : x.ClassSectionSubject.GradeSubjectOffering.CurriculumGradeSubject.Subject.NameAr,
                 x.ClassSectionSubject == null ? null : x.ClassSectionSubject.GradeSubjectOffering.CurriculumGradeSubject.Subject.NameEn,
@@ -83,7 +86,7 @@ public sealed class SchoolClassActivitiesController(ISchoolDbContextFactory dbFa
                     enrollment.Status == StudentEnrollmentStatus.Active && enrollment.Student.IsActive &&
                     !x.Participants.Any(participant => participant.StudentEnrollmentId == enrollment.Id)), x.CreatedByUser.Person.DisplayName,
                 x.CreatedAtUtc, x.PublishedAtUtc, x.CompletedAtUtc)).ToArrayAsync(ct);
-        return Ok(ApiResponse<IReadOnlyList<ClassActivityListItemResponse>>.Success(rows, correlationId: HttpContext.TraceIdentifier));
+        return Ok(PagedApiResponse<ClassActivityListItemResponse>.Success(rows, total, pageNumber, pageSize, correlationId: HttpContext.TraceIdentifier));
     }
 
     [HttpPost("class-workspace/{classSectionId:guid}/activities"), Authorize(Policy = SchoolPermissionPolicies.ActivitiesManage)]

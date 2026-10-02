@@ -35,25 +35,52 @@ builder.Services.AddHealthChecks().AddCheck(
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen(options => options.SwaggerDoc("v1", new OpenApiInfo
+    builder.Services.AddSwaggerGen(options =>
     {
-        Title = "Mdaresna Schools API",
-        Version = "v1",
-        Description = "The tenant-scoped operational API for Mdaresna schools."
-    }));
+        options.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title = "Mdaresna Schools API",
+            Version = "v1",
+            Description = "The tenant-scoped operational API for Mdaresna schools."
+        });
+        options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Enter the school access token."
+        });
+        options.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            }] = []
+        });
+    });
 }
 
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment()) app.UseHsts();
 app.UseCors("SchoolsWeb");
-app.UseAuthentication();
-app.UseAuthorization();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.DocumentTitle = "Mdaresna Schools API";
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Mdaresna Schools API v1");
+    });
 }
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGet("/", (HttpContext context) => ApiResponse<object>.Success(
         new { service = "Mdaresna.Schools.Api", status = "running" },

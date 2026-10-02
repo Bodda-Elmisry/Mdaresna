@@ -36,20 +36,24 @@ public sealed class SchoolHomeworkController(ISchoolDbContextFactory dbFactory) 
     }
 
     [HttpGet("class-workspace/{classSectionId:guid}/homework"), Authorize(Policy = SchoolPermissionPolicies.HomeworkView)]
-    public async Task<IActionResult> List(Guid classSectionId, [FromQuery] Guid? classSectionSubjectId, CancellationToken ct)
+    public async Task<IActionResult> List(Guid classSectionId, [FromQuery] Guid? classSectionSubjectId,
+        [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
     {
         await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
+        if (pageNumber < 1 || pageSize is < 1 or > 100) return BadRequest(Failure(400, "homework.paging_invalid", "Invalid paging values."));
         if (!await CanAccessClass(db, classSectionId, ct)) return Forbid();
         if (classSectionSubjectId.HasValue && !await CanAccessSubject(db, classSectionId, classSectionSubjectId.Value, ct)) return Forbid();
         var query = db.HomeworkAssignments.AsNoTracking().Where(x => x.ClassSectionSubject.ClassSectionId == classSectionId);
         if (classSectionSubjectId.HasValue) query = query.Where(x => x.ClassSectionSubjectId == classSectionSubjectId);
-        var rows = await query.OrderByDescending(x => x.CreatedAtUtc).Select(x => new HomeworkListItemResponse(x.Id, x.ClassSectionSubjectId,
+        var total = await query.CountAsync(ct);
+        var rows = await query.OrderByDescending(x => x.CreatedAtUtc).ThenByDescending(x => x.Id)
+            .Skip((pageNumber - 1) * pageSize).Take(pageSize).Select(x => new HomeworkListItemResponse(x.Id, x.ClassSectionSubjectId,
             x.ClassSectionSubject.GradeSubjectOffering.CurriculumGradeSubject.Subject.NameAr,
             x.ClassSectionSubject.GradeSubjectOffering.CurriculumGradeSubject.Subject.NameEn, x.Title, x.DeliveryMode, x.Status,
             x.DueAtUtc, x.TotalScore, x.Students.Count, x.Students.Count(s => s.Status == StudentHomeworkStatus.Submitted || s.Status == StudentHomeworkStatus.Late ||
                 s.Status == StudentHomeworkStatus.PendingManualReview || s.Status == StudentHomeworkStatus.AutoGraded || s.Status == StudentHomeworkStatus.Graded || s.Status == StudentHomeworkStatus.Returned),
             x.Students.Count(s => s.Status == StudentHomeworkStatus.PendingManualReview), x.CreatedByUser.Person.DisplayName, x.CreatedAtUtc)).ToArrayAsync(ct);
-        return Ok(ApiResponse<IReadOnlyList<HomeworkListItemResponse>>.Success(rows, correlationId: HttpContext.TraceIdentifier));
+        return Ok(PagedApiResponse<HomeworkListItemResponse>.Success(rows, total, pageNumber, pageSize, correlationId: HttpContext.TraceIdentifier));
     }
 
     [HttpGet("homework/{id:guid}"), Authorize(Policy = SchoolPermissionPolicies.HomeworkView)]

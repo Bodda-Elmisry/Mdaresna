@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Mdaresna.Api.Contracts;
@@ -51,22 +52,59 @@ public sealed class SchoolExamsController(ISchoolDbContextFactory dbFactory, Sch
         return Ok(ApiResponse<IReadOnlyList<ExamSubjectResponse>>.Success(rows, correlationId: HttpContext.TraceIdentifier));
     }
 
-    [HttpGet("class-workspace/{classSectionId:guid}/exams"), Authorize(Policy = SchoolPermissionPolicies.ExamsView)]
-    public async Task<IActionResult> ClassExams(Guid classSectionId, CancellationToken ct)
+    [HttpGet("class-workspace/{classSectionId:guid}/exams/period-options"), Authorize(Policy = SchoolPermissionPolicies.ExamsView)]
+    public async Task<IActionResult> PeriodOptions(Guid classSectionId, CancellationToken ct)
     {
         await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
         if (!await CanAccessClass(db, classSectionId, ct)) return Forbid();
+        var yearId = await db.ClassSections.AsNoTracking().Where(x => x.Id == classSectionId && x.IsActive && !x.IsDeleted)
+            .Select(x => (Guid?)x.GradeOffering.ProgramAcademicYearId).SingleOrDefaultAsync(ct);
+        if (!yearId.HasValue) return NotFound(Failure(404, "exams.class_not_found", "Class section was not found."));
+        var terms = await db.AcademicTerms.AsNoTracking().Where(x => x.ProgramAcademicYearId == yearId && x.IsActive && !x.IsDeleted)
+            .OrderBy(x => x.SortOrder).Select(x => new ClassExamTermOption(x.Id, x.NameAr, x.NameEn, x.StartDate, x.EndDate, x.SortOrder))
+            .ToArrayAsync(ct);
+        return Ok(ApiResponse<ClassExamPeriodOptionsResponse>.Success(new(yearId.Value, terms), correlationId: HttpContext.TraceIdentifier));
+    }
+
+    [HttpGet("class-workspace/{classSectionId:guid}/exams"), Authorize(Policy = SchoolPermissionPolicies.ExamsView)]
+    public async Task<IActionResult> ClassExams(Guid classSectionId, [FromQuery] ExamKind? kind, [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20, CancellationToken ct = default)
+    {
+        await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
+        if (pageNumber < 1 || pageSize is < 1 or > 100) return BadRequest(Failure(400, "exams.paging_invalid", "Invalid paging values."));
+        if (!await CanAccessClass(db, classSectionId, ct)) return Forbid();
         var query = ApplyScope(db, db.ExamPapers.IgnoreQueryFilters().AsNoTracking()
             .Where(x => x.Targets.Any(target => target.ClassSectionId == classSectionId)));
-        var rows = await ToList(query).ToArrayAsync(ct);
-        return Ok(ApiResponse<IReadOnlyList<ExamListItemResponse>>.Success(rows, correlationId: HttpContext.TraceIdentifier));
+        if (kind.HasValue) query = query.Where(x => x.ExamSeries.Kind == kind);
+        var total = await query.CountAsync(ct);
+        var rows = await ToList(query).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToArrayAsync(ct);
+        return Ok(PagedApiResponse<ExamListItemResponse>.Success(rows, total, pageNumber, pageSize, correlationId: HttpContext.TraceIdentifier));
+    }
+
+    [HttpGet("class-workspace/{classSectionId:guid}/exams/summary"), Authorize(Policy = SchoolPermissionPolicies.ExamsView)]
+    public async Task<IActionResult> ClassExamsSummary(Guid classSectionId, CancellationToken ct)
+    {
+        await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
+        if (!await CanAccessClass(db, classSectionId, ct)) return Forbid();
+        var rows = await ApplyScope(db, db.ExamPapers.IgnoreQueryFilters().AsNoTracking()
+                .Where(x => x.Targets.Any(target => target.ClassSectionId == classSectionId)))
+            .GroupBy(x => x.ExamSeries.Kind)
+            .Select(group => new ExamKindSummaryResponse(group.Key, group.Count(),
+                group.Count(x => x.ExamSeries.Status == ExamSeriesStatus.Published),
+                group.Sum(x => x.Candidates.Count)))
+            .ToArrayAsync(ct);
+        var response = new ExamCenterSummaryResponse(rows.Sum(x => x.PaperCount), rows.Sum(x => x.PublishedCount),
+            rows.Sum(x => x.CandidateCount), rows);
+        return Ok(ApiResponse<ExamCenterSummaryResponse>.Success(response, correlationId: HttpContext.TraceIdentifier));
     }
 
     [HttpGet("exam-series"), Authorize(Policy = SchoolPermissionPolicies.ExamsView)]
     public async Task<IActionResult> Series([FromQuery] ExamKind? kind, [FromQuery] ExamSeriesStatus? status,
-        [FromQuery] Guid? classSectionId, [FromQuery] DateOnly? from, [FromQuery] DateOnly? to, CancellationToken ct)
+        [FromQuery] Guid? classSectionId, [FromQuery] DateOnly? from, [FromQuery] DateOnly? to,
+        [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
     {
         await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
+        if (pageNumber < 1 || pageSize is < 1 or > 100) return BadRequest(Failure(400, "exams.paging_invalid", "Invalid paging values."));
         if (from.HasValue && to.HasValue && from > to) return BadRequest(Failure(400, "exams.date_range_invalid", "The date range is invalid."));
         var query = ApplyScope(db, db.ExamPapers.IgnoreQueryFilters().AsNoTracking());
         if (kind.HasValue) query = query.Where(x => x.ExamSeries.Kind == kind);
@@ -74,8 +112,24 @@ public sealed class SchoolExamsController(ISchoolDbContextFactory dbFactory, Sch
         if (classSectionId.HasValue) query = query.Where(x => x.Targets.Any(target => target.ClassSectionId == classSectionId));
         if (from.HasValue) query = query.Where(x => x.Sittings.Any(s => s.ExamScheduleWindow.LocalDate >= from));
         if (to.HasValue) query = query.Where(x => x.Sittings.Any(s => s.ExamScheduleWindow.LocalDate <= to));
-        var rows = await ToList(query).ToArrayAsync(ct);
-        return Ok(ApiResponse<IReadOnlyList<ExamListItemResponse>>.Success(rows, correlationId: HttpContext.TraceIdentifier));
+        var total = await query.CountAsync(ct);
+        var rows = await ToList(query).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToArrayAsync(ct);
+        return Ok(PagedApiResponse<ExamListItemResponse>.Success(rows, total, pageNumber, pageSize, correlationId: HttpContext.TraceIdentifier));
+    }
+
+    [HttpGet("exam-series/summary"), Authorize(Policy = SchoolPermissionPolicies.ExamsView)]
+    public async Task<IActionResult> SeriesSummary(CancellationToken ct)
+    {
+        await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
+        var rows = await ApplyScope(db, db.ExamPapers.IgnoreQueryFilters().AsNoTracking())
+            .GroupBy(x => x.ExamSeries.Kind)
+            .Select(group => new ExamKindSummaryResponse(group.Key, group.Count(),
+                group.Count(x => x.ExamSeries.Status == ExamSeriesStatus.Published),
+                group.Sum(x => x.Candidates.Count)))
+            .ToArrayAsync(ct);
+        var response = new ExamCenterSummaryResponse(rows.Sum(x => x.PaperCount), rows.Sum(x => x.PublishedCount),
+            rows.Sum(x => x.CandidateCount), rows);
+        return Ok(ApiResponse<ExamCenterSummaryResponse>.Success(response, correlationId: HttpContext.TraceIdentifier));
     }
 
     [HttpPost("class-workspace/{classSectionId:guid}/exams/quick"), Authorize(Policy = SchoolPermissionPolicies.ExamsManage)]
@@ -90,6 +144,36 @@ public sealed class SchoolExamsController(ISchoolDbContextFactory dbFactory, Sch
         { return Conflict(Failure(409, "exams.time_zone_required", "Configure a valid school time zone first.")); }
         var validation = await ValidateQuickRequest(db, classSectionId, request, ct); if (validation.Result is not null) return validation.Result;
         var subject = validation.Subject!; var section = validation.Section!;
+        Guid? termId;
+        DateOnly? assessmentMonth = null;
+        if (request.Kind == ExamKind.Monthly)
+        {
+            var term = request.AcademicTermId.HasValue ? await db.AcademicTerms.AsNoTracking()
+                .Where(x => x.Id == request.AcademicTermId && x.ProgramAcademicYearId == section.ProgramAcademicYearId && x.IsActive && !x.IsDeleted)
+                .Select(x => new { x.Id, x.StartDate, x.EndDate }).SingleOrDefaultAsync(ct) : null;
+            if (term is null) return BadRequest(Failure(400, "exams.term_required", "Select a term that belongs to the academic year."));
+            if (!request.AssessmentMonth.HasValue || request.AssessmentMonth.Value.Day != 1 ||
+                !SchoolExamRules.MonthIntersectsTerm(request.AssessmentMonth.Value, term.StartDate, term.EndDate))
+                return BadRequest(Failure(400, "exams.month_outside_term", "Select a normalized month that intersects the selected term."));
+            assessmentMonth = request.AssessmentMonth.Value;
+            if (request.ExamDate < term.StartDate || request.ExamDate > term.EndDate ||
+                request.ExamDate.Year != assessmentMonth.Value.Year || request.ExamDate.Month != assessmentMonth.Value.Month)
+                return BadRequest(Failure(400, "exams.date_outside_month", "The exam date must be inside the selected month and term."));
+            if (await db.ExamPaperTargets.AsNoTracking().AnyAsync(x => x.ClassSectionId == classSectionId &&
+                x.ExamPaper.GradeSubjectOfferingId == subject.GradeSubjectOfferingId &&
+                x.ExamPaper.ExamSeries.ProgramAcademicYearId == section.ProgramAcademicYearId &&
+                x.ExamPaper.ExamSeries.AcademicTermId == term.Id && x.ExamPaper.ExamSeries.AssessmentMonth == assessmentMonth &&
+                x.ExamPaper.ExamSeries.Kind == ExamKind.Monthly && x.ExamPaper.ExamSeries.Purpose == ExamSeriesPurpose.Regular &&
+                x.ExamPaper.ExamSeries.Status != ExamSeriesStatus.Cancelled, ct))
+                return Conflict(Failure(409, "exams.monthly_scope_overlap", "A monthly exam already covers this class and subject."));
+            termId = term.Id;
+        }
+        else
+        {
+            termId = await db.AcademicTerms.AsNoTracking().Where(x => x.ProgramAcademicYearId == section.ProgramAcademicYearId &&
+                x.StartDate <= request.ExamDate && x.EndDate >= request.ExamDate && x.IsActive && !x.IsDeleted)
+                .Select(x => (Guid?)x.Id).FirstOrDefaultAsync(ct);
+        }
         var applicablePolicy = await db.ExamPolicies.AsNoTracking().Where(x => x.IsActive &&
                 (!x.EducationProgramId.HasValue || x.EducationProgramId == section.EducationProgramId) &&
                 (!x.EducationStageId.HasValue || x.EducationStageId == section.EducationStageId) &&
@@ -113,16 +197,20 @@ public sealed class SchoolExamsController(ISchoolDbContextFactory dbFactory, Sch
                 x.EffectiveFrom <= request.ExamDate && x.EffectiveTo >= request.ExamDate &&
                 (!x.StartsAt.HasValue || x.StartsAt <= request.StartsAt) && (!x.EndsAt.HasValue || x.EndsAt >= endsAtLocal))
             .OrderByDescending(x => x.IsPrimary).Select(x => new { x.RoomId, x.Room.Capacity, x.Room.NameAr }).FirstOrDefaultAsync(ct);
-        var termId = await db.AcademicTerms.AsNoTracking().Where(x => x.ProgramAcademicYearId == section.ProgramAcademicYearId &&
-            x.StartDate <= request.ExamDate && x.EndDate >= request.ExamDate && x.IsActive && !x.IsDeleted).Select(x => (Guid?)x.Id).FirstOrDefaultAsync(ct);
         var now = localNow.UtcNow; var seriesId = Guid.NewGuid(); var paperId = Guid.NewGuid(); var windowId = Guid.NewGuid();
         var sittingId = Guid.NewGuid(); var venueId = Guid.NewGuid(); var sittingVenueId = Guid.NewGuid();
-        var titleAr = request.TitleAr.Trim(); var titleEn = string.IsNullOrWhiteSpace(request.TitleEn) ? titleAr : request.TitleEn.Trim();
+        var titleAr = request.Kind == ExamKind.Monthly
+            ? $"اختبار شهر {ArabicMonth(assessmentMonth!.Value.Month)} — مادة {subject.NameAr}"
+            : request.TitleAr.Trim();
+        var titleEn = request.Kind == ExamKind.Monthly
+            ? $"{EnglishMonth(assessmentMonth!.Value.Month)} monthly exam — {subject.NameEn}"
+            : string.IsNullOrWhiteSpace(request.TitleEn) ? titleAr : request.TitleEn.Trim();
         var series = new ExamSeries
         {
             Id = seriesId, ProgramAcademicYearId = section.ProgramAcademicYearId, AcademicTermId = termId,
             EducationStageId = section.EducationStageId, ScopeGradeOfferingId = section.GradeOfferingId,
-            ScopeClassSectionId = classSectionId, ScopeLevel = ExamScopeLevel.ClassSection, Purpose = ExamSeriesPurpose.Regular,
+            ScopeClassSectionId = classSectionId, ScopeLevel = ExamScopeLevel.ClassSection, AssessmentMonth = assessmentMonth,
+            Purpose = ExamSeriesPurpose.Regular,
             Code = ExamCode(now), NameAr = titleAr, NameEn = titleEn, Kind = request.Kind,
             IssuingAuthority = request.IssuingAuthority, SchedulingAuthority = request.SchedulingAuthority,
             DefaultAdministrationMode = ExamAdministrationMode.InClass, TimeZoneIdSnapshot = localNow.TimeZoneId,
@@ -645,11 +733,12 @@ public sealed class SchoolExamsController(ISchoolDbContextFactory dbFactory, Sch
     private async Task<(IActionResult? Result, QuickExamSubject? Subject, QuickExamSection? Section)> ValidateQuickRequest(
         SchoolsDbContext db, Guid classSectionId, SaveQuickExamRequest request, CancellationToken ct)
     {
-        if (request.Kind is ExamKind.Monthly or ExamKind.TermFinal or ExamKind.YearFinal)
+        if (request.Kind is ExamKind.TermFinal or ExamKind.YearFinal)
             return (BadRequest(Failure(400, "exams.central_creation_required",
-                "Monthly, term-final and year-final exams must be created from the exam center.")), null, null);
+                "Term-final and year-final exams must be created from the exam center.")), null, null);
         if (!Enum.IsDefined(request.Kind) || !Enum.IsDefined(request.Format) || !Enum.IsDefined(request.IssuingAuthority) ||
-            !Enum.IsDefined(request.SchedulingAuthority) || string.IsNullOrWhiteSpace(request.TitleAr) || request.TitleAr.Trim().Length > 250 ||
+            !Enum.IsDefined(request.SchedulingAuthority) || (request.Kind != ExamKind.Monthly &&
+            (string.IsNullOrWhiteSpace(request.TitleAr) || request.TitleAr.Trim().Length > 250)) ||
             request.TitleEn?.Trim().Length > 250 || request.Instructions?.Trim().Length > 6000 || request.DurationMinutes is < 5 or > 600 ||
             !SchoolExamRules.HasValidScoreDefinition(request.TotalScore, request.PassScore))
             return (BadRequest(Failure(400, "exams.invalid", "Enter valid exam data.")), null, null);
@@ -665,7 +754,9 @@ public sealed class SchoolExamsController(ISchoolDbContextFactory dbFactory, Sch
             return (BadRequest(Failure(400, "exams.date_outside_year", "The exam date must be inside the academic year.")), null, null);
         var subject = await db.ClassSectionSubjects.AsNoTracking().Where(x => x.Id == request.ClassSectionSubjectId && x.ClassSectionId == classSectionId &&
                 x.IsActive && !x.IsDeleted && x.GradeSubjectOffering.IsActive && !x.GradeSubjectOffering.IsDeleted)
-            .Select(x => new QuickExamSubject(x.Id, x.GradeSubjectOfferingId, x.GradeSubjectOffering.CurriculumGradeSubject.SubjectId)).SingleOrDefaultAsync(ct);
+            .Select(x => new QuickExamSubject(x.Id, x.GradeSubjectOfferingId, x.GradeSubjectOffering.CurriculumGradeSubject.SubjectId,
+                x.GradeSubjectOffering.CurriculumGradeSubject.Subject.NameAr,
+                x.GradeSubjectOffering.CurriculumGradeSubject.Subject.NameEn)).SingleOrDefaultAsync(ct);
         if (subject is null) return (BadRequest(Failure(400, "exams.subject_invalid", "Select an active subject from this class.")), null, null);
         if (!await CanAccessSubject(db, classSectionId, subject.Id, subject.SubjectId, ct)) return (Forbid(), null, null);
         return (null, subject, section);
@@ -688,7 +779,7 @@ public sealed class SchoolExamsController(ISchoolDbContextFactory dbFactory, Sch
     }
 
     private static IQueryable<ExamListItemResponse> ToList(IQueryable<ExamPaper> query) => query
-        .OrderByDescending(x => x.Sittings.Select(s => s.ExamScheduleWindow.LocalDate).FirstOrDefault()).ThenByDescending(x => x.CreatedAtUtc)
+        .OrderByDescending(x => x.Sittings.Select(s => s.ExamScheduleWindow.LocalDate).FirstOrDefault()).ThenByDescending(x => x.CreatedAtUtc).ThenByDescending(x => x.Id)
         .Select(x => new ExamListItemResponse(x.ExamSeriesId, x.Id, x.Sittings.Select(s => (Guid?)s.Id).FirstOrDefault(),
             x.TitleAr, x.TitleEn, x.SubjectNameArSnapshot ?? x.GradeSubjectOffering.CurriculumGradeSubject.Subject.NameAr,
             x.SubjectNameEnSnapshot ?? x.GradeSubjectOffering.CurriculumGradeSubject.Subject.NameEn, x.ExamSeries.Kind,
@@ -769,6 +860,9 @@ public sealed class SchoolExamsController(ISchoolDbContextFactory dbFactory, Sch
         return new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(local, zone), TimeSpan.Zero);
     }
     private static string ExamCode(DateTimeOffset now) => $"EX-{now:yyyyMMddHHmmss}-{Guid.NewGuid().ToString("N")[..6]}";
+    private static string ArabicMonth(int month) => new[] { "", "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
+        "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر" }[month];
+    private static string EnglishMonth(int month) => new DateTime(2000, month, 1).ToString("MMMM", CultureInfo.InvariantCulture);
     private static string? Clean(string? value, int max) => string.IsNullOrWhiteSpace(value) ? null : value.Trim()[..Math.Min(value.Trim().Length, max)];
 }
 
@@ -776,12 +870,18 @@ public sealed record SaveQuickExamRequest(Guid ClassSectionSubjectId, ExamKind K
     ExamFormat Format, string? Instructions, decimal TotalScore, decimal? PassScore, DateOnly ExamDate,
     [property: JsonConverter(typeof(FlexibleTimeOnlyJsonConverter))] TimeOnly StartsAt,
     int DurationMinutes, ExamAuthorityType IssuingAuthority, ExamAuthorityType SchedulingAuthority, bool PublishImmediately,
-    string? ExternalSourceCode, string? ExternalAuthorityName, string? ExternalReferenceId, string? ExternalRevision, bool IsExternalScheduleLocked);
+    string? ExternalSourceCode, string? ExternalAuthorityName, string? ExternalReferenceId, string? ExternalRevision,
+    bool IsExternalScheduleLocked, Guid? AcademicTermId, DateOnly? AssessmentMonth);
 public sealed record ExamSubjectResponse(Guid Id, Guid GradeSubjectOfferingId, string NameAr, string NameEn);
+public sealed record ClassExamPeriodOptionsResponse(Guid ProgramAcademicYearId, IReadOnlyList<ClassExamTermOption> Terms);
+public sealed record ClassExamTermOption(Guid Id, string NameAr, string NameEn, DateOnly StartDate, DateOnly EndDate, int SortOrder);
 public sealed record ExamListItemResponse(Guid SeriesId, Guid PaperId, Guid? SittingId, string TitleAr, string TitleEn,
     string SubjectNameAr, string SubjectNameEn, ExamKind Kind, ExamSeriesStatus SeriesStatus, ExamResultsStatus ResultsStatus,
     DateOnly? ExamDate, TimeOnly? StartsAt, int DurationMinutes, decimal TotalScore, int CandidateCount,
     int AttendanceRecordedCount, int ResultsRecordedCount, ExamSittingExecutionStatus? SittingStatus);
+public sealed record ExamCenterSummaryResponse(int TotalPapers, int PublishedPapers, int CandidateCount,
+    IReadOnlyList<ExamKindSummaryResponse> Kinds);
+public sealed record ExamKindSummaryResponse(ExamKind Kind, int PaperCount, int PublishedCount, int CandidateCount);
 public sealed record ExamSeriesDetailsResponse(Guid Id, string Code, string NameAr, string NameEn, ExamKind Kind,
     ExamAuthorityType IssuingAuthority, ExamAuthorityType SchedulingAuthority, ExamSeriesStatus Status, string TimeZoneId,
     string? ExternalAuthorityName, string? ExternalReferenceId, bool IsExternalScheduleLocked, IReadOnlyList<ExamPaperDetailsResponse> Papers,
@@ -801,6 +901,6 @@ public sealed record SaveExamResultsRequest(IReadOnlyList<SaveExamResultItem> It
 public sealed record SaveExamResultItem(Guid ExamPaperCandidateId, ExamResultDisposition Disposition, decimal? Score, string? Notes);
 public sealed record ExamReasonRequest(string Reason);
 public sealed record ExamConflictResponse(string Code, string Severity, Guid WindowId, string Message);
-internal sealed record QuickExamSubject(Guid Id, Guid GradeSubjectOfferingId, Guid SubjectId);
+internal sealed record QuickExamSubject(Guid Id, Guid GradeSubjectOfferingId, Guid SubjectId, string NameAr, string NameEn);
 internal sealed record QuickExamSection(Guid GradeOfferingId, Guid ProgramAcademicYearId, Guid EducationProgramId,
     Guid EducationStageId, int Capacity, DateOnly StartDate, DateOnly EndDate);
