@@ -7,6 +7,7 @@ using Mdaresna.Schools.Domain.Organization;
 using Mdaresna.Schools.Domain.Students;
 using Mdaresna.Schools.Domain.Exams;
 using Mdaresna.Schools.Domain.Documents;
+using Mdaresna.Schools.Domain.Social;
 
 namespace Mdaresna.Schools.Infrastructure.Persistence;
 
@@ -32,6 +33,14 @@ public class SchoolsDbContext(DbContextOptions options) : DbContext(options)
     public DbSet<SchoolUserNotification> SchoolUserNotifications => Set<SchoolUserNotification>();
     public DbSet<SchoolInformation> SchoolInformation => Set<SchoolInformation>();
     public DbSet<SchoolPresentation> SchoolPresentations => Set<SchoolPresentation>();
+    public DbSet<SocialPost> SocialPosts => Set<SocialPost>();
+    public DbSet<SocialMedia> SocialMedia => Set<SocialMedia>();
+    public DbSet<SocialLike> SocialLikes => Set<SocialLike>();
+    public DbSet<SocialComment> SocialComments => Set<SocialComment>();
+    public DbSet<SocialReport> SocialReports => Set<SocialReport>();
+    public DbSet<SocialAudit> SocialAudits => Set<SocialAudit>();
+    public DbSet<SocialSettings> SocialSettings => Set<SocialSettings>();
+    public DbSet<SocialReviewer> SocialReviewers => Set<SocialReviewer>();
     public DbSet<SchoolProfileImage> SchoolProfileImages => Set<SchoolProfileImage>();
     public DbSet<SchoolBranch> SchoolBranches => Set<SchoolBranch>();
     public DbSet<SchoolBuilding> SchoolBuildings => Set<SchoolBuilding>();

@@ -210,6 +210,16 @@ public static class SchoolIdentitySeed
 
     public static readonly (Guid Id, string Code, string Module, string Ar, string En)[] Permissions =
     [
+        (Guid.Parse("e04c0679-6900-49e1-b350-e48f9c100001"), "school.social.view", "social", "عرض مجتمع المدرسة", "View school social"),
+        (Guid.Parse("e04c0679-6900-49e1-b350-e48f9c100002"), "school.social.create", "social", "إنشاء منشورات المدرسة", "Create school posts"),
+        (Guid.Parse("e04c0679-6900-49e1-b350-e48f9c100003"), "school.social.publish", "social", "نشر منشورات المدرسة", "Publish school posts"),
+        (Guid.Parse("e04c0679-6900-49e1-b350-e48f9c100004"), "school.social.edit_own", "social", "تعديل منشوراتي وتعليقاتي", "Edit own posts and comments"),
+        (Guid.Parse("e04c0679-6900-49e1-b350-e48f9c100005"), "school.social.delete_own", "social", "حذف منشوراتي وتعليقاتي", "Delete own posts and comments"),
+        (Guid.Parse("e04c0679-6900-49e1-b350-e48f9c100006"), "school.social.manage", "social", "إدارة منشورات وتعليقات الجميع", "Manage all posts and comments"),
+        (Guid.Parse("e04c0679-6900-49e1-b350-e48f9c100007"), "school.social.delete_any", "social", "حذف منشورات الجميع", "Delete any school post"),
+        (Guid.Parse("e04c0679-6900-49e1-b350-e48f9c100008"), "school.social.moderate", "social", "مراجعة المنشورات والبلاغات", "Review posts and reports"),
+        (Guid.Parse("e04c0679-6900-49e1-b350-e48f9c100009"), "school.social.interact", "social", "الإعجاب والتعليق", "Like and comment"),
+        (Guid.Parse("e04c0679-6900-49e1-b350-e48f9c100010"), "school.social.settings", "social", "ضبط إعدادات مجتمع المدرسة", "Configure school social"),
         (Guid.Parse("7d0640b1-113c-4206-b0ae-6c04fe0eed01"), "school.profile.manage", "profile", "إدارة تعريف المدرسة وصورها", "Manage school presentation and images"),
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd01"), "school.dashboard.view", "dashboard", "عرض لوحة التحكم", "View dashboard"),
         (Guid.Parse("73d1e183-1cad-4fe2-99c5-b39dc7fffd02"), "school.people.view", "people", "عرض الأشخاص", "View people"),
