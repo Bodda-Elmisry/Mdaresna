@@ -101,6 +101,8 @@ internal sealed class SchoolUserNotificationConfiguration : IEntityTypeConfigura
         b.Property(x => x.TitleAr).HasMaxLength(200).IsRequired(); b.Property(x => x.TitleEn).HasMaxLength(200).IsRequired();
         b.Property(x => x.BodyAr).HasMaxLength(1000).IsRequired(); b.Property(x => x.BodyEn).HasMaxLength(1000).IsRequired();
         b.Property(x => x.RelatedEntityType).HasMaxLength(50); b.Property(x => x.RelatedEntityId).HasMaxLength(100);
+        b.Property(x => x.EventKey).HasMaxLength(250);
+        b.HasIndex(x => new { x.RecipientUserId, x.EventKey }).IsUnique();
         b.HasIndex(x => new { x.RecipientUserId, x.IsRead, x.CreatedAtUtc });
         b.HasOne(x => x.RecipientUser).WithMany(x => x.Notifications).HasForeignKey(x => x.RecipientUserId).OnDelete(DeleteBehavior.Cascade);
     }

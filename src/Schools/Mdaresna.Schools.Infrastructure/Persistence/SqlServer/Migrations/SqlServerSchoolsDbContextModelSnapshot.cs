@@ -5603,6 +5603,10 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<string>("EventKey")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
                     b.Property<bool>("IsRead")
                         .HasColumnType("bit");
 
@@ -5645,6 +5649,10 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RecipientUserId", "EventKey")
+                        .IsUnique()
+                        .HasFilter("[EventKey] IS NOT NULL");
 
                     b.HasIndex("RecipientUserId", "IsRead", "CreatedAtUtc");
 

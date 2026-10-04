@@ -121,11 +121,32 @@ public sealed class SchoolDepartmentsController(ISchoolDbContextFactory dbFactor
                 return BadRequest(Failure(400, "departments.scope_invalid", "The education stage does not belong to the selected program."));
 
         var now = DateTimeOffset.UtcNow;
+        foreach (var member in department.Memberships.Where(x => x.IsActive && !memberIds.Contains(x.UserId)))
+            SchoolOperationNotifications.Add(db, member.UserId, Guid.Empty, $"department:{member.Id:D}:removed:{now.Ticks}", "DepartmentMembershipRemoved", "انتهاء عضوية القسم", "Department membership ended",
+                $"انتهت عضويتك في قسم {department.NameAr}. راجع تكليفاتك الحالية.", $"Your membership in {department.NameEn} ended. Review your current assignments.", "TeacherAssignment", $"department/{member.Id:D}", now);
+        foreach (var head in department.Leaderships.Where(x => x.IsActive && x.UserId != request.HeadUserId))
+            SchoolOperationNotifications.Add(db, head.UserId, Guid.Empty, $"head:{head.Id:D}:removed:{now.Ticks}", "DepartmentHeadRemoved", "انتهاء تكليف رئاسة القسم", "Department leadership ended",
+                $"انتهى تكليفك برئاسة قسم {department.NameAr}. العضوية والصلاحيات التقنية علاقات مستقلة.", $"Your leadership of {department.NameEn} ended. Membership and technical permissions are separate.", "TeacherAssignment", $"department/{department.Memberships.FirstOrDefault(x => x.UserId == head.UserId)?.Id ?? Guid.Empty:D}", now);
+        if (request.HeadUserId.HasValue && !department.Leaderships.Any(x => x.IsActive && x.UserId == request.HeadUserId))
+        {
+            // Added membership may not exist until the membership loop below; use the department as the contextual target.
+            SchoolOperationNotifications.Add(db, request.HeadUserId.Value, Guid.Empty, $"head:{id:D}:{request.HeadUserId:D}:{now.Ticks}", "DepartmentHeadAssigned", "تكليف برئاسة قسم", "Department leadership assigned",
+                $"تم تكليفك برئاسة قسم {department.NameAr}. راجع قسمك وتكليفاتك؛ الصلاحيات التقنية لا تمنح تلقائيًا.", $"You were assigned to lead {department.NameEn}. Review your department; technical permissions are not granted automatically.", "TeacherAssignment", $"department", now);
+        }
+        foreach (var old in department.Subjects.SelectMany(s => s.Coordinators).Where(c => c.IsActive && !request.Coordinators.Any(r => r.SubjectId == c.DepartmentSubject.SubjectId && SameScope(r, c))))
+            SchoolOperationNotifications.Add(db, old.CoordinatorUserId, Guid.Empty, $"coordinator:{old.Id:D}:removed:{now.Ticks}", "SubjectCoordinatorRemoved", "انتهاء تكليف تنسيق مادة", "Subject coordination ended",
+                $"انتهى تكليفك بتنسيق مادة داخل قسم {department.NameAr}. راجع المسؤوليات الحالية.", $"Your subject coordination in {department.NameEn} ended. Review your current responsibilities.", "TeacherAssignment", "department", now);
         SoftRemove(department.Memberships.Where(x => x.IsActive && !memberIds.Contains(x.UserId)), now, today);
         foreach (var input in memberInputs)
         {
             var member = department.Memberships.FirstOrDefault(x => x.IsActive && x.UserId == input.UserId);
-            if (member is null) { member = new DepartmentMembership { Id = Guid.NewGuid(), UserId = input.UserId, StartsOn = input.StartsOn ?? today, CreatedAtUtc = now }; department.Memberships.Add(member); }
+            if (member is null)
+            {
+                member = new DepartmentMembership { Id = Guid.NewGuid(), UserId = input.UserId, StartsOn = input.StartsOn ?? today, CreatedAtUtc = now };
+                department.Memberships.Add(member);
+                if (teacherIds.Contains(input.UserId)) TeacherAssignmentNotifications.Add(db, input.UserId,
+                    TeacherAssignmentNotifications.Department(member.Id, department.NameAr, department.NameEn, input.IsPrimary, member.StartsOn, input.EndsOn), now);
+            }
             member.TitleAr = Clean(input.TitleAr); member.TitleEn = Clean(input.TitleEn); member.IsPrimary = input.IsPrimary; member.EndsOn = input.EndsOn; member.UpdatedAtUtc = now;
         }
         SoftRemove(department.Leaderships.Where(x => x.IsActive && (x.Role != DepartmentLeadershipRole.Head || x.UserId != request.HeadUserId)), now, today);
@@ -143,11 +164,20 @@ public sealed class SchoolDepartmentsController(ISchoolDbContextFactory dbFactor
             foreach (var input in requested)
             {
                 var assignment = link.Coordinators.FirstOrDefault(x => x.IsActive && SameScope(input, x));
-                if (assignment is null) { assignment = new SubjectCoordinatorAssignment { Id = Guid.NewGuid(), CoordinatorUserId = input.UserId, EducationProgramId = input.EducationProgramId, EducationStageId = input.EducationStageId, StartsOn = input.StartsOn ?? today, CreatedAtUtc = now }; link.Coordinators.Add(assignment); }
+                if (assignment is null) {
+                    assignment = new SubjectCoordinatorAssignment { Id = Guid.NewGuid(), CoordinatorUserId = input.UserId, EducationProgramId = input.EducationProgramId, EducationStageId = input.EducationStageId, StartsOn = input.StartsOn ?? today, CreatedAtUtc = now }; link.Coordinators.Add(assignment);
+                    var subject = await db.Subjects.AsNoTracking().Where(s => s.Id == subjectId).Select(s => new { s.NameAr, s.NameEn }).SingleAsync(ct);
+                    SchoolOperationNotifications.Add(db, input.UserId, Guid.Empty, $"coordinator:{assignment.Id:D}:assigned", "SubjectCoordinatorAssigned", "تكليف بتنسيق مادة", "Subject coordinator assigned",
+                        $"تم تكليفك بتنسيق {subject.NameAr} داخل قسم {department.NameAr}، بدءًا من {assignment.StartsOn:yyyy-MM-dd}.", $"You were assigned to coordinate {subject.NameEn} in {department.NameEn}, starting {assignment.StartsOn:yyyy-MM-dd}.", "TeacherAssignment", "department", now);
+                }
                 assignment.EndsOn = input.EndsOn; assignment.UpdatedAtUtc = now;
             }
         }
         department.UpdatedAtUtc = now;
+        foreach (var notification in db.SchoolUserNotifications.Local.Where(n => n.RelatedEntityType == "TeacherAssignment" && n.RelatedEntityId == "department")) {
+            var membership = department.Memberships.FirstOrDefault(m => m.UserId == notification.RecipientUserId);
+            if (membership is not null) notification.RelatedEntityId = $"department/{membership.Id:D}";
+        }
         try { await db.SaveChangesAsync(ct); } catch (DbUpdateException) { return Duplicate(); }
         return Ok(ApiResponse<object?>.Success(null, correlationId: HttpContext.TraceIdentifier));
     }

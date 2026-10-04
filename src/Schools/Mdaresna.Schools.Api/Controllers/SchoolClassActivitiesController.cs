@@ -163,6 +163,7 @@ public sealed class SchoolClassActivitiesController(ISchoolDbContextFactory dbFa
         db.ClassActivityParticipants.AddRange(enrollmentIds.Select(enrollmentId => new ClassActivityParticipant { Id = Guid.NewGuid(),
             ClassActivityId = entity.Id, StudentEnrollmentId = enrollmentId, CreatedAtUtc = now, UpdatedAtUtc = now }));
         AddAudit(db, entity, "Published", now, payload: JsonSerializer.Serialize(new { StudentCount = enrollmentIds.Length }));
+        await SchoolOperationNotifications.Activity(db, entity, "publish", CurrentUserId(), now, ct);
         try { await db.SaveChangesAsync(ct); }
         catch (DbUpdateException) { return Conflict(Failure(409, "activities.already_published", "The activity was already published.")); }
         return Ok(ApiResponse<object?>.Success(new { ParticipantCount = enrollmentIds.Length }, correlationId: HttpContext.TraceIdentifier));
@@ -179,6 +180,7 @@ public sealed class SchoolClassActivitiesController(ISchoolDbContextFactory dbFa
         if (string.IsNullOrWhiteSpace(request.Reason)) return BadRequest(Failure(400, "activities.reason_required", "Enter a cancellation reason."));
         var now = CurrentUtc(entity); entity.Status = ClassActivityStatus.Cancelled; entity.CancelledAtUtc = now;
         entity.CancelledByUserId = CurrentUserId(); entity.CancellationReason = Clean(request.Reason, 1000); entity.UpdatedAtUtc = now;
+        await SchoolOperationNotifications.Activity(db, entity, "cancel", CurrentUserId(), now, ct);
         AddAudit(db, entity, "Cancelled", now, request.Reason); await db.SaveChangesAsync(ct);
         return Ok(ApiResponse<object?>.Success(null, correlationId: HttpContext.TraceIdentifier));
     }
@@ -265,7 +267,9 @@ public sealed class SchoolClassActivitiesController(ISchoolDbContextFactory dbFa
         if (entity.Status != ClassActivityStatus.Completed) return Conflict(Failure(409, "activities.not_completed", "Only a completed activity can be reopened."));
         if (string.IsNullOrWhiteSpace(request.Reason)) return BadRequest(Failure(400, "activities.reason_required", "Enter a reopen reason."));
         var now = CurrentUtc(entity); entity.Status = ClassActivityStatus.Published; entity.CompletedAtUtc = null;
-        entity.CompletedByUserId = null; entity.UpdatedAtUtc = now; AddAudit(db, entity, "Reopened", now, request.Reason); await db.SaveChangesAsync(ct);
+        entity.CompletedByUserId = null; entity.UpdatedAtUtc = now;
+        await SchoolOperationNotifications.Activity(db, entity, "reopen", CurrentUserId(), now, ct);
+        AddAudit(db, entity, "Reopened", now, request.Reason); await db.SaveChangesAsync(ct);
         return Ok(ApiResponse<object?>.Success(null, correlationId: HttpContext.TraceIdentifier));
     }
 

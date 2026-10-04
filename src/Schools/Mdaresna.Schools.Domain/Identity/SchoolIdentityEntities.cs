@@ -98,6 +98,7 @@ public sealed class StaffAbsence : ISoftDeletableSchoolEntity
 public sealed class SchoolUserNotification
 {
     public Guid Id { get; set; }
+    public string? EventKey { get; set; }
     public Guid RecipientUserId { get; set; }
     public string Type { get; set; } = string.Empty;
     public string TitleAr { get; set; } = string.Empty;

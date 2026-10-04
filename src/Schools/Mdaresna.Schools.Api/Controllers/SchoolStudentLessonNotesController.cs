@@ -89,7 +89,9 @@ public sealed class SchoolStudentLessonNotesController(ISchoolDbContextFactory d
         var entity = new StudentLessonNote { Id = Guid.NewGuid(), ClassSectionId = classSectionId, StudentEnrollmentId = request.StudentEnrollmentId,
             WeeklyTimetableSlotId = request.WeeklyTimetableSlotId, LessonDate = request.LessonDate, CreatedByUserId = userId, UpdatedByUserId = userId,
             CreatedAtUtc = now, UpdatedAtUtc = now };
-        Apply(entity, request); db.StudentLessonNotes.Add(entity); Audit(db, entity, "Created", userId, now); await db.SaveChangesAsync(ct);
+        Apply(entity, request); db.StudentLessonNotes.Add(entity); Audit(db, entity, "Created", userId, now);
+        if (entity.RequiresFollowUp) await SchoolOperationNotifications.FollowUp(db, entity, true, userId, now, ct);
+        await db.SaveChangesAsync(ct);
         return Ok(ApiResponse<object?>.Success(new { entity.Id }, correlationId: HttpContext.TraceIdentifier));
     }
 
@@ -103,7 +105,9 @@ public sealed class SchoolStudentLessonNotesController(ISchoolDbContextFactory d
         var save = new SaveLessonNoteRequest(entity.StudentEnrollmentId, entity.WeeklyTimetableSlotId, entity.LessonDate,
             request.Category, request.NoteText, request.RatingLevel, request.RequiresFollowUp, request.Visibility);
         var error = Validate(save); if (error is not null) return error;
+        var previousFollowUp = entity.RequiresFollowUp;
         Apply(entity, save); entity.UpdatedByUserId = CurrentUserId(); entity.UpdatedAtUtc = DateTimeOffset.UtcNow;
+        if (previousFollowUp != entity.RequiresFollowUp) await SchoolOperationNotifications.FollowUp(db, entity, entity.RequiresFollowUp, CurrentUserId(), entity.UpdatedAtUtc, ct);
         Audit(db, entity, "Updated", CurrentUserId(), entity.UpdatedAtUtc); await db.SaveChangesAsync(ct);
         return Ok(ApiResponse<object?>.Success(null, correlationId: HttpContext.TraceIdentifier));
     }

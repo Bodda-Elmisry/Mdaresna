@@ -14,6 +14,15 @@ namespace Mdaresna.Schools.Api.Controllers;
 [Route("api/schools/v1/notifications")]
 public sealed class SchoolNotificationsController(ISchoolDbContextFactory dbFactory) : ControllerBase
 {
+    [HttpGet("my-teaching-assignments")]
+    public async Task<IActionResult> MyTeachingAssignments(CancellationToken ct)
+    {
+        await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
+        var userId = CurrentUserId(); if (userId == Guid.Empty) return Unauthorized();
+        var rows = await TeacherAssignmentNotifications.List(db, userId, ct);
+        return Ok(ApiResponse<IReadOnlyList<TeacherAssignmentDetail>>.Success(rows, correlationId: HttpContext.TraceIdentifier));
+    }
+
     [HttpGet]
     public async Task<IActionResult> List(CancellationToken ct)
     {

@@ -5591,6 +5591,10 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("EventKey")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
                     b.Property<bool>("IsRead")
                         .HasColumnType("boolean");
 
@@ -5633,6 +5637,9 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                         .HasColumnName("xmin");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RecipientUserId", "EventKey")
+                        .IsUnique();
 
                     b.HasIndex("RecipientUserId", "IsRead", "CreatedAtUtc");
 

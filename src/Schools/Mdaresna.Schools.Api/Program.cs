@@ -22,6 +22,7 @@ builder.Services.AddSchoolAuthentication(builder.Configuration);
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<SchoolClock>();
 builder.Services.AddHostedService<Mdaresna.Schools.Api.Exams.ExamWorkflowReminderService>();
+builder.Services.AddHostedService<SchoolOperationReminderService>();
 builder.Services.AddSingleton<ISchoolDocumentStorage, LocalSchoolDocumentStorage>();
 builder.Services.AddCors(options => options.AddPolicy("SchoolsWeb", policy =>
 {

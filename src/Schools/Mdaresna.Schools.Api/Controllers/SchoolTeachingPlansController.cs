@@ -82,7 +82,9 @@ public sealed class SchoolTeachingPlansController(
                 d.Document.Versions.OrderByDescending(v => v.VersionNumber).Select(v => v.OriginalFileName).First(),
                 d.Document.Versions.OrderByDescending(v => v.VersionNumber).Select(v => v.SizeBytes).First())).ToArray()
         )).SingleAsync(ct);
-        return Ok(Success(row));
+        var returnReason = await db.TeachingPlanAudits.AsNoTracking().Where(a => a.TeachingPlanId == id && a.Action == "Returned")
+            .OrderByDescending(a => a.CreatedAtUtc).Select(a => a.Details).FirstOrDefaultAsync(ct);
+        return Ok(Success(row with { ReturnReason = returnReason }));
     }
 
     [Authorize(Policy = SchoolPermissionPolicies.AcademicsManage), HttpPost]
@@ -98,7 +100,9 @@ public sealed class SchoolTeachingPlansController(
             ToDate = request.ToDate, CreatedByUserId = userId, CreatedAtUtc = now, UpdatedAtUtc = now };
         (plan.TitleAr, plan.TitleEn) = Titles(request.Type, request.FromDate, request.ToDate, validation.SubjectAr, validation.SubjectEn, validation.TermAr, validation.TermEn, validation.TermStart);
         AddChildren(plan, request, now); db.TeachingPlans.Add(plan); Audit(db, plan.Id, "Created", userId, now);
-        await db.SaveChangesAsync(ct); return Ok(Success(new { plan.Id, plan.TitleAr, plan.TitleEn }));
+        try { await db.SaveChangesAsync(ct); }
+        catch (DbUpdateConcurrencyException) { return Conflict(Failure(409, "plans.changed", "The plan changed. Reload its current state before continuing.")); }
+        return Ok(Success(new { plan.Id, plan.TitleAr, plan.TitleEn }));
     }
 
     [Authorize(Policy = SchoolPermissionPolicies.AcademicsManage), HttpPut("{id:guid}")]
@@ -116,7 +120,9 @@ public sealed class SchoolTeachingPlansController(
         (plan.TitleAr, plan.TitleEn)=Titles(request.Type,request.FromDate,request.ToDate,validation.SubjectAr,validation.SubjectEn,validation.TermAr,validation.TermEn,validation.TermStart);
         db.TeachingPlanTargets.RemoveRange(plan.Targets); db.TeachingPlanItems.RemoveRange(plan.Items); plan.Targets=[]; plan.Items=[];
         AddChildren(plan,request,plan.UpdatedAtUtc); Audit(db,id,"Updated",CurrentUserId(),plan.UpdatedAtUtc);
-        await db.SaveChangesAsync(ct); return Ok(Success(new { plan.Id, plan.TitleAr, plan.TitleEn }));
+        try { await db.SaveChangesAsync(ct); }
+        catch (DbUpdateConcurrencyException) { return Conflict(Failure(409, "plans.changed", "The plan changed. Reload its current state before continuing.")); }
+        return Ok(Success(new { plan.Id, plan.TitleAr, plan.TitleEn }));
     }
 
     [Authorize(Policy = SchoolPermissionPolicies.AcademicsManage), HttpPost("{id:guid}/{action}")]
@@ -136,11 +142,33 @@ public sealed class SchoolTeachingPlansController(
         if (next is null) return Conflict(Failure(409,"plans.invalid_transition","The requested plan transition is not allowed."));
         if (next == TeachingPlanStatus.Published && await HasPublishedOverlap(db,plan,ct))
             return Conflict(Failure(409,"plans.overlap","A published plan already covers the same subject, scope and period."));
-        var now=DateTimeOffset.UtcNow; var user=CurrentUserId(); plan.Status=next.Value; plan.UpdatedAtUtc=now;
+        var now=DateTimeOffset.UtcNow; var user=CurrentUserId(); plan.Status=next.Value; plan.UpdatedAtUtc=now; plan.Revision++;
         if(next==TeachingPlanStatus.Submitted){plan.SubmittedAtUtc=now;plan.SubmittedByUserId=user;}
         if(next==TeachingPlanStatus.Approved){plan.ApprovedAtUtc=now;plan.ApprovedByUserId=user;}
         if(next==TeachingPlanStatus.Published){plan.PublishedAtUtc=now;plan.PublishedByUserId=user;}
-        Audit(db,id,next.Value.ToString(),user,now); await db.SaveChangesAsync(ct); return Ok(Success(new { status=next.Value }));
+        await SchoolOperationNotifications.Plan(db, plan, action.ToLowerInvariant(), user, now, ct);
+        Audit(db,id,next.Value.ToString(),user,now);
+        try { await db.SaveChangesAsync(ct); }
+        catch (DbUpdateConcurrencyException) { return Conflict(Failure(409, "plans.changed", "The plan changed. Reload its current state before continuing.")); }
+        return Ok(Success(new { status=next.Value }));
+    }
+
+    [Authorize(Policy = SchoolPermissionPolicies.AcademicsManage), HttpPost("{id:guid}/return-for-edit")]
+    public async Task<IActionResult> ReturnForEdit(Guid id, [FromBody] ReturnTeachingPlanRequest request, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.Reason) || request.Reason.Trim().Length > 1000)
+            return BadRequest(Failure(400, "plans.return_reason_required", "Enter a return reason of up to 1000 characters."));
+        await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
+        var plan = await db.TeachingPlans.Include(x => x.Targets).SingleOrDefaultAsync(x => x.Id == id, ct);
+        if (plan is null || !await CanAccessPlan(db, id, ct)) return NotFound(Failure(404, "plans.not_found", "Teaching plan was not found."));
+        if (plan.Status != TeachingPlanStatus.Submitted) return Conflict(Failure(409, "plans.invalid_transition", "Only a submitted plan can be returned."));
+        var now = DateTimeOffset.UtcNow; var actor = CurrentUserId();
+        plan.Status = TeachingPlanStatus.Draft; plan.Revision++; plan.UpdatedAtUtc = now;
+        db.TeachingPlanAudits.Add(new() { Id = Guid.NewGuid(), TeachingPlanId = id, Action = "Returned", Details = request.Reason.Trim(), ActorUserId = actor, CreatedAtUtc = now });
+        await SchoolOperationNotifications.Plan(db, plan, "return", actor, now, ct);
+        try { await db.SaveChangesAsync(ct); }
+        catch (DbUpdateConcurrencyException) { return Conflict(Failure(409, "plans.changed", "The plan changed. Reload its current state before continuing.")); }
+        return Ok(Success(new { status = plan.Status }));
     }
 
     [Authorize(Policy = SchoolPermissionPolicies.AcademicsManage), RequestSizeLimit(30_000_000), HttpPost("{planId:guid}/documents")]
@@ -179,7 +207,7 @@ public sealed class SchoolTeachingPlansController(
 
     private async Task<(IActionResult? Error, Guid ProgramYearId, Guid GradeOfferingId, string SubjectAr, string SubjectEn, string? TermAr, string? TermEn, DateOnly? TermStart)> Validate(SchoolsDbContext db, SaveTeachingPlanRequest r, Guid? editingId, CancellationToken ct)
     {
-        if(r.FromDate>r.ToDate || string.IsNullOrWhiteSpace(r.Details))return (BadRequest(Failure(400,"plans.invalid_period","Plan details and a valid date range are required.")),default,default,"","",null,null,null);
+        if(r.FromDate>r.ToDate || string.IsNullOrWhiteSpace(r.Details) || r.Details.Trim().Length > 8000)return (BadRequest(Failure(400,"plans.invalid_period","Plan details of up to 8000 characters and a valid date range are required.")),default,default,"","",null,null,null);
         var offering=await db.GradeSubjectOfferings.AsNoTracking().Where(x=>x.Id==r.GradeSubjectOfferingId && x.IsActive && x.GradeOffering.IsActive)
             .Select(x=>new{x.GradeOfferingId,x.GradeOffering.ProgramAcademicYearId,YearStart=x.GradeOffering.ProgramAcademicYear.StartDate,YearEnd=x.GradeOffering.ProgramAcademicYear.EndDate,
                 SubjectAr=x.CurriculumGradeSubject.Subject.NameAr,SubjectEn=x.CurriculumGradeSubject.Subject.NameEn}).SingleOrDefaultAsync(ct);
@@ -262,6 +290,7 @@ public sealed record TeachingPlanSubjectOption(Guid Id,string NameAr,string Name
 public sealed record TeachingPlanTermOption(Guid Id,string NameAr,string NameEn,DateOnly StartDate,DateOnly EndDate);
 public sealed record TeachingPlanTargetResponse(Guid ClassSectionId,string NameAr,string NameEn);
 public sealed record TeachingPlanSummary(Guid Id,TeachingPlanType Type,TeachingPlanStatus Status,string TitleAr,string TitleEn,DateOnly FromDate,DateOnly ToDate,string SubjectNameAr,string SubjectNameEn,IReadOnlyList<TeachingPlanTargetResponse> Targets,int DocumentCount,int Revision);
+public sealed record ReturnTeachingPlanRequest(string Reason);
 public sealed record TeachingPlanItemResponse(Guid Id,int SortOrder,string Title,string? Details,DateOnly? FromDate,DateOnly? ToDate);
 public sealed record TeachingPlanDocumentResponse(Guid DocumentId,TeachingPlanDocumentPurpose Purpose,string Title,string FileName,long SizeBytes);
-public sealed record TeachingPlanDetails(Guid Id,TeachingPlanType Type,TeachingPlanStatus Status,string TitleAr,string TitleEn,string Details,TeachingPlanSourceAuthority SourceAuthority,string? SourceReference,Guid ProgramAcademicYearId,Guid GradeOfferingId,Guid GradeSubjectOfferingId,Guid? AcademicTermId,Guid? ParentPlanId,DateOnly FromDate,DateOnly ToDate,int Revision,IReadOnlyList<TeachingPlanTargetResponse> Targets,IReadOnlyList<TeachingPlanItemResponse> Items,IReadOnlyList<TeachingPlanDocumentResponse> Documents);
+public sealed record TeachingPlanDetails(Guid Id,TeachingPlanType Type,TeachingPlanStatus Status,string TitleAr,string TitleEn,string Details,TeachingPlanSourceAuthority SourceAuthority,string? SourceReference,Guid ProgramAcademicYearId,Guid GradeOfferingId,Guid GradeSubjectOfferingId,Guid? AcademicTermId,Guid? ParentPlanId,DateOnly FromDate,DateOnly ToDate,int Revision,IReadOnlyList<TeachingPlanTargetResponse> Targets,IReadOnlyList<TeachingPlanItemResponse> Items,IReadOnlyList<TeachingPlanDocumentResponse> Documents) { public string? ReturnReason { get; init; } }

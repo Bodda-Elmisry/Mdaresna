@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Mdaresna.Schools.Api.Controllers;
 
 [ApiController, Route("api/schools/v1/students")]
-public sealed class SchoolStudentsController(ISchoolDbContextFactory dbFactory, IGlobalStudentGateway globalStudents) : ControllerBase
+public sealed class SchoolStudentsController(ISchoolDbContextFactory dbFactory, IGlobalStudentGateway globalStudents, IConfiguration configuration) : ControllerBase
 {
     [Authorize(Policy = SchoolPermissionPolicies.StudentsView), HttpGet]
     public async Task<IActionResult> List([FromQuery] Guid? programYearId, [FromQuery] Guid? programId,
@@ -91,7 +91,9 @@ public sealed class SchoolStudentsController(ISchoolDbContextFactory dbFactory, 
         student.Enrollments.Add(new StudentEnrollment { Id = Guid.NewGuid(), GradeOfferingId = section.GradeOfferingId,
             ClassSectionId = section.Id, EnrollmentDate = request.EnrollmentDate, Status = StudentEnrollmentStatus.Active,
             CreatedAtUtc = now, UpdatedAtUtc = now });
-        db.Students.Add(student); await db.SaveChangesAsync(ct);
+        db.Students.Add(student);
+        await SchoolOperationNotifications.RosterAdded(db, section.Id, CurrentUserId(), student.Id.ToString("D"), now, ct);
+        await SchoolOperationNotifications.Save(db, ct);
         return Ok(ApiResponse<CreateStudentResponse>.Success(new(student.Id, student.GlobalStudentId, student.StudentCode), correlationId: HttpContext.TraceIdentifier));
     }
 
@@ -101,11 +103,12 @@ public sealed class SchoolStudentsController(ISchoolDbContextFactory dbFactory, 
         [FromQuery] DateOnly? dateOfBirth, [FromQuery] AdmissionApplicationStatus? status,
         [FromQuery] AdmissionApplicationSource? source, [FromQuery] DateOnly? submittedFrom,
         [FromQuery] DateOnly? submittedTo, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20,
-        CancellationToken ct = default)
+        CancellationToken ct = default, [FromQuery] Guid? applicationId = null)
     {
         if (!ValidPaging(pageNumber, pageSize)) return BadRequest(Failure("admissions.paging_invalid", "Invalid paging values."));
         await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
         var query = db.AdmissionApplications.AsNoTracking().AsQueryable();
+        if (applicationId.HasValue) query = query.Where(x => x.Id == applicationId);
         if (programYearId.HasValue) query = query.Where(x => x.ProgramAcademicYearId == programYearId);
         if (programId.HasValue) query = query.Where(x => x.ProgramAcademicYear.EducationProgramId == programId);
         if (stageId.HasValue) query = query.Where(x => x.GradeLevel.EducationStageId == stageId);
@@ -156,7 +159,9 @@ public sealed class SchoolStudentsController(ISchoolDbContextFactory dbFactory, 
             BirthCertificateNumber = Clean(request.BirthCertificateNumber), ProgramAcademicYearId = request.ProgramAcademicYearId,
             GradeLevelId = request.GradeLevelId, Source = AdmissionApplicationSource.SchoolDesk,
             Status = AdmissionApplicationStatus.Submitted, SubmittedAtUtc = now, Notes = Clean(request.Notes), CreatedAtUtc = now, UpdatedAtUtc = now };
-        AddGuardians(db, null, app, request.Guardians, now); db.AdmissionApplications.Add(app); await db.SaveChangesAsync(ct);
+        AddGuardians(db, null, app, request.Guardians, now); db.AdmissionApplications.Add(app);
+        await SchoolOperationNotifications.Admission(db, app, CurrentUserId(), configuration, User.FindFirst(SchoolClaimTypes.SchoolCode)?.Value ?? "", now, ct);
+        await SchoolOperationNotifications.Save(db, ct);
         return Ok(ApiResponse<CreateApplicationResponse>.Success(new(app.Id, app.ApplicationNumber), correlationId: HttpContext.TraceIdentifier));
     }
 
@@ -168,7 +173,9 @@ public sealed class SchoolStudentsController(ISchoolDbContextFactory dbFactory, 
         var app = await db.AdmissionApplications.SingleOrDefaultAsync(x => x.Id == id, ct);
         if (app is null) return NotFound(Failure("admissions.not_found", "Application was not found."));
         if (app.Status == AdmissionApplicationStatus.Accepted) return Conflict(Failure("admissions.final", "An accepted application cannot be changed."));
+        var changed = app.Status != request.Status;
         app.Status = request.Status; app.Notes = Clean(request.Notes) ?? app.Notes; app.UpdatedAtUtc = DateTimeOffset.UtcNow;
+        if (changed) await SchoolOperationNotifications.Admission(db, app, CurrentUserId(), configuration, User.FindFirst(SchoolClaimTypes.SchoolCode)?.Value ?? "", app.UpdatedAtUtc, ct);
         await db.SaveChangesAsync(ct); return Ok(ApiResponse<object?>.Success(null, correlationId: HttpContext.TraceIdentifier));
     }
 
@@ -208,7 +215,9 @@ public sealed class SchoolStudentsController(ISchoolDbContextFactory dbFactory, 
         if (existing is null) db.Students.Add(student);
         app.GlobalStudentId = global.GlobalStudentId; app.StudentCode = global.StudentCode;
         app.AcceptedStudent = student; app.Status = AdmissionApplicationStatus.Accepted; app.UpdatedAtUtc = now;
-        await db.SaveChangesAsync(ct);
+        await SchoolOperationNotifications.RosterAdded(db, section.Id, CurrentUserId(), app.Id.ToString("D"), now, ct);
+        await SchoolOperationNotifications.Admission(db, app, CurrentUserId(), configuration, User.FindFirst(SchoolClaimTypes.SchoolCode)?.Value ?? "", now, ct);
+        await SchoolOperationNotifications.Save(db, ct);
         return Ok(ApiResponse<CreateStudentResponse>.Success(new(student.Id, student.GlobalStudentId, student.StudentCode), correlationId: HttpContext.TraceIdentifier));
     }
 
@@ -264,6 +273,7 @@ public sealed class SchoolStudentsController(ISchoolDbContextFactory dbFactory, 
     private static string Normalize(string ar, string en) => $"{ar.Trim()} {en.Trim()}".ToUpperInvariant();
     private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     private async Task<SchoolsDbContext?> RequireDb(CancellationToken ct) => await dbFactory.CreateAsync(User.FindFirst(SchoolClaimTypes.SchoolCode)?.Value ?? string.Empty, ct);
+    private Guid CurrentUserId() => Guid.TryParse(User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value, out var user) ? user : Guid.Empty;
     private ApiResponse<object?> Failure(string code, string message) => ApiResponse<object?>.Failure(400, code, message, correlationId: HttpContext.TraceIdentifier);
 }
 

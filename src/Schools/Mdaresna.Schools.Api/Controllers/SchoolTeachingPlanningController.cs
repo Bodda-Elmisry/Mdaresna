@@ -74,12 +74,17 @@ public sealed class SchoolTeachingPlanningController(ISchoolDbContextFactory dbF
                 return Conflict(Failure(409, "teaching.scope_in_use", "Remove the teacher from the timetable before removing this scope."));
         }
         var now = DateTimeOffset.UtcNow;
-        foreach (var item in removing) { item.IsActive = false; item.UpdatedAtUtc = now; }
+        foreach (var item in removing) {
+            SchoolOperationNotifications.AssignmentRemoved(db, teacherId, await TeacherAssignmentNotifications.Scope(db, item.GradeSubjectOfferingId, item.Id, null, ct), now);
+            item.IsActive = false; item.UpdatedAtUtc = now;
+        }
         foreach (var id in ids)
         {
             var item = existing.FirstOrDefault(x => x.GradeSubjectOfferingId == id);
-            if (item is null) db.TeacherGradeSubjectScopes.Add(new TeacherGradeSubjectScope { Id = Guid.NewGuid(), TeacherUserId = teacherId, GradeSubjectOfferingId = id, CreatedAtUtc = now, UpdatedAtUtc = now });
+            var added = item is null || !item.IsActive;
+            if (item is null) { item = new TeacherGradeSubjectScope { Id = Guid.NewGuid(), TeacherUserId = teacherId, GradeSubjectOfferingId = id, CreatedAtUtc = now, UpdatedAtUtc = now }; db.TeacherGradeSubjectScopes.Add(item); }
             else { item.IsActive = true; item.UpdatedAtUtc = now; }
+            if (added) TeacherAssignmentNotifications.Add(db, teacherId, await TeacherAssignmentNotifications.Scope(db, id, item.Id, null, ct), now);
         }
         await db.SaveChangesAsync(ct);
         return Ok(ApiResponse<object?>.Success(null, correlationId: HttpContext.TraceIdentifier));
@@ -166,13 +171,23 @@ public sealed class SchoolTeachingPlanningController(ISchoolDbContextFactory dbF
                 return Conflict(Failure(409, "teaching.class_scope_in_use", "Remove the teacher from this class timetable first."));
         }
         var now = DateTimeOffset.UtcNow;
-        foreach (var item in removing) { item.IsActive = false; item.IsDeleted = true; item.DeletedAtUtc = now; item.UpdatedAtUtc = now; }
+        foreach (var item in removing) {
+            var scope = await db.TeacherGradeSubjectScopes.AsNoTracking().SingleAsync(x => x.Id == item.TeacherGradeSubjectScopeId, ct);
+            SchoolOperationNotifications.AssignmentRemoved(db, scope.TeacherUserId, await TeacherAssignmentNotifications.Scope(db, scope.GradeSubjectOfferingId, item.Id, classSectionId, ct), now);
+            item.IsActive = false; item.IsDeleted = true; item.DeletedAtUtc = now; item.UpdatedAtUtc = now;
+        }
         foreach (var id in ids)
         {
             var item = existing.FirstOrDefault(x => x.TeacherGradeSubjectScopeId == id);
-            if (item is null) db.ClassSectionTeacherScopes.Add(new ClassSectionTeacherScope { Id = Guid.NewGuid(), ClassSectionId = classSectionId,
-                TeacherGradeSubjectScopeId = id, CreatedAtUtc = now, UpdatedAtUtc = now });
+            var added = item is null || !item.IsActive;
+            if (item is null) { item = new ClassSectionTeacherScope { Id = Guid.NewGuid(), ClassSectionId = classSectionId,
+                TeacherGradeSubjectScopeId = id, CreatedAtUtc = now, UpdatedAtUtc = now }; db.ClassSectionTeacherScopes.Add(item); }
             else { item.IsActive = true; item.IsDeleted = false; item.DeletedAtUtc = null; item.DeletedByUserId = null; item.UpdatedAtUtc = now; }
+            if (added)
+            {
+                var scope = await db.TeacherGradeSubjectScopes.AsNoTracking().SingleAsync(x => x.Id == id, ct);
+                TeacherAssignmentNotifications.Add(db, scope.TeacherUserId, await TeacherAssignmentNotifications.Scope(db, scope.GradeSubjectOfferingId, item.Id, classSectionId, ct), now);
+            }
         }
         await db.SaveChangesAsync(ct);
         return Ok(ApiResponse<object?>.Success(null, correlationId: HttpContext.TraceIdentifier));
@@ -533,6 +548,15 @@ public sealed class SchoolTeachingPlanningController(ISchoolDbContextFactory dbF
         }
 
         var savedAt = DateTimeOffset.UtcNow;
+        var previousPrimary = existing is { IsActive: true, IsBreak: false } ? existing.PrimaryTeacherScopeId : null;
+        var previousSubstitutes = existing is { IsActive: true, IsBreak: false }
+            ? existing.SubstituteTeachers.Where(x => x.IsActive).Select(x => x.TeacherGradeSubjectScopeId).ToHashSet() : [];
+        var timeChanged = existing is not null && (existing.StartsAt != startsAt || existing.EndsAt != endsAt);
+        var roomChanged = existing is not null && existing.RoomId != (request.RoomId == defaultRoomId ? null : request.RoomId);
+        var previousScopes = previousSubstitutes.Concat(previousPrimary.HasValue ? new[] { previousPrimary.Value } : []);
+        var currentScopes = request.IsBreak ? [] : substituteIds.Concat(request.PrimaryTeacherScopeId.HasValue ? new[] { request.PrimaryTeacherScopeId.Value } : []).ToArray();
+        var removedScopes = previousScopes.Except(currentScopes).ToArray();
+        var removedTeachers = await db.TeacherGradeSubjectScopes.AsNoTracking().Where(x => removedScopes.Contains(x.Id)).Select(x => x.TeacherUserId).Distinct().ToArrayAsync(ct);
         if (existing is null)
         {
             existing = new WeeklyTimetableSlot { Id = Guid.NewGuid(), ClassSectionId = classSectionId,
@@ -554,6 +578,31 @@ public sealed class SchoolTeachingPlanningController(ISchoolDbContextFactory dbF
                 TeacherGradeSubjectScopeId = scopeId, CreatedAtUtc = savedAt, UpdatedAtUtc = savedAt });
             else { old.IsActive = true; old.IsDeleted = false; old.DeletedAtUtc = null; old.DeletedByUserId = null; old.UpdatedAtUtc = savedAt; }
         }
+        if (!request.IsBreak)
+        {
+            var recipients = TeacherAssignmentNotifications.ChangedLessonScopes(previousPrimary, previousSubstitutes, request.PrimaryTeacherScopeId!.Value, substituteIds, timeChanged || roomChanged);
+            if (recipients.Count > 0)
+            {
+                var context = await db.GradeSubjectOfferings.AsNoTracking().Where(x => x.Id == request.GradeSubjectOfferingId).Select(x => new
+                {
+                    SubjectAr = x.CurriculumGradeSubject.Subject.NameAr, SubjectEn = x.CurriculumGradeSubject.Subject.NameEn,
+                    GradeAr = x.GradeOffering.GradeLevel.NameAr, GradeEn = x.GradeOffering.GradeLevel.NameEn,
+                    YearAr = x.GradeOffering.ProgramAcademicYear.NameAr, YearEn = x.GradeOffering.ProgramAcademicYear.NameEn
+                }).SingleAsync(ct);
+                var teachers = await db.TeacherGradeSubjectScopes.AsNoTracking().Where(x => recipients.Contains(x.Id)).Select(x => new { x.Id, x.TeacherUserId }).ToListAsync(ct);
+                var room = await db.SchoolRooms.AsNoTracking().Where(x => x.Id == (request.RoomId ?? defaultRoomId)).Select(x => new { x.NameAr, x.NameEn }).SingleOrDefaultAsync(ct);
+                foreach (var teacher in teachers) {
+                    var detail = TeacherAssignmentNotifications.Lesson(existing.Id, section.Entity.NameAr, section.Entity.NameEn, context.SubjectAr, context.SubjectEn,
+                        context.GradeAr, context.GradeEn, context.YearAr, context.YearEn, day, slotNumber, startsAt, endsAt, teacher.Id != request.PrimaryTeacherScopeId);
+                    if (room is not null) detail = detail with { BodyAr = $"{detail.BodyAr} المكان: {room.NameAr}.", BodyEn = $"{detail.BodyEn} Room: {room.NameEn}." };
+                    if (timeChanged || roomChanged) detail = detail with { TitleAr = "تحديث حصة في الجدول", TitleEn = "Timetable lesson updated" };
+                    TeacherAssignmentNotifications.Add(db, teacher.TeacherUserId, detail, savedAt);
+                }
+            }
+        }
+        foreach (var user in removedTeachers) SchoolOperationNotifications.Add(db, user, Guid.Empty, $"lesson:{existing.Id:D}:removed:{savedAt.Ticks}", "TeacherLessonRemoved",
+            "إلغاء إسناد حصة", "Lesson assignment removed", $"تم إلغاء إسنادك السابق لخانة {slotNumber} يوم {SchoolOperationNotifications.DayAr(day)} في {section.Entity.NameAr}. راجع جدولك الحالي.",
+            $"Your previous assignment to slot {slotNumber} on {day} in {section.Entity.NameEn} was removed. Review your current timetable.", "TeacherAssignment", $"lesson/{existing.Id:D}", savedAt);
         await db.SaveChangesAsync(ct);
         return Ok(ApiResponse<object?>.Success(null, correlationId: HttpContext.TraceIdentifier));
     }
@@ -567,7 +616,12 @@ public sealed class SchoolTeachingPlanningController(ISchoolDbContextFactory dbF
         var slot = await db.WeeklyTimetableSlots.Include(x => x.SubstituteTeachers)
             .SingleOrDefaultAsync(x => x.ClassSectionId == classSectionId && x.DayOfWeek == day && x.SlotNumber == slotNumber, ct);
         if (slot is null) return NotFound(Failure(404, "teaching.cell_not_found", "Timetable cell was not found."));
+        var scopeIds = slot.SubstituteTeachers.Where(s => s.IsActive).Select(s => s.TeacherGradeSubjectScopeId).Concat(slot.PrimaryTeacherScopeId.HasValue ? new[] { slot.PrimaryTeacherScopeId.Value } : []).Distinct().ToArray();
+        var recipients = await db.TeacherGradeSubjectScopes.AsNoTracking().Where(s => scopeIds.Contains(s.Id)).Select(s => s.TeacherUserId).Distinct().ToArrayAsync(ct);
         var now = DateTimeOffset.UtcNow; slot.IsActive = false; slot.IsDeleted = true; slot.DeletedAtUtc = now; slot.UpdatedAtUtc = now;
+        foreach (var recipient in recipients) SchoolOperationNotifications.Add(db, recipient, Guid.Empty, $"lesson:{slot.Id:D}:deleted:{now.Ticks}", "TeacherLessonRemoved",
+            "إلغاء حصة من الجدول", "Timetable lesson removed", $"ألغيت خانة {slotNumber} يوم {SchoolOperationNotifications.DayAr(day)}. افتح جدول حصصك لمراجعة الإسنادات الحالية.",
+            $"Slot {slotNumber} on {day} was removed. Review your current timetable.", "TeacherAssignment", $"lesson/{slot.Id:D}", now);
         foreach (var substitute in slot.SubstituteTeachers.Where(x => x.IsActive)) { substitute.IsActive = false; substitute.IsDeleted = true; substitute.DeletedAtUtc = now; substitute.UpdatedAtUtc = now; }
         await db.SaveChangesAsync(ct); return NoContent();
     }
