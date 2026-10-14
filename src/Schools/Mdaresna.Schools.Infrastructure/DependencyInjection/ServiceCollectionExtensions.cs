@@ -26,7 +26,30 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<SchoolProvisioningConsumerService>();
         services.AddHostedService<SchoolDatabaseMigrationConsumerService>();
         services.AddScoped<SubmitSchoolRegistrationRequestHandler>();
+        var routingCacheEnabled = configuration.GetValue<bool>("SchoolRoutingCache:Enabled");
+        if (routingCacheEnabled)
+        {
+            var connection = configuration["SchoolRoutingCache:RedisConnection"];
+            var ttl = configuration.GetValue<int?>("SchoolRoutingCache:TtlSeconds") ?? 2_592_000;
+            if (string.IsNullOrWhiteSpace(connection) || ttl is < 1 or > 2_592_000)
+                throw new InvalidOperationException("SchoolRoutingCache requires RedisConnection and TtlSeconds between 1 and 2592000 (30 days).");
+            services.AddSingleton<ISchoolRoutingStore>(_ =>
+            {
+                var redis = StackExchange.Redis.ConfigurationOptions.Parse(connection);
+                redis.AbortOnConnectFail = false;
+                redis.ConnectTimeout = 500;
+                redis.AsyncTimeout = 500;
+                redis.ConnectRetry = 0;
+                redis.BacklogPolicy = StackExchange.Redis.BacklogPolicy.FailFast;
+                return new RedisSchoolRoutingStore(redis);
+            });
+        }
+        services.AddSingleton(sp => new SchoolRoutingCache(
+            routingCacheEnabled ? sp.GetRequiredService<ISchoolRoutingStore>() : null,
+            configuration, sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<SchoolRoutingCache>>()));
         services.AddHttpClient<ISchoolLoginTenantResolver, PlatformSchoolLoginTenantResolver>();
+        services.AddHttpClient<SchoolRoutingSnapshotClient>();
+        services.AddHostedService<SchoolRoutingCacheConsumerService>();
         services.AddScoped<ISchoolLoginService, SchoolLocalLoginService>();
         services.AddScoped<ISchoolDbContextFactory, SchoolDbContextFactory>();
         services.AddHttpClient<ISchoolOwnerActivationCodeSender, PlatformSchoolOwnerActivationCodeSender>();

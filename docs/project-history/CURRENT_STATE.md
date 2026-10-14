@@ -2,6 +2,19 @@
 
 آخر تحديث: 2026-10-14
 
+## Redis لكاش وجهات قواعد المدارس — أول مرحلة منفذة
+
+- تحديث منفذ2026-10-14: SchoolRoutingChangedV1 في Outbox مع RoutingVersion خاص بالمدرسة داخل نفس حفظ تغييرات المدرسة/وجهتها، ثم RabbitMQ ومستهلكSchools يحدثRedis للنشطة ويحذفdata للموقوفة/المحذوفة معguard إصدار بلاTTL. Lua يقارن الإصدار ويكتب ذريًا، ويرفض التكرار والقديم؛ epoch يرفض تعبئة بدأت قبلفقدguard. المستهلك يتحقق من أحدثsnapshot فيPlatform عند كلحدثتغيير فقط، لاكلطلب، لحمايةreplay بعدrestart/eviction. مفاتيحv2 منفصلة، TTL30 يومًا منالتحديث الجديد دونتمديدعلىhit أوduplicate.
+- للتفعيل: backup ومهاجرةPlatform AddSchoolRoutingVersion (PG20261014190417 أوSQL20261014190458)، ثمAPI/Worker المنصةوكلSchools API معconsumerEnabled وAMQPS وRedis/namespace/PlatformBaseUrl موحدة لنسخنفسالمنصة وvhost منفصل للبيئات. لاAPI/db فعلي أو.env تغيرت. الاختبارات: Platform179ناجحة قبلإضافةحالةالتزامن الجديدة، Schools221ناجحة و1skip معRedis/RabbitMQ معزولين؛ تفاصيلالنتيجةالنهائيةفيDEVELOPMENT_LOG. Outboxمصدره اختبرInMemory، لاclaim بمعاملةSQL فعلية. المزامنةلاحقة؛ لا ضمانإيقافلحظي أثناءتعطلالbroker.
+
+- منفذ في Schools Infrastructure: cache-aside قبل طلب Platform، metadata فقط بلا كلمة مرور أو connection string محلول، وحل الأسرار بعد كل hit؛ توحيد كود المدرسة وعزل المفاتيح بحسب namespace وعنوان المنصة. مدارس Active فقط، بلا negative cache أو بيانات منتهية. بطلب المستخدم2026-10-14: TTL مطلق30 يومًا ثابتًا (2592000 ثانية) افتراضيًا، قابل للضبط1–2592000، يبدأ قبل طلب المنصة ولا يتجدد بالقراءة.
+- Redis اختياري خارجCompose ومعطل افتراضيًا؛ Compose يفعله ويضيف خدمة داخلية بمصادقة وحد ذاكرة دون persistence أو host port، مع إعداد اتصال خارجي من secret source. fallback محدود إلى Platform عند الفشل، انتظارRedis500ms وcooldown5s، وحد16 طلبًا للمنصة لكلprocess وtimeout5s، وتجميعmiss لنفسالمفتاح داخلprocess وعدّاداتMeter. لا منعstampede موزع بينالنسخ.
+- وصف عدم وجود أحداث في المرحلةالأولى حل محله التنفيذ أعلاه: التغيير ينتقل بعدمعالجةRabbitMQ، ولا ينتظرTTL معقناةسليمة. يلزمstaging بعدالمهاجرة ومراقبةOutbox/queue/DLQ قبلالإنتاج؛ SQLمباشر يتجاوزSaveChanges ولا يولدحدثًا. اعتمدADR-056 ودليل `docs/deployment/SCHOOL_ROUTING_REDIS.md`؛ لمتُطبّق مهاجرات علىقواعدفعلية أوتُغيّر.env.
+
+## قرار فصل Family وSchools — معتمد وغير منفذ
+
+- اعتمد المستخدم 2026-10-14 استقلال Backend/DB لكل من Family وSchools وتبادل البيانات في الاتجاهين عبر RabbitMQ دون استدعاءات تشغيل مباشرة بينهما أو قراءة قاعدة التطبيق الآخر (ADR-054). Family يقرأ نسخة محلية من البيانات المدرسية المصرح بها؛ Schools يملك حقيقة عمليات المدرسة ويعالج أوامر الأسرة ثم ينشر النتيجة. الاتساق لاحق؛ Outbox/Inbox ومنع التكرار وترتيب الإصدارات والتوجيه وinitial sync متطلبات تنفيذ مستقبلية، وليست ضمانات منفذة حاليًا. Family ما زال مؤجلًا؛ لا تغييرات تطبيق أو نشر في هذه المناقشة.
+
 ## تجهيز Docker للتطبيقات الخمسة
 
 - مرجع DevOps عربي Word جاهز 2026-10-14: `docs/deployment/Mdaresna_Five_Applications_DevOps_Deployment_Manual_AR.docx` من22 صفحة، RTL والأوامرLTR، شامل الإعداد والنشر والتحديث والقبول والاستعادة. تحقق بصري بتصدير Microsoft Word؛ يقدم تعليمات تنفيذ لا إثبات نشر فعلي. هو الدليل التفصيلي الحالي لهذه التطبيقات الخمسة مع DOCKER_DEPLOYMENT.md، لا الأدلة القديمة السابقة لتحديثDocker الأخير.

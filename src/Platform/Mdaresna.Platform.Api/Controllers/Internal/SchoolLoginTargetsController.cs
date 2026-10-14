@@ -6,6 +6,9 @@ using Mdaresna.Platform.Domain.Registry;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mdaresna.Platform.Api.Auth;
+using Mdaresna.Platform.Infrastructure.Persistence.Platform;
+using Mdaresna.Schools.Contracts.Provisioning;
+using Microsoft.EntityFrameworkCore;
 
 namespace Mdaresna.Platform.Api.Controllers.Internal;
 
@@ -16,8 +19,29 @@ namespace Mdaresna.Platform.Api.Controllers.Internal;
 public sealed class SchoolLoginTargetsController(
     ISchoolRegistrationRepository schools,
     ISchoolDatabaseEndpointResolver endpoints,
-    IConfiguration configuration) : ControllerBase
+    IConfiguration configuration, PlatformDbContext db) : ControllerBase
 {
+    [HttpGet("~/api/platform/v1/internal/school-routing-targets/{schoolCode}")]
+    public async Task<IActionResult> RoutingSnapshot(string schoolCode, CancellationToken ct)
+    {
+        var configuredKey = configuration["InternalServices:ApiKey"];
+        if (string.IsNullOrWhiteSpace(configuredKey) || !FixedEquals(configuredKey, Request.Headers["X-Mdaresna-Internal-Key"].ToString()))
+            return Unauthorized();
+        SchoolCode code;
+        try { code = SchoolCode.Create(schoolCode); } catch (ArgumentException) { return NotFound(); }
+        // Keep revision and endpoint in a consistent view while a primary switch is being committed.
+        await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead, ct);
+        var school = await db.Schools.AsNoTracking().SingleOrDefaultAsync(s => s.Code == code, ct);
+        if (school is null) return NotFound(new { code = "school_routing.not_found" });
+        var endpoint = await db.SchoolDatabaseEndpoints.AsNoTracking().SingleOrDefaultAsync(e => e.SchoolId == school.Id &&
+            e.Purpose == SchoolDatabasePurpose.Operational && e.IsPrimary && e.Status == SchoolDatabaseEndpointStatus.Active, ct);
+        var target = school.Status == SchoolLifecycleStatus.Active && endpoint is not null
+            ? new SchoolRoutingData(school.TenantId.Value, school.Id.Value, school.Code.Value, "Active",
+                endpoint.Provider.ToString(), endpoint.Host, endpoint.Port, endpoint.DatabaseName,
+                endpoint.CredentialSecretReference, endpoint.RequireTls, school.RoutingVersion) : null;
+        return Ok(new SchoolRoutingChangedV1(school.TenantId.Value, school.Id.Value, school.Code.Value, school.RoutingVersion, target));
+    }
+
     [HttpGet("{schoolCode}")]
     public async Task<IActionResult> Resolve(string schoolCode, CancellationToken cancellationToken)
     {

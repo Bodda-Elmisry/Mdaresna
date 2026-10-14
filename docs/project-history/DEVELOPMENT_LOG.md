@@ -1,5 +1,84 @@
 # سجل التطوير والنقاشات
 
+## 2026-10-14 — تنفيذ تحديث كاش وجهات المدارس بالأحداث والحذف عند الإيقاف
+
+- بطلب المستخدم: SchoolRoutingChangedV1 وRoutingVersion مستقل/concurrency token علىSchoolRegistration؛ PlatformDbContext يلتقط تغييرات المدرسة وحقولoperational endpoint ويضيفsnapshot كاملًا أوtombstone إلىOutbox في نفسSaveChanges. يشملAPI/Worker provisioning وتبديلprimary، ويستبعدmigration metadata والحفظغيرالمتغير. أضيفت مهاجرتاPlatform PG20261014190417 وSQL20261014190458_AddSchoolRoutingVersion، عمودbigint افتراضي0؛ لمتطبقا علىDB فعلية ولاmigrations لمدارس.
+- Worker يعلنrouting queue ويرسل عبرناشرOutbox الحالي؛ Schools consumer يحققproducer/schema/scope/payload، ويؤكد بعدكتابةRedis فقط معretry وDLQ. قبلتطبيقكلحدث يتأكد منsnapshot حالي منPlatform لمنعreplay بعدفقدguards والحالاتالوسيطةلتبديلprimary داخلtransaction؛ القراءةوقتالتغيير فقط لاكلطلب. endpoint داخلي جديدschool-routing-targets يوفرrevision والوجهة فيRepeatableRead و404مميزةلمدرسةمحذوفة حتىلايُفسّرendpoint قديمغيرمنشور كحذفمدارس.
+- Redis raw Lua بدلIDistributedCache للكتابة الذرية: guard version وتombstone بلاTTL وdata30يومًا؛ الأحدثيحدثالإدخال كاملاً، الإيقاف/الحذف يزيلdata، التكرار/القديم لايمددTTL. epoch يتغيرعندفقدguard ويرفضfill الذيبدأقبلrestart/eviction. مفاتيحv2 لا تقرأv1، hash slots مشتركةللـguard/data، وfallback الطلبات/حدودها/مقاييسها محفوظة. التسجيلفيDI وCompose وAMQPS وقوالبconsumerEnabled وpreflight محدثة؛ لا.env فعلي أوخدمةتطبيقعاملةعُدّلت.
+- التحقق: Platform API build ناجح بتحذيرCS0168 قائم فيSchoolsController، Worker build ناجح0warnings/errors. suitePlatform نجح179/179 ثمrouting outbox tests الأربعة (بمافيهاconcurrency الجديد)4/4؛ suiteSchools نجح221/221 و1skip لـPoppler، ثمالمسارالمستهدف21/21 بعدآخرمراجعة، بRedis7.4 وRabbitMQ3 حقيقيين معزولين. broker smoke يغطيالتعديل والإيقاف وإعادةالمحاولة بعد503 وreplay قديم بعدفقدguard؛ Lua tests تغطيالإصداراتوepoch، والوحدةتغطيduplicate/TTL وفشلRedis وfill متزامن. اختبارOutbox مصدرهEF InMemory، لا اختبارtransaction SQL فعلية؛ أُصلحتfixtures RowVersion وحالةendpointActive وخطأconstructor configuration السابق فيPlatformAccountProfileControllerTests دونتغييروظيفته.
+- dotnet-ef migrations has-pending-model-changes بلا تغييرات للمزودين؛ توليدالمهاجرات مجردإضافةعمود، معتحذيراتdecimal القديمة لدىSQLServer. deploy/tests/Test-ComposeFixtures.ps1 ناجح للمحليوالإنتاج ورفضTLSالمفقود؛ git diff --check بلاwhitespace errors معCRLFwarnings القائمة. حاويتاQA أوقفتاوأزيلتا بـ--rm دونمساسRabbitMQ المستخدمالحالي. لا نشر أوترحيل بيانات فعلية؛ الدليلSCHOOL_ROUTING_REDIS.md وADR-056/CURRENT_STATE/NEXT_STEPS محدثة.
+- الحدود الباقية: اتساقلاحق وزمنتأخرالرسائل، staging بمعاملاتوتزامنحقيقيين علىالمزودالمستخدم وTLS/ACL وlag/DLQ monitoring؛ SQLمباشر يتجاوزالالتقاط، وإعادةاستخدامكودمحذوف لهويةجديدة تحتاجترحيلguard. نسخنفسالمنصة تحتاجنفسRedis/namespace/authority وbroker/vhost منفصل للبيئات. لاbulk bootstrap جديد؛ cold misses وإعادةتأكيدالحدثتعيدانالأحدث.
+
+## 2026-10-14 — مقترح تحديث كاش وجهة المدرسة بدل حذفه عند التعديل
+
+- اقترح المستخدم تحديث إدخال Redis مباشرة عند تغيير البيانات، وحذفه عند إيقاف المدرسة أو حذفها. التوصية: حفظ مصدر الحقيقة في Platform مع Outbox في معاملة واحدة، ثم حدث عبر RabbitMQ إلى مستهلك كاش يكتب snapshot كاملًا لبيانات التوجيه المسموح بها دون أسرار، أو يزيل إدخال التوجيه عند الإيقاف/الحذف. التحديث يحدد صلاحية30 يومًا جديدة، بينما hit لا يمددها. المقترح غير منفذ ولا يغير السلوك الحالي.
+- يلزم إصدار متزايد لوجهة المدرسة ككل، لا إصدار endpoint منفرد عند تبديلprimary، وتطبيق مقارنة الإصدار والكتابة بشكل ذري داخلRedis. الاحتفاظ بعلامة إصدار الإيقاف/الحذف لمنع إعادة إنشاء الإدخال برسالة قديمة أو lookup جارٍ؛ إزالة routing entry وحدها لا تكفي. reconciliation/rebuild عندrestart أوeviction، retry وتأكيد الاستلام بعد نجاح التطبيق، ومراقبة التأخر. التحديث عبرالرسائل غيرمتزامن وليسفوريًا مضمونًا.
+- التحقق: قراءة السياق الحالي ومرجعRedis الرسمي https://redis.io/docs/latest/develop/programmability/eval-intro/ لعمليات المقارنة/الكتابة الذرية؛ توثيق فقط، لا كود أو DB أو broker أو اختبارات تشغيل تغيرت. git diff --check لفحص التوثيق.
+
+## 2026-10-14 — تعديل مدة كاش وجهات قواعد المدارس إلى30 يومًا
+
+- بطلب المستخدم لتقليل ضغط Platform DB: الافتراضي وحد التحقق الأعلى أصبحا2592000 ثانية (30 يومًا ثابتًا)، بدل15 ثانية وحد60. التعديل يشملSchoolRoutingCache وDI وCompose المحلي/الإنتاج بقوالب.env وpreflight؛ absolute TTL بلا تمديد علىhit ولاstale fallback. لا ملفات.env فعلية أو إدخالاتRedis قائمة أو نشر تغيرت؛ الإدخالات القديمة لا تمتد تلقائيًا، وrestart/eviction قد يسببانmiss قبل الشهر.
+- أضيف اختبار قبول مدة الشهر، واختبار الافتراضي30 يومًا وثبات الموعد علىhit، وعدّل رفض الحد إلى2592001. حدّثCURRENT_STATE وADR-055 وNEXT_STEPS ودليليRedis/Docker. إبطال أحداثPlatform ما زال غير منفذ؛ الأولوية قبل إنتاج المدة الشهرية هي الإبطال عندإيقاف/نقلالمدرسة وتغييرالوجهة، معoutbox/version وحمايةسباقfill. الصيانة المؤقتة تعطّل الكاش وتزيلالقديم أوتغيّرnamespace لجميعالنسخ قبلإعادةالتفعيل؛ لاادعاءأن زيادةTTL وحدها تحققذلك.
+- التحقق: dotnet test tests/Mdaresna.Schools.UnitTests/Mdaresna.Schools.UnitTests.csproj --no-restore --filter FullyQualifiedName~SchoolRoutingCacheTests نجح13/13 و1skip لاختبارRedis الحقيقي الاختياري (غيرمشغل في هذهالدفعة)، معbuild ناجح. deploy/tests/Test-ComposeFixtures.ps1 نجح للمحلي والإنتاج ورفضTLS المفقود. git diff --check بلا أخطاءwhitespace مع تحذيراتCRLF القائمة. لا إعادة اختبارحمل أو broker أوDB أوRedis حقيقي مطلوب لهذا التغيير فيالافتراضي والحدود فقط.
+
+## 2026-10-14 — تنفيذ أول مرحلة Redis لكاش وجهات قواعد المدارس
+
+- بطلب المستخدم: أضيف Microsoft.Extensions.Caching.StackExchangeRedis8.0.31 وSchoolRoutingCache إلى Schools resolver؛ cache-aside لبياناتالتوجيه قبلPlatformHTTP، بلاsecret أوconnection string محلول، وحلcredential reference لكلhit، وكودمدرسةموحد وnamespace/authority لعزلالبيئات. TTL مطلق15ثانية (1–60) يبدأقبلupstream؛ Active فقط، بلاnegativecache أوstale fallback. سجلADR-055 وحالةالمشروع والخطواتوالدليلSCHOOL_ROUTING_REDIS.md.
+- ضوابطالأداء: تجميعmiss داخلprocess بأقفالعددها64، وحد16lookup للمنصة وtimeout5s؛ Redis500ms وcooldown5s عندالفشل، معcancellation ومقاييسhit/load/failure ورسائلتحذير بلاsecret/exception content. لاإبطال فوري موصول بأحداثPlatform ولاstampede lock موزع؛ تقادمإيقاف/نقلالمدرسة حتىTTL موثق، وتلكالمرحلة ضمنNEXT_STEPS.
+- Compose يضيفRedis7.4-alpine داخليًا بلاhost port، non-root/read-only/cap_drop/memory/log limits، password منsecret source و128MiB allkeys-lru دونpersistence. مفاتيحRedis/namespace/TTL أضيفتلقوالب.env فقط وpreflight/fixtures ودليلDocker؛ اتصالخارجي يدعمTLS عبرإعدادمزودRedis. لا.env فعلي أوAPI يعمل أوDB/migrations أوmigration worker عُدّل.
+- التحقق: dotnet build Schools API نجح0warnings/errors؛ dotnet test tests/Mdaresna.Schools.UnitTests/Mdaresna.Schools.UnitTests.csproj --no-restore معRedisfixture حقيقي نجح212/212 و1skip لاختبارPoppler السابق، منها12حالةكاش تغطيhit/عزلالمدارسوالمنصات/TTL/تزامن/فشل/cancellation/عدمcache404/تغييرsecret/disabled/config validation وRedisحقيقيمننسختين. أخطاءfixture الأول (duplicate configuration keys) صُححت، واختبارRedis قصير1ثانية عُدل5ثوان لتجنبانتهاءdeadline أثناءwarm-up تحتالحمل؛ النتيجةالنهائيةنجاح.
+- deploy/tests/Test-ComposeFixtures.ps1 نجحللمحليوالإنتاج ورفضTLSالمفقود؛ خدمةRedis فعليةبإعدادCompose التجريبيnon-root/read-only رفضتping بلاauth وأعادتPONG بالمصادقة. حاويتانQA معزولتان فقط ثمأوقفتاوأزيلتا بـ--rm؛ لا نشرإنتاج أوتفعيلمدارسفعلية. git diff --check بلاwhitespace errors معتحذيراتCRLF القائمة.
+
+## 2026-10-14 — التحقق من وجود Redis في النظام الحالي
+
+- بناءً على سؤال المستخدم قبل التنفيذ: Redis غير مدمج في Backend أو compose الحالي؛ بحث محدد عن Redis/StackExchange.Redis/IDistributedCache/ConnectionMultiplexer/HybridCache فيsrc/deploy/tests وcompose لم يرجع نتائج. PlatformSchoolLoginTenantResolver يستدعيPlatform عبرHTTP مباشرة، ومسجل بـAddHttpClient دون طبقةكاش. Redis السابق مقترح لا تنفيذ.
+- التحقق: rg بنمطكلماتدقيق وGet-Content للـresolver/DI؛ docker ps --format يعرض RabbitMQ فقط ولاRedis ضمنالحاوياتالمحليةالعاملة وقتالفحص. لايؤكدذلك غيابخدمةRedis خارجDocker أوعلىاستضافةبعيدة، لكنه يؤكدعدموجودتكاملها فيالمسارالمفحوص. البحثالأول شملDirectory.Packages.props غيرموجود وأعيدبدونه بنجاح؛ لاكود/إعدادات/نشر تغيرت ولاbuild مطلوب.
+
+## 2026-10-14 — توضيح توجيه تحديث قواعد المدارس مع تعدد Backend وDB servers
+
+- سؤال المستخدم عن ربط المدرسة بـdomain عند تعددBackend: نسخSchools API المتكافئة خلفdomain مشترك لا تحتاجربطمدرسةبنسخةAPI؛ المدرسةتحتاجوجهةDB مسجلة (Host/Port/Database/secret reference)، وقدتحتاجDbClusterId لتوجيهworker مقيدبمجموعةDB. مقترحBackendمشترك وسيرفراتDB لمجموعاتحتى500مدرسة لم يثبتباختبارسعة.
+- فحصMigrateSchoolDatabaseV1 وSchoolDatabaseMigrationHandlers وSchoolDatabaseMigrationConsumerService: command يحملOperationId/TenantId/SchoolId/DatabaseName فقط؛ consumer يستخدمSchoolProvisioningDatabase:AdminConnectionString المحلي ويغيرDatabase فقط، معqueue مشتركةschools.database-migrate.v1. لذلك ليسجاهزًالتوزيعقواعدعبرHosts متعددة، وتشغيلنسخباعداداتDB مختلفةعلىqueue نفسهاقديوجهالتحديثللـHost الخطأ.
+- اقتراحانقبلالتنفيذ: worker مركزييحلوجهةDB الموثوقة منregistry حسبالمدرسة ولديهصلاحياتصيانةلكلمجموعة، أوworkers بحسبDbClusterId ورسائل/queues موجهةإليها. تقييدتوازيالمهاجرات ومنعتحديثنفسDB بالتزامن وتوافقإصدارAPI معschema قبلالنشر؛ لا تعديلكودأوعقودرسائلأونشرتم. تحققGet-Content/rg للملفاتالمحددة وgit diff --check للتوثيق، بلااختبارbroker/DB فعلي.
+
+## 2026-10-14 — اعتماد الفصل الكامل بين Family وSchools عبر RabbitMQ
+
+- صحح المستخدم افتراض اعتماد Family مباشرة على Schools: كل تطبيق Backend/DB مستقل، والبيانات في الاتجاهين تمر عبر RabbitMQ وتحفظ محليًا لدى المستقبل. اعتمد ADR-054 وحدث CURRENT_STATE/NEXT_STEPS؛ Family يقرأ محليًا، وSchools ينشر أحداث بياناته ويستقبل أوامر الأسرة ويعيد النتائج دون اعتبار قبول الطلب نجاحًا نهائيًا.
+- نميز استقلال القراءة عن ملكية الحقيقة والاتساق اللاحق: يحتاج التنفيذ Outbox/Inbox وEventId/version وack بعد الحفظ وretry/DLQ وتوجيه مجموعة المدارس وinitial sync/reconciliation، مع سياسة تحديث/حذف/سحب الإتاحة. حمل Family على Schools يأتي من أوامره وإنتاج الأحداث لا استعلامات Family المباشرة. لا بدء تنفيذ Family أو تعديل كود/DB/نشر.
+- التحقق: Get-Content وrg للسياق وقرارات Family، ومراجعة https://www.rabbitmq.com/docs/reliability ؛ توثيق فقط بلا build أو اختبار broker فعلي. فحص git diff --check للتوثيق دون أخطاء whitespace، مع تحذير CRLF القائم.
+
+## 2026-10-14 — تقسيم الاستضافة المقترح إلىRedis/Schools/Platform/Family
+
+- لخّص المستخدم التصور فيRedis server وسيرفراتSchools وPlatform server وFamily server. التقسيم المقصود مجموعات مسؤوليات استضافة؛ ليس إثباتنشر أو تحديدعددنسخالتوافر. هدف500 مدرسة لكلSchools server يبقى مشروطًاباختبارالحمل وتوجيهHTTP/provisioning/migrations، وRedis كاشوجهاتالمدارس لامصدرالحقيقة.
+- يجب إدراج مكانDB والملفات فيميزانيةالسعة: قواعدالمدارس يمكن أنتبقى علىسيرفراتSchools فيتصورالبداية ويشملهاالاختبار؛ Platform databases/Worker/RabbitMQ يحتاجونتوزيعًاصريحًا. Object Storage والنسخالاحتياطية الخارجية خدماتإضافية. Family استضافةمستقلة مستقبلًا، لكنقراءة/كتابةعملياتالطلاب قدتظل علىSchools backend حسبتصميمالتكامل، فلايعني فصلFamily إزالةحملهعنSchools. لا كود/نشر/إعدادات تغيرت، تحقق سياقالمناقشة فقط ولاbuild مطلوب.
+
+## 2026-10-14 — مناقشةRedis لتقليل طلباتSchools إلىPlatform
+
+- اقترح المستخدمRedis لكاش بيانات المدارس؛ التوصية المقترحة cache-aside داخل مسارSchools resolver لبيانات التوجيه فقط (هوية/كود المدرسة، وجهةDB، مزود/TLS ومرجعsecret)، لا كلمات مرور أوconnection strings محلولة أو صلاحيات المدرس. Platform مصدر الحقيقة؛ hit لا يستدعيPlatform وmiss يجلب منه ويحفظ بTTL. وضع الكاش فيPlatform وحده لا يزيلHTTP منSchools.
+- القراءة الموجهة لـSchoolLoginTargetsController وPlatformSchoolLoginTenantResolver تؤكد أنPlatform لا يعيد إلا مدرسةActive وأنresolver يستدعيHTTP كلResolve، بما في ذلكCreateAsync لقاعدة المدرسة وليسlogin وحده. يجب تغطية إيقاف/حذف/نقل المدرسة وتغييرprimary endpoint/مرجعsecret بأحداث موثوقة معoutbox/retry/version؛ TTL حد لتقادم البيانات وليس ضمان تعطيل فوري، والكاش المحلي الاختياري لا يتجاوز انتهاءالكاش الأصلي. حماية تعبئة متزامنة وسباقإبطال/fill ومراقبةhit/miss/fallback.
+- عند تعطلRedis: fallback مضبوط إلىPlatform بtimeouts وحدود توازي، دون عاصفةطلبات؛ عند تعطل الاثنين وغيابنسخةصحيحة رفض مؤقت، دون تمديدبياناتقديمة افتراضيًا. لا نشرRedis أو تعديلكود أو اعتمادTTL نهائي. المرجع https://redis.io/docs/latest/develop/use-cases/cache-aside/ ؛ أوامرGet-Content وrg لملفاتresolver/controller والسياق نجحت، ولاbenchmark أوbuild لهذهالمناقشة.
+
+## 2026-10-14 — توضيح المستخدم لنموذج حمل Schools
+
+- أكد المستخدم أن الحسابات النشطة المقصودة في تقدير السعة هي حسابات المدرسين، لا حسابات الطلاب؛ الطلاب سجلات ترتبط بها حركات الحضور/الغياب والتقييمات والأنشطة والخطة اليومية وتقييم الحصة. كثافة العمل اليومية في هذه المسارات هي أساس التقدير، بينما الاختبارات والخطط السنوية/التيرم/الشهرية/الأسبوعية وبقية إعدادات الحصة أعمال أقل تكرارًا، مع اختبار ذرواتها الدورية منفصلًا.
+- لذلك لا تحوّل أعداد الطلاب إلى مستخدمين متزامنين؛ تستخدم لتقدير حجم الحفظ الجماعي والتاريخ والتدقيق. اختبار هدف500 مدرسة يبنى على المدرسين النشطين/المتزامنين والفصول والطلاب لكل فصل وعدد الحصص وتزامن الحفظ عند حدود الحصص. أي أرقام تزامن أو معدلات طلبات تظل سيناريوهات افتراضية حتى قياس الاستخدام الفعلي؛ لا اعتماد سعة أو تغيير معمارية/إعدادات في هذه المناقشة.
+- التحقق: مراجعة توضيح المستخدم مقابل سياق الحضور وتقييم الحصة والتخطيط الموجود؛ توثيق فقط، بلا أوامر build أو اختبار حمل أو تغيير قاعدة بيانات.
+
+## 2026-10-14 — تقييم مبدئي لاستضافة500 مدرسة على Contabo Cloud VDS XXL
+
+- مناقشة سعة مقترحة فقط: مواصفات الصورة والمصدر الرسمي24vCores/96GB RAM/720GB NVMe/1Gbps تجعل500 مدرسة هدفًا ممكنًا للاختبار في Schools فقط؛ لا benchmark أو حد مضمون. متوسط441 طالب يعني نحو220.5ألف سجل طالب، لا مستخدمين متزامنين؛ الحمل الفعلي من staff وعمليات الحصص والوسائط. مثال تخزين افتراضي2GB/مدرسة يصل1TB قبل DB/backup، لذلك فصل محتوى الملفات عن القرص المحلي ضمن الخطة.
+- فحص موجه كشف: SchoolDbContextFactory يحل وجهة المدرسة عبرPlatformSchoolLoginTenantResolver دونcache في هذا المسار؛ اتصال Platform يظل مؤثرًا رغم فصل الاستضافة. compose يحدSchools API افتراضيًا2CPU/2GB؛ BookPdfRenderer يسمح بعمليتين متوازيتين مع30s timeout. provisioning/migration consumers تستعمل queues مشتركة وإعداد admin محلي، فلا يعد تكرارها توزيعًا آمنًا لمجموعات مدارس؛ يلزم توجيه HTTP ورسائل الإنشاء/التحديث وميزانية اتصالات ومهام تذكير حسب المجموعة. مزودDocument Core الحاليfilesystem؛ S3/MinIO مقترح غير منفذ.
+- التحقق: Get-Content للسياق وملفاتfactory/resolver/renderer/consumers وrg لحدودcompose وpooling نجحت في القراءة؛ راجعنا https://docs.contabo.com/docs/servers-hosting/max-performance-vps/ وhttps://www.npgsql.org/doc/connection-string-parameters.html . أضيف عمل تقييم الحمل إلىNEXT_STEPS؛ لا تعديلات كود/إعدادات/DB أو اختبارات أداء فعلية، ولا قرار اعتماد500 مدرسة ثابتًا.
+
+## 2026-10-14 — تأكيد عدم توافق Android Studio مع AGP الحالي
+
+- صورة Gradle Sync الجديدة تؤكد المانع: المشروع AGP9.0.1 بينما IDE يدعم حتى8.7.2. هذا يفسر عدم اكتمال استيراد Gradle وأخطاء MainActivity داخل IDE؛ تعريف .iml القديم كان قرينة سابقة وليس السبب النهائي المؤكد. البناء بـFlutter نجح في التشخيص السابق، فلا تعديل imports أو downgrade عشوائي.
+- التوجيه: تحديث Android Studio إلى إصدار يدعم AGP9.0، مثل Otter3 Feature Drop2025.2.3 أو إصدار أحدث متوافق وفق جدول Google الرسمي، ثم فتح android وإعادة Sync. لم يُثبت تحديث أو يُغير AGP/Kotlin/Gradle/ملفات IDE؛ التحقق من نص الصورة وجدول Android Developers فقط. تحذيرات KGP/file_picker تُراجع لاحقًا ولا تساوي خطأ عدم توافق IDE.
+
+## 2026-10-14 — تشخيص مراجع MainActivity غير المحلولة في IDE
+
+- فحص Android MainActivity/settings/app Gradle/local SDK: imports وFlutterActivity/MethodChannel صحيحة وManifest يربط .MainActivity. تعريف android/mdaresna_schools_android.iml يشير Android API24 غير مثبت وإلى Flutter for Android، بينما .idea/libraries لا يحتوي هذه المكتبة؛ تعريف المشروع الأعلى يشير API34 الموجود. يرجح أن unresolved android/embedding داخل IDE من عدم استيراد Gradle/مزامنته، لا خطأ في مصدر Activity. لم تعدل .idea أو SDK أو plugins أو imports؛ إرشاد فتح مجلد android كمشروع Gradle ثم Sync وضبط JDK وFlutter SDK.
+- تحقق البناء: Flutter3.44.5/AGP9.0.1؛ build العادي فشل في Kotlin incremental caches لإضافتي file_picker/video_player_android لا unresolved references للـActivity. retry لـ`flutter build apk --debug --no-pub` نجح في46.1s مع GRADLE_OPTS مؤقت يعطل kotlin.incremental ويجعل compiler execution in-process، واستعيد المتغير بعد الأمر دون تنظيف/حذف caches أو تغيير إعداد دائم. APK محلي محدث في build/app/outputs/flutter-apk/app-debug.apk؛ لا تشغيل جهاز أو اختبار FLAG_SECURE فعلي. تحذير file_picker/انتقال KGP قائم؛ Flutter الرسمي يؤكد عدم تفعيل built-in Kotlin على3.44 كحل عشوائي. لا تعديل إصدارات أو ترحيل Kotlin بهذه الدفعة.
+
 ## 2026-10-14 — دليل Word عربي لنشر التطبيقات الخمسة
 
 - بناءً على طلب المستخدم: `docs/deployment/Mdaresna_Five_Applications_DevOps_Deployment_Manual_AR.docx` مرجع DevOps من22 صفحة عربية RTL مع أوامر Bash LTR وجداول وأرقام صفحات وقائمة تسليم. يشرح المشاريع ومساراتها ومتطلبات البيئة وCompose المحلي/الإنتاج والدومينات والأسرار وTLS/AMQPS والصور وDB migrations داخل الشبكة وحساب الإدارة الأول وتحديث المدارس والقبول وترحيل الملفات والنسخ/الاستعادة والتحديث/الرجوع والمراقبة والأعطال. لا قيم أسرار أو اتصال فعلي ولا تشغيل أوامر نشر.

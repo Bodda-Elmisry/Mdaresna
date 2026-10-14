@@ -37,7 +37,7 @@ public sealed class PlatformAccountProfileControllerTests
         Assert.IsType<BadRequestObjectResult>(result);
     }
 
-    private static PlatformAccountProfileController CreateController() => new(null!)
+    private static PlatformAccountProfileController CreateController() => new(null!, new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build())
     {
         ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
     };

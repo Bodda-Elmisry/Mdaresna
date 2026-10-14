@@ -33,7 +33,7 @@ try {
             } elseif (@($service.ports | Where-Object host_ip -NE '127.0.0.1').Count -ne 0) { throw "Non-loopback local port for $name." }
         }
         if ($production) {
-            foreach ($name in @('postgres','rabbitmq')) { if (@($config.services.$name.ports | Where-Object { $null -ne $_ }).Count) { throw 'Infrastructure port leaked.' } }
+            foreach ($name in @('postgres','rabbitmq','redis')) { if (@($config.services.$name.ports | Where-Object { $null -ne $_ }).Count) { throw 'Infrastructure port leaked.' } }
             if ($config.services.rabbitmq.volumes.Count -ne 3) { throw 'Broker persistence or TLS mount missing.' }
             if ($config.services.'platform-api'.environment.ASPNETCORE_ENVIRONMENT -ne 'Production') { throw 'Wrong production environment.' }
             if ($config.services.'schools-api'.environment.SchoolProvisioningConsumer__BrokerUri -notlike 'amqps://*') { throw 'Production AMQPS missing.' }

@@ -17,6 +17,33 @@ x-app-runtime: &app-runtime
   stop_grace_period: 30s
 
 services:
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    user: redis
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 256m
+    cpus: 0.5
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Provide Redis password from secret storage}
+    command: ["sh", "-ec", 'exec redis-server --requirepass "$$REDIS_PASSWORD" --save "" --appendonly no --maxmemory 128mb --maxmemory-policy allkeys-lru']
+    tmpfs:
+      - /data:rw,noexec,nosuid,size=16m
+    healthcheck:
+      test: ["CMD-SHELL", 'REDISCLI_AUTH="$$REDIS_PASSWORD" redis-cli ping | grep -q PONG']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   postgres:
     image: postgres:17-alpine
     restart: unless-stopped
@@ -165,6 +192,12 @@ services:
       SchoolProvisioningDatabase__DatabaseNamePrefix: ${SCHOOL_DB_NAME_PREFIX:-mdaresna_school_}
       SchoolProvisioningDatabase__CredentialSecretReference: env:SCHOOL_DATABASE_CREDENTIALS
       SchoolIdentity__PlatformBaseUrl: http://platform-api:8080
+      SchoolRoutingCache__Enabled: ${SCHOOL_ROUTING_CACHE_ENABLED:-true}
+      SchoolRoutingCacheConsumer__Enabled: ${SCHOOL_ROUTING_CACHE_CONSUMER_ENABLED:-true}
+      SchoolRoutingCacheConsumer__BrokerUri: ${RABBITMQ_BROKER_URI}
+      SchoolRoutingCache__Namespace: ${SCHOOL_ROUTING_CACHE_NAMESPACE:-mdaresna-local}
+      SchoolRoutingCache__RedisConnection: ${SCHOOL_ROUTING_REDIS_CONNECTION:?Provide authenticated Redis connection from secret storage}
+      SchoolRoutingCache__TtlSeconds: ${SCHOOL_ROUTING_CACHE_TTL_SECONDS:-2592000}
       SchoolIdentity__InternalApiKey: ${INTERNAL_API_KEY:?Set INTERNAL_API_KEY in .env.docker}
       SCHOOL_DATABASE_CREDENTIALS: ${SCHOOL_DB_CREDENTIAL_FRAGMENT:?Set SCHOOL_DB_CREDENTIAL_FRAGMENT in .env.docker}
       SchoolIdentity__Jwt__Issuer: ${SCHOOLS_JWT_ISSUER:-mdaresna-schools}

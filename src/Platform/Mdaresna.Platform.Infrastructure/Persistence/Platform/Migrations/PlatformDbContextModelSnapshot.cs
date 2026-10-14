@@ -782,6 +782,12 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.Platform.Migrations
                     b.Property<Guid>("RequestedByAccountId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<long>("RoutingVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()

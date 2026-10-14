@@ -777,6 +777,12 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Pla
                     b.Property<Guid>("RequestedByAccountId")
                         .HasColumnType("uuid");
 
+                    b.Property<long>("RoutingVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()

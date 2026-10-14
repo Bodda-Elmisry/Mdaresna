@@ -1,5 +1,7 @@
 # تشغيل Mdaresna باستخدام Docker
 
+- Redis لكاش وجهات المدارس بمدة30 يومًا، مع تحديث الإدخال بالأحداث وإزالة بيانات التوجيه عند الإيقاف/الحذف، وإصدار وguard لمنع القديم. يلزم backup ومهاجرةPlatform AddSchoolRoutingVersion ثم نشرPlatform API/Worker وSchools وتفعيلconsumer وAMQPS وnamespace موحد لنسخ نفسالمنصة. تفاصيل النشر والحدود في [SCHOOL_ROUTING_REDIS.md](SCHOOL_ROUTING_REDIS.md). الأحداث غيرمتزامنة ويجب مراقبةتأخرها؛ لا يتغير.env الفعلي تلقائيًا.
+
 ## تحديث تجهيز النشر — 2026-10-14
 
 هناك مساران الآن: `docker-compose.yml` محلي مع منافذ loopback فقط، و`docker-compose.production.yml` overlay للإنتاج. لا تشغّل overlay منفردًا. يلزم Docker Compose 2.24.4 أو أحدث بسبب `!reset`. أسماء المشروع والـvolumes السابقة لم تتغير؛ إعادة البناء ليست ترحيل بيانات أو تنفيذ migrations.

@@ -7,6 +7,15 @@ if ($Production) { $composeArgs += @('-f', "$repoRoot/docker-compose.production.
 $configJson = & docker @composeArgs config --format json
 if ($LASTEXITCODE -ne 0) { throw 'Compose configuration could not be resolved.' }
 $config = ($configJson -join "`n") | ConvertFrom-Json
+$routing = $config.services.'schools-api'.environment
+if ($routing.SchoolRoutingCache__Enabled -eq 'true') {
+    if ($routing.SchoolRoutingCacheConsumer__Enabled -ne 'true') { throw 'Monthly routing cache requires the event consumer.' }
+    if ([string]::IsNullOrWhiteSpace($routing.SchoolRoutingCacheConsumer__BrokerUri)) { throw 'Routing cache consumer needs broker configuration.' }
+    $routingTtl = 0
+    if (-not [int]::TryParse($routing.SchoolRoutingCache__TtlSeconds, [ref]$routingTtl) -or $routingTtl -lt 1 -or $routingTtl -gt 2592000) { throw 'School routing cache TTL must be 1-2592000 seconds (30 days).' }
+    if ([string]::IsNullOrWhiteSpace($routing.SchoolRoutingCache__RedisConnection)) { throw 'School routing cache needs Redis connection from secret storage.' }
+}
+if (@($config.services.redis.ports | Where-Object { $null -ne $_ }).Count -gt 0) { throw 'Redis must stay internal.' }
 foreach ($name in @('platform-api','platform-worker','schools-api','platform-web','schools-web')) {
     $service = $config.services.$name
     if (-not $service.read_only -or 'ALL' -notin $service.cap_drop) { throw "$name lacks runtime hardening." }

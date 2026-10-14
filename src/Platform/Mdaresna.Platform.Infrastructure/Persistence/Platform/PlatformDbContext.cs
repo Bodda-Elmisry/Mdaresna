@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Mdaresna.Platform.Infrastructure.Persistence.Platform;
 
-public class PlatformDbContext(DbContextOptions options) : DbContext(options)
+public partial class PlatformDbContext(DbContextOptions options) : DbContext(options)
 {
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<SchoolRegistration> Schools => Set<SchoolRegistration>();
@@ -82,17 +82,19 @@ public class PlatformDbContext(DbContextOptions options) : DbContext(options)
         EnsureAuditEntriesAreAppendOnly();
         EnsurePaymentLedgerIsAppendOnly();
         EnsureUnitEntitlementsAreAppendOnly();
+        PrepareRoutingEventsAsync(false, default).GetAwaiter().GetResult();
         return base.SaveChanges(acceptAllChangesOnSuccess);
     }
 
-    public override Task<int> SaveChangesAsync(
+    public override async Task<int> SaveChangesAsync(
         bool acceptAllChangesOnSuccess,
         CancellationToken cancellationToken = default)
     {
         EnsureAuditEntriesAreAppendOnly();
         EnsurePaymentLedgerIsAppendOnly();
         EnsureUnitEntitlementsAreAppendOnly();
-        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        await PrepareRoutingEventsAsync(true, cancellationToken);
+        return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
     private void EnsureAuditEntriesAreAppendOnly()

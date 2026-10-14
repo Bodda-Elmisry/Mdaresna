@@ -80,6 +80,10 @@ public sealed class SchoolRegistration : AggregateRoot
 
     public DateTimeOffset UpdatedAtUtc { get; private set; }
 
+    public long RoutingVersion { get; private set; }
+
+    public void AdvanceRoutingVersion() => RoutingVersion = checked(RoutingVersion + 1);
+
     public static SchoolRegistration Create(
         SchoolId id,
         TenantId tenantId,

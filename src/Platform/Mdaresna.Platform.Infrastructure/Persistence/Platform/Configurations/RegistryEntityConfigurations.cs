@@ -118,6 +118,7 @@ internal sealed class SchoolRegistrationConfiguration : IEntityTypeConfiguration
         builder.Property(x => x.TenantId)
             .HasConversion(id => id.Value, value => TenantId.From(value));
         builder.Property(x => x.RegistrationRequestId).ValueGeneratedNever();
+        builder.Property(x => x.RoutingVersion).HasDefaultValue(0L).IsConcurrencyToken();
         builder.Property(x => x.Code)
             .HasConversion(code => code.Value, value => SchoolCode.Create(value))
             .HasMaxLength(32)
