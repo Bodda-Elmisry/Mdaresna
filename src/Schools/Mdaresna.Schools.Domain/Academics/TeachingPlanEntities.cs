@@ -42,6 +42,7 @@ public sealed class TeachingPlan
     public TeachingPlan? ParentPlan { get; set; }
     public ICollection<TeachingPlanTarget> Targets { get; set; } = [];
     public ICollection<TeachingPlanItem> Items { get; set; } = [];
+    public ICollection<TeachingPlanDayDetail> DayDetails { get; set; } = [];
     public ICollection<TeachingPlanDocument> Documents { get; set; } = [];
 }
 
@@ -52,6 +53,40 @@ public sealed class TeachingPlanTarget
     public Guid ClassSectionId { get; set; }
     public TeachingPlan TeachingPlan { get; set; } = null!;
     public ClassSection ClassSection { get; set; } = null!;
+}
+
+public sealed class TeachingPlanDayDetail
+{
+    public Guid Id { get; set; }
+    public Guid TeachingPlanId { get; set; }
+    public DateOnly Date { get; set; }
+    public DayOfWeek DayOfWeek { get; set; }
+    public string Details { get; set; } = string.Empty;
+    public TeachingPlan TeachingPlan { get; set; } = null!;
+}
+
+public static class WeeklyPlanDayRules
+{
+    public static DateOnly SaturdayStart(DateOnly date) => date.AddDays(-(((int)date.DayOfWeek + 1) % 7));
+    public static bool IsTermWeek(DateOnly from, DateOnly to, DateOnly termStart, DateOnly termEnd)
+    {
+        var saturday = SaturdayStart(from);
+        var expectedStart = saturday < termStart ? termStart : saturday;
+        var friday = saturday.AddDays(6);
+        return from >= termStart && from <= termEnd && from == expectedStart &&
+            to == (friday > termEnd ? termEnd : friday);
+    }
+    public static bool IsValid(DateOnly from, DateOnly to, IReadOnlyList<(DateOnly Date, string Details)> days) =>
+        from <= to && to.DayNumber - from.DayNumber <= 6 && days.Count is > 0 and <= 7 &&
+        days.Select(x => x.Date).Distinct().Count() == days.Count &&
+        days.All(x => x.Date >= from && x.Date <= to && !string.IsNullOrWhiteSpace(x.Details) && x.Details.Trim().Length <= 4000);
+}
+
+public static class TeachingPlanPeriodRules
+{
+    public static bool Matches(TeachingPlanType type, DateOnly from, DateOnly to, DateOnly start, DateOnly end) =>
+        start <= end && (type == TeachingPlanType.Monthly ? from == start && to == end :
+            type == TeachingPlanType.Weekly && WeeklyPlanDayRules.IsTermWeek(from,to,start,end));
 }
 
 public sealed class TeachingPlanItem

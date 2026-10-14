@@ -20,7 +20,7 @@ public sealed class PlatformStaffController(
     IPlatformRoleCatalog roleCatalog,
     IPlatformStaffManagement management,
     IdentityDbContext identityDb,
-    PlatformDbContext platformDb) : ControllerBase
+    PlatformDbContext platformDb, IConfiguration configuration) : ControllerBase
 {
     [HttpGet("roles")]
     public async Task<IActionResult> ListRoles(
@@ -154,7 +154,7 @@ public sealed class PlatformStaffController(
             .SingleAsync(cancellationToken);
         Response.Headers.CacheControl = "private, no-store";
         Response.Headers["X-Content-Type-Options"] = "nosniff";
-        return File(image.Content, image.ContentType);
+        return File(Mdaresna.Platform.Api.Auth.UploadEncryptionConfiguration.Create(configuration).DecryptImageBytes(image.Content, $"platform/profile/{accountId:N}", configuration.GetValue("UploadEncryption:AllowLegacyRead", true)), image.ContentType);
     }
 
     [HttpPost("{accountId:guid}/roles")]

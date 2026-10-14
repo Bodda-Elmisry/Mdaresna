@@ -49,6 +49,8 @@ public sealed class CurriculumGradeSubject : ISoftDeletableSchoolEntity
     public int TermNumber { get; set; }
     public int WeeklyPeriods { get; set; }
     public bool IsRequired { get; set; } = true;
+    /// <summary>Null marks legacy rows awaiting explicit review. Independent of required/pass policies.</summary>
+    public bool? CountsTowardTotal { get; set; }
     public string? InstructionLanguage { get; set; }
     public int SortOrder { get; set; }
     public bool IsActive { get; set; } = true;

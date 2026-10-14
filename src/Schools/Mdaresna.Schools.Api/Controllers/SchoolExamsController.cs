@@ -440,31 +440,53 @@ public sealed partial class SchoolExamsController(ISchoolDbContextFactory dbFact
     public async Task<IActionResult> Results(Guid id, CancellationToken ct)
     {
         await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
+        if (!await ClassOperationalScope.HasPermission(db, CurrentUserId(), "school.exams.view", ct)) return Forbid();
         var paper = await db.ExamPapers.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id, ct);
         if (paper is null) return NotFound(Failure(404, "exams.paper_not_found", "Exam paper was not found."));
-        if (!await CanAccessSeries(db, paper.ExamSeriesId, ct)) return Forbid();
-        var rows = await db.ExamPaperCandidates.AsNoTracking().Where(x => x.ExamPaperId == id)
+        var teachingAccess = await CanAccessTeachingPaper(db, paper.Id, ct);
+        var delegatedClasses = await DelegatedResultClasses(db, paper.GradeSubjectOfferingId, "exams.view", ct);
+        if (!teachingAccess && !await db.ExamPaperTargets.AnyAsync(x => x.ExamPaperId == id && x.ClassSectionId.HasValue && delegatedClasses.Contains(x.ClassSectionId.Value), ct) &&
+            !await db.ExamPaperCandidates.AnyAsync(x => x.ExamPaperId == id && delegatedClasses.Contains(x.ExamCandidate.ClassSectionIdSnapshot), ct)) return Forbid();
+        var rows = await db.ExamPaperCandidates.AsNoTracking().Where(x => x.ExamPaperId == id &&
+                (teachingAccess || delegatedClasses.Contains(x.ExamCandidate.ClassSectionIdSnapshot)))
             .OrderBy(x => x.ExamCandidate.NameArSnapshot).Select(x => new ExamResultItemResponse(x.Id,
                 x.ExamCandidate.StudentId, x.ExamCandidate.StudentCodeSnapshot, x.ExamCandidate.NameArSnapshot, x.ExamCandidate.NameEnSnapshot,
                 x.ResultAttempts.OrderByDescending(a => a.AttemptNumber).Select(a => (Guid?)a.Id).FirstOrDefault(),
                 x.ResultAttempts.OrderByDescending(a => a.AttemptNumber).Select(a => (ExamResultDisposition?)a.Disposition).FirstOrDefault() ?? ExamResultDisposition.Pending,
                 x.ResultAttempts.OrderByDescending(a => a.AttemptNumber).Select(a => a.Score).FirstOrDefault(),
                 x.ResultAttempts.OrderByDescending(a => a.AttemptNumber).Select(a => a.Notes).FirstOrDefault())).ToArrayAsync(ct);
-        return Ok(ApiResponse<object>.Success(new { paper.ResultsStatus, paper.ResultsRevision, paper.TotalScore, items = rows }, correlationId: HttpContext.TraceIdentifier));
+        var enterClasses = await DelegatedResultClasses(db, paper.GradeSubjectOfferingId, "exams.results.enter", ct);
+        var submitClasses = await DelegatedResultClasses(db, paper.GradeSubjectOfferingId, "exams.results.submit", ct);
+        var canEnter = await ClassOperationalScope.HasPermission(db, CurrentUserId(), "school.exams.results.enter", ct) &&
+            (teachingAccess || delegatedClasses.All(x => enterClasses.Contains(x)));
+        var canSubmit = await ClassOperationalScope.HasPermission(db, CurrentUserId(), "school.exams.results.enter", ct) &&
+            (teachingAccess || (submitClasses.Length > 0 && !await db.ExamPaperCandidates.AnyAsync(x => x.ExamPaperId == id &&
+                !submitClasses.Contains(x.ExamCandidate.ClassSectionIdSnapshot), ct)));
+        return Ok(ApiResponse<object>.Success(new { paper.ResultsStatus, paper.ResultsRevision, paper.TotalScore,
+            expectedUpdatedAtUtc = paper.UpdatedAtUtc, canEnter, canSubmit, items = rows }, correlationId: HttpContext.TraceIdentifier));
     }
 
     [HttpPut("exam-papers/{id:guid}/results"), Authorize(Policy = SchoolPermissionPolicies.ExamsResultsEnter)]
     public async Task<IActionResult> SaveResults(Guid id, [FromBody] SaveExamResultsRequest request, CancellationToken ct)
     {
         await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
+        if (!await ClassOperationalScope.HasPermission(db, CurrentUserId(), "school.exams.results.enter", ct)) return Forbid();
         var paper = await LoadPaper(db, id, ct); if (paper is null) return NotFound(Failure(404, "exams.paper_not_found", "Exam paper was not found."));
-        if (!await CanAccessSeries(db, paper.ExamSeriesId, ct)) return Forbid();
+        var teachingAccess = await CanAccessTeachingPaper(db, paper.Id, ct);
+        var delegatedClasses = await DelegatedResultClasses(db, paper.GradeSubjectOfferingId, "exams.results.enter", ct);
+        if (!teachingAccess && delegatedClasses.Length == 0) return Forbid();
         if (!SchoolExamRules.CanEnterResults(paper.ResultsStatus)) return Conflict(Failure(409, "exams.results_not_open", "Results are not open for entry."));
+        if (request.ExpectedUpdatedAtUtc != paper.UpdatedAtUtc)
+            return Conflict(Failure(409, "exams.results_conflict", "Results changed. Reload before saving."));
         if (request.Items is null || request.Items.Count == 0 || request.Items.Select(x => x.ExamPaperCandidateId).Distinct().Count() != request.Items.Count)
             return BadRequest(Failure(400, "exams.results_invalid", "Submit one valid result per candidate."));
         var ids = request.Items.Select(x => x.ExamPaperCandidateId).ToArray(); var candidates = paper.Candidates.Where(x => ids.Contains(x.Id)).ToArray();
         if (candidates.Length != ids.Length) return BadRequest(Failure(400, "exams.candidate_not_found", "One or more candidates do not belong to this paper."));
+        if (!teachingAccess && await db.ExamPaperCandidates.AnyAsync(x => ids.Contains(x.Id) &&
+                !delegatedClasses.Contains(x.ExamCandidate.ClassSectionIdSnapshot), ct)) return Forbid();
+        var before = candidates.Select(x => new { x.Id, Attempts = x.ResultAttempts.Select(a => new { a.Disposition, a.Score, a.Notes, a.MarkerUserId }).ToArray() }).ToArray();
         var now = DateTimeOffset.UtcNow; var marker = CurrentUserId();
+        paper.UpdatedAtUtc = now;
         foreach (var item in request.Items)
         {
             if (!SchoolExamRules.HasValidResult(item.Disposition, item.Score, paper.TotalScore) || item.Notes?.Trim().Length > 2000)
@@ -479,8 +501,10 @@ public sealed partial class SchoolExamsController(ISchoolDbContextFactory dbFact
             attempt.Notes = Clean(item.Notes, 2000); attempt.MarkerUserId = marker; attempt.MarkedAtUtc = now; attempt.UpdatedAtUtc = now;
         }
         AddAudit(db, paper.ExamSeries, "ResultsSaved", now, paperId: paper.Id,
-            payload: JsonSerializer.Serialize(new { Count = request.Items.Count }));
-        await db.SaveChangesAsync(ct); return Ok(ApiResponse<object>.Success(new { savedCount = request.Items.Count }, correlationId: HttpContext.TraceIdentifier));
+            payload: JsonSerializer.Serialize(new { Before = before, After = request.Items }));
+        try { await db.SaveChangesAsync(ct); }
+        catch (DbUpdateConcurrencyException) { return Conflict(Failure(409, "exams.results_conflict", "Results changed. Reload before saving.")); }
+        return Ok(ApiResponse<object>.Success(new { savedCount = request.Items.Count }, correlationId: HttpContext.TraceIdentifier));
     }
 
     [HttpPost("exam-papers/{id:guid}/results/submit"), Authorize(Policy = SchoolPermissionPolicies.ExamsResultsEnter)]
@@ -688,7 +712,13 @@ public sealed partial class SchoolExamsController(ISchoolDbContextFactory dbFact
     {
         await using var db = await RequireDb(ct); if (db is null) return Unauthorized(); var paper = await LoadPaper(db, id, ct);
         if (paper is null) return NotFound(Failure(404, "exams.paper_not_found", "Exam paper was not found."));
-        if (!await CanAccessSeries(db, paper.ExamSeriesId, ct)) return Forbid();
+        if (!await CanAccessTeachingPaper(db, paper.Id, ct))
+        {
+            if (next != ExamResultsStatus.PendingApproval) return Forbid();
+            var delegatedClasses = await DelegatedResultClasses(db, paper.GradeSubjectOfferingId, "exams.results.submit", ct);
+            if (delegatedClasses.Length == 0 || await db.ExamPaperCandidates.AnyAsync(x => x.ExamPaperId == id &&
+                !delegatedClasses.Contains(x.ExamCandidate.ClassSectionIdSnapshot), ct)) return Forbid();
+        }
         if (paper.ResultsStatus != expected) return Conflict(Failure(409, "exams.results_transition_invalid", "Results are not in the required state."));
         if (next == ExamResultsStatus.PendingApproval && paper.Candidates.Any(x => x.ResultAttempts.All(a => a.Disposition == ExamResultDisposition.Pending)))
             return Conflict(Failure(409, "exams.results_incomplete", "Enter a final state or score for every candidate first."));
@@ -780,6 +810,18 @@ public sealed partial class SchoolExamsController(ISchoolDbContextFactory dbFact
 
     private IQueryable<ExamPaper> ApplyScope(SchoolsDbContext db, IQueryable<ExamPaper> query)
     {
+        var userId = CurrentUserId();
+        var today = clock.Now(db.SchoolInformation.AsNoTracking().Select(x => x.TimeZoneId).FirstOrDefault() ?? "UTC").Date;
+        var grants = ClassOperationalScope.Current(db, userId, today).Where(g => g.Action == "exams.view" &&
+            db.LocalUserRoles.Any(r => r.UserId == userId && r.User.Status == LocalUserStatus.Active && r.Role.IsActive &&
+                r.Role.Permissions.Any(p => p.Permission.IsActive && p.Permission.Code == "school.exams.view")));
+        var teaching = ApplyTeachingScope(db, db.ExamPapers).Select(x => x.Id);
+        return query.Where(p => teaching.Contains(p.Id) || p.Targets.Any(t => t.ClassSectionId.HasValue && grants.Any(g =>
+            g.ClassSectionId == t.ClassSectionId && g.GradeSubjectOfferingId == p.GradeSubjectOfferingId)));
+    }
+
+    private IQueryable<ExamPaper> ApplyTeachingScope(SchoolsDbContext db, IQueryable<ExamPaper> query)
+    {
         if (User.HasClaim(SchoolClaimTypes.Role, SchoolIdentitySeed.SchoolAdminRoleCode)) return query;
         var userId = CurrentUserId(); var today = DateOnly.FromDateTime(DateTime.UtcNow);
         return query.Where(paper => paper.Targets.Any(target => target.ClassSectionId.HasValue &&
@@ -836,12 +878,25 @@ public sealed partial class SchoolExamsController(ISchoolDbContextFactory dbFact
 
     private async Task<bool> CanAccessSeries(SchoolsDbContext db, Guid seriesId, CancellationToken ct)
     {
-        if (await IsAdmin(db, ct)) return true; return await ApplyScope(db, db.ExamPapers.AsNoTracking()).AnyAsync(x => x.ExamSeriesId == seriesId, ct);
+        if (await IsAdmin(db, ct)) return true; return await ApplyTeachingScope(db, db.ExamPapers.AsNoTracking()).AnyAsync(x => x.ExamSeriesId == seriesId, ct);
+    }
+
+    private async Task<bool> CanAccessTeachingPaper(SchoolsDbContext db, Guid paperId, CancellationToken ct) =>
+        await IsAdmin(db, ct) || await ApplyTeachingScope(db, db.ExamPapers.AsNoTracking()).AnyAsync(x => x.Id == paperId, ct);
+
+    private async Task<Guid[]> DelegatedResultClasses(SchoolsDbContext db, Guid offeringId, string action, CancellationToken ct)
+    {
+        if (!ClassOperationalActions.Permissions.TryGetValue(action, out var permission) ||
+            !await ClassOperationalScope.HasPermission(db, CurrentUserId(), permission, ct)) return [];
+        var today = await ClassOperationalScope.Today(db, ct);
+        return await ClassOperationalScope.Current(db, CurrentUserId(), today).Where(x => x.Action == action &&
+            x.GradeSubjectOfferingId == offeringId).Select(x => x.ClassSectionId).Distinct().ToArrayAsync(ct);
     }
 
     private async Task<bool> CanAccessClass(SchoolsDbContext db, Guid classSectionId, CancellationToken ct)
     {
         if (await IsAdmin(db, ct)) return true; var userId = CurrentUserId(); var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        if ((await ClassOperationalScope.VisibleClasses(db, userId, ct)).Contains(classSectionId)) return true;
         return await db.ClassSectionTeacherScopes.AsNoTracking().AnyAsync(x => x.ClassSectionId == classSectionId && x.IsActive && !x.IsDeleted &&
             x.TeacherGradeSubjectScope.IsActive && !x.TeacherGradeSubjectScope.IsDeleted && x.TeacherGradeSubjectScope.TeacherUserId == userId, ct) ||
             await db.DepartmentLeaderships.AsNoTracking().AnyAsync(x => x.UserId == userId && x.IsActive && !x.IsDeleted && x.StartsOn <= today &&
@@ -913,7 +968,7 @@ public sealed record SaveExamAttendanceRequest(IReadOnlyList<SaveExamAttendanceI
 public sealed record SaveExamAttendanceItem(Guid AssignmentId, ExamAttendanceStatus Status, TimeOnly? ArrivedAt, string? Notes);
 public sealed record ExamResultItemResponse(Guid ExamPaperCandidateId, Guid StudentId, string StudentCode, string FullNameAr,
     string FullNameEn, Guid? AttemptId, ExamResultDisposition Disposition, decimal? Score, string? Notes);
-public sealed record SaveExamResultsRequest(IReadOnlyList<SaveExamResultItem> Items);
+public sealed record SaveExamResultsRequest(IReadOnlyList<SaveExamResultItem> Items, DateTimeOffset? ExpectedUpdatedAtUtc = null);
 public sealed record SaveExamResultItem(Guid ExamPaperCandidateId, ExamResultDisposition Disposition, decimal? Score, string? Notes);
 public sealed record ExamReasonRequest(string Reason);
 public sealed record ExamConflictResponse(string Code, string Severity, Guid WindowId, string Message);

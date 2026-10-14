@@ -42,6 +42,7 @@ internal sealed class TeachingPlanConfiguration : IEntityTypeConfiguration<Teach
     public void Configure(EntityTypeBuilder<TeachingPlan> b)
     {
         b.ToTable("teaching_plans"); b.HasKey(x => x.Id);
+        b.Property(x => x.Revision).IsConcurrencyToken();
         b.Property(x => x.Type).HasConversion<string>().HasMaxLength(24);
         b.Property(x => x.Status).HasConversion<string>().HasMaxLength(24);
         b.Property(x => x.SourceAuthority).HasConversion<string>().HasMaxLength(40);
@@ -71,6 +72,16 @@ internal sealed class TeachingPlanItemConfiguration : IEntityTypeConfiguration<T
     {
         b.ToTable("teaching_plan_items"); b.HasKey(x => x.Id); b.Property(x => x.Title).HasMaxLength(250).IsRequired(); b.Property(x => x.Details).HasMaxLength(4000);
         b.HasOne(x => x.TeachingPlan).WithMany(x => x.Items).HasForeignKey(x => x.TeachingPlanId).OnDelete(DeleteBehavior.Restrict);
+    }
+}
+internal sealed class TeachingPlanDayDetailConfiguration : IEntityTypeConfiguration<TeachingPlanDayDetail>
+{
+    public void Configure(EntityTypeBuilder<TeachingPlanDayDetail> b)
+    {
+        b.ToTable("teaching_plan_day_details"); b.HasKey(x => x.Id);
+        b.Property(x => x.Details).HasMaxLength(4000).IsRequired();
+        b.HasIndex(x => new { x.TeachingPlanId, x.Date }).IsUnique();
+        b.HasOne(x => x.TeachingPlan).WithMany(x => x.DayDetails).HasForeignKey(x => x.TeachingPlanId).OnDelete(DeleteBehavior.Restrict);
     }
 }
 internal sealed class TeachingPlanDocumentConfiguration : IEntityTypeConfiguration<TeachingPlanDocument>

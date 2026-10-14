@@ -18,6 +18,9 @@ namespace Mdaresna.Schools.Infrastructure.Persistence;
 /// </summary>
 public class SchoolsDbContext(DbContextOptions options) : DbContext(options)
 {
+    public DbSet<ClassOperationalAssignment> ClassOperationalAssignments => Set<ClassOperationalAssignment>();
+    public DbSet<ClassOperationalGrant> ClassOperationalGrants => Set<ClassOperationalGrant>();
+    public DbSet<ClassOperationalAssignmentAudit> ClassOperationalAssignmentAudits => Set<ClassOperationalAssignmentAudit>();
     public DbSet<Person> Persons => Set<Person>();
     public DbSet<PersonContact> PersonContacts => Set<PersonContact>();
     public DbSet<PersonProfileImage> PersonProfileImages => Set<PersonProfileImage>();
@@ -67,6 +70,7 @@ public class SchoolsDbContext(DbContextOptions options) : DbContext(options)
     public DbSet<CurriculumGradeSubject> CurriculumGradeSubjects => Set<CurriculumGradeSubject>();
     public DbSet<Book> Books => Set<Book>();
     public DbSet<BookVersion> BookVersions => Set<BookVersion>();
+    public DbSet<BookVersionDigitalDocument> BookVersionDigitalDocuments => Set<BookVersionDigitalDocument>();
     public DbSet<BookRole> BookRoles => Set<BookRole>();
     public DbSet<CurriculumSubjectBook> CurriculumSubjectBooks => Set<CurriculumSubjectBook>();
     public DbSet<GradeSubjectOffering> GradeSubjectOfferings => Set<GradeSubjectOffering>();

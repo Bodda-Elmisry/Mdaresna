@@ -12,7 +12,7 @@ namespace Mdaresna.Schools.Api.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/schools/v1/me/profile")]
-public sealed class SchoolAccountProfileController(ISchoolDbContextFactory dbFactory) : ControllerBase
+public sealed class SchoolAccountProfileController(ISchoolDbContextFactory dbFactory, IConfiguration configuration) : ControllerBase
 {
     private const int MaximumImageBytes = 2 * 1024 * 1024;
 
@@ -66,7 +66,7 @@ public sealed class SchoolAccountProfileController(ISchoolDbContextFactory dbFac
         if (image is null) return NotFoundResponse();
         Response.Headers.CacheControl = "private, no-store";
         Response.Headers["X-Content-Type-Options"] = "nosniff";
-        return File(image.Content, image.ContentType);
+        return File(Mdaresna.Schools.Api.Documents.UploadEncryptionConfiguration.Create(configuration).DecryptImageBytes(image.Content, ImageScope(CurrentPersonId()), configuration.GetValue("UploadEncryption:AllowLegacyRead", true)), image.ContentType);
     }
 
     [HttpPost("image")]
@@ -87,6 +87,7 @@ public sealed class SchoolAccountProfileController(ISchoolDbContextFactory dbFac
         if (db is null) return Unauthorized();
         var personId = CurrentPersonId();
         if (!await db.Persons.AsNoTracking().AnyAsync(x => x.Id == personId, cancellationToken)) return NotFoundResponse();
+        content = Mdaresna.Schools.Api.Documents.UploadEncryptionConfiguration.Create(configuration).EncryptBytes(content, ImageScope(personId));
         var image = await db.PersonProfileImages.SingleOrDefaultAsync(x => x.PersonId == personId, cancellationToken);
         var now = DateTimeOffset.UtcNow;
         if (image is null)
@@ -112,6 +113,7 @@ public sealed class SchoolAccountProfileController(ISchoolDbContextFactory dbFac
 
     private Task<SchoolsDbContext?> RequireDb(CancellationToken cancellationToken) =>
         dbFactory.CreateAsync(User.FindFirst(SchoolClaimTypes.SchoolCode)?.Value ?? string.Empty, cancellationToken);
+    private string ImageScope(Guid personId) => $"schools/{User.FindFirst(SchoolClaimTypes.SchoolCode)?.Value}/profile/{personId:N}";
     private Guid CurrentPersonId() => Guid.TryParse(User.FindFirst(SchoolClaimTypes.PersonId)?.Value, out var id) && id != Guid.Empty
         ? id : throw new InvalidOperationException("A validated school person is required.");
     private IActionResult InvalidProfile() => BadRequest(ApiResponse<object?>.Failure(400, "profile.invalid",

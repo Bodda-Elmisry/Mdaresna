@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+using Mdaresna.SharedKernel;
 
 namespace Mdaresna.Schools.Api.Documents;
 
@@ -7,30 +7,46 @@ public interface ISchoolDocumentStorage
 {
     Task<StoredSchoolDocument> SaveAsync(string schoolCode, Guid documentId, Guid versionId, Stream content, string extension, CancellationToken ct);
     Task<Stream?> OpenReadAsync(string storageKey, CancellationToken ct);
+    Task DeleteAsync(string storageKey, CancellationToken ct);
 }
 
 public sealed class LocalSchoolDocumentStorage(IConfiguration configuration, IWebHostEnvironment environment) : ISchoolDocumentStorage
 {
     private readonly string _root = ResolveRoot(configuration["SchoolDocuments:StorageRoot"], environment.ContentRootPath);
 
+    private readonly UploadedFileCipher _cipher = UploadEncryptionConfiguration.Create(configuration);
+
     public async Task<StoredSchoolDocument> SaveAsync(string schoolCode, Guid documentId, Guid versionId, Stream content, string extension, CancellationToken ct)
     {
         var safeSchool = new string(schoolCode.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant();
         if (string.IsNullOrWhiteSpace(safeSchool)) throw new InvalidOperationException("Invalid school storage scope.");
-        var key = $"schools/{safeSchool}/documents/{documentId:N}/{versionId:N}{extension.ToLowerInvariant()}";
+        var key = $"schools/{safeSchool}/documents/{documentId:N}/{versionId:N}{extension.ToLowerInvariant()}.enc";
         var path = Resolve(key); Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await using var output = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, true);
-        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        var buffer = new byte[81920]; long size = 0; int read;
-        while ((read = await content.ReadAsync(buffer.AsMemory(0, buffer.Length), ct)) > 0)
-        { await output.WriteAsync(buffer.AsMemory(0, read), ct); hash.AppendData(buffer, 0, read); size += read; }
-        return new(key, Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant(), size);
+        try {
+            var result = await _cipher.EncryptAsync(content, output, key, ct);
+            return new(key, result.Sha256, result.Size);
+        }
+        catch {
+            await output.DisposeAsync();
+            File.Delete(path);
+            throw;
+        }
     }
 
     public Task<Stream?> OpenReadAsync(string storageKey, CancellationToken ct)
     {
         var path = Resolve(storageKey);
-        return Task.FromResult<Stream?>(File.Exists(path) ? new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, true) : null);
+        if (!File.Exists(path)) return Task.FromResult<Stream?>(null);
+        var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, true);
+        try { return Task.FromResult<Stream?>(_cipher.OpenRead(stream, storageKey, configuration.GetValue("UploadEncryption:AllowLegacyRead", true) && !storageKey.EndsWith(".enc", StringComparison.OrdinalIgnoreCase))); }
+        catch { stream.Dispose(); throw; }
+    }
+
+    public Task DeleteAsync(string storageKey, CancellationToken ct)
+    {
+        File.Delete(Resolve(storageKey));
+        return Task.CompletedTask;
     }
 
     private string Resolve(string key)

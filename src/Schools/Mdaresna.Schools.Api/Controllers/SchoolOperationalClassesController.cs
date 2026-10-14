@@ -27,12 +27,13 @@ public sealed class SchoolOperationalClassesController(ISchoolDbContextFactory d
             x.UserId == currentUserId && x.RoleId == SchoolIdentitySeed.SchoolAdminRoleId && x.Role.IsActive, ct);
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var managedDepartmentIds = isSchoolAdmin ? [] : await SchoolDepartmentScope.ManagedDepartmentIdsAsync(User, db, today, ct);
+        var delegatedClasses = await ClassOperationalScope.VisibleClasses(db, currentUserId, ct);
 
         var query = db.ClassSections.AsNoTracking().Where(x =>
             x.IsActive && x.GradeOffering.IsActive && x.GradeOffering.Status != GradeOfferingStatus.Closed);
         if (!isSchoolAdmin)
         {
-            query = query.Where(section => db.ClassSectionTeacherScopes.Any(scope =>
+            query = query.Where(section => delegatedClasses.Contains(section.Id) || db.ClassSectionTeacherScopes.Any(scope =>
                 scope.ClassSectionId == section.Id && scope.IsActive &&
                 scope.TeacherGradeSubjectScope.IsActive &&
                 (scope.TeacherGradeSubjectScope.TeacherUserId == currentUserId ||

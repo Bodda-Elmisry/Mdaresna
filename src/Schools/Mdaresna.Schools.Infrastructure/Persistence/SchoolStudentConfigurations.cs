@@ -25,6 +25,12 @@ internal sealed class StudentAttendanceRegisterConfiguration : IEntityTypeConfig
     public void Configure(EntityTypeBuilder<StudentAttendanceRegister> b)
     {
         b.ToTable("student_attendance_registers"); b.HasKey(x => x.Id);
+        b.Property(x => x.Revision).IsConcurrencyToken();
+        b.Property(x => x.PrimaryTeacherNameSnapshot).HasMaxLength(200);
+        b.Property(x => x.ActualTeacherNameSnapshot).HasMaxLength(200);
+        b.Property(x => x.LastEditedByNameSnapshot).HasMaxLength(200);
+        b.Property(x => x.SubjectNameSnapshot).HasMaxLength(200);
+        b.Property(x => x.RecordedByKindSnapshot).HasMaxLength(32);
         b.Property(x => x.UnitKey).HasMaxLength(64).IsRequired();
         b.Property(x => x.Mode).HasConversion<string>().HasMaxLength(24);
         b.Property(x => x.TimeZoneIdSnapshot).HasMaxLength(100).IsRequired();

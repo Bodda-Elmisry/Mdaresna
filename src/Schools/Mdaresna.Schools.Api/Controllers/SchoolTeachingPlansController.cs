@@ -35,14 +35,14 @@ public sealed class SchoolTeachingPlansController(
         var sections = await AccessibleSections(db, ct)
             .OrderByDescending(x => x.GradeOffering.ProgramAcademicYear.StartDate).ThenBy(x => x.NameAr)
             .Select(x => new TeachingPlanClassOption(x.Id, x.NameAr, x.NameEn, x.GradeOfferingId,
-                x.GradeOffering.ProgramAcademicYearId, x.GradeOffering.ProgramAcademicYear.NameAr, x.GradeOffering.ProgramAcademicYear.NameEn,
+                x.GradeOffering.ProgramAcademicYearId, x.GradeOffering.ProgramAcademicYear.AcademicYearDefinition.NameAr, x.GradeOffering.ProgramAcademicYear.AcademicYearDefinition.NameEn,
                 x.GradeOffering.ProgramAcademicYear.StartDate, x.GradeOffering.ProgramAcademicYear.EndDate,
                 x.GradeOffering.GradeLevel.NameAr, x.GradeOffering.GradeLevel.NameEn, schoolLocalDate,
                 x.GradeOffering.SubjectOfferings.Where(s => s.IsActive && s.Status != GradeSubjectOfferingStatus.Closed)
                     .OrderBy(s => s.CurriculumGradeSubject.SortOrder)
                     .Select(s => new TeachingPlanSubjectOption(s.Id, s.CurriculumGradeSubject.Subject.NameAr, s.CurriculumGradeSubject.Subject.NameEn)).ToArray(),
                 x.GradeOffering.ProgramAcademicYear.Terms.Where(t => t.IsActive).OrderBy(t => t.SortOrder)
-                    .Select(t => new TeachingPlanTermOption(t.Id, t.NameAr, t.NameEn, t.StartDate, t.EndDate)).ToArray()))
+                    .Select(t => new TeachingPlanTermOption(t.Id, t.NameAr, t.NameEn, t.StartDate, t.EndDate) { Periods = t.Periods.Where(p => p.IsActive && p.StartDate >= t.StartDate && p.EndDate <= t.EndDate).OrderBy(p => p.SortOrder).ThenBy(p => p.StartDate).Select(p => new TeachingPlanPeriodOption(p.Id,p.NameAr,p.NameEn,p.StartDate,p.EndDate)).ToArray() }).ToArray()))
             .ToArrayAsync(ct);
         return Ok(Success(sections));
     }
@@ -84,13 +84,16 @@ public sealed class SchoolTeachingPlansController(
         )).SingleAsync(ct);
         var returnReason = await db.TeachingPlanAudits.AsNoTracking().Where(a => a.TeachingPlanId == id && a.Action == "Returned")
             .OrderByDescending(a => a.CreatedAtUtc).Select(a => a.Details).FirstOrDefaultAsync(ct);
-        return Ok(Success(row with { ReturnReason = returnReason }));
+        var days = await db.Set<TeachingPlanDayDetail>().AsNoTracking().Where(x => x.TeachingPlanId == id).OrderBy(x => x.Date)
+            .Select(x => new SaveTeachingPlanDayRequest(x.Date, x.Details)).ToArrayAsync(ct);
+        return Ok(Success(row with { ReturnReason = returnReason, DayDetails = days }));
     }
 
     [Authorize(Policy = SchoolPermissionPolicies.AcademicsManage), HttpPost]
     public async Task<IActionResult> Create([FromBody] SaveTeachingPlanRequest request, CancellationToken ct)
     {
         await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
+        request = await ResolveCalendarPeriod(db, request, ct);
         var validation = await Validate(db, request, null, ct); if (validation.Error is not null) return validation.Error;
         var now = DateTimeOffset.UtcNow; var userId = CurrentUserId();
         var plan = new TeachingPlan { Id = Guid.NewGuid(), Type = request.Type, ProgramAcademicYearId = validation.ProgramYearId,
@@ -98,8 +101,10 @@ public sealed class SchoolTeachingPlansController(
             AcademicTermId = request.AcademicTermId, ParentPlanId = request.ParentPlanId, Details = request.Details.Trim(),
             SourceAuthority = request.SourceAuthority, SourceReference = Clean(request.SourceReference), FromDate = request.FromDate,
             ToDate = request.ToDate, CreatedByUserId = userId, CreatedAtUtc = now, UpdatedAtUtc = now };
-        (plan.TitleAr, plan.TitleEn) = Titles(request.Type, request.FromDate, request.ToDate, validation.SubjectAr, validation.SubjectEn, validation.TermAr, validation.TermEn, validation.TermStart);
-        AddChildren(plan, request, now); db.TeachingPlans.Add(plan); Audit(db, plan.Id, "Created", userId, now);
+        var year = await db.ProgramAcademicYears.Where(x => x.Id == validation.ProgramYearId).Select(x => new { x.AcademicYearDefinition.NameAr, x.AcademicYearDefinition.NameEn }).SingleAsync(ct);
+        var period = await PlanPeriod(db, request, ct);
+        (plan.TitleAr, plan.TitleEn) = Titles(request.Type, request.FromDate, request.ToDate, validation.SubjectAr, validation.SubjectEn, validation.TermAr, validation.TermEn, validation.TermStart, year.NameAr, year.NameEn, period?.NameAr, period?.NameEn);
+        AddChildren(plan, request, now); ApplyDays(db, plan, request.DayDetails); db.TeachingPlans.Add(plan); Audit(db, plan.Id, "Created", userId, now);
         try { await db.SaveChangesAsync(ct); }
         catch (DbUpdateConcurrencyException) { return Conflict(Failure(409, "plans.changed", "The plan changed. Reload its current state before continuing.")); }
         return Ok(Success(new { plan.Id, plan.TitleAr, plan.TitleEn }));
@@ -109,17 +114,24 @@ public sealed class SchoolTeachingPlansController(
     public async Task<IActionResult> Update(Guid id, [FromBody] SaveTeachingPlanRequest request, CancellationToken ct)
     {
         await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
-        var plan = await db.TeachingPlans.Include(x => x.Targets).Include(x => x.Items).SingleOrDefaultAsync(x => x.Id == id, ct);
+        var plan = await db.TeachingPlans.Include(x => x.Targets).Include(x => x.Items).Include(x => x.DayDetails).SingleOrDefaultAsync(x => x.Id == id, ct);
         if (plan is null || !await CanAccessPlan(db, id, ct)) return NotFound(Failure(404, "plans.not_found", "Teaching plan was not found."));
         if (plan.Status != TeachingPlanStatus.Draft) return Conflict(Failure(409, "plans.draft_only", "Only a draft plan can be edited."));
+        if (request.DayDetails is not null && request.ExpectedRevision is null) return Conflict(Failure(409, "plans.revision_required", "Send the current plan revision when editing days."));
+        if (request.ExpectedRevision.HasValue && request.ExpectedRevision != plan.Revision) return Conflict(Failure(409, "plans.changed", "Reload the latest plan before editing."));
+        if (request.DayDetails is null && plan.DayDetails.Count > 0)
+            request = request with { DayDetails = plan.DayDetails.Select(x => new SaveTeachingPlanDayRequest(x.Date, x.Details)).ToArray() };
+        request = await ResolveCalendarPeriod(db, request, ct);
         var validation = await Validate(db, request, id, ct); if (validation.Error is not null) return validation.Error;
         plan.Type=request.Type; plan.ProgramAcademicYearId=validation.ProgramYearId; plan.GradeOfferingId=validation.GradeOfferingId;
         plan.GradeSubjectOfferingId=request.GradeSubjectOfferingId; plan.AcademicTermId=request.AcademicTermId; plan.ParentPlanId=request.ParentPlanId;
         plan.Details=request.Details.Trim(); plan.SourceAuthority=request.SourceAuthority; plan.SourceReference=Clean(request.SourceReference);
         plan.FromDate=request.FromDate; plan.ToDate=request.ToDate; plan.UpdatedAtUtc=DateTimeOffset.UtcNow; plan.Revision++;
-        (plan.TitleAr, plan.TitleEn)=Titles(request.Type,request.FromDate,request.ToDate,validation.SubjectAr,validation.SubjectEn,validation.TermAr,validation.TermEn,validation.TermStart);
+        var year = await db.ProgramAcademicYears.Where(x => x.Id == validation.ProgramYearId).Select(x => new { x.AcademicYearDefinition.NameAr, x.AcademicYearDefinition.NameEn }).SingleAsync(ct);
+        var period = await PlanPeriod(db, request, ct);
+        (plan.TitleAr, plan.TitleEn)=Titles(request.Type,request.FromDate,request.ToDate,validation.SubjectAr,validation.SubjectEn,validation.TermAr,validation.TermEn,validation.TermStart,year.NameAr,year.NameEn,period?.NameAr,period?.NameEn);
         db.TeachingPlanTargets.RemoveRange(plan.Targets); db.TeachingPlanItems.RemoveRange(plan.Items); plan.Targets=[]; plan.Items=[];
-        AddChildren(plan,request,plan.UpdatedAtUtc); Audit(db,id,"Updated",CurrentUserId(),plan.UpdatedAtUtc);
+        AddChildren(plan,request,plan.UpdatedAtUtc); ApplyDays(db, plan, request.DayDetails); Audit(db,id,"Updated",CurrentUserId(),plan.UpdatedAtUtc);
         try { await db.SaveChangesAsync(ct); }
         catch (DbUpdateConcurrencyException) { return Conflict(Failure(409, "plans.changed", "The plan changed. Reload its current state before continuing.")); }
         return Ok(Success(new { plan.Id, plan.TitleAr, plan.TitleEn }));
@@ -207,7 +219,11 @@ public sealed class SchoolTeachingPlansController(
 
     private async Task<(IActionResult? Error, Guid ProgramYearId, Guid GradeOfferingId, string SubjectAr, string SubjectEn, string? TermAr, string? TermEn, DateOnly? TermStart)> Validate(SchoolsDbContext db, SaveTeachingPlanRequest r, Guid? editingId, CancellationToken ct)
     {
-        if(r.FromDate>r.ToDate || string.IsNullOrWhiteSpace(r.Details) || r.Details.Trim().Length > 8000)return (BadRequest(Failure(400,"plans.invalid_period","Plan details of up to 8000 characters and a valid date range are required.")),default,default,"","",null,null,null);
+        var hasDays = r.DayDetails is { Count: > 0 };
+        if ((r.Type != TeachingPlanType.Weekly && hasDays) || (hasDays && !WeeklyPlanDayRules.IsValid(r.FromDate, r.ToDate, r.DayDetails!.Select(x => (x.Date, x.Details)).ToArray())) ||
+            (r.Type == TeachingPlanType.Weekly && (r.DayDetails is not null || editingId is null) && !hasDays))
+            return (BadRequest(Failure(400,"plans.days_invalid","A weekly plan requires at least one unique day within its week, with up to 4000 characters per day.")),default,default,"","",null,null,null);
+        if(r.FromDate>r.ToDate || (!hasDays && string.IsNullOrWhiteSpace(r.Details)) || r.Details.Trim().Length > 8000)return (BadRequest(Failure(400,"plans.invalid_period","Plan details of up to 8000 characters and a valid date range are required.")),default,default,"","",null,null,null);
         var offering=await db.GradeSubjectOfferings.AsNoTracking().Where(x=>x.Id==r.GradeSubjectOfferingId && x.IsActive && x.GradeOffering.IsActive)
             .Select(x=>new{x.GradeOfferingId,x.GradeOffering.ProgramAcademicYearId,YearStart=x.GradeOffering.ProgramAcademicYear.StartDate,YearEnd=x.GradeOffering.ProgramAcademicYear.EndDate,
                 SubjectAr=x.CurriculumGradeSubject.Subject.NameAr,SubjectEn=x.CurriculumGradeSubject.Subject.NameEn}).SingleOrDefaultAsync(ct);
@@ -222,16 +238,12 @@ public sealed class SchoolTeachingPlansController(
         if(r.Type!=TeachingPlanType.Yearly){if(!r.AcademicTermId.HasValue)return (BadRequest(Failure(400,"plans.term_required","An academic term is required.")),default,default,"","",null,null,null);
             var term=await db.AcademicTerms.AsNoTracking().Where(x=>x.Id==r.AcademicTermId && x.ProgramAcademicYearId==offering.ProgramAcademicYearId && x.IsActive).Select(x=>new{x.NameAr,x.NameEn,x.StartDate,x.EndDate}).SingleOrDefaultAsync(ct);
             if(term is null || r.FromDate<term.StartDate || r.ToDate>term.EndDate)return (BadRequest(Failure(400,"plans.outside_term","The plan period must be inside the selected term.")),default,default,"","",null,null,null);
-            if(r.Type==TeachingPlanType.Monthly)
+            if(r.Type is TeachingPlanType.Monthly or TeachingPlanType.Weekly)
             {
-                var calendarStart=new DateOnly(r.FromDate.Year,r.FromDate.Month,1); var calendarEnd=calendarStart.AddMonths(1).AddDays(-1);
-                var expectedStart=calendarStart<term.StartDate?term.StartDate:calendarStart; var expectedEnd=calendarEnd>term.EndDate?term.EndDate:calendarEnd;
-                if(r.FromDate!=expectedStart || r.ToDate!=expectedEnd)return (BadRequest(Failure(400,"plans.month_period_invalid","A monthly plan must match one month within the selected term.")),default,default,"","",null,null,null);
-            }
-            if(r.Type==TeachingPlanType.Weekly)
-            {
-                var offset=r.FromDate.DayNumber-term.StartDate.DayNumber; var expectedEnd=r.FromDate.AddDays(6)>term.EndDate?term.EndDate:r.FromDate.AddDays(6);
-                if(offset<0 || offset%7!=0 || r.ToDate!=expectedEnd)return (BadRequest(Failure(400,"plans.week_period_invalid","A weekly plan must match one week within the selected term.")),default,default,"","",null,null,null);
+                var unchangedLegacyPeriod = editingId.HasValue && await db.TeachingPlans.AnyAsync(x => x.Id == editingId && x.Type == r.Type && x.AcademicTermId == r.AcademicTermId && x.FromDate == r.FromDate && x.ToDate == r.ToDate, ct);
+                var periods = await db.AcademicPeriods.AsNoTracking().Where(p => p.IsActive && p.AcademicTermId == r.AcademicTermId && p.StartDate >= term.StartDate && p.EndDate <= term.EndDate).ToArrayAsync(ct);
+                var valid = periods.Any(p => TeachingPlanPeriodRules.Matches(r.Type,r.FromDate,r.ToDate,p.StartDate,p.EndDate));
+                if(!unchangedLegacyPeriod && !valid)return (BadRequest(Failure(400,"plans.period_invalid","Choose an active configured term period and a week within it.")),default,default,"","",null,null,null);
             }
             termAr=term.NameAr;termEn=term.NameEn;termStart=term.StartDate;}
         if(r.Type==TeachingPlanType.Daily && r.FromDate!=r.ToDate)return (BadRequest(Failure(400,"plans.daily_single_day","A daily plan must cover one day.")),default,default,"","",null,null,null);
@@ -244,12 +256,75 @@ public sealed class SchoolTeachingPlansController(
         foreach(var id in request.ClassSectionIds.Distinct()) plan.Targets.Add(new TeachingPlanTarget{Id=Guid.NewGuid(),ClassSectionId=id});
         var order=0; foreach(var item in request.Items.Where(x=>!string.IsNullOrWhiteSpace(x.Title))) plan.Items.Add(new TeachingPlanItem{Id=Guid.NewGuid(),SortOrder=order++,Title=item.Title.Trim(),Details=Clean(item.Details),FromDate=item.FromDate,ToDate=item.ToDate});
     }
-    private static (string,string) Titles(TeachingPlanType type,DateOnly from,DateOnly to,string subjectAr,string subjectEn,string? termAr,string? termEn,DateOnly? termStart)
+    private static void ApplyDays(SchoolsDbContext db, TeachingPlan plan, IReadOnlyList<SaveTeachingPlanDayRequest>? days)
     {
-        var weekNumber=termStart.HasValue?((from.DayNumber-termStart.Value.DayNumber)/7)+1:((from.Day-1)/7)+1;
-        var ar=type switch{TeachingPlanType.Yearly=>"الخطة السنوية",TeachingPlanType.Term=>$"خطة {termAr}",TeachingPlanType.Monthly=>$"خطة شهر {ArabicMonths[from.Month-1]} {from.Year}",TeachingPlanType.Weekly=>$"خطة الأسبوع {weekNumber} من شهر {ArabicMonths[from.Month-1]} {from.Year}",TeachingPlanType.Daily=>$"خطة يوم {from.Day} {ArabicMonths[from.Month-1]} {from.Year}",_=>"خطة تدريس"};
+        if (days is null) return;
+        var removed = plan.DayDetails.Where(x => !days.Any(d => d.Date == x.Date)).ToArray();
+        db.RemoveRange(removed); foreach (var row in removed) plan.DayDetails.Remove(row);
+        foreach (var day in days)
+        {
+            var row = plan.DayDetails.SingleOrDefault(x => x.Date == day.Date);
+            if (row is null) { row = new() { Id = Guid.NewGuid(), Date = day.Date, DayOfWeek = day.Date.DayOfWeek }; plan.DayDetails.Add(row); }
+            row.Details = day.Details.Trim();
+        }
+    }
+
+    [Authorize(Policy = SchoolPermissionPolicies.AcademicsView), HttpGet("week-days")]
+    public async Task<IActionResult> WeekDays(Guid gradeSubjectOfferingId, DateOnly fromDate, DateOnly toDate, CancellationToken ct)
+    {
+        await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
+        if (fromDate > toDate || toDate.DayNumber - fromDate.DayNumber > 6) return BadRequest(Failure(400,"plans.days_invalid","Choose one week."));
+        var scope = await db.GradeSubjectOfferings.Where(x => x.Id == gradeSubjectOfferingId && x.IsActive)
+            .Select(x => new { x.GradeOfferingId, YearId = x.GradeOffering.ProgramAcademicYearId, ProgramId = x.GradeOffering.ProgramAcademicYear.EducationProgramId,
+                Start = x.GradeOffering.ProgramAcademicYear.StartDate, End = x.GradeOffering.ProgramAcademicYear.EndDate }).SingleOrDefaultAsync(ct);
+        if (scope is null || fromDate < scope.Start || toDate > scope.End || !await AccessibleSections(db,ct).AnyAsync(x => x.GradeOfferingId == scope.GradeOfferingId,ct)) return Forbid();
+        var studyDays = await db.SchoolDaySchedules.Where(x => x.IsActive && x.BranchId == null && x.EducationProgramId == scope.ProgramId).Select(x => x.DayOfWeek).Distinct().ToArrayAsync(ct);
+        var closures = await db.SchoolCalendarEvents.Where(x => x.IsActive && x.IsSchoolClosed && x.BranchId == null && x.StartDate <= toDate && x.EndDate >= fromDate &&
+            (x.EducationProgramId == null || x.EducationProgramId == scope.ProgramId) && (x.ProgramAcademicYearId == null || x.ProgramAcademicYearId == scope.YearId))
+            .Select(x => new { x.StartDate, x.EndDate, x.NameAr, x.NameEn }).ToArrayAsync(ct);
+        return Ok(Success(Enumerable.Range(0,toDate.DayNumber-fromDate.DayNumber+1).Select(i => {
+            var date = fromDate.AddDays(i); var closure = closures.FirstOrDefault(x => x.StartDate <= date && x.EndDate >= date);
+            return new { Date = date, DayOfWeek = (int)date.DayOfWeek, IsStudyDay = studyDays.Length == 0 || studyDays.Contains(date.DayOfWeek), IsClosed = closure is not null, ClosureNameAr = closure?.NameAr, ClosureNameEn = closure?.NameEn };
+        }).ToArray()));
+    }
+    private static async Task<SaveTeachingPlanRequest> ResolveCalendarPeriod(SchoolsDbContext db, SaveTeachingPlanRequest request, CancellationToken ct)
+    {
+        if (request.Type is not (TeachingPlanType.Yearly or TeachingPlanType.Term)) return request;
+        var yearId = await db.GradeSubjectOfferings.Where(x => x.Id == request.GradeSubjectOfferingId)
+            .Select(x => (Guid?)x.GradeOffering.ProgramAcademicYearId).SingleOrDefaultAsync(ct);
+        if (yearId is null) return request;
+        if (request.Type == TeachingPlanType.Yearly)
+        {
+            var year = await db.ProgramAcademicYears.Where(x => x.Id == yearId && x.IsActive)
+                .Select(x => new { x.StartDate, x.EndDate }).SingleOrDefaultAsync(ct);
+            if (year is not null) return request with { FromDate = year.StartDate, ToDate = year.EndDate, AcademicTermId = null };
+        }
+        else
+        {
+            var term = await db.AcademicTerms.Where(x => x.Id == request.AcademicTermId && x.ProgramAcademicYearId == yearId && x.IsActive)
+                .Select(x => new { x.StartDate, x.EndDate }).SingleOrDefaultAsync(ct);
+            if (term is not null) return request with { FromDate = term.StartDate, ToDate = term.EndDate };
+        }
+        return request with { FromDate = DateOnly.MaxValue, ToDate = DateOnly.MinValue };
+    }
+
+    private static Task<AcademicPeriod?> PlanPeriod(SchoolsDbContext db, SaveTeachingPlanRequest r, CancellationToken ct) =>
+        db.AcademicPeriods.AsNoTracking().Where(p => p.IsActive && p.AcademicTermId == r.AcademicTermId && p.StartDate <= r.FromDate && p.EndDate >= r.ToDate).OrderBy(p => p.SortOrder).ThenBy(p => p.StartDate).FirstOrDefaultAsync(ct);
+
+    private static (string,string) Titles(TeachingPlanType type,DateOnly from,DateOnly to,string subjectAr,string subjectEn,string? termAr,string? termEn,DateOnly? termStart,string yearAr,string yearEn,string? periodAr=null,string? periodEn=null)
+    {
+        var weekNumber=termStart.HasValue?((WeeklyPlanDayRules.SaturdayStart(from).DayNumber-WeeklyPlanDayRules.SaturdayStart(termStart.Value).DayNumber)/7)+1:((from.Day-1)/7)+1;
+        var ar=type switch{TeachingPlanType.Yearly=>$"خطة عام {yearAr}",TeachingPlanType.Term=>$"خطة {termAr} لعام {yearAr}",TeachingPlanType.Monthly=>$"خطة شهر {ArabicMonths[from.Month-1]} لعام {yearAr}",TeachingPlanType.Weekly=>$"خطة الأسبوع {weekNumber} من شهر {ArabicMonths[from.Month-1]} {from.Year}",TeachingPlanType.Daily=>$"خطة يوم {from.Day} {ArabicMonths[from.Month-1]} {from.Year}",_=>"خطة تدريس"};
         var culture=CultureInfo.GetCultureInfo("en-US"); var en=type switch{TeachingPlanType.Yearly=>"Yearly plan",TeachingPlanType.Term=>$"{termEn} plan",TeachingPlanType.Monthly=>$"{from.ToString("MMMM yyyy",culture)} plan",TeachingPlanType.Weekly=>$"Week {weekNumber} - {from.ToString("MMMM yyyy",culture)} plan",TeachingPlanType.Daily=>$"Daily plan - {from.ToString("d MMMM yyyy",culture)}",_=>"Teaching plan"};
-        return ($"{ar} — {subjectAr}",$"{en} — {subjectEn}");
+        if (periodAr is not null && type == TeachingPlanType.Monthly) return ($"خطة شهر {periodAr} لعام {yearAr}", $"{periodEn} plan for academic year {yearEn}");
+        if (periodAr is not null && type == TeachingPlanType.Weekly) return ($"خطة الأسبوع {weekNumber} من شهر {periodAr} لعام {yearAr} — {subjectAr}", $"Week {weekNumber} - {periodEn} for academic year {yearEn} — {subjectEn}");
+        return type switch
+        {
+            TeachingPlanType.Yearly => (ar, $"Plan for academic year {yearEn}"),
+            TeachingPlanType.Term => (ar, $"{termEn} plan for academic year {yearEn}"),
+            TeachingPlanType.Monthly => (ar, $"{from.ToString("MMMM", culture)} plan for academic year {yearEn}"),
+            _ => ($"{ar} — {subjectAr}", $"{en} — {subjectEn}")
+        };
     }
     private async Task<bool> HasPublishedOverlap(SchoolsDbContext db,TeachingPlan plan,CancellationToken ct)
     {
@@ -283,14 +358,20 @@ public sealed class SchoolTeachingPlansController(
 
 public sealed record SaveTeachingPlanRequest(TeachingPlanType Type,Guid GradeSubjectOfferingId,Guid? AcademicTermId,Guid? ParentPlanId,
     DateOnly FromDate,DateOnly ToDate,string Details,TeachingPlanSourceAuthority SourceAuthority,string? SourceReference,
-    IReadOnlyList<Guid> ClassSectionIds,IReadOnlyList<SaveTeachingPlanItemRequest> Items);
+    IReadOnlyList<Guid> ClassSectionIds,IReadOnlyList<SaveTeachingPlanItemRequest> Items)
+{ public IReadOnlyList<SaveTeachingPlanDayRequest>? DayDetails { get; init; } public int? ExpectedRevision { get; init; } }
+public sealed record SaveTeachingPlanDayRequest(DateOnly Date, string Details);
 public sealed record SaveTeachingPlanItemRequest(string Title,string? Details,DateOnly? FromDate,DateOnly? ToDate);
 public sealed record TeachingPlanClassOption(Guid Id,string NameAr,string NameEn,Guid GradeOfferingId,Guid ProgramAcademicYearId,string AcademicYearNameAr,string AcademicYearNameEn,DateOnly AcademicYearStart,DateOnly AcademicYearEnd,string GradeNameAr,string GradeNameEn,DateOnly SchoolLocalDate,IReadOnlyList<TeachingPlanSubjectOption> Subjects,IReadOnlyList<TeachingPlanTermOption> Terms);
 public sealed record TeachingPlanSubjectOption(Guid Id,string NameAr,string NameEn);
-public sealed record TeachingPlanTermOption(Guid Id,string NameAr,string NameEn,DateOnly StartDate,DateOnly EndDate);
+public sealed record TeachingPlanTermOption(Guid Id,string NameAr,string NameEn,DateOnly StartDate,DateOnly EndDate)
+{
+    public IReadOnlyList<TeachingPlanPeriodOption> Periods { get; init; } = [];
+}
+public sealed record TeachingPlanPeriodOption(Guid Id,string NameAr,string NameEn,DateOnly StartDate,DateOnly EndDate);
 public sealed record TeachingPlanTargetResponse(Guid ClassSectionId,string NameAr,string NameEn);
 public sealed record TeachingPlanSummary(Guid Id,TeachingPlanType Type,TeachingPlanStatus Status,string TitleAr,string TitleEn,DateOnly FromDate,DateOnly ToDate,string SubjectNameAr,string SubjectNameEn,IReadOnlyList<TeachingPlanTargetResponse> Targets,int DocumentCount,int Revision);
 public sealed record ReturnTeachingPlanRequest(string Reason);
 public sealed record TeachingPlanItemResponse(Guid Id,int SortOrder,string Title,string? Details,DateOnly? FromDate,DateOnly? ToDate);
 public sealed record TeachingPlanDocumentResponse(Guid DocumentId,TeachingPlanDocumentPurpose Purpose,string Title,string FileName,long SizeBytes);
-public sealed record TeachingPlanDetails(Guid Id,TeachingPlanType Type,TeachingPlanStatus Status,string TitleAr,string TitleEn,string Details,TeachingPlanSourceAuthority SourceAuthority,string? SourceReference,Guid ProgramAcademicYearId,Guid GradeOfferingId,Guid GradeSubjectOfferingId,Guid? AcademicTermId,Guid? ParentPlanId,DateOnly FromDate,DateOnly ToDate,int Revision,IReadOnlyList<TeachingPlanTargetResponse> Targets,IReadOnlyList<TeachingPlanItemResponse> Items,IReadOnlyList<TeachingPlanDocumentResponse> Documents) { public string? ReturnReason { get; init; } }
+public sealed record TeachingPlanDetails(Guid Id,TeachingPlanType Type,TeachingPlanStatus Status,string TitleAr,string TitleEn,string Details,TeachingPlanSourceAuthority SourceAuthority,string? SourceReference,Guid ProgramAcademicYearId,Guid GradeOfferingId,Guid GradeSubjectOfferingId,Guid? AcademicTermId,Guid? ParentPlanId,DateOnly FromDate,DateOnly ToDate,int Revision,IReadOnlyList<TeachingPlanTargetResponse> Targets,IReadOnlyList<TeachingPlanItemResponse> Items,IReadOnlyList<TeachingPlanDocumentResponse> Documents) { public string? ReturnReason { get; init; } public IReadOnlyList<SaveTeachingPlanDayRequest> DayDetails { get; init; } = []; }

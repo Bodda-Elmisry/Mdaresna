@@ -14,6 +14,11 @@ using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.MemoryBufferThreshold = 64 * 1024 * 1024;
+    options.MultipartBodyLengthLimit = 54 * 1024 * 1024;
+});
 
 var allowedOrigins = PlatformHostConfiguration.GetValidatedCorsOrigins(
     builder.Configuration,
@@ -23,6 +28,12 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor |
         ForwardedHeaders.XForwardedProto;
+    foreach (var proxy in builder.Configuration.GetSection("Hosting:KnownProxies").Get<string[]>() ?? [])
+    {
+        if (!System.Net.IPAddress.TryParse(proxy, out var address))
+            throw new InvalidOperationException("Hosting:KnownProxies must contain valid IP addresses.");
+        options.KnownProxies.Add(address);
+    }
 });
 
 builder.Services.AddProblemDetails();
@@ -95,7 +106,8 @@ builder.Services
     .AddCheck(
         "self",
         () => HealthCheckResult.Healthy(),
-        tags: [HealthCheckTags.Live, HealthCheckTags.Ready]);
+        tags: [HealthCheckTags.Live])
+    .AddCheck<DeploymentReadinessCheck>("deployment", tags: [HealthCheckTags.Ready]);
 
 if (builder.Environment.IsDevelopment())
 {

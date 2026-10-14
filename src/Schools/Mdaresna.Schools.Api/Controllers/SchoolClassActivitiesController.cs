@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Mdaresna.Schools.Api.Controllers;
 
 [ApiController, Authorize, Route("api/schools/v1")]
-public sealed class SchoolClassActivitiesController(ISchoolDbContextFactory dbFactory, SchoolClock clock) : ControllerBase
+public sealed partial class SchoolClassActivitiesController(ISchoolDbContextFactory dbFactory, SchoolClock clock) : ControllerBase
 {
     [HttpGet("class-workspace/{classSectionId:guid}/activities/subjects"), Authorize(Policy = SchoolPermissionPolicies.ActivitiesView)]
     public async Task<IActionResult> Subjects(Guid classSectionId, CancellationToken ct)

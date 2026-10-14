@@ -67,6 +67,7 @@ internal sealed class ExamPaperConfiguration : IEntityTypeConfiguration<ExamPape
     public void Configure(EntityTypeBuilder<ExamPaper> b)
     {
         b.ToTable("exam_papers"); b.HasKey(x => x.Id);
+        b.Property(x => x.UpdatedAtUtc).IsConcurrencyToken();
         b.Property(x => x.PaperCode).HasMaxLength(60).IsRequired(); b.Property(x => x.TitleAr).HasMaxLength(250).IsRequired();
         b.Property(x => x.TitleEn).HasMaxLength(250).IsRequired(); b.Property(x => x.Format).HasConversion<string>().HasMaxLength(24);
         b.Property(x => x.Instructions).HasMaxLength(6000); b.Property(x => x.TotalScore).HasPrecision(10, 2);

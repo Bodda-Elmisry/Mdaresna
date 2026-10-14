@@ -13,7 +13,7 @@ namespace Mdaresna.Platform.Api.Controllers.Auth;
 [ApiController]
 [Authorize]
 [Route("api/platform/v1/me/profile")]
-public sealed class PlatformAccountProfileController(IdentityDbContext identityDb) : ControllerBase
+public sealed class PlatformAccountProfileController(IdentityDbContext identityDb, IConfiguration configuration) : ControllerBase
 {
     private const int MaximumImageBytes = 2 * 1024 * 1024;
 
@@ -82,7 +82,7 @@ public sealed class PlatformAccountProfileController(IdentityDbContext identityD
         if (image is null) return NotFoundResponse();
         Response.Headers.CacheControl = "private, no-store";
         Response.Headers["X-Content-Type-Options"] = "nosniff";
-        return File(image.Content, image.ContentType);
+        return File(Mdaresna.Platform.Api.Auth.UploadEncryptionConfiguration.Create(configuration).DecryptImageBytes(image.Content, $"platform/profile/{accountId:N}", configuration.GetValue("UploadEncryption:AllowLegacyRead", true)), image.ContentType);
     }
 
     [HttpPost("image")]
@@ -108,6 +108,7 @@ public sealed class PlatformAccountProfileController(IdentityDbContext identityD
             return NotFoundResponse();
         var image = await identityDb.AccountProfileImages.SingleOrDefaultAsync(
             x => x.AccountId == accountId, cancellationToken);
+        content = Mdaresna.Platform.Api.Auth.UploadEncryptionConfiguration.Create(configuration).EncryptBytes(content, $"platform/profile/{accountId:N}");
         var now = DateTimeOffset.UtcNow;
         if (image is null)
         {

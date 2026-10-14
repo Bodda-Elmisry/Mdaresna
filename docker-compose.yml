@@ -1,5 +1,21 @@
 name: mdaresna
 
+x-app-runtime: &app-runtime
+  init: true
+  read_only: true
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,size=128m,mode=1777
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+  stop_grace_period: 30s
+
 services:
   postgres:
     image: postgres:17-alpine
@@ -9,7 +25,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.docker}
       POSTGRES_DB: postgres
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - mdaresna-postgres:/var/lib/postgresql/data
       - ./deploy/postgres/init.sql:/docker-entrypoint-initdb.d/10-mdaresna-databases.sql:ro
@@ -26,8 +42,8 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?Set RABBITMQ_USER in .env.docker}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env.docker}
     ports:
-      - "${RABBITMQ_PORT:-5672}:5672"
-      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+      - "127.0.0.1:${RABBITMQ_PORT:-5672}:5672"
+      - "127.0.0.1:${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
     volumes:
       - mdaresna-rabbitmq:/var/lib/rabbitmq
     healthcheck:
@@ -37,12 +53,18 @@ services:
       retries: 10
 
   platform-api:
+    <<: *app-runtime
+    mem_limit: ${PLATFORM_API_MEMORY_LIMIT:-1g}
+    cpus: ${PLATFORM_API_CPUS:-2}
     image: ${CONTAINER_REGISTRY:-local}/mdaresna-platform-api:${IMAGE_TAG:-dev}
     build:
       context: .
       dockerfile: src/Platform/Mdaresna.Platform.Api/Dockerfile
     restart: unless-stopped
     environment:
+      UploadEncryption__ActiveKeyId: ${PLATFORM_UPLOAD_ACTIVE_KEY_ID:-primary}
+      UploadEncryption__Keys__primary: ${PLATFORM_UPLOAD_ENCRYPTION_KEY:?Provide Platform upload encryption key from secret storage}
+      UploadEncryption__AllowLegacyRead: ${PLATFORM_UPLOAD_ALLOW_LEGACY_READ:-true}
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_URLS: http://+:8080
       AllowedHosts: ${PLATFORM_ALLOWED_HOSTS:-*}
@@ -67,7 +89,7 @@ services:
       Notifications__Firebase__ProjectId: ${FIREBASE_PROJECT_ID:-}
       GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-}
     ports:
-      - "${PLATFORM_API_PORT:-5241}:8080"
+      - "127.0.0.1:${PLATFORM_API_PORT:-5241}:8080"
     volumes:
       - type: bind
         source: ${FIREBASE_CREDENTIALS_HOST_PATH:-./deploy/empty-firebase-credentials.json}
@@ -78,6 +100,9 @@ services:
         condition: service_healthy
 
   platform-worker:
+    <<: *app-runtime
+    mem_limit: ${PLATFORM_WORKER_MEMORY_LIMIT:-512m}
+    cpus: ${PLATFORM_WORKER_CPUS:-1}
     image: ${CONTAINER_REGISTRY:-local}/mdaresna-platform-worker:${IMAGE_TAG:-dev}
     build:
       context: .
@@ -103,7 +128,7 @@ services:
       Notifications__Firebase__ProjectId: ${FIREBASE_PROJECT_ID:-}
       GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-}
     ports:
-      - "${PLATFORM_WORKER_HEALTH_PORT:-5081}:8080"
+      - "127.0.0.1:${PLATFORM_WORKER_HEALTH_PORT:-5081}:8080"
     volumes:
       - type: bind
         source: ${FIREBASE_CREDENTIALS_HOST_PATH:-./deploy/empty-firebase-credentials.json}
@@ -116,12 +141,18 @@ services:
         condition: service_healthy
 
   schools-api:
+    <<: *app-runtime
+    mem_limit: ${SCHOOLS_API_MEMORY_LIMIT:-2g}
+    cpus: ${SCHOOLS_API_CPUS:-2}
     image: ${CONTAINER_REGISTRY:-local}/mdaresna-schools-api:${IMAGE_TAG:-dev}
     build:
       context: .
       dockerfile: src/Schools/Mdaresna.Schools.Api/Dockerfile
     restart: unless-stopped
     environment:
+      UploadEncryption__ActiveKeyId: ${SCHOOLS_UPLOAD_ACTIVE_KEY_ID:-primary}
+      UploadEncryption__Keys__primary: ${SCHOOLS_UPLOAD_ENCRYPTION_KEY:?Provide Schools upload encryption key from secret storage}
+      UploadEncryption__AllowLegacyRead: ${SCHOOLS_UPLOAD_ALLOW_LEGACY_READ:-true}
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_URLS: http://+:8080
       AllowedHosts: ${SCHOOLS_ALLOWED_HOSTS:-*}
@@ -143,7 +174,7 @@ services:
       SchoolDocuments__StorageRoot: /data/school-documents
       SchoolDocuments__MaxFileSizeBytes: ${SCHOOL_DOCUMENT_MAX_FILE_SIZE_BYTES:-26214400}
     ports:
-      - "${SCHOOLS_API_PORT:-5251}:8080"
+      - "127.0.0.1:${SCHOOLS_API_PORT:-5251}:8080"
     volumes:
       - mdaresna-school-documents:/data/school-documents
     depends_on:
@@ -155,6 +186,12 @@ services:
         condition: service_healthy
 
   platform-web:
+    <<: *app-runtime
+    mem_limit: ${PLATFORM_WEB_MEMORY_LIMIT:-128m}
+    cpus: ${PLATFORM_WEB_CPUS:-0.5}
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m,mode=1777
+      - /var/cache/nginx:rw,noexec,nosuid,size=16m,mode=1777
     image: ${CONTAINER_REGISTRY:-local}/mdaresna-platform-web:${IMAGE_TAG:-dev}
     build:
       context: ../Mdaresna_Platform_Web
@@ -170,12 +207,18 @@ services:
       FIREBASE_APP_ID: ${FIREBASE_WEB_APP_ID:-}
       FIREBASE_VAPID_KEY: ${FIREBASE_WEB_VAPID_KEY:-}
     ports:
-      - "${PLATFORM_WEB_PORT:-8082}:80"
+      - "127.0.0.1:${PLATFORM_WEB_PORT:-8082}:8080"
     depends_on:
       platform-api:
         condition: service_healthy
 
   schools-web:
+    <<: *app-runtime
+    mem_limit: ${SCHOOLS_WEB_MEMORY_LIMIT:-128m}
+    cpus: ${SCHOOLS_WEB_CPUS:-0.5}
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m,mode=1777
+      - /var/cache/nginx:rw,noexec,nosuid,size=16m,mode=1777
     image: ${CONTAINER_REGISTRY:-local}/mdaresna-schools-web:${IMAGE_TAG:-dev}
     build:
       context: ../Mdaresna_Schools_Web
@@ -184,7 +227,7 @@ services:
     environment:
       SCHOOLS_API_BASE_URL: ${SCHOOLS_API_PUBLIC_URL:-http://localhost:5251}
     ports:
-      - "${SCHOOLS_WEB_PORT:-8083}:80"
+      - "127.0.0.1:${SCHOOLS_WEB_PORT:-8083}:8080"
     depends_on:
       schools-api:
         condition: service_healthy

@@ -30,6 +30,7 @@ public sealed class SchoolSocialTests
         public int Reads;
         public Task<StoredSchoolDocument> SaveAsync(string s, Guid d, Guid v, Stream content, string e, CancellationToken ct) => throw new NotSupportedException();
         public Task<Stream?> OpenReadAsync(string key, CancellationToken ct) { Reads++; return Task.FromResult<Stream?>(new MemoryStream([1, 2])); }
+        public Task DeleteAsync(string key,CancellationToken ct) => Task.CompletedTask;
     }
     private static SchoolSocialController Controller(Factory f, Guid actor, params string[] permissions)
     {

@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\BuildingBlocks\Mdaresna.Api.Contracts\Mdaresna.Api.Contracts.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\Mdaresna.SharedKernel\Mdaresna.SharedKernel.csproj" />
     <ProjectReference Include="..\Mdaresna.Platform.Application\Mdaresna.Platform.Application.csproj" />
     <ProjectReference Include="..\Mdaresna.Platform.Infrastructure\Mdaresna.Platform.Infrastructure.csproj" />
   </ItemGroup>

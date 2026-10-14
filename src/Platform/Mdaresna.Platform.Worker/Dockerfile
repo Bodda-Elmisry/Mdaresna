@@ -1,7 +1,8 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-COPY . .
+COPY global.json ./
+COPY src/ ./src/
 RUN dotnet restore src/Platform/Mdaresna.Platform.Worker/Mdaresna.Platform.Worker.csproj
 RUN dotnet publish src/Platform/Mdaresna.Platform.Worker/Mdaresna.Platform.Worker.csproj \
     --configuration Release \
@@ -24,6 +25,6 @@ EXPOSE 8080
 COPY --from=build /app/publish .
 USER $APP_UID
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD curl --fail --silent http://127.0.0.1:8080/health/ready || exit 1
+    CMD curl --fail --silent --max-time 4 http://127.0.0.1:8080/health/ready || exit 1
 
 ENTRYPOINT ["dotnet", "Mdaresna.Platform.Worker.dll"]

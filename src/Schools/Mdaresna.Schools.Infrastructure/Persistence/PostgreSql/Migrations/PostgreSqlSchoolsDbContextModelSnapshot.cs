@@ -462,6 +462,116 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.ToTable("book_versions", "school");
                 });
 
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.ClassOperationalAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("BuildingFloorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("EndsOn")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Responsibility")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly>("StartsOn")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BuildingFloorId");
+
+                    b.HasIndex("UserId", "IsActive", "StartsOn", "EndsOn");
+
+                    b.ToTable("class_operational_assignments", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.ClassOperationalAssignmentAudit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AssignmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SnapshotJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssignmentId");
+
+                    b.ToTable("class_operational_assignment_audits", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.ClassOperationalGrant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("AssignmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ClassSectionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("GradeSubjectOfferingId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssignmentId");
+
+                    b.HasIndex("GradeSubjectOfferingId");
+
+                    b.HasIndex("ClassSectionId", "Action");
+
+                    b.ToTable("class_operational_grants", "school");
+                });
+
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.ClassRoomAssignment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -740,6 +850,9 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<bool?>("CountsTowardTotal")
+                        .HasColumnType("boolean");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
@@ -1731,6 +1844,7 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<int>("Revision")
+                        .IsConcurrencyToken()
                         .HasColumnType("integer");
 
                     b.Property<string>("SourceAuthority")
@@ -1826,6 +1940,34 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.HasIndex("TeachingPlanId");
 
                     b.ToTable("teaching_plan_audits", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.TeachingPlanDayDetail", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Details")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<Guid>("TeachingPlanId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeachingPlanId", "Date")
+                        .IsUnique();
+
+                    b.ToTable("teaching_plan_day_details", "school");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.TeachingPlanDocument", b =>
@@ -2140,6 +2282,115 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                         .HasFilter("\"IsDeleted\" = FALSE");
 
                     b.ToTable("weekly_timetable_slot_substitute_teachers", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Documents.BookVersionDigitalDocument", b =>
+                {
+                    b.Property<Guid>("BookVersionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("AllowDownload")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("DocumentVersionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("PageCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("ShareWithFamily")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("BookVersionId");
+
+                    b.HasIndex("DocumentVersionId");
+
+                    b.ToTable("book_version_digital_documents", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Documents.ClassActivityAttachment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("DocumentVersionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentVersionId");
+
+                    b.HasIndex("OwnerId", "DocumentVersionId")
+                        .IsUnique();
+
+                    b.ToTable("class_activity_attachments", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Documents.HomeworkAttachment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("DocumentVersionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentVersionId");
+
+                    b.HasIndex("OwnerId", "DocumentVersionId")
+                        .IsUnique();
+
+                    b.ToTable("homework_attachments", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Documents.LessonNoteAttachment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("DocumentVersionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentVersionId");
+
+                    b.HasIndex("OwnerId", "DocumentVersionId")
+                        .IsUnique();
+
+                    b.ToTable("lesson_note_attachments", "school");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Documents.SchoolDocument", b =>
@@ -2800,6 +3051,7 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                         .HasColumnType("numeric(10,2)");
 
                     b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .IsConcurrencyToken()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<uint>("xmin")
@@ -7734,6 +7986,13 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("ActualTeacherNameSnapshot")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid?>("ActualTeacherUserIdSnapshot")
+                        .HasColumnType("uuid");
+
                     b.Property<DateOnly>("AttendanceDate")
                         .HasColumnType("date");
 
@@ -7749,21 +8008,50 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.Property<Guid?>("FinalizedByUserId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("LastEditedByNameSnapshot")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid?>("LastEditedByUserId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Mode")
                         .IsRequired()
                         .HasMaxLength(24)
                         .HasColumnType("character varying(24)");
 
+                    b.Property<string>("PrimaryTeacherNameSnapshot")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid?>("PrimaryTeacherUserIdSnapshot")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTimeOffset>("RecordedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("RecordedByKindSnapshot")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
                     b.Property<Guid>("RecordedByUserId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("SlotNumberSnapshot")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(24)
                         .HasColumnType("character varying(24)");
+
+                    b.Property<string>("SubjectNameSnapshot")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("TimeZoneIdSnapshot")
                         .IsRequired()
@@ -8254,6 +8542,61 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.Navigation("Book");
                 });
 
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.ClassOperationalAssignment", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Facilities.BuildingFloor", "BuildingFloor")
+                        .WithMany()
+                        .HasForeignKey("BuildingFloorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Schools.Domain.Identity.LocalUserAccount", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("BuildingFloor");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.ClassOperationalAssignmentAudit", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.ClassOperationalAssignment", "Assignment")
+                        .WithMany()
+                        .HasForeignKey("AssignmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Assignment");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.ClassOperationalGrant", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.ClassOperationalAssignment", "Assignment")
+                        .WithMany("Grants")
+                        .HasForeignKey("AssignmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.ClassSection", "ClassSection")
+                        .WithMany()
+                        .HasForeignKey("ClassSectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.GradeSubjectOffering", "GradeSubjectOffering")
+                        .WithMany()
+                        .HasForeignKey("GradeSubjectOfferingId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Assignment");
+
+                    b.Navigation("ClassSection");
+
+                    b.Navigation("GradeSubjectOffering");
+                });
+
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.ClassRoomAssignment", b =>
                 {
                     b.HasOne("Mdaresna.Schools.Domain.Academics.ClassSection", "ClassSection")
@@ -8642,6 +8985,17 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.Navigation("TeachingPlan");
                 });
 
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.TeachingPlanDayDetail", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.TeachingPlan", "TeachingPlan")
+                        .WithMany("DayDetails")
+                        .HasForeignKey("TeachingPlanId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("TeachingPlan");
+                });
+
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.TeachingPlanDocument", b =>
                 {
                     b.HasOne("Mdaresna.Schools.Domain.Documents.SchoolDocument", "Document")
@@ -8770,6 +9124,82 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.Navigation("TeacherGradeSubjectScope");
 
                     b.Navigation("WeeklyTimetableSlot");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Documents.BookVersionDigitalDocument", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Academics.BookVersion", "BookVersion")
+                        .WithMany()
+                        .HasForeignKey("BookVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Documents.SchoolDocumentVersion", "Version")
+                        .WithMany()
+                        .HasForeignKey("DocumentVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("BookVersion");
+
+                    b.Navigation("Version");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Documents.ClassActivityAttachment", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Documents.SchoolDocumentVersion", "Version")
+                        .WithMany()
+                        .HasForeignKey("DocumentVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Students.ClassActivity", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+
+                    b.Navigation("Version");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Documents.HomeworkAttachment", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Documents.SchoolDocumentVersion", "Version")
+                        .WithMany()
+                        .HasForeignKey("DocumentVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Students.HomeworkAssignment", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+
+                    b.Navigation("Version");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Documents.LessonNoteAttachment", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.Documents.SchoolDocumentVersion", "Version")
+                        .WithMany()
+                        .HasForeignKey("DocumentVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Schools.Domain.Students.StudentLessonNote", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+
+                    b.Navigation("Version");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Documents.SchoolDocumentAudit", b =>
@@ -10399,6 +10829,11 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
                     b.Navigation("CurriculumSubjects");
                 });
 
+            modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.ClassOperationalAssignment", b =>
+                {
+                    b.Navigation("Grants");
+                });
+
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.ClassSection", b =>
                 {
                     b.Navigation("RoomAssignments");
@@ -10478,6 +10913,8 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.PostgreSql.Migrations
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Academics.TeachingPlan", b =>
                 {
+                    b.Navigation("DayDetails");
+
                     b.Navigation("Documents");
 
                     b.Navigation("Items");

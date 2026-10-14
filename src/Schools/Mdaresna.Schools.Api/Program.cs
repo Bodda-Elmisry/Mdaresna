@@ -24,6 +24,13 @@ builder.Services.AddSingleton<SchoolClock>();
 builder.Services.AddHostedService<Mdaresna.Schools.Api.Exams.ExamWorkflowReminderService>();
 builder.Services.AddHostedService<SchoolOperationReminderService>();
 builder.Services.AddSingleton<ISchoolDocumentStorage, LocalSchoolDocumentStorage>();
+builder.Services.AddSingleton<IBookPdfRenderer, BookPdfRenderer>();
+// Multipart files remain in memory until the encrypted storage write; never spill plaintext uploads to ASPNETCORE_TEMP.
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.MemoryBufferThreshold = 64 * 1024 * 1024;
+    options.MultipartBodyLengthLimit = 54 * 1024 * 1024;
+});
 builder.Services.AddCors(options => options.AddPolicy("SchoolsWeb", policy =>
 {
     if (allowedOrigins.Length > 0) policy.WithOrigins(allowedOrigins);
@@ -32,7 +39,8 @@ builder.Services.AddCors(options => options.AddPolicy("SchoolsWeb", policy =>
 builder.Services.AddHealthChecks().AddCheck(
     "self",
     () => HealthCheckResult.Healthy(),
-    tags: ["live", "ready"]);
+    tags: ["live"])
+    .AddCheck<DeploymentReadinessCheck>("deployment", tags: ["ready"]);
 
 if (builder.Environment.IsDevelopment())
 {

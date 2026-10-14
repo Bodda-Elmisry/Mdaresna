@@ -85,6 +85,16 @@ public sealed class StudentEnrollment
 
 public sealed class StudentAttendanceRegister
 {
+    public int Revision { get; set; } = 1;
+    public Guid? LastEditedByUserId { get; set; }
+    public string? LastEditedByNameSnapshot { get; set; }
+    public string? PrimaryTeacherNameSnapshot { get; set; }
+    public string? ActualTeacherNameSnapshot { get; set; }
+    public Guid? PrimaryTeacherUserIdSnapshot { get; set; }
+    public Guid? ActualTeacherUserIdSnapshot { get; set; }
+    public string? SubjectNameSnapshot { get; set; }
+    public int? SlotNumberSnapshot { get; set; }
+    public string? RecordedByKindSnapshot { get; set; }
     public Guid Id { get; set; }
     public Guid ClassSectionId { get; set; }
     public DateOnly AttendanceDate { get; set; }

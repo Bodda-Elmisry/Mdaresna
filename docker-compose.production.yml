@@ -1,0 +1,100 @@
+# Overlay: docker compose --env-file <protected-file> -f docker-compose.yml -f docker-compose.production.yml ...
+# Requires Compose >= 2.24.4 for !reset; never use this overlay with an unconfigured local broker.
+services:
+  postgres:
+    ports: !reset []
+  rabbitmq:
+    ports: !reset []
+    volumes:
+      - ./deploy/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - type: bind
+        source: ${RABBITMQ_TLS_DIRECTORY:?Provide broker TLS directory outside the repository}
+        target: /run/tls
+        read_only: true
+        bind:
+          create_host_path: false
+    networks:
+      default:
+        aliases:
+          - ${RABBITMQ_TLS_HOST:?Provide broker hostname matching its trusted TLS certificate}
+  platform-api:
+    ports: !reset []
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      PlatformHost__Cors__AllowedOrigins__0: https://${PLATFORM_DOMAIN:?Provide Platform public domain}
+      AllowedHosts: ${PLATFORM_DOMAIN};platform-api;localhost;127.0.0.1
+      Hosting__KnownProxies__0: ${GATEWAY_INTERNAL_IP:-172.30.0.10}
+  platform-worker:
+    ports: !reset []
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      SmsLogConsumer__BrokerUri: ${RABBITMQ_AMQPS_URI:?Provide trusted amqps URI for production}
+      SchoolRegistrationConsumer__BrokerUri: ${RABBITMQ_AMQPS_URI}
+      PlatformOutboxPublisher__BrokerUri: ${RABBITMQ_AMQPS_URI}
+      SchoolProvisioningResultConsumer__BrokerUri: ${RABBITMQ_AMQPS_URI}
+  schools-api:
+    ports: !reset []
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      SchoolRegistrationPublisher__BrokerUri: ${RABBITMQ_AMQPS_URI}
+      SchoolProvisioningConsumer__BrokerUri: ${RABBITMQ_AMQPS_URI}
+      SchoolsHost__Cors__AllowedOrigins__0: https://${SCHOOLS_DOMAIN:?Provide Schools public domain}
+      AllowedHosts: ${SCHOOLS_DOMAIN};schools-api;localhost;127.0.0.1
+  platform-web:
+    ports: !reset []
+    environment:
+      PLATFORM_API_BASE_URL: https://${PLATFORM_DOMAIN}/
+  schools-web:
+    ports: !reset []
+    environment:
+      SCHOOLS_API_BASE_URL: https://${SCHOOLS_DOMAIN}
+  gateway:
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 1
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      PLATFORM_DOMAIN: ${PLATFORM_DOMAIN}
+      SCHOOLS_DOMAIN: ${SCHOOLS_DOMAIN}
+      NGINX_ENVSUBST_FILTER: '^(PLATFORM_DOMAIN|SCHOOLS_DOMAIN)$$'
+    ports:
+      - "${GATEWAY_HTTP_PORT:-80}:80"
+      - "${GATEWAY_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./deploy/gateway/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./deploy/gateway/proxy.conf:/etc/nginx/proxy-common.conf:ro
+      - type: bind
+        source: ${GATEWAY_TLS_DIRECTORY:?Provide gateway TLS directory outside the repository}
+        target: /run/tls
+        read_only: true
+        bind:
+          create_host_path: false
+    depends_on:
+      platform-api:
+        condition: service_healthy
+      schools-api:
+        condition: service_healthy
+      platform-web:
+        condition: service_healthy
+      schools-web:
+        condition: service_healthy
+    networks:
+      default:
+        ipv4_address: ${GATEWAY_INTERNAL_IP:-172.30.0.10}
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--timeout=4", "--spider", "http://127.0.0.1/gateway-health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: ${DOCKER_NETWORK_SUBNET:-172.30.0.0/24}
