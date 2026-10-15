@@ -23,7 +23,7 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<SchoolClock>();
 builder.Services.AddHostedService<Mdaresna.Schools.Api.Exams.ExamWorkflowReminderService>();
 builder.Services.AddHostedService<SchoolOperationReminderService>();
-builder.Services.AddSingleton<ISchoolDocumentStorage, LocalSchoolDocumentStorage>();
+builder.Services.AddSchoolDocumentStorage(builder.Configuration);
 builder.Services.AddSingleton<IBookPdfRenderer, BookPdfRenderer>();
 // Multipart files remain in memory until the encrypted storage write; never spill plaintext uploads to ASPNETCORE_TEMP.
 builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>

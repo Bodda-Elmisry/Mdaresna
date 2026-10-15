@@ -1,5 +1,28 @@
 # الخطوات التالية
 
+## تنفيذ التعاقد على الأنظمة والباقات والسعات
+
+المرجع التقني التفصيلي: [SYSTEM_SUBSCRIPTIONS_AND_CAPACITY_TECHNICAL_PLAN.md](../implementation/SYSTEM_SUBSCRIPTIONS_AND_CAPACITY_TECHNICAL_PLAN.md)، أُعد2026-10-15 بطلب المستخدم. يجمع التصميم والمصدر الحالي والجداول وAPI والأحداث والسعة الذرية والترحيل والتقاعد والاختبارات. هذه خطة محفوظة وليست تنفيذًا للتطبيق.
+
+- ابدأ بقرارات P01–P12 والجرد، مع إمكانية بناء كتالوج الأنظمة وإتاحاتها وباقاتها وإصدارات أسعارها وترتيبها دون انتظار قرارات التشغيل غير المرتبطة به.
+- حزم التنفيذ W1–W5: الكتالوج، العقود والعروض ومراجعة الدفع، مزامنة Schools، خدمة السعة الذرية ومسارا الطلاب، ثم الواجهات Web/Flutter. كل الأسعار والسعات والترتيب معرفة من Platform؛ لا تثبيت أرقام الأمثلة في الكود.
+- W6/W7: dry-run وmapping ومطابقة pilot ثم إنهاء نموذج الوحدات القديم ومساراته وتهيئته وأحداثه، مع حفظ السجل المالي التاريخي وعدم ترك نموذجين نشطين دائمًا. توسع schema قبل التقليص، وbackup واستعادة وخطة رجوع.
+- W8: ربط Employee/Cashbox عند تنفيذ الوظائف التشغيلية المقابلة؛ لا يعتبر إنشاء اشتراك تنفيذًا كاملًا لـHR/Finance. حسابات التدريس الأكاديمية مستقلة عن مقاعد HR، والتحصيل والصرف يتطلبان المالي.
+- فرض الحدود والتجديد والترقية يعتمدان على سياسات استرجاع المقعد والفترة والفروع والتسعير عند التغيير؛ لا افتراضات صامتة. قبل ترحيل قواعد على hosts مختلفة يلزم إصلاح توجيه migration worker الموثق.
+- تحقق التزامن والمعاملات على PostgreSQL وSQL Server فعليين، والأحداث عبرRabbitMQ معزول، ومعايير القبول وحزم العمل مفصلة في المرجع.
+## R2 — الاختبار الحقيقي ناجح، الترحيل والتفعيل متبقيان
+- مكتمل2026-10-15: المستخدم أدخل أسرارR2 محليًا، ونجح الاختبار الفعلي للرفع المشفر والقراءة والـRange/seek والتحقق منالبصمة والحذف. لا حاجة لإعادة إدخال المفاتيح أوإعادةsmoke دونسبب. التعليمات السابقة أدناه مرجع إعداد وليست عملًا متبقيًا. المتبقي مراجعة manifest/backup وترحيل المرفقات ثم تحويلprovider وتجربةPDF/MP4 الفعلية؛ التطبيق ما زالLocal.
+
+- اكتمل2026-10-15 مزود R2 والتشفير وRange/seek وreadiness وCompose/preflight وسكربت إدخال أسرار واختبار SDK محاكى. نفّذ deploy/Set-SchoolR2Secrets.ps1 محليًا لإدخال endpoint/bucket وAccessKeyId/SecretAccessKey دون نشر القيم في المحادثة؛ لم يقرأ الوكيل مفاتيح المستخدم أو يغير إعداداته الفعلية.
+- شغّل اختبار R2LiveStorageTests بـMDARESNA_R2_LIVE_TEST=1 علىbucket ينتهي بـ-dev أو-test؛ الاختبار يرفع ملفًا عشوائيًا مشفرًا ويتحقق منseek/hash ويحذفه. لم ينفذ على حساب فعلي؛ لا يعتبر نجاح اختبارات SDK المحاكاة تحققًا من الشبكة أوالفوترة أوصلاحيات الحساب.
+- قبل التفعيل على مدرسة قائمة: backup/استعادة ومراجعة manifest منDB وترحيل ciphertext بنفسstorageKey والتحقق من كل ملف قبل تغييرSchoolDocuments:Provider=R2، ثم تجربة صور وPDF وMP4 وRange والمصادقة على الواجهات. لا أداة ترحيل آلية في هذه الدفعة، ولا حذف محلي أوتفعيل تلقائي. دليل SCHOOL_DOCUMENT_R2.md يوضح القطع والرجوع وحدود الذاكرة؛ Family وصور الحسابات داخلDB خارج هذا التنفيذ.
+
+- حسم2026-10-14: Family Server يقرأR2 ويفكالتشفير ويرسلللعميل؛ لاclient download مباشر. ربطSchools R2 يحتاجbucket خاصStandard واختبارمنفصل وendpoint ومراجعأسرارAccessKeyId/SecretAccessKey بصلاحيةObject Read & Write علىالبكت فقط، ومفاتيحUploadEncryption الحالية دونتغيير. تفويضFamily وtoken مستقلRead only عندتنفيذه، دونsecret أوsigned URL فيRabbitMQ. لاCORS/publicdomain لمسارالخوادم. تنفيذمزودR2 وseek/range/readiness وترحيلciphertext بنفسstorageKey معbackup والتحقق قبلتبديلالمزود؛ لاحسابR2 متصلأوتنفيذprovider فيدفعةالمتطلباتهذه.
+
+- توضيحFamily/R2 بتاريخ2026-10-14: أحداثالواجب تنقلبياناته ومراجعإصداراتالمرفقات إلىFamily DB، وFamily يقرأالملفات منR2 دونSchools API. صممACL محليًا ومزامنةالتعديل/الحذف/سحبالإتاحة، دونتكراربايتاتأونقلcredentials بالأحداث. حددعندتصميمالتسليم هلFamily Backend يقرأويفك بمفاتيحمفوضة أمclient direct download؛ cipher الحالي لايعرضملفًا مقروءًا برابطR2 فقط. لا تنفيذFamily/R2 أوتغييرسياسةالتشفير معتمد تلقائيًا منالتوضيح.
+
+- مقترحR2 بتاريخ2026-10-14، غيرمنفذ: مزودR2 Standard لـISchoolDocumentStorage معbucket خاص وعزلنطاقالمدارس، الحفاظعلىAES-GCM ومراجعالمستندات داخلDB، range/seek متوافق معUploadedFileCipher ورفعمتوافق معاشتراطseekable output، وحدودbuffer/cache وreadiness مناسب. خطةترحيل تحفظstorageKey ومفتاحالتشفير وتتحققhash/القراءة/backup قبلحذفالمحلي؛ credentials منsecret manager فقط. اختبرPut/Get/Delete/Range وفشل/تكرارالرفع وملفPDF/MP4 فعلي علىR2 قبلالإنتاج؛ تحميلالملفات عبرSchools يبقيحملشبكته، وتسليممباشر/edge مسارمستقل، وصورالحسابات داخلDB منفصلة. لا تنفيذ تلقائي منسؤالالرأي.
+
 - مكتمل فيالكود2026-10-14 وفقADR-056: تحديثRedis الكامل عندتعديلالوجهة وحذفdata معguard عندالإيقاف/الحذف، عبرRoutingVersion/Outbox/RabbitMQ وLua/Epoch. يحلمحلمقترحالتحديث وعملالإبطال «غيرمنفذ» أدناه. قبلالتفعيل: backup ومهاجرةPlatform PG20261014190417_AddSchoolRoutingVersion أوSQL20261014190458_AddSchoolRoutingVersion، نشرPlatform API/Worker أولًا ثمكلSchools API وتفعيلconsumer؛ لاSchool DB migration أو.env فعلي تغير.
 - QA قبلالإنتاج: معاملاتSQLحقيقية بينSchool/endpoint/Outbox، primary replacement ذوحفظين داخلtransaction، تزامنRoutingVersion، حالةinactive/إعادةتفعيل ومزودDB المستخدم، BrokerTLS/ACl وحالاتrestart/eviction/Platform unavailable وqueue lag/DLQ. مصدرOutboxاختبرInMemory فقط؛ اختباراتRedis/Broker فعليةمعزولةنجحت. لا إعادةاستخدامكودمدرسةمحذوفة لهويةجديدة دونترحيلguard. راجعSCHOOL_ROUTING_REDIS.md لترتيبالنشر والصيانة/rollback.
 

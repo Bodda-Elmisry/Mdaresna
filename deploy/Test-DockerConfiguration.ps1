@@ -8,6 +8,25 @@ $configJson = & docker @composeArgs config --format json
 if ($LASTEXITCODE -ne 0) { throw 'Compose configuration could not be resolved.' }
 $config = ($configJson -join "`n") | ConvertFrom-Json
 $routing = $config.services.'schools-api'.environment
+$storageProvider = $routing.SchoolDocuments__Provider
+if ($storageProvider -notin @('Local', 'R2')) { throw 'School document provider must be Local or R2.' }
+if ($storageProvider -eq 'R2') {
+    $storageEndpoint = $null
+    if (-not [Uri]::TryCreate($routing.SchoolDocuments__R2__Endpoint, [UriKind]::Absolute, [ref]$storageEndpoint) -or
+        $storageEndpoint.Scheme -ne 'https' -or -not $storageEndpoint.Host.EndsWith('.r2.cloudflarestorage.com') -or
+        -not $storageEndpoint.IsDefaultPort -or $storageEndpoint.AbsolutePath -ne '/' -or $storageEndpoint.Query -or $storageEndpoint.Fragment -or $storageEndpoint.UserInfo) {
+        throw 'R2 requires an HTTPS account S3 endpoint without paths or query strings.'
+    }
+    if ($routing.SchoolDocuments__R2__Bucket -notmatch '^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$') { throw 'R2 bucket name is invalid.' }
+    foreach ($key in @('SchoolDocuments__R2__AccessKeyId', 'SchoolDocuments__R2__SecretAccessKey')) {
+        if ([string]::IsNullOrWhiteSpace($routing.$key)) { throw 'R2 credentials must be supplied from secret storage.' }
+    }
+    $uploadLimit = 0; $uploadConcurrency = 0
+    if (-not [int]::TryParse($routing.SchoolDocuments__R2__MaxUploadMiB, [ref]$uploadLimit) -or $uploadLimit -lt 1 -or $uploadLimit -gt 256 -or
+        -not [int]::TryParse($routing.SchoolDocuments__R2__ConcurrentUploads, [ref]$uploadConcurrency) -or $uploadConcurrency -lt 1 -or $uploadConcurrency -gt 8) {
+        throw 'R2 upload buffer or concurrency limits are invalid.'
+    }
+}
 if ($routing.SchoolRoutingCache__Enabled -eq 'true') {
     if ($routing.SchoolRoutingCacheConsumer__Enabled -ne 'true') { throw 'Monthly routing cache requires the event consumer.' }
     if ([string]::IsNullOrWhiteSpace($routing.SchoolRoutingCacheConsumer__BrokerUri)) { throw 'Routing cache consumer needs broker configuration.' }

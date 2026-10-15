@@ -21,7 +21,8 @@ public sealed class DeploymentReadinessTests
             ["SchoolDocuments:StorageRoot"] = Path.Combine(Path.GetTempPath(), "readiness-test-" + Guid.NewGuid().ToString("N"))
         }).Build();
         var type = typeof(UploadEncryptionConfiguration).Assembly.GetType("Mdaresna.Schools.Api.Documents.DeploymentReadinessCheck")!;
-        var check = (IHealthCheck)Activator.CreateInstance(type, config, new TestEnvironment())!;
+        var environment = new TestEnvironment();
+        var check = (IHealthCheck)Activator.CreateInstance(type, config, environment, new LocalSchoolDocumentStorage(config, environment))!;
         var result = await check.CheckHealthAsync(new HealthCheckContext());
         Assert.Equal(HealthStatus.Unhealthy, result.Status);
         Assert.Null(result.Exception);

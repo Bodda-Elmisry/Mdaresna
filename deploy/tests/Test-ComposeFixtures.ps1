@@ -10,6 +10,11 @@ $fixtures = @{
     RABBITMQ_AMQPS_URI = 'amqps://fixture:fixture@broker.example.invalid:5671/'
     RABBITMQ_TLS_DIRECTORY = $repoRoot
     GATEWAY_TLS_DIRECTORY = $repoRoot
+    SCHOOL_DOCUMENT_STORAGE_PROVIDER = 'Local'
+    SCHOOL_DOCUMENT_R2_ENDPOINT = ''
+    SCHOOL_DOCUMENT_R2_BUCKET = ''
+    SCHOOL_DOCUMENT_R2_ACCESS_KEY_ID = ''
+    SCHOOL_DOCUMENT_R2_SECRET_ACCESS_KEY = ''
 }
 $previous = @{}
 try {
@@ -45,7 +50,17 @@ try {
     try { & "$repoRoot/deploy/Test-DockerConfiguration.ps1" -EnvFile "$repoRoot/.env.docker.example" -Production }
     catch { $rejected = $true }
     if (-not $rejected) { throw 'Expected missing TLS preflight rejection.' }
-    Write-Output 'Local/production Compose fixture assertions and missing-TLS rejection passed.'
+    [Environment]::SetEnvironmentVariable('SCHOOL_DOCUMENT_STORAGE_PROVIDER', 'R2', 'Process')
+    $r2Rejected = $false
+    try { & "$repoRoot/deploy/Test-DockerConfiguration.ps1" -EnvFile "$repoRoot/.env.docker.example" }
+    catch { $r2Rejected = $true }
+    if (-not $r2Rejected) { throw 'Expected missing R2 settings preflight rejection.' }
+    [Environment]::SetEnvironmentVariable('SCHOOL_DOCUMENT_R2_ENDPOINT', 'https://fixture.r2.cloudflarestorage.com', 'Process')
+    [Environment]::SetEnvironmentVariable('SCHOOL_DOCUMENT_R2_BUCKET', 'schools-test', 'Process')
+    [Environment]::SetEnvironmentVariable('SCHOOL_DOCUMENT_R2_ACCESS_KEY_ID', 'fixture', 'Process')
+    [Environment]::SetEnvironmentVariable('SCHOOL_DOCUMENT_R2_SECRET_ACCESS_KEY', 'fixture', 'Process')
+    & "$repoRoot/deploy/Test-DockerConfiguration.ps1" -EnvFile "$repoRoot/.env.docker.example"
+    Write-Output 'Local/production Compose assertions, R2 validation and missing-TLS rejection passed.'
 } finally {
     foreach ($key in $fixtures.Keys) { [Environment]::SetEnvironmentVariable($key, $previous[$key], 'Process') }
 }

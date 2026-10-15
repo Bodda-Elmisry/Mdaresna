@@ -205,6 +205,13 @@ services:
       SchoolIdentity__Jwt__SigningKey: ${SCHOOLS_JWT_SIGNING_KEY:?Set SCHOOLS_JWT_SIGNING_KEY in .env.docker}
       SchoolIdentity__Jwt__AccessTokenMinutes: ${SCHOOLS_ACCESS_TOKEN_MINUTES:-15}
       SchoolDocuments__StorageRoot: /data/school-documents
+      SchoolDocuments__Provider: ${SCHOOL_DOCUMENT_STORAGE_PROVIDER:-Local}
+      SchoolDocuments__R2__Endpoint: ${SCHOOL_DOCUMENT_R2_ENDPOINT:-}
+      SchoolDocuments__R2__Bucket: ${SCHOOL_DOCUMENT_R2_BUCKET:-}
+      SchoolDocuments__R2__AccessKeyId: ${SCHOOL_DOCUMENT_R2_ACCESS_KEY_ID:-}
+      SchoolDocuments__R2__SecretAccessKey: ${SCHOOL_DOCUMENT_R2_SECRET_ACCESS_KEY:-}
+      SchoolDocuments__R2__MaxUploadMiB: ${SCHOOL_DOCUMENT_R2_MAX_UPLOAD_MIB:-64}
+      SchoolDocuments__R2__ConcurrentUploads: ${SCHOOL_DOCUMENT_R2_CONCURRENT_UPLOADS:-2}
       SchoolDocuments__MaxFileSizeBytes: ${SCHOOL_DOCUMENT_MAX_FILE_SIZE_BYTES:-26214400}
     ports:
       - "127.0.0.1:${SCHOOLS_API_PORT:-5251}:8080"

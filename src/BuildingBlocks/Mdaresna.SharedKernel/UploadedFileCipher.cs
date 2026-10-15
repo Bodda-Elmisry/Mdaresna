@@ -121,6 +121,7 @@ public sealed class UploadedFileCipher(string? activeKeyId, IReadOnlyDictionary<
                 var index = _position / ChunkSize; var count = (int)Math.Min(ChunkSize, size - index * ChunkSize);
                 if (_cached != index)
                 {
+                    _cached = -1;
                     source.Position = HeaderSize + index * (ChunkSize + 16L); source.ReadExactly(_cipher.AsSpan(0, count + 16));
                     aes.Decrypt(Nonce((ulong)index), _cipher.AsSpan(0, count), _cipher.AsSpan(count, 16), _plain.AsSpan(0, count), Aad(scope, header, 104, (ulong)index, count)); _cached = index;
                 }
@@ -129,7 +130,26 @@ public sealed class UploadedFileCipher(string? activeKeyId, IReadOnlyDictionary<
             }
             return read;
         }
-        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) { cancellationToken.ThrowIfCancellationRequested(); return ValueTask.FromResult(Read(buffer.Span)); }
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var read = 0;
+            while (buffer.Length > 0 && _position < size)
+            {
+                var index = _position / ChunkSize; var count = (int)Math.Min(ChunkSize, size - index * ChunkSize);
+                if (_cached != index)
+                {
+                    _cached = -1;
+                    source.Position = HeaderSize + index * (ChunkSize + 16L);
+                    await source.ReadExactlyAsync(_cipher.AsMemory(0, count + 16), cancellationToken).ConfigureAwait(false);
+                    aes.Decrypt(Nonce((ulong)index), _cipher.AsSpan(0, count), _cipher.AsSpan(count, 16), _plain.AsSpan(0, count), Aad(scope, header, 104, (ulong)index, count)); _cached = index;
+                }
+                var offset = (int)(_position % ChunkSize); var take = Math.Min(buffer.Length, count - offset);
+                _plain.AsMemory(offset, take).CopyTo(buffer); buffer = buffer[take..]; _position += take; read += take;
+            }
+            return read;
+        }
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
         public override long Seek(long offset, SeekOrigin origin) { Position = checked((origin == SeekOrigin.Begin ? 0 : origin == SeekOrigin.Current ? Position : Length) + offset); return Position; }
         public override void Flush() { }
         public override void SetLength(long value) => throw new NotSupportedException();
