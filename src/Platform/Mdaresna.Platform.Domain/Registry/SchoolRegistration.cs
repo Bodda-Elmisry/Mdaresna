@@ -190,6 +190,11 @@ public sealed class SchoolRegistration : AggregateRoot
             provisioningOperationId: null,
             SchoolLifecycleStatus.Draft);
 
+    public void Approve(Guid changedByAccountId, DateTimeOffset occurredAtUtc)
+    {
+        UnitTypeId = null;
+        TransitionTo(SchoolLifecycleStatus.Approved, changedByAccountId, occurredAtUtc, null, null, SchoolLifecycleStatus.PendingVerification);
+    }
     public void Approve(Guid unitTypeId, Guid changedByAccountId, DateTimeOffset occurredAtUtc)
     {
         DomainGuard.NonEmptyGuid(unitTypeId, nameof(unitTypeId));

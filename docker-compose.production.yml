@@ -31,6 +31,7 @@ services:
       SmsLogConsumer__BrokerUri: ${RABBITMQ_AMQPS_URI:?Provide trusted amqps URI for production}
       SchoolRegistrationConsumer__BrokerUri: ${RABBITMQ_AMQPS_URI}
       PlatformOutboxPublisher__BrokerUri: ${RABBITMQ_AMQPS_URI}
+      SchoolSubscriptionResults__BrokerUri: ${RABBITMQ_AMQPS_URI}
       SchoolProvisioningResultConsumer__BrokerUri: ${RABBITMQ_AMQPS_URI}
   schools-api:
     ports: !reset []
@@ -38,6 +39,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       SchoolRoutingCache__Namespace: ${SCHOOL_ROUTING_CACHE_NAMESPACE:-mdaresna-production}
       SchoolRoutingCacheConsumer__BrokerUri: ${RABBITMQ_AMQPS_URI}
+      SchoolSubscriptions__BrokerUri: ${RABBITMQ_AMQPS_URI}
       SchoolRegistrationPublisher__BrokerUri: ${RABBITMQ_AMQPS_URI}
       SchoolProvisioningConsumer__BrokerUri: ${RABBITMQ_AMQPS_URI}
       SchoolsHost__Cors__AllowedOrigins__0: https://${SCHOOLS_DOMAIN:?Provide Schools public domain}

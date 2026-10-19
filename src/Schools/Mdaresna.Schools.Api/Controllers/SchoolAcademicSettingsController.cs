@@ -112,7 +112,11 @@ public sealed class SchoolAcademicSettingsController(ISchoolDbContextFactory dbF
         await using var db = await RequireDb(cancellationToken); if (db is null) return Unauthorized();
         var entity = await Find(db, normalized, id, false, cancellationToken); if (entity is not ISoftDeletableSchoolEntity soft) return Missing();
         if (await HasChildren(db, normalized, id, cancellationToken)) return Conflict(Failure(409, "academic_settings.has_children", "Delete or move child records first."));
+        await using var tx = normalized == Kind.ProgramYear && db.Database.IsRelational() ? await db.Database.BeginTransactionAsync(cancellationToken) : null;
+        var capacity = normalized == Kind.ProgramYear ? await SchoolCapacityService.LockStudentStateAsync(db, cancellationToken) : null;
         var now=DateTimeOffset.UtcNow; soft.IsDeleted=true; soft.DeletedAtUtc=now; soft.DeletedByUserId=CurrentUserId(); SetActive(entity,false); SetUpdated(entity,now); await db.SaveChangesAsync(cancellationToken);
+        if (capacity != null) { await SchoolCapacityService.ReconcileStudentYearsAsync(db, capacity, CurrentUserId() ?? Guid.Empty, cancellationToken); await db.SaveChangesAsync(cancellationToken); }
+        if (tx != null) await tx.CommitAsync(cancellationToken);
         return Ok(ApiResponse<object?>.Success(null, correlationId: HttpContext.TraceIdentifier));
     }
 
@@ -128,7 +132,22 @@ public sealed class SchoolAcademicSettingsController(ISchoolDbContextFactory dbF
     }
 
     private async Task<IActionResult> Mutate(string kind, Guid id, string action, bool deleted, CancellationToken ct, Action<object> mutate)
-    { var normalized=Normalize(kind); if(!Can(normalized,action)) return Forbid(); await using var db=await RequireDb(ct); if(db is null)return Unauthorized(); var entity=await Find(db,normalized,id,deleted,ct); if(entity is null)return Missing(); mutate(entity); SetUpdated(entity,DateTimeOffset.UtcNow); await db.SaveChangesAsync(ct); return Ok(ApiResponse<object?>.Success(null,correlationId:HttpContext.TraceIdentifier)); }
+    {
+        var normalized=Normalize(kind); if(!Can(normalized,action)) return Forbid();
+        await using var db=await RequireDb(ct); if(db is null)return Unauthorized();
+        var entity=await Find(db,normalized,id,deleted,ct); if(entity is null)return Missing();
+        await using var tx = normalized == Kind.ProgramYear && db.Database.IsRelational() ? await db.Database.BeginTransactionAsync(ct) : null;
+        var capacity = normalized == Kind.ProgramYear ? await SchoolCapacityService.LockStudentStateAsync(db, ct) : null;
+        mutate(entity); SetUpdated(entity,DateTimeOffset.UtcNow); await db.SaveChangesAsync(ct);
+        if (capacity != null)
+        {
+            try { await SchoolCapacityService.ReconcileStudentYearsAsync(db, capacity, CurrentUserId() ?? Guid.Empty, ct); }
+            catch (SchoolCapacityException ex) { return Conflict(Failure(409, ex.Code, "The academic-year change exceeds contracted student capacity.")); }
+            await db.SaveChangesAsync(ct);
+        }
+        if (tx != null) await tx.CommitAsync(ct);
+        return Ok(ApiResponse<object?>.Success(null,correlationId:HttpContext.TraceIdentifier));
+    }
 
     private bool Can(Kind kind,string action) { var module=kind switch { Kind.Schedule=>"operations", Kind.CalendarEvent=>"calendar", Kind.Invalid=>"invalid", _=>"academics" }; return User.HasClaim(SchoolClaimTypes.Permission,$"school.{module}.{action}"); }
     private bool HasAny(params string[] permissions)=>permissions.Any(p=>User.HasClaim(SchoolClaimTypes.Permission,p));

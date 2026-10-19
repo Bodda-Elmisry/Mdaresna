@@ -18,6 +18,10 @@ namespace Mdaresna.Schools.Infrastructure.Persistence;
 /// </summary>
 public class SchoolsDbContext(DbContextOptions options) : DbContext(options)
 {
+    public DbSet<SchoolInvoiceCopy> InvoiceCopies => Set<SchoolInvoiceCopy>();
+    public DbSet<SchoolSubscriptionState> Subscriptions => Set<SchoolSubscriptionState>();
+    public DbSet<SchoolCapacityAllocation> CapacityAllocations => Set<SchoolCapacityAllocation>();
+    public DbSet<SchoolCapacityMovement> CapacityMovements => Set<SchoolCapacityMovement>();
     public DbSet<ClassOperationalAssignment> ClassOperationalAssignments => Set<ClassOperationalAssignment>();
     public DbSet<ClassOperationalGrant> ClassOperationalGrants => Set<ClassOperationalGrant>();
     public DbSet<ClassOperationalAssignmentAudit> ClassOperationalAssignmentAudits => Set<ClassOperationalAssignmentAudit>();

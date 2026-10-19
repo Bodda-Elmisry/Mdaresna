@@ -148,6 +148,8 @@ services:
       SchoolRegistrationConsumer__BrokerUri: ${RABBITMQ_BROKER_URI:?Set RABBITMQ_BROKER_URI in .env.docker}
       PlatformOutboxPublisher__Enabled: ${PLATFORM_OUTBOX_PUBLISHER_ENABLED:-true}
       PlatformOutboxPublisher__BrokerUri: ${RABBITMQ_BROKER_URI:?Set RABBITMQ_BROKER_URI in .env.docker}
+      SchoolSubscriptionResults__Enabled: ${SCHOOL_SUBSCRIPTIONS_CONSUMER_ENABLED:-false}
+      SchoolSubscriptionResults__BrokerUri: ${RABBITMQ_BROKER_URI}
       SchoolProvisioningResultConsumer__Enabled: ${SCHOOL_PROVISIONING_RESULT_CONSUMER_ENABLED:-true}
       SchoolProvisioningResultConsumer__BrokerUri: ${RABBITMQ_BROKER_URI:?Set RABBITMQ_BROKER_URI in .env.docker}
       PlatformSms__EncryptionKey: ${PLATFORM_SMS_ENCRYPTION_KEY:-}
@@ -195,6 +197,10 @@ services:
       SchoolRoutingCache__Enabled: ${SCHOOL_ROUTING_CACHE_ENABLED:-true}
       SchoolRoutingCacheConsumer__Enabled: ${SCHOOL_ROUTING_CACHE_CONSUMER_ENABLED:-true}
       SchoolRoutingCacheConsumer__BrokerUri: ${RABBITMQ_BROKER_URI}
+      SchoolSubscriptions__ConsumerEnabled: ${SCHOOL_SUBSCRIPTIONS_CONSUMER_ENABLED:-false}
+      SchoolSubscriptions__BrokerUri: ${RABBITMQ_BROKER_URI}
+      SchoolSubscriptions__RequireEntitlement: ${SCHOOL_SUBSCRIPTIONS_REQUIRE_ENTITLEMENT:-false}
+      SchoolSubscriptions__BlockExpiredReads: ${SCHOOL_SUBSCRIPTIONS_BLOCK_EXPIRED_READS:-false}
       SchoolRoutingCache__Namespace: ${SCHOOL_ROUTING_CACHE_NAMESPACE:-mdaresna-local}
       SchoolRoutingCache__RedisConnection: ${SCHOOL_ROUTING_REDIS_CONNECTION:?Provide authenticated Redis connection from secret storage}
       SchoolRoutingCache__TtlSeconds: ${SCHOOL_ROUTING_CACHE_TTL_SECONDS:-2592000}

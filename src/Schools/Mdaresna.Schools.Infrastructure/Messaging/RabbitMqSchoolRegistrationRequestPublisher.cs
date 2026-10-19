@@ -17,8 +17,9 @@ public sealed class RabbitMqSchoolRegistrationRequestPublisher(
     public const string Exchange = "mdaresna.school-registry";
     public const string RoutingKey = "school.registration.requested.v2";
 
-    public async Task PublishAsync(IntegrationMessageEnvelope<SchoolRegistrationRequestedV2> envelope,
-        CancellationToken cancellationToken = default)
+    public Task PublishAsync(IntegrationMessageEnvelope<SchoolRegistrationRequestedV2> envelope, CancellationToken cancellationToken = default) => PublishEnvelopeAsync(envelope, RoutingKey, cancellationToken);
+    public Task PublishAsync(IntegrationMessageEnvelope<SchoolRegistrationRequestedV3> envelope, CancellationToken cancellationToken = default) => PublishEnvelopeAsync(envelope, "school.registration.requested.v3", cancellationToken);
+    private async Task PublishEnvelopeAsync<T>(IntegrationMessageEnvelope<T> envelope, string routingKey, CancellationToken cancellationToken) where T : class, IIntegrationMessage
     {
         var configuredUri = configuration["SchoolRegistrationPublisher:BrokerUri"];
         if (!Uri.TryCreate(configuredUri, UriKind.Absolute, out var brokerUri) ||
@@ -48,7 +49,7 @@ public sealed class RabbitMqSchoolRegistrationRequestPublisher(
             Type = envelope.MessageType,
             CorrelationId = envelope.CorrelationId.ToString("D")
         };
-        await channel.BasicPublishAsync(Exchange, RoutingKey, mandatory: true,
+        await channel.BasicPublishAsync(Exchange, routingKey, mandatory: true,
             properties, body, cancellationToken);
     }
 }

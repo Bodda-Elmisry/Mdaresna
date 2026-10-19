@@ -38,6 +38,11 @@ internal sealed class PlatformBillingUnitOfWork(PlatformDbContext dbContext) : I
             await dbContext.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateConcurrencyException exception) when (
+            exception.Entries.Any(entry => entry.Entity is Mdaresna.Platform.Domain.Billing.Subscriptions.PlatformInvoice))
+        {
+            throw new PlatformConflictException("invoice.version_conflict", "The invoice changed; refresh before retrying.");
+        }
+        catch (DbUpdateConcurrencyException exception) when (
             exception.Entries.Any(entry => entry.Entity is PlatformPaymentRequest))
         {
             throw new PlatformConflictException(
@@ -50,6 +55,17 @@ internal sealed class PlatformBillingUnitOfWork(PlatformDbContext dbContext) : I
             throw new PlatformConflictException(
                 "unit_type.concurrent_change",
                 "Unit type was changed by another operation.");
+        }
+        catch (DbUpdateConcurrencyException exception) when (
+            exception.Entries.Any(entry => entry.Entity is Mdaresna.Platform.Domain.Billing.Subscriptions.SchoolSubscription or Mdaresna.Platform.Domain.Billing.Subscriptions.SubscriptionQuote))
+        {
+            throw new PlatformConflictException("subscription.version_conflict", "The subscription or quote changed; refresh before retrying.");
+        }
+        catch (DbUpdateException exception) when (
+            exception.Entries.Any(entry => entry.Entity is Mdaresna.Platform.Domain.Billing.Subscriptions.SchoolSubscription or Mdaresna.Platform.Domain.Billing.Subscriptions.SubscriptionQuote) &&
+            DatabaseErrorClassifier.IsUniqueViolation(exception.InnerException))
+        {
+            throw new PlatformConflictException("subscription.version_conflict", "The subscription or quote already exists; refresh before retrying.");
         }
         catch (DbUpdateException updateException) when (
             updateException.Entries.Any(entry => entry.Entity is UnitGrant) &&

@@ -16,7 +16,8 @@ public sealed class ReviewSchoolPlatformPaymentCommandHandler(
     IPlatformBillingUnitOfWork unitOfWork,
     Mdaresna.SharedKernel.Time.IClock clock,
     IUnitPurchaseRepository unitPurchases,
-    IUnitCommerceAuditWriter unitAudit)
+    IUnitCommerceAuditWriter unitAudit,
+    Mdaresna.Platform.Application.Billing.Subscriptions.ISubscriptionPaymentEffect? subscriptions = null)
 {
     private const string Producer = "mdaresna-platform";
 
@@ -39,6 +40,7 @@ public sealed class ReviewSchoolPlatformPaymentCommandHandler(
         ReviewSchoolPlatformPaymentCommand command,
         CancellationToken cancellationToken)
     {
+        if (subscriptions is not null) await subscriptions.BeforeReviewAsync(command.RequestId, cancellationToken);
         var request = await payments.FindForReviewAsync(command.RequestId, cancellationToken)
             ?? throw new PlatformResourceNotFoundException(
                 "platform_payment.not_found", "Platform payment request was not found.");
@@ -104,6 +106,8 @@ public sealed class ReviewSchoolPlatformPaymentCommandHandler(
             }
         }
 
+        if (subscriptions is not null)
+            await subscriptions.ApplyReviewAsync(request, new(command.ReviewedByAccountId, command.CorrelationId), cancellationToken);
         audit.RecordReviewed(request, command.CorrelationId.ToString("D"));
         var domainEvent = request.DomainEvents
             .OfType<PlatformPaymentReviewedDomainEvent>()

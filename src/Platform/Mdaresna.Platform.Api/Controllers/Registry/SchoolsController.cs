@@ -409,10 +409,11 @@ public sealed class SchoolsController(
     {
         RegistryRequestContext.RequireId(tenantId, nameof(tenantId));
         RegistryRequestContext.RequireId(schoolId, nameof(schoolId));
+        if (request.UnitTypeId is not null)
+            return StatusCode(410, ApiResponse<object>.Failure(410, "unit_sales.retired", "School approval no longer accepts unit types."));
         if (request.ExpectedVersion is null or < 0 ||
             request.Reason?.Trim().Length > 1000 ||
-            (action == SchoolLifecycleAction.Approve &&
-                (!request.UnitTypeId.HasValue || request.UnitTypeId.Value == Guid.Empty)) ||
+            (action == SchoolLifecycleAction.Approve && request.UnitTypeId == Guid.Empty) ||
             (action != SchoolLifecycleAction.Approve && request.UnitTypeId is not null))
         {
             throw new ValidationException("Lifecycle request data is invalid.");

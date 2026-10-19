@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Mdaresna.Platform.Api.Controllers.Billing;
 
-[ApiController]
+[ApiController, RetiredUnitSales]
 [Route("api/platform/v1/unit-types")]
 public sealed class UnitTypesController(
     ListUnitTypesQueryHandler list,

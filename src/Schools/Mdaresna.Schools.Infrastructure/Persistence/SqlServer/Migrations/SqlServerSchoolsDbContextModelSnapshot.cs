@@ -6461,6 +6461,62 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.ToTable("subject_coordinator_assignments", "school");
                 });
 
+            modelBuilder.Entity("Mdaresna.Schools.Domain.School.SchoolCapacityAllocation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("SubjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SystemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SystemId", "SubjectId")
+                        .IsUnique();
+
+                    b.ToTable("capacity_allocations", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.School.SchoolCapacityMovement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<Guid>("ActorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("OccurredAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("SubjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SystemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SystemId", "OccurredAtUtc");
+
+                    b.ToTable("capacity_movements", "school");
+                });
+
             modelBuilder.Entity("Mdaresna.Schools.Domain.School.SchoolInformation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -6573,6 +6629,35 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                         .IsUnique();
 
                     b.ToTable("school_information", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.School.SchoolInvoiceCopy", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("PayloadJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("SchoolId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("SyncedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAtUtc");
+
+                    b.ToTable("invoice_copies", "school");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.School.SchoolPresentation", b =>
@@ -6700,6 +6785,71 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.HasIndex("SchoolInformationId", "SortOrder");
 
                     b.ToTable("school_profile_images", "school");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.School.SchoolSubscriptionState", b =>
+                {
+                    b.Property<Guid>("SystemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AddOnCapacity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BaseCapacity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CapabilityCodes")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("CapacityMetric")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
+
+                    b.Property<bool>("IsEnforced")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSuspended")
+                        .HasColumnType("bit");
+
+                    b.Property<long>("LocalVersion")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("PlanId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("Revision")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("SubscriptionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("SyncedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("SystemCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<int>("UsedCapacity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("ValidFromUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("ValidUntilUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("SystemId");
+
+                    b.HasIndex("SubscriptionId")
+                        .IsUnique();
+
+                    b.ToTable("subscription_states", "school");
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.Social.SocialAudit", b =>
@@ -10048,6 +10198,24 @@ namespace Mdaresna.Schools.Infrastructure.Persistence.SqlServer.Migrations
                     b.Navigation("EducationProgram");
 
                     b.Navigation("EducationStage");
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.School.SchoolCapacityAllocation", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.School.SchoolSubscriptionState", null)
+                        .WithMany()
+                        .HasForeignKey("SystemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Mdaresna.Schools.Domain.School.SchoolCapacityMovement", b =>
+                {
+                    b.HasOne("Mdaresna.Schools.Domain.School.SchoolSubscriptionState", null)
+                        .WithMany()
+                        .HasForeignKey("SystemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Mdaresna.Schools.Domain.School.SchoolPresentation", b =>

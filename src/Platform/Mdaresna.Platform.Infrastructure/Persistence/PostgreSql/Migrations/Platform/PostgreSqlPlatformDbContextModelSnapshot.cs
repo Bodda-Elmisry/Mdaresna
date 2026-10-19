@@ -281,6 +281,505 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Pla
                         });
                 });
 
+            modelBuilder.Entity("Mdaresna.Platform.Domain.Billing.Subscriptions.PlatformInvoice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)");
+
+                    b.Property<Guid?>("CurrentPaymentRequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<DateTimeOffset?>("PaidAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("RegistrationRequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SchoolId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Number")
+                        .IsUnique();
+
+                    b.HasIndex("RegistrationRequestId")
+                        .IsUnique()
+                        .HasFilter("\"RegistrationRequestId\" IS NOT NULL");
+
+                    b.HasIndex("SchoolId", "CreatedAtUtc");
+
+                    b.ToTable("invoices", "billing", t =>
+                        {
+                            t.HasCheckConstraint("ck_invoice_amount", "\"Amount\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Domain.Billing.Subscriptions.PlatformInvoiceLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("InvoiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PlanNameAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("PlanNameEn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("QuoteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SystemNameAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("SystemNameEn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.HasIndex("QuoteId")
+                        .IsUnique();
+
+                    b.ToTable("invoice_lines", "billing");
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Domain.Billing.Subscriptions.PlatformInvoiceReceipt", b =>
+                {
+                    b.Property<Guid>("PaymentRequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("InvoiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Method")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("ReceivedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RecordedByAccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("RepresentativeName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("PaymentRequestId");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.ToTable("invoice_receipts", "billing");
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Domain.Billing.Subscriptions.SchoolRegistrationOffer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("QuoteIdsJson")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("SchoolId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("registration_subscription_offers", "billing");
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Domain.Billing.Subscriptions.SchoolSubscription", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AddOnCapacity")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("AddOnUnitPrice")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal>("BaseAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int>("BaseCapacity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CapabilityCodes")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)");
+
+                    b.Property<bool>("IsSuspended")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("PlanId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("PlanRevision")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("SchoolId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SystemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("ValidFromUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("ValidUntilUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SystemId");
+
+                    b.HasIndex("PlanId", "PlanRevision");
+
+                    b.HasIndex("SchoolId", "SystemId")
+                        .IsUnique();
+
+                    b.ToTable("school_system_subscriptions", "billing", t =>
+                        {
+                            t.HasCheckConstraint("ck_school_subscription_capacity", "\"BaseCapacity\" > 0 AND \"AddOnCapacity\" >= 0");
+
+                            t.HasCheckConstraint("ck_school_subscription_period", "\"ValidUntilUtc\" > \"ValidFromUtc\"");
+                        });
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Domain.Billing.Subscriptions.SchoolSubscriptionDelivery", b =>
+                {
+                    b.Property<Guid>("SubscriptionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("AppliedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("AppliedRevision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("ReceivedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("SubscriptionId");
+
+                    b.ToTable("subscription_delivery_receipts", "billing");
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Domain.Billing.Subscriptions.SchoolSystemDefinition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CapabilityCodes")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<int>("CapacityMetric")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("school_systems", "billing");
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Domain.Billing.Subscriptions.SubscriptionQuote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("AddOnUnitPrice")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<int>("AdditionalQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("AmountDue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTimeOffset?>("AppliedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("BaseAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int>("BaseCapacity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CapabilityCodes")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<long>("CatalogVersion")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)");
+
+                    b.Property<DateTimeOffset>("ExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("InvoiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("PaymentRequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PlanId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("PlanRevision")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ResultAddOnCapacity")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("SchoolId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("SourceVersion")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("SubscriptionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SystemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("ValidFromUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("ValidUntilUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.HasIndex("PaymentRequestId")
+                        .HasFilter("\"PaymentRequestId\" IS NOT NULL");
+
+                    b.HasIndex("PlanId", "PlanRevision");
+
+                    b.HasIndex("SchoolId", "ExpiresAtUtc");
+
+                    b.ToTable("subscription_quotes", "billing", t =>
+                        {
+                            t.HasCheckConstraint("ck_subscription_quote_amount", "\"AmountDue\" >= 0 AND \"BaseAmount\" > 0");
+
+                            t.HasCheckConstraint("ck_subscription_quote_capacity", "\"BaseCapacity\" > 0 AND \"ResultAddOnCapacity\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Domain.Billing.Subscriptions.SystemPlan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("LatestRevision")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int?>("PublishedRevision")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("SystemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SystemId", "Code")
+                        .IsUnique();
+
+                    b.HasIndex("SystemId", "SortOrder")
+                        .IsUnique();
+
+                    b.ToTable("system_plans", "billing", t =>
+                        {
+                            t.HasCheckConstraint("ck_system_plan_order", "\"SortOrder\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Domain.Billing.Subscriptions.SystemPlanRevision", b =>
+                {
+                    b.Property<Guid>("PlanId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Revision")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("AddOnUnitPrice")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal>("BaseAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("BaseUnitPrice")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)");
+
+                    b.HasKey("PlanId", "Revision");
+
+                    b.ToTable("system_plan_revisions", "billing", t =>
+                        {
+                            t.HasCheckConstraint("ck_system_plan_revision_capacity", "\"Capacity\" BETWEEN 1 AND 1000000");
+
+                            t.HasCheckConstraint("ck_system_plan_revision_prices", "\"BaseUnitPrice\" > 0 AND \"AddOnUnitPrice\" > 0 AND \"BaseAmount\" > 0");
+                        });
+                });
+
             modelBuilder.Entity("Mdaresna.Platform.Domain.Billing.Units.UnitGrant", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1872,6 +2371,97 @@ namespace Mdaresna.Platform.Infrastructure.Persistence.PostgreSql.Migrations.Pla
                         .WithMany()
                         .HasForeignKey("TenantId", "SchoolId")
                         .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Domain.Billing.Subscriptions.PlatformInvoiceLine", b =>
+                {
+                    b.HasOne("Mdaresna.Platform.Domain.Billing.Subscriptions.PlatformInvoice", null)
+                        .WithMany()
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Platform.Domain.Billing.Subscriptions.SubscriptionQuote", null)
+                        .WithMany()
+                        .HasForeignKey("QuoteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Domain.Billing.Subscriptions.PlatformInvoiceReceipt", b =>
+                {
+                    b.HasOne("Mdaresna.Platform.Domain.Billing.Subscriptions.PlatformInvoice", null)
+                        .WithMany()
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Platform.Domain.Billing.PlatformPaymentRequest", null)
+                        .WithMany()
+                        .HasForeignKey("PaymentRequestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Domain.Billing.Subscriptions.SchoolSubscription", b =>
+                {
+                    b.HasOne("Mdaresna.Platform.Domain.Billing.Subscriptions.SchoolSystemDefinition", null)
+                        .WithMany()
+                        .HasForeignKey("SystemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Mdaresna.Platform.Domain.Billing.Subscriptions.SystemPlanRevision", null)
+                        .WithMany()
+                        .HasForeignKey("PlanId", "PlanRevision")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Domain.Billing.Subscriptions.SchoolSubscriptionDelivery", b =>
+                {
+                    b.HasOne("Mdaresna.Platform.Domain.Billing.Subscriptions.SchoolSubscription", null)
+                        .WithOne()
+                        .HasForeignKey("Mdaresna.Platform.Domain.Billing.Subscriptions.SchoolSubscriptionDelivery", "SubscriptionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Domain.Billing.Subscriptions.SubscriptionQuote", b =>
+                {
+                    b.HasOne("Mdaresna.Platform.Domain.Billing.Subscriptions.PlatformInvoice", null)
+                        .WithMany()
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Platform.Domain.Billing.PlatformPaymentRequest", null)
+                        .WithMany()
+                        .HasForeignKey("PaymentRequestId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Mdaresna.Platform.Domain.Billing.Subscriptions.SystemPlanRevision", null)
+                        .WithMany()
+                        .HasForeignKey("PlanId", "PlanRevision")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Domain.Billing.Subscriptions.SystemPlan", b =>
+                {
+                    b.HasOne("Mdaresna.Platform.Domain.Billing.Subscriptions.SchoolSystemDefinition", null)
+                        .WithMany()
+                        .HasForeignKey("SystemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Mdaresna.Platform.Domain.Billing.Subscriptions.SystemPlanRevision", b =>
+                {
+                    b.HasOne("Mdaresna.Platform.Domain.Billing.Subscriptions.SystemPlan", null)
+                        .WithMany()
+                        .HasForeignKey("PlanId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

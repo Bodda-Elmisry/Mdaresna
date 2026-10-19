@@ -19,11 +19,20 @@ public sealed class TransitionSchoolCommandHandler(
     IPlatformOutboxWriter outbox,
     IPlatformRegistryAuditWriter audit,
     IPlatformUnitOfWork unitOfWork,
-    IClock clock)
+    IClock clock,
+    Mdaresna.Platform.Application.Billing.IPlatformBillingUnitOfWork? approvalUnitOfWork = null,
+    Mdaresna.Platform.Application.Billing.Subscriptions.ISubscriptionService? subscriptions = null)
 {
     private const string Producer = "mdaresna-platform";
 
-    public async Task<TransitionSchoolResult> HandleAsync(
+    public Task<TransitionSchoolResult> HandleAsync(TransitionSchoolCommand command, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        return command.Action == SchoolLifecycleAction.Approve && approvalUnitOfWork != null
+            ? approvalUnitOfWork.ExecuteInTransactionAsync(ct => HandleCoreAsync(command, ct), cancellationToken)
+            : HandleCoreAsync(command, cancellationToken);
+    }
+    private async Task<TransitionSchoolResult> HandleCoreAsync(
         TransitionSchoolCommand command,
         CancellationToken cancellationToken = default)
     {
@@ -51,14 +60,16 @@ public sealed class TransitionSchoolCommandHandler(
 
         var now = clock.UtcNow;
         UnitType? selectedUnitType = null;
-        if (command.Action == SchoolLifecycleAction.Approve)
+        if (command.Action == SchoolLifecycleAction.Approve && command.UnitTypeId.HasValue)
         {
-            selectedUnitType = await unitTypes.FindByIdAsync(command.UnitTypeId!.Value, cancellationToken)
+            selectedUnitType = await unitTypes.FindByIdAsync(command.UnitTypeId.Value, cancellationToken)
                 ?? throw new PlatformResourceNotFoundException("unit_type.not_found", "Unit type was not found.");
             if (!selectedUnitType.IsActive)
                 throw new PlatformConflictException("unit_type.inactive", "The selected unit type is inactive.");
         }
         var previousEventCount = school.DomainEvents.Count;
+        if (command.Action == SchoolLifecycleAction.Approve && subscriptions != null)
+            await subscriptions.PrepareInitialActivationAsync(school.Id.Value, new(command.RequestedByAccountId, command.CorrelationId), cancellationToken);
         ApplyAction(school, command, now);
         if (command.Action == SchoolLifecycleAction.Approve)
             school.BeginProvisioning(command.CorrelationId, (Guid)command.RequestedByAccountId, now);
@@ -113,7 +124,16 @@ public sealed class TransitionSchoolCommandHandler(
                 })));
         }
 
-        if (command.Action == SchoolLifecycleAction.Approve)
+        if (command.Action == SchoolLifecycleAction.Approve && selectedUnitType is null)
+        {
+            var provision = new Mdaresna.Schools.Contracts.Provisioning.ProvisionSchoolV2(command.CorrelationId, school.TenantId, school.Id,
+                school.RegistrationRequestId, school.Code.Value, school.DisplayName, school.SchoolType.ToString(), school.DeploymentMode.ToString(),
+                school.Address, school.PrimaryPhone, school.RequestedByAccountId, school.CreatedAtUtc, now);
+            outbox.Enqueue(IntegrationMessageEnvelope<Mdaresna.Schools.Contracts.Provisioning.ProvisionSchoolV2>.Create(now, Producer,
+                IntegrationMessageScope.ForSchool(school.TenantId, school.Id), provision, new IntegrationAggregateReference("school-registration", (Guid)school.Id, school.Version),
+                command.CorrelationId, command.CausationId, command.TraceParent));
+        }
+        else if (command.Action == SchoolLifecycleAction.Approve)
         {
             var provision = new ProvisionSchoolCommand(
                 command.CorrelationId,
@@ -162,7 +182,8 @@ public sealed class TransitionSchoolCommandHandler(
                 school.SubmitForVerification(actorId, occurredAtUtc);
                 break;
             case SchoolLifecycleAction.Approve:
-                school.Approve(command.UnitTypeId!.Value, actorId, occurredAtUtc);
+                if (command.UnitTypeId.HasValue) school.Approve(command.UnitTypeId.Value, actorId, occurredAtUtc);
+                else school.Approve(actorId, occurredAtUtc);
                 break;
             case SchoolLifecycleAction.Suspend:
                 school.Suspend(command.Reason!, actorId, occurredAtUtc);
@@ -202,7 +223,7 @@ public sealed class TransitionSchoolCommandHandler(
 
         if (command.Action == SchoolLifecycleAction.Approve)
         {
-            if (!command.UnitTypeId.HasValue || command.UnitTypeId.Value == Guid.Empty)
+            if (command.UnitTypeId == Guid.Empty)
                 throw new ArgumentException("An active unit type is required for approval.", nameof(command));
         }
         else if (command.UnitTypeId is not null)

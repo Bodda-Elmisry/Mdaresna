@@ -57,6 +57,17 @@ public sealed class SchoolInformation
             CreatedAtUtc = activatedAtUtc, UpdatedAtUtc = activatedAtUtc };
     }
 
+    public static SchoolInformation CreateWithoutUnits(Guid schoolId, Guid tenantId, Guid requestId, string code, string name,
+        string type, string deployment, string? address, string? phone, Guid ownerId, DateTimeOffset created, DateTimeOffset activated)
+    {
+        if (schoolId == Guid.Empty || schoolId != tenantId || requestId == Guid.Empty || ownerId == Guid.Empty || created.Offset != TimeSpan.Zero || activated.Offset != TimeSpan.Zero)
+            throw new ArgumentException("Invalid school information.");
+        return new() { Id = Guid.NewGuid(), PlatformSchoolReferenceId = schoolId, PlatformTenantReferenceId = tenantId,
+            PlatformRegistrationRequestReferenceId = requestId, Code = Required(code, 32), DisplayName = Required(name, 200),
+            SchoolType = Required(type, 32), DeploymentMode = Required(deployment, 32), Status = "Active", Address = Optional(address, 500), PrimaryPhone = Optional(phone, 32),
+            OwnerPlatformAccountReferenceId = ownerId, PlatformCreatedAtUtc = created, ActivatedAtUtc = activated, CreatedAtUtc = activated, UpdatedAtUtc = activated };
+    }
+
     public void ConfigureStudentAttendance(string timeZoneId, StudentAttendanceMode defaultMode, DateTimeOffset updatedAtUtc)
     {
         if (string.IsNullOrWhiteSpace(timeZoneId) || timeZoneId.Trim().Length > 100)

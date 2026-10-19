@@ -34,6 +34,11 @@ public partial class PlatformDbContext(DbContextOptions options) : DbContext(opt
     public DbSet<UnitType> UnitTypes => Set<UnitType>();
     public DbSet<UnitPurchaseIntent> UnitPurchaseIntents => Set<UnitPurchaseIntent>();
     public DbSet<UnitGrant> UnitGrants => Set<UnitGrant>();
+    public DbSet<Mdaresna.Platform.Domain.Billing.Subscriptions.SchoolSystemDefinition> SchoolSystems => Set<Mdaresna.Platform.Domain.Billing.Subscriptions.SchoolSystemDefinition>();
+    public DbSet<Mdaresna.Platform.Domain.Billing.Subscriptions.SystemPlan> SystemPlans => Set<Mdaresna.Platform.Domain.Billing.Subscriptions.SystemPlan>();
+    public DbSet<Mdaresna.Platform.Domain.Billing.Subscriptions.SystemPlanRevision> SystemPlanRevisions => Set<Mdaresna.Platform.Domain.Billing.Subscriptions.SystemPlanRevision>();
+    public DbSet<Mdaresna.Platform.Domain.Billing.Subscriptions.SchoolSubscription> SchoolSubscriptions => Set<Mdaresna.Platform.Domain.Billing.Subscriptions.SchoolSubscription>();
+    public DbSet<Mdaresna.Platform.Domain.Billing.Subscriptions.SubscriptionQuote> SubscriptionQuotes => Set<Mdaresna.Platform.Domain.Billing.Subscriptions.SubscriptionQuote>();
     public DbSet<PlatformSmsProvider> SmsProviders => Set<PlatformSmsProvider>();
     public DbSet<PlatformSmsLog> SmsLogs => Set<PlatformSmsLog>();
     public DbSet<PlatformUserDevice> UserDevices => Set<PlatformUserDevice>();
@@ -67,6 +72,8 @@ public partial class PlatformDbContext(DbContextOptions options) : DbContext(opt
         modelBuilder.ApplyConfiguration(new UnitTypeConfiguration());
         modelBuilder.ApplyConfiguration(new UnitPurchaseIntentConfiguration());
         modelBuilder.ApplyConfiguration(new UnitGrantConfiguration());
+        SystemCatalogConfiguration.Apply(modelBuilder);
+        PlatformInvoiceConfiguration.Apply(modelBuilder);
         modelBuilder.ApplyConfiguration(new Configurations.PlatformSmsProviderConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.PlatformSmsLogConfiguration());
         modelBuilder.ApplyConfiguration(new Configurations.PlatformUserDeviceConfiguration());
@@ -83,6 +90,7 @@ public partial class PlatformDbContext(DbContextOptions options) : DbContext(opt
         EnsurePaymentLedgerIsAppendOnly();
         EnsureUnitEntitlementsAreAppendOnly();
         PrepareRoutingEventsAsync(false, default).GetAwaiter().GetResult();
+        PrepareInvoiceEventsAsync(default).GetAwaiter().GetResult();
         return base.SaveChanges(acceptAllChangesOnSuccess);
     }
 
@@ -94,6 +102,7 @@ public partial class PlatformDbContext(DbContextOptions options) : DbContext(opt
         EnsurePaymentLedgerIsAppendOnly();
         EnsureUnitEntitlementsAreAppendOnly();
         await PrepareRoutingEventsAsync(true, cancellationToken);
+        await PrepareInvoiceEventsAsync(cancellationToken);
         return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
@@ -119,6 +128,15 @@ public partial class PlatformDbContext(DbContextOptions options) : DbContext(opt
 
     private void EnsureUnitEntitlementsAreAppendOnly()
     {
+        if (ChangeTracker.Entries<Mdaresna.Platform.Domain.Billing.Subscriptions.PlatformInvoiceLine>().Any(x => x.State is EntityState.Modified or EntityState.Deleted) ||
+            ChangeTracker.Entries<Mdaresna.Platform.Domain.Billing.Subscriptions.PlatformInvoiceReceipt>().Any(x => x.State is EntityState.Modified or EntityState.Deleted))
+            throw new InvalidOperationException("Invoice lines and recorded offline receipts are append-only.");
+        foreach (var invoice in ChangeTracker.Entries<Mdaresna.Platform.Domain.Billing.Subscriptions.PlatformInvoice>().Where(x => x.State == EntityState.Modified))
+            if (new[] { "Number", "SchoolId", "RegistrationRequestId", "Amount", "Currency", "CreatedAtUtc" }.Any(name => invoice.Property(name).IsModified))
+                throw new InvalidOperationException("Issued invoice terms are immutable.");
+        if (ChangeTracker.Entries<Mdaresna.Platform.Domain.Billing.Subscriptions.SystemPlanRevision>()
+                .Any(entry => entry.State is EntityState.Modified or EntityState.Deleted))
+            throw new InvalidOperationException("System plan revisions are append-only.");
         if (ChangeTracker.Entries<UnitPurchaseIntent>()
                 .Any(entry => entry.State is EntityState.Modified or EntityState.Deleted) ||
             ChangeTracker.Entries<UnitGrant>()

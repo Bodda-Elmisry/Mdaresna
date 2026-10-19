@@ -62,12 +62,20 @@ internal sealed class PlatformOutboxPublisherService(
             arguments: null, cancellationToken: cancellationToken);
         await channel.QueueBindAsync(ProvisionQueue, Exchange, ProvisionSchoolV1.MessageType,
             arguments: null, cancellationToken: cancellationToken);
+        await channel.QueueBindAsync(ProvisionQueue, Exchange, ProvisionSchoolV2.MessageType,
+            arguments: null, cancellationToken: cancellationToken);
         await channel.QueueDeclareAsync(MigrationQueue, durable: true, exclusive: false, autoDelete: false,
             arguments: null, cancellationToken: cancellationToken);
         await channel.QueueBindAsync(MigrationQueue, Exchange, MigrateSchoolDatabaseV1.MessageType,
             arguments: null, cancellationToken: cancellationToken);
         await channel.QueueDeclareAsync(RoutingQueue, true, false, false, null, cancellationToken: cancellationToken);
         await channel.QueueBindAsync(RoutingQueue, Exchange, SchoolRoutingChangedV1.MessageType,
+            arguments: null, cancellationToken: cancellationToken);
+        await channel.QueueDeclareAsync("schools.subscriptions.v1", true, false, false, null, cancellationToken: cancellationToken);
+        await channel.QueueBindAsync("schools.subscriptions.v1", Exchange, SchoolSubscriptionSnapshotChangedV1.MessageType,
+            arguments: null, cancellationToken: cancellationToken);
+        await channel.QueueDeclareAsync("schools.invoices.v1", true, false, false, null, cancellationToken: cancellationToken);
+        await channel.QueueBindAsync("schools.invoices.v1", Exchange, SchoolInvoiceSnapshotChangedV1.MessageType,
             arguments: null, cancellationToken: cancellationToken);
     }
 

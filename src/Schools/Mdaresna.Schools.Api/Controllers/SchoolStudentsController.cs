@@ -62,7 +62,7 @@ public sealed class SchoolStudentsController(ISchoolDbContextFactory dbFactory, 
                 e.EnrollmentDate, e.GradeOffering.ProgramAcademicYear.NameAr, e.GradeOffering.ProgramAcademicYear.NameEn,
                 e.GradeOffering.ProgramAcademicYear.EducationProgram.NameAr, e.GradeOffering.ProgramAcademicYear.EducationProgram.NameEn,
                 e.GradeOffering.GradeLevel.EducationStage.NameAr, e.GradeOffering.GradeLevel.EducationStage.NameEn,
-                e.GradeOffering.GradeLevel.NameAr, e.GradeOffering.GradeLevel.NameEn, e.ClassSection.NameAr, e.ClassSection.NameEn)).ToArray()))
+                e.GradeOffering.GradeLevel.NameAr, e.GradeOffering.GradeLevel.NameEn, e.ClassSection.NameAr, e.ClassSection.NameEn)).ToArray(), x.RowVersion))
             .SingleOrDefaultAsync(ct);
         return row is null ? NotFound(Failure("students.not_found", "Student was not found.")) : Ok(ApiResponse<StudentDetailsResponse>.Success(row, correlationId: HttpContext.TraceIdentifier));
     }
@@ -84,9 +84,16 @@ public sealed class SchoolStudentsController(ISchoolDbContextFactory dbFactory, 
         if (global is null) return Conflict(Failure("students.global_unavailable", "Unable to resolve the global student identity."));
         if (await db.Students.AnyAsync(x => x.GlobalStudentId == global.GlobalStudentId || x.StudentCode == global.StudentCode, ct))
             return Conflict(Failure("students.duplicate", "This student is already registered in the school."));
+        await using var licenseTransaction = db.Database.IsRelational() ? await db.Database.BeginTransactionAsync(ct) : null;
         var now = DateTimeOffset.UtcNow;
         var student = NewStudent(global, request.FullNameAr, request.FullNameEn, request.DateOfBirth, request.Gender,
             request.NationalId, request.BirthCertificateNumber, now);
+        try { await SchoolCapacityService.ChangeAsync(db, "Student", student.Id, true, CurrentUserId(), configuration.GetValue<bool>("SchoolSubscriptions:RequireEntitlement"), ct); }
+        catch (SchoolCapacityException ex) { return Conflict(Failure(ex.Code, "The subscription does not allow another student activation.")); }
+        if (!await db.ClassSections.AnyAsync(x => x.Id == section.Id && x.IsActive && x.GradeOffering.IsActive && x.GradeOffering.ProgramAcademicYear.IsActive, ct))
+            return BadRequest(Failure("students.class_invalid", "The class or academic year is inactive."));
+        if (await db.StudentEnrollments.CountAsync(x => x.ClassSectionId == section.Id && x.Status == StudentEnrollmentStatus.Active, ct) >= section.Capacity)
+            return Conflict(Failure("students.class_full", "The class section has reached its capacity."));
         AddGuardians(db, student, null, request.Guardians, now);
         student.Enrollments.Add(new StudentEnrollment { Id = Guid.NewGuid(), GradeOfferingId = section.GradeOfferingId,
             ClassSectionId = section.Id, EnrollmentDate = request.EnrollmentDate, Status = StudentEnrollmentStatus.Active,
@@ -94,6 +101,7 @@ public sealed class SchoolStudentsController(ISchoolDbContextFactory dbFactory, 
         db.Students.Add(student);
         await SchoolOperationNotifications.RosterAdded(db, section.Id, CurrentUserId(), student.Id.ToString("D"), now, ct);
         await SchoolOperationNotifications.Save(db, ct);
+        if (licenseTransaction != null) await licenseTransaction.CommitAsync(ct);
         return Ok(ApiResponse<CreateStudentResponse>.Success(new(student.Id, student.GlobalStudentId, student.StudentCode), correlationId: HttpContext.TraceIdentifier));
     }
 
@@ -202,8 +210,16 @@ public sealed class SchoolStudentsController(ISchoolDbContextFactory dbFactory, 
         var existing = await db.Students.SingleOrDefaultAsync(x => x.GlobalStudentId == global.GlobalStudentId, ct);
         if (existing is not null && await db.StudentEnrollments.AnyAsync(x => x.StudentId == existing.Id && x.GradeOfferingId == section.GradeOfferingId, ct))
             return Conflict(Failure("students.already_enrolled", "This student already has an enrollment in the requested grade."));
+        await using var licenseTransaction = db.Database.IsRelational() ? await db.Database.BeginTransactionAsync(ct) : null;
         var now = DateTimeOffset.UtcNow;
         var student = existing ?? NewStudent(global, app.FullNameAr, app.FullNameEn, app.DateOfBirth, app.Gender, app.NationalId, app.BirthCertificateNumber, now);
+        try { await SchoolCapacityService.ChangeAsync(db, "Student", student.Id, true, CurrentUserId(), configuration.GetValue<bool>("SchoolSubscriptions:RequireEntitlement"), ct); }
+        catch (SchoolCapacityException ex) { return Conflict(Failure(ex.Code, "The subscription does not allow another student activation.")); }
+        if (!await db.ClassSections.AnyAsync(x => x.Id == section.Id && x.IsActive && x.GradeOffering.IsActive && x.GradeOffering.ProgramAcademicYear.IsActive, ct))
+            return BadRequest(Failure("students.class_invalid", "The class or academic year is inactive."));
+        if (await db.StudentEnrollments.CountAsync(x => x.ClassSectionId == section.Id && x.Status == StudentEnrollmentStatus.Active, ct) >= section.Capacity)
+            return Conflict(Failure("students.class_full", "The class section has reached its capacity."));
+        student.IsActive = true;
         if (existing is null)
             foreach (var link in app.Guardians) student.Guardians.Add(new StudentGuardian { Id = Guid.NewGuid(), GuardianId = link.GuardianId,
                 Relationship = link.Relationship, IsPrimary = link.IsPrimary, CanPickup = link.CanPickup,
@@ -218,6 +234,7 @@ public sealed class SchoolStudentsController(ISchoolDbContextFactory dbFactory, 
         await SchoolOperationNotifications.RosterAdded(db, section.Id, CurrentUserId(), app.Id.ToString("D"), now, ct);
         await SchoolOperationNotifications.Admission(db, app, CurrentUserId(), configuration, User.FindFirst(SchoolClaimTypes.SchoolCode)?.Value ?? "", now, ct);
         await SchoolOperationNotifications.Save(db, ct);
+        if (licenseTransaction != null) await licenseTransaction.CommitAsync(ct);
         return Ok(ApiResponse<CreateStudentResponse>.Success(new(student.Id, student.GlobalStudentId, student.StudentCode), correlationId: HttpContext.TraceIdentifier));
     }
 
@@ -272,6 +289,31 @@ public sealed class SchoolStudentsController(ISchoolDbContextFactory dbFactory, 
     private static bool ValidPaging(int page, int size) => page > 0 && size is > 0 and <= 100;
     private static string Normalize(string ar, string en) => $"{ar.Trim()} {en.Trim()}".ToUpperInvariant();
     private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    [Authorize(Policy = SchoolPermissionPolicies.StudentsManage), HttpPost("{id:guid}/activation")]
+    public async Task<IActionResult> Activation(Guid id, StudentActivationRequest input, CancellationToken ct)
+    {
+        await using var db = await RequireDb(ct); if (db == null) return Unauthorized();
+        await using var transaction = db.Database.IsRelational() ? await db.Database.BeginTransactionAsync(ct) : null;
+        var student = await db.Students.Include(x => x.Enrollments).SingleOrDefaultAsync(x => x.Id == id, ct);
+        if (student == null) return NotFound();
+        if (input.ExpectedRowVersion == null || !student.RowVersion.SequenceEqual(input.ExpectedRowVersion)) return Conflict(Failure("students.version_conflict", "Student changed since it was loaded."));
+        var selected = student.Enrollments.SingleOrDefault(x => x.Id == input.EnrollmentId);
+        if (input.IsActive && (selected == null || selected.Status is not (StudentEnrollmentStatus.Active or StudentEnrollmentStatus.Suspended))) return BadRequest();
+        try { await SchoolCapacityService.ChangeAsync(db, "Student", student.Id, input.IsActive, CurrentUserId(), configuration.GetValue<bool>("SchoolSubscriptions:RequireEntitlement"), ct); }
+        catch (SchoolCapacityException ex) { return Conflict(Failure(ex.Code, "The subscription does not allow this activation.")); }
+        if (input.IsActive)
+        {
+            var section = await db.ClassSections.Where(x => x.Id == selected!.ClassSectionId && x.IsActive && x.GradeOffering.ProgramAcademicYear.IsActive).SingleOrDefaultAsync(ct);
+            if (section == null) return BadRequest();
+            var occupied = await db.StudentEnrollments.CountAsync(x => x.ClassSectionId == section.Id && x.StudentId != student.Id && x.Status == StudentEnrollmentStatus.Active, ct);
+            if (occupied >= section.Capacity) return Conflict(Failure("students.class_full", "The class is full."));
+            selected!.Status = StudentEnrollmentStatus.Active; selected.UpdatedAtUtc = DateTimeOffset.UtcNow;
+        }
+        else foreach (var enrollment in student.Enrollments.Where(x => x.Status == StudentEnrollmentStatus.Active)) { enrollment.Status = StudentEnrollmentStatus.Suspended; enrollment.UpdatedAtUtc = DateTimeOffset.UtcNow; }
+        student.IsActive = input.IsActive; student.UpdatedAtUtc = DateTimeOffset.UtcNow;
+        await db.SaveChangesAsync(ct); if (transaction != null) await transaction.CommitAsync(ct);
+        return Ok(ApiResponse<object>.Success(new { student.Id, student.IsActive, student.RowVersion }));
+    }
     private async Task<SchoolsDbContext?> RequireDb(CancellationToken ct) => await dbFactory.CreateAsync(User.FindFirst(SchoolClaimTypes.SchoolCode)?.Value ?? string.Empty, ct);
     private Guid CurrentUserId() => Guid.TryParse(User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value, out var user) ? user : Guid.Empty;
     private ApiResponse<object?> Failure(string code, string message) => ApiResponse<object?>.Failure(400, code, message, correlationId: HttpContext.TraceIdentifier);
@@ -282,6 +324,7 @@ public sealed record GuardianInput(string FullName, string Phone, string? Email,
 public sealed record CreateDirectStudentRequest(string? StudentCode, string FullNameAr, string FullNameEn, DateOnly DateOfBirth,
     StudentGender Gender, string? NationalId, string? BirthCertificateNumber, Guid ClassSectionId, DateOnly EnrollmentDate,
     IReadOnlyList<GuardianInput> Guardians);
+public sealed record StudentActivationRequest(bool IsActive, Guid? EnrollmentId, byte[] ExpectedRowVersion);
 public sealed record CreateAdmissionApplicationRequest(string? StudentCode, string FullNameAr, string FullNameEn,
     DateOnly DateOfBirth, StudentGender Gender, string? NationalId, string? BirthCertificateNumber,
     Guid ProgramAcademicYearId, Guid GradeLevelId, string? Notes, IReadOnlyList<GuardianInput> Guardians);
@@ -300,7 +343,7 @@ public sealed record EnrollmentResponse(Guid Id, StudentEnrollmentStatus Status,
     string GradeNameAr, string GradeNameEn, string ClassNameAr, string ClassNameEn);
 public sealed record StudentDetailsResponse(Guid Id, Guid GlobalStudentId, string StudentCode, string FullNameAr, string FullNameEn,
     DateOnly DateOfBirth, StudentGender Gender, string? NationalId, string? BirthCertificateNumber, bool IsActive,
-    IReadOnlyList<GuardianResponse> Guardians, IReadOnlyList<EnrollmentResponse> Enrollments);
+    IReadOnlyList<GuardianResponse> Guardians, IReadOnlyList<EnrollmentResponse> Enrollments, byte[] RowVersion);
 public sealed record AdmissionListResponse(Guid Id, string ApplicationNumber, string? StudentCode, string FullNameAr,
     string FullNameEn, DateOnly DateOfBirth, StudentGender Gender, AdmissionApplicationStatus Status,
     AdmissionApplicationSource Source, DateTimeOffset SubmittedAtUtc, Guid ProgramAcademicYearId, Guid GradeLevelId,

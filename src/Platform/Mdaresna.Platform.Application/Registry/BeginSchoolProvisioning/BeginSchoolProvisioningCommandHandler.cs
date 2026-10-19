@@ -21,6 +21,8 @@ public sealed class BeginSchoolProvisioningCommandHandler
     private readonly IPlatformRegistryAuditWriter _audit;
     private readonly IPlatformUnitOfWork _unitOfWork;
     private readonly IClock _clock;
+    private readonly Mdaresna.Platform.Application.Billing.IPlatformBillingUnitOfWork? _billing;
+    private readonly Mdaresna.Platform.Application.Billing.Subscriptions.ISubscriptionService? _subscriptions;
 
     public BeginSchoolProvisioningCommandHandler(
         ISchoolRegistrationRepository schools,
@@ -28,7 +30,9 @@ public sealed class BeginSchoolProvisioningCommandHandler
         IPlatformOutboxWriter outbox,
         IPlatformRegistryAuditWriter audit,
         IPlatformUnitOfWork unitOfWork,
-        IClock clock)
+        IClock clock,
+        Mdaresna.Platform.Application.Billing.IPlatformBillingUnitOfWork? billing = null,
+        Mdaresna.Platform.Application.Billing.Subscriptions.ISubscriptionService? subscriptions = null)
     {
         _schools = schools;
         _unitTypes = unitTypes;
@@ -36,9 +40,15 @@ public sealed class BeginSchoolProvisioningCommandHandler
         _audit = audit;
         _unitOfWork = unitOfWork;
         _clock = clock;
+        _billing = billing;
+        _subscriptions = subscriptions;
     }
 
-    public async Task HandleAsync(
+    public Task HandleAsync(BeginSchoolProvisioningCommand command, CancellationToken cancellationToken = default) => _billing == null
+        ? HandleCoreAsync(command, cancellationToken)
+        : _billing.ExecuteInTransactionAsync(async ct => { await HandleCoreAsync(command, ct); return true; }, cancellationToken);
+
+    private async Task HandleCoreAsync(
         BeginSchoolProvisioningCommand command,
         CancellationToken cancellationToken = default)
     {
@@ -69,10 +79,12 @@ public sealed class BeginSchoolProvisioningCommandHandler
         }
 
         var now = _clock.UtcNow;
+        if (!school.UnitTypeId.HasValue && _subscriptions != null)
+            await _subscriptions.PrepareInitialActivationAsync(school.Id.Value, new(command.RequestedByAccountId, command.CorrelationId), cancellationToken);
         var unitType = school.UnitTypeId is { } unitTypeId
             ? await _unitTypes.FindByIdAsync(unitTypeId, cancellationToken)
             : null;
-        if (unitType is null)
+        if (school.UnitTypeId.HasValue && unitType is null)
             throw new PlatformConflictException("unit_type.not_found", "School unit type was not found.");
         var existingDomainEventCount = school.DomainEvents.Count;
         school.BeginProvisioning(
@@ -84,6 +96,17 @@ public sealed class BeginSchoolProvisioningCommandHandler
             .OfType<SchoolLifecycleChangedDomainEvent>()
             .Single();
 
+        if (unitType is null)
+        {
+            var provision = new Mdaresna.Schools.Contracts.Provisioning.ProvisionSchoolV2(command.OperationId, school.TenantId, school.Id,
+                school.RegistrationRequestId, school.Code.Value, school.DisplayName, school.SchoolType.ToString(), school.DeploymentMode.ToString(),
+                school.Address, school.PrimaryPhone, school.RequestedByAccountId, school.CreatedAtUtc, now);
+            _outbox.Enqueue(IntegrationMessageEnvelope<Mdaresna.Schools.Contracts.Provisioning.ProvisionSchoolV2>.Create(now, Producer,
+                IntegrationMessageScope.ForSchool(school.TenantId, school.Id), provision, new IntegrationAggregateReference("school-registration", (Guid)school.Id, school.Version),
+                command.CorrelationId, command.CausationId, command.TraceParent));
+        }
+        else
+        {
         var integrationCommand = new ProvisionSchoolCommand(
             command.OperationId,
             school.TenantId,
@@ -116,6 +139,8 @@ public sealed class BeginSchoolProvisioningCommandHandler
             command.CorrelationId,
             command.CausationId,
             command.TraceParent));
+
+        }
 
         var lifecycleEvent = new SchoolLifecycleChangedV1(
             lifecycleDomainEvent.TenantId,

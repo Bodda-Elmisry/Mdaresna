@@ -10,9 +10,11 @@ namespace Mdaresna.Schools.Api.Controllers;
 [AllowAnonymous]
 [Route("api/schools/v1/registration-requests")]
 public sealed class SchoolRegistrationRequestsController(
-    SubmitSchoolRegistrationRequestHandler handler) : ControllerBase
+    SubmitSchoolRegistrationRequestHandler handler, ISchoolRegistrationCatalog? catalog = null) : ControllerBase
 {
-    [HttpPost]
+    [HttpGet("plans")]
+    public async Task<IActionResult> Plans(CancellationToken ct) => catalog == null ? StatusCode(503) : Ok(ApiResponse<RegistrationPlanOffer[]>.Success(await catalog.PlansAsync(ct)));
+    [HttpPost, RequestSizeLimit(32768)]
     [ProducesResponseType(typeof(ApiResponse<SubmitSchoolRegistrationResult>), StatusCodes.Status202Accepted)]
     public async Task<IActionResult> Submit(
         [FromBody] SubmitSchoolRegistrationRequestBody body,
@@ -22,7 +24,7 @@ public sealed class SchoolRegistrationRequestsController(
         {
             var result = await handler.HandleAsync(new SubmitSchoolRegistrationRequest(
                 body.SchoolName, body.Address, body.SchoolType, body.SchoolPrimaryPhone,
-                body.OwnerName, body.OwnerPhone), Request.Headers.TraceParent.FirstOrDefault(),
+                body.OwnerName, body.OwnerPhone, body.Plans, body.RequestId), Request.Headers.TraceParent.FirstOrDefault(),
                 cancellationToken);
             return Accepted(ApiResponse<SubmitSchoolRegistrationResult>.Success(
                 result, statusCode: StatusCodes.Status202Accepted,
@@ -44,4 +46,6 @@ public sealed record SubmitSchoolRegistrationRequestBody(
     RequestedSchoolTypeV2 SchoolType,
     string SchoolPrimaryPhone,
     string OwnerName,
-    string OwnerPhone);
+    string OwnerPhone,
+    RegistrationPlanSelection[]? Plans = null,
+    Guid? RequestId = null);

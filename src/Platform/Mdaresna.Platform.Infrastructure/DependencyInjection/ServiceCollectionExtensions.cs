@@ -94,6 +94,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<PlatformSmsLogEventIngestor>();
         services.AddScoped<PlatformSchoolRegistrationRequestIngestor>();
         services.AddScoped<PlatformSchoolRegistrationRequestV2Ingestor>();
+        services.AddScoped<PlatformSchoolRegistrationRequestV3Ingestor>();
         services.AddScoped<PlatformSmsSecretProtector>();
         services.AddScoped<PlatformSmsProviderService>();
         services.Configure<PlatformFirebaseOptions>(options =>
@@ -128,6 +129,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPlatformBillingUnitOfWork, PlatformBillingUnitOfWork>();
         services.AddScoped<IPlatformPaymentReadStore, PlatformPaymentReadStore>();
         services.AddScoped<IUnitTypeRepository, UnitTypeRepository>();
+        services.AddScoped<Mdaresna.Platform.Application.Billing.Subscriptions.ISystemCatalogService, SystemCatalogService>();
+        services.AddScoped<SubscriptionService>();
+        services.AddScoped<Mdaresna.Platform.Application.Billing.Subscriptions.IPlatformInvoiceService, PlatformInvoiceService>();
+        services.AddScoped<Mdaresna.Platform.Application.Billing.Subscriptions.ISubscriptionService>(sp => sp.GetRequiredService<SubscriptionService>());
+        services.AddScoped<Mdaresna.Platform.Application.Billing.Subscriptions.ISubscriptionPaymentEffect>(sp => sp.GetRequiredService<SubscriptionService>());
         services.AddScoped<IUnitPurchaseRepository, UnitPurchaseRepository>();
         services.AddScoped<IUnitCommerceAuditWriter, UnitCommerceAuditWriter>();
         services.AddScoped<SubmitSchoolPlatformPaymentCommandHandler>();

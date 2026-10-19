@@ -49,7 +49,10 @@ public static class ServiceCollectionExtensions
             configuration, sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<SchoolRoutingCache>>()));
         services.AddHttpClient<ISchoolLoginTenantResolver, PlatformSchoolLoginTenantResolver>();
         services.AddHttpClient<SchoolRoutingSnapshotClient>();
+        services.AddHttpClient<ISchoolRegistrationCatalog, PlatformSchoolRegistrationCatalog>();
         services.AddHostedService<SchoolRoutingCacheConsumerService>();
+        services.AddHostedService<SchoolSubscriptionConsumerService>();
+        services.AddHostedService<SchoolInvoiceConsumerService>();
         services.AddScoped<ISchoolLoginService, SchoolLocalLoginService>();
         services.AddScoped<ISchoolDbContextFactory, SchoolDbContextFactory>();
         services.AddHttpClient<ISchoolOwnerActivationCodeSender, PlatformSchoolOwnerActivationCodeSender>();

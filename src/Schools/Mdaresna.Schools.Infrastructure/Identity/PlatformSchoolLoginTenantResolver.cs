@@ -30,19 +30,30 @@ internal sealed class PlatformSchoolLoginTenantResolver(HttpClient client, IConf
         request.Headers.Add("X-Mdaresna-Internal-Key", apiKey);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(5));
-        using var response = await client.SendAsync(request, timeout.Token);
-        if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return null;
-        response.EnsureSuccessStatusCode();
-        var snapshot = await response.Content.ReadFromJsonAsync<SchoolRoutingChangedV1>(cancellationToken: timeout.Token)
-            ?? throw new InvalidOperationException("Platform returned an empty school login target.");
-        Messaging.SchoolRoutingCacheConsumerService.Validate(snapshot);
-        var data = snapshot.Target;
-        if (data is null) return null;
-        var target = new SchoolRoutingTarget(data.TenantId, data.SchoolId, data.SchoolCode, data.Status,
-            data.Provider, data.Host, data.Port, data.DatabaseName, data.CredentialSecretReference, data.RequireTls, snapshot.RoutingVersion);
-        if (target.Status != "Active" || target.SchoolCode != schoolCode)
-            throw new InvalidOperationException("Platform returned an invalid school login target.");
-        return target;
+        try
+        {
+            using var response = await client.SendAsync(request, timeout.Token);
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return null;
+            response.EnsureSuccessStatusCode();
+            var snapshot = await response.Content.ReadFromJsonAsync<SchoolRoutingChangedV1>(cancellationToken: timeout.Token)
+                ?? throw new InvalidOperationException("Platform returned an empty school login target.");
+            Messaging.SchoolRoutingCacheConsumerService.Validate(snapshot);
+            var data = snapshot.Target;
+            if (data is null) return null;
+            var target = new SchoolRoutingTarget(data.TenantId, data.SchoolId, data.SchoolCode, data.Status,
+                data.Provider, data.Host, data.Port, data.DatabaseName, data.CredentialSecretReference, data.RequireTls, snapshot.RoutingVersion);
+            if (target.Status != "Active" || target.SchoolCode != schoolCode)
+                throw new InvalidOperationException("Platform returned an invalid school login target.");
+            return target;
+        }
+        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw new SchoolRoutingUnavailableException(ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new SchoolRoutingUnavailableException(ex);
+        }
     }
 
     private string ResolveSecret(string reference)

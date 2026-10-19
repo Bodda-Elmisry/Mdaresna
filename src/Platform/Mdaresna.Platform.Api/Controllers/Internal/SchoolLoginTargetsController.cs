@@ -29,17 +29,21 @@ public sealed class SchoolLoginTargetsController(
             return Unauthorized();
         SchoolCode code;
         try { code = SchoolCode.Create(schoolCode); } catch (ArgumentException) { return NotFound(); }
-        // Keep revision and endpoint in a consistent view while a primary switch is being committed.
-        await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead, ct);
-        var school = await db.Schools.AsNoTracking().SingleOrDefaultAsync(s => s.Code == code, ct);
-        if (school is null) return NotFound(new { code = "school_routing.not_found" });
-        var endpoint = await db.SchoolDatabaseEndpoints.AsNoTracking().SingleOrDefaultAsync(e => e.SchoolId == school.Id &&
-            e.Purpose == SchoolDatabasePurpose.Operational && e.IsPrimary && e.Status == SchoolDatabaseEndpointStatus.Active, ct);
-        var target = school.Status == SchoolLifecycleStatus.Active && endpoint is not null
-            ? new SchoolRoutingData(school.TenantId.Value, school.Id.Value, school.Code.Value, "Active",
-                endpoint.Provider.ToString(), endpoint.Host, endpoint.Port, endpoint.DatabaseName,
-                endpoint.CredentialSecretReference, endpoint.RequireTls, school.RoutingVersion) : null;
-        return Ok(new SchoolRoutingChangedV1(school.TenantId.Value, school.Id.Value, school.Code.Value, school.RoutingVersion, target));
+        // Retry the entire read transaction as one unit when the provider enables retries.
+        return await db.Database.CreateExecutionStrategy().ExecuteAsync(async Task<IActionResult> () =>
+        {
+            // Keep revision and endpoint in a consistent view while a primary switch is being committed.
+            await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead, ct);
+            var school = await db.Schools.AsNoTracking().SingleOrDefaultAsync(s => s.Code == code, ct);
+            if (school is null) return NotFound(new { code = "school_routing.not_found" });
+            var endpoint = await db.SchoolDatabaseEndpoints.AsNoTracking().SingleOrDefaultAsync(e => e.SchoolId == school.Id &&
+                e.Purpose == SchoolDatabasePurpose.Operational && e.IsPrimary && e.Status == SchoolDatabaseEndpointStatus.Active, ct);
+            var target = school.Status == SchoolLifecycleStatus.Active && endpoint is not null
+                ? new SchoolRoutingData(school.TenantId.Value, school.Id.Value, school.Code.Value, "Active",
+                    endpoint.Provider.ToString(), endpoint.Host, endpoint.Port, endpoint.DatabaseName,
+                    endpoint.CredentialSecretReference, endpoint.RequireTls, school.RoutingVersion) : null;
+            return Ok(new SchoolRoutingChangedV1(school.TenantId.Value, school.Id.Value, school.Code.Value, school.RoutingVersion, target));
+        });
     }
 
     [HttpGet("{schoolCode}")]

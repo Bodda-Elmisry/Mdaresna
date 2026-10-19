@@ -82,6 +82,7 @@ public sealed class SchoolProvisioningConsumerService(
         // argument-free on both sides; poison messages are explicitly copied to the dead queue.
         await channel.QueueDeclareAsync(Queue, true, false, false, null, cancellationToken: cancellationToken);
         await channel.QueueBindAsync(Queue, Exchange, ProvisionSchoolV1.MessageType, arguments: null, cancellationToken: cancellationToken);
+        await channel.QueueBindAsync(Queue, Exchange, ProvisionSchoolV2.MessageType, arguments: null, cancellationToken: cancellationToken);
         await channel.ExchangeDeclareAsync(ResultExchange, ExchangeType.Topic, true, false, null, cancellationToken: cancellationToken);
         await channel.ExchangeDeclareAsync(ResultDeadExchange, ExchangeType.Direct, true, false, null, cancellationToken: cancellationToken);
         await channel.QueueDeclareAsync(ResultDeadQueue, true, false, false,
@@ -100,10 +101,27 @@ public sealed class SchoolProvisioningConsumerService(
         try
         {
             if (delivery.Body.Length > 128 * 1024) throw new JsonException("Provisioning command is too large.");
-            var envelope = IntegrationJsonSerializer.Deserialize<ProvisionSchoolV1>(Encoding.UTF8.GetString(delivery.Body.Span));
-            if (delivery.RoutingKey != ProvisionSchoolV1.MessageType || envelope.Producer != "mdaresna-platform")
+            ProvisionSchoolV1? legacy = null;
+            IntegrationMessageEnvelope<ProvisionSchoolV2> envelope;
+            if (delivery.RoutingKey == ProvisionSchoolV1.MessageType)
+            {
+                var original = IntegrationJsonSerializer.Deserialize<ProvisionSchoolV1>(Encoding.UTF8.GetString(delivery.Body.Span));
+                legacy = original.Data;
+                var data = new ProvisionSchoolV2(legacy.OperationId, legacy.TenantId, legacy.SchoolId, legacy.RegistrationRequestId, legacy.SchoolCode,
+                    legacy.DisplayName, legacy.SchoolType, legacy.DeploymentMode, legacy.Address, legacy.PrimaryPhone, legacy.OwnerPlatformAccountId, legacy.PlatformCreatedAtUtc, legacy.RequestedAtUtc);
+                envelope = new(original.MessageId, ProvisionSchoolV2.MessageType, ProvisionSchoolV2.SchemaVersion, original.OccurredAtUtc, original.Producer,
+                    original.Scope, original.Aggregate, original.CorrelationId, original.CausationId, original.TraceParent, data);
+            }
+            else if (delivery.RoutingKey == ProvisionSchoolV2.MessageType)
+                envelope = IntegrationJsonSerializer.Deserialize<ProvisionSchoolV2>(Encoding.UTF8.GetString(delivery.Body.Span));
+            else throw new JsonException("Unsupported provisioning contract.");
+            if (envelope.Producer != "mdaresna-platform" || envelope.Scope.SchoolId != envelope.Data.SchoolId || envelope.Scope.TenantId != envelope.Data.TenantId ||
+                envelope.Data.OperationId == Guid.Empty || envelope.Data.SchoolId.IsEmpty || envelope.Data.OwnerPlatformAccountId == Guid.Empty ||
+                envelope.Data.TenantId.Value != envelope.Data.SchoolId.Value || envelope.SchemaVersion != ProvisionSchoolV2.SchemaVersion ||
+                string.IsNullOrWhiteSpace(envelope.Data.DisplayName) || envelope.Data.DisplayName.Length > 200 ||
+                envelope.Data.ApprovedAtUtc.Offset != TimeSpan.Zero)
                 throw new JsonException("Unexpected provisioning command source.");
-            var target = await ProvisionPostgreSqlAsync(envelope.Data, cancellationToken);
+            var target = await ProvisionPostgreSqlAsync(envelope.Data, legacy, cancellationToken);
             var completedAtUtc = target.ActivatedAtUtc;
             var result = new SchoolProvisionedV1(envelope.Data.OperationId, envelope.Data.TenantId,
                 envelope.Data.SchoolId, target.LocalSchoolId, "PostgreSql", target.Host, target.Port, target.DatabaseName,
@@ -141,7 +159,7 @@ public sealed class SchoolProvisioningConsumerService(
         }
     }
 
-    private async Task<ProvisionedTarget> ProvisionPostgreSqlAsync(ProvisionSchoolV1 command, CancellationToken cancellationToken)
+    private async Task<ProvisionedTarget> ProvisionPostgreSqlAsync(ProvisionSchoolV2 command, ProvisionSchoolV1? legacy, CancellationToken cancellationToken)
     {
         var provider = configuration["SchoolProvisioningDatabase:Provider"];
         if (!string.Equals(provider, "PostgreSql", StringComparison.OrdinalIgnoreCase))
@@ -177,10 +195,12 @@ public sealed class SchoolProvisioningConsumerService(
         var activatedAtUtc = DateTimeOffset.UtcNow;
         if (local is null)
         {
-            local = SchoolInformation.Create(command.SchoolId.Value, command.TenantId.Value,
+            local = legacy is null ? SchoolInformation.CreateWithoutUnits(command.SchoolId.Value, command.TenantId.Value, command.RegistrationRequestId,
+                command.SchoolCode, command.DisplayName, command.SchoolType, command.DeploymentMode, command.Address, command.PrimaryPhone,
+                command.OwnerPlatformAccountId, command.PlatformCreatedAtUtc, activatedAtUtc) : SchoolInformation.Create(command.SchoolId.Value, command.TenantId.Value,
                 command.RegistrationRequestId, command.SchoolCode, command.DisplayName, command.SchoolType,
-                command.DeploymentMode, command.Address, command.PrimaryPhone, command.UnitTypeId,
-                command.UnitTypeCode, command.UnitTypeName, command.UnitPrice, command.Currency,
+                command.DeploymentMode, command.Address, command.PrimaryPhone, legacy.UnitTypeId,
+                legacy.UnitTypeCode, legacy.UnitTypeName, legacy.UnitPrice, legacy.Currency,
                 command.OwnerPlatformAccountId, command.PlatformCreatedAtUtc, activatedAtUtc);
             db.SchoolInformation.Add(local);
             await db.SaveChangesAsync(cancellationToken);

@@ -17,6 +17,22 @@ public sealed class TransitionSchoolCommandHandlerTests
     private static readonly Guid UnitTypeId = Guid.Parse("db6be4cf-0475-4bb9-83dc-f124160e91dd");
 
     [Fact]
+    public async Task Approval_without_units_emits_v2_provisioning_with_no_legacy_unit_dependency()
+    {
+        var actor = IdentityAccountId.New(); var school = CreateDraftSchool(actor.Value);
+        var outbox = new FakeOutboxWriter();
+        var handler = CreateHandler(school, outbox, new FakeRegistryAuditWriter(), new FakePlatformUnitOfWork());
+        await handler.HandleAsync(Command(school, actor, SchoolLifecycleAction.SubmitForVerification));
+        await handler.HandleAsync(Command(school, actor, SchoolLifecycleAction.Approve) with { UnitTypeId = null });
+        Assert.Null(school.UnitTypeId);
+        Assert.Equal(SchoolLifecycleStatus.Provisioning, school.Status);
+        var provision = Assert.Single(outbox.Messages.OfType<Mdaresna.IntegrationContracts.Messaging.IntegrationMessageEnvelope<Mdaresna.Schools.Contracts.Provisioning.ProvisionSchoolV2>>());
+        Assert.Equal(school.Id, provision.Data.SchoolId);
+        Assert.Equal((ushort)2, provision.SchemaVersion);
+        Assert.Empty(outbox.Messages.OfType<Mdaresna.IntegrationContracts.Messaging.IntegrationMessageEnvelope<ProvisionSchoolCommand>>());
+    }
+
+    [Fact]
     public async Task Submitting_and_approving_stage_lifecycle_event_and_audit_atomically()
     {
         var actor = IdentityAccountId.New();

@@ -14,9 +14,11 @@ var allowedOrigins = builder.Configuration
     .GetSection("SchoolsHost:Cors:AllowedOrigins")
     .Get<string[]>() ?? [];
 
-builder.Services.AddControllers().AddJsonOptions(options =>
+builder.Services.AddScoped<SchoolEntitlementFilter>();
+builder.Services.AddControllers(options => options.Filters.AddService<SchoolEntitlementFilter>()).AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<Mdaresna.Schools.Api.Errors.SchoolRoutingExceptionHandler>();
 builder.Services.AddSchoolsInfrastructure(builder.Configuration);
 builder.Services.AddSchoolAuthentication(builder.Configuration);
 builder.Services.AddSingleton(TimeProvider.System);
@@ -77,6 +79,8 @@ if (builder.Environment.IsDevelopment())
 }
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 if (!app.Environment.IsDevelopment()) app.UseHsts();
 app.UseCors("SchoolsWeb");

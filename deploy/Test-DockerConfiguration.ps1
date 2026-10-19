@@ -8,6 +8,13 @@ $configJson = & docker @composeArgs config --format json
 if ($LASTEXITCODE -ne 0) { throw 'Compose configuration could not be resolved.' }
 $config = ($configJson -join "`n") | ConvertFrom-Json
 $routing = $config.services.'schools-api'.environment
+if ($routing.SchoolSubscriptions__RequireEntitlement -eq 'true' -and $routing.SchoolSubscriptions__ConsumerEnabled -ne 'true') {
+    throw 'Strict school subscriptions require the snapshot consumer.'
+}
+if ($routing.SchoolSubscriptions__ConsumerEnabled -eq 'true') {
+    if ($config.services.'platform-worker'.environment.SchoolSubscriptionResults__Enabled -ne 'true') { throw 'School subscriptions require the delivery receipt consumer.' }
+    if ([string]::IsNullOrWhiteSpace($routing.SchoolSubscriptions__BrokerUri)) { throw 'School subscriptions require broker configuration from secret storage.' }
+}
 $storageProvider = $routing.SchoolDocuments__Provider
 if ($storageProvider -notin @('Local', 'R2')) { throw 'School document provider must be Local or R2.' }
 if ($storageProvider -eq 'R2') {
