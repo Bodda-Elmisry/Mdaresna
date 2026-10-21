@@ -153,6 +153,7 @@ public sealed partial class SchoolCurriculumController(ISchoolDbContextFactory d
         return Ok(ApiResponse<object?>.Success(null,correlationId:HttpContext.TraceIdentifier));
     }
 
+    internal static object MapForList(object value) => Map(value);
     private static async Task<bool> Add(SchoolsDbContext db, Kind kind, Guid id, SaveCurriculumRequest r, DateTimeOffset now, CancellationToken ct)
     {
         var names=Names(r); if (NeedsNames(kind) && names is null) return false;

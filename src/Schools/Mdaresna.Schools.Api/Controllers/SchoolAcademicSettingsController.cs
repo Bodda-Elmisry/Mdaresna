@@ -62,6 +62,7 @@ public sealed class SchoolAcademicSettingsController(ISchoolDbContextFactory dbF
                 db.AcademicTerms.Add(new AcademicTerm { Id=id, ProgramAcademicYearId=request.ParentId.Value, Code=code, NameAr=ar, NameEn=en, StartDate=request.StartDate!.Value, EndDate=request.EndDate!.Value, SortOrder=request.SortOrder ?? 0, CreatedAtUtc=now, UpdatedAtUtc=now }); break;
             case Kind.Period:
                 if (!request.ParentId.HasValue || !ValidDates(request) || !await db.AcademicTerms.AnyAsync(x => x.Id == request.ParentId && x.IsActive, cancellationToken)) return InvalidParent();
+                if (!await PeriodDatesFitTerm(db, request, cancellationToken)) return InvalidPeriodDates();
                 db.AcademicPeriods.Add(new AcademicPeriod { Id=id, AcademicTermId=request.ParentId.Value, Code=code, NameAr=ar, NameEn=en, StartDate=request.StartDate!.Value, EndDate=request.EndDate!.Value, SortOrder=request.SortOrder ?? 0, CreatedAtUtc=now, UpdatedAtUtc=now }); break;
             case Kind.Schedule:
                 if (!request.ParentId.HasValue || !Enum.TryParse<DayOfWeek>(request.DayOfWeek, true, out var day) || !request.StartsAt.HasValue || !request.EndsAt.HasValue || request.StartsAt >= request.EndsAt ||
@@ -87,6 +88,11 @@ public sealed class SchoolAcademicSettingsController(ISchoolDbContextFactory dbF
         var entity = await Find(db, normalized, id, false, cancellationToken); if (entity is null) return Missing();
         if (!TryNames(request, normalized, out var code, out var ar, out var en)) return Invalid();
         var now = DateTimeOffset.UtcNow;
+        if (normalized == Kind.Period)
+        {
+            if (!request.ParentId.HasValue || !ValidDates(request) || !await db.AcademicTerms.AnyAsync(x => x.Id == request.ParentId, cancellationToken)) return InvalidParent();
+            if (!await PeriodDatesFitTerm(db, request, cancellationToken)) return InvalidPeriodDates();
+        }
         switch (entity)
         {
             case EducationProgram x when Enum.TryParse<EducationProgramType>(request.ProgramType, true, out var type): x.Code=code; x.NameAr=ar; x.NameEn=en; x.ProgramType=type; x.UpdatedAtUtc=now; break;
@@ -151,6 +157,7 @@ public sealed class SchoolAcademicSettingsController(ISchoolDbContextFactory dbF
 
     private bool Can(Kind kind,string action) { var module=kind switch { Kind.Schedule=>"operations", Kind.CalendarEvent=>"calendar", Kind.Invalid=>"invalid", _=>"academics" }; return User.HasClaim(SchoolClaimTypes.Permission,$"school.{module}.{action}"); }
     private bool HasAny(params string[] permissions)=>permissions.Any(p=>User.HasClaim(SchoolClaimTypes.Permission,p));
+    internal static object MapForList(object value) => Map(value, Kind.Invalid);
     private static bool ValidDates(SaveAcademicSettingRequest r)=>r.StartDate.HasValue&&r.EndDate.HasValue&&r.StartDate<=r.EndDate;
     private static bool TryNames(SaveAcademicSettingRequest r,Kind kind,out string code,out string ar,out string en) { code=r.Code?.Trim().ToUpperInvariant()??string.Empty; ar=r.NameAr?.Trim()??string.Empty; en=r.NameEn?.Trim()??string.Empty; if(kind==Kind.Schedule){code=ar=en="";return true;} return Regex.IsMatch(code,"^[A-Z0-9][A-Z0-9._-]{0,49}$")&&ar.Length is >0 and <=150&&en.Length is >0 and <=150; }
     private static Kind Normalize(string value)=>value.Trim().ToLowerInvariant() switch { "programs"=>Kind.Program,"year-definitions"=>Kind.YearDefinition,"program-years"=>Kind.ProgramYear,"terms"=>Kind.Term,"periods"=>Kind.Period,"schedules"=>Kind.Schedule,"calendar-events"=>Kind.CalendarEvent,_=>Kind.Invalid };
@@ -163,6 +170,9 @@ public sealed class SchoolAcademicSettingsController(ISchoolDbContextFactory dbF
     private static AcademicSettingItemResponse Item(Guid id,Guid? parent,Guid? secondary,Guid? branch,string code,string ar,string en,bool active,bool deleted,DateTimeOffset? deletedAt,DateOnly? startDate=null,DateOnly? endDate=null,int? sortOrder=null,string? ProgramType=null,string? EventType=null,bool? IsSchoolClosed=null,TimeOnly? StartsAt=null,TimeOnly? EndsAt=null,string? DayOfWeek=null,Guid? CurriculumPlanId=null)=>new(id,parent,secondary,branch,code,ar,en,active,deleted,deletedAt,startDate,endDate,sortOrder,ProgramType,EventType,IsSchoolClosed,StartsAt,EndsAt,DayOfWeek,CurriculumPlanId);
     private Task<SchoolsDbContext?> RequireDb(CancellationToken ct)=>dbFactory.CreateAsync(User.FindFirst(SchoolClaimTypes.SchoolCode)?.Value??string.Empty,ct);
     private Guid? CurrentUserId()=>Guid.TryParse(User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value,out var id)?id:null;
+    private static Task<bool> PeriodDatesFitTerm(SchoolsDbContext db, SaveAcademicSettingRequest request, CancellationToken ct) =>
+        db.AcademicTerms.AnyAsync(x => x.Id == request.ParentId && request.StartDate >= x.StartDate && request.EndDate <= x.EndDate, ct);
+    private IActionResult InvalidPeriodDates()=>BadRequest(Failure(400,"academic_settings.period_dates_outside_term","Period dates must fall within the selected term."));
     private IActionResult Invalid()=>BadRequest(Failure(400,"academic_settings.invalid","Enter valid data."));
     private IActionResult InvalidKind()=>BadRequest(Failure(400,"academic_settings.kind_invalid","Setting kind is invalid."));
     private IActionResult InvalidParent()=>BadRequest(Failure(400,"academic_settings.parent_invalid","The selected parent or dates are invalid."));

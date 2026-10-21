@@ -29,6 +29,7 @@ Console.WriteLine("Roles: " + string.Join(", ", await db.LocalRoles.Select(x => 
 var pending = (await db.Database.GetPendingMigrationsAsync()).ToArray();
 Console.WriteLine("Pending migrations=" + pending.Length);
 if (args.Contains("--inspect")) return;
+if (args.Contains("--reset-staff-password")) { await DemoSeed.ResetStaffPasswordAsync(db); return; }
 if (args.Contains("--self-test")) { await DemoSeed.SelfTestAsync(db); return; }
 if (args.Contains("--verify")) { await DemoSeed.VerifyAsync(db); return; }
 if (!args.Contains("--apply")) { Console.WriteLine("Use --inspect, --verify, or --apply. No setup data written."); return; }

@@ -140,6 +140,7 @@ public sealed class SchoolClassStructureController(ISchoolDbContextFactory dbFac
         var candidates=await db.ClassRoomAssignments.AsNoTracking().Where(x=>x.RoomId==room.Id&&x.IsActive&&x.Id!=currentId&&x.EffectiveFrom<=r.EndDate&&x.EffectiveTo>=r.StartDate).ToListAsync(ct);
         var overlap=candidates.Any(x=>!r.StartsAt.HasValue||!x.StartsAt.HasValue||r.StartsAt<x.EndsAt&&r.EndsAt>x.StartsAt);if(overlap)return Conflict(Failure(409,"class_structure.room_conflict","The room is already assigned during the selected period."));return null;
     }
+    internal static object MapForList(object value) => Map(value);
     private static Task<bool> ValidGradeParents(SchoolsDbContext db,Guid stageId,Guid? trackId,CancellationToken ct)=>trackId.HasValue?db.EducationTracks.AnyAsync(x=>x.Id==trackId&&x.EducationStageId==stageId&&x.IsActive,ct):db.EducationStages.AnyAsync(x=>x.Id==stageId&&x.IsActive,ct);
     private static async Task<(string Code,string NameAr,string NameEn)?> BuildOfferingIdentity(SchoolsDbContext db,Guid yearId,Guid gradeId,CancellationToken ct)
     {

@@ -27,12 +27,16 @@ public sealed class SchoolTeachingPlansController(
     private static readonly string[] ArabicMonths = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
     [Authorize(Policy = SchoolPermissionPolicies.AcademicsView), HttpGet("options")]
-    public async Task<IActionResult> Options(CancellationToken ct)
+    public async Task<IActionResult> Options(CancellationToken ct, Guid? programAcademicYearId = null, Guid? academicTermId = null, Guid? academicYearDefinitionId = null)
     {
         await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
         var timeZoneId = await db.SchoolInformation.AsNoTracking().Select(x => x.TimeZoneId).SingleOrDefaultAsync(ct) ?? "UTC";
         var schoolLocalDate = clock.Now(timeZoneId).Date;
-        var sections = await AccessibleSections(db, ct)
+        var scope = AccessibleSections(db, ct);
+        if (programAcademicYearId.HasValue) scope = scope.Where(x => x.GradeOffering.ProgramAcademicYearId == programAcademicYearId);
+        if (academicYearDefinitionId.HasValue) scope = scope.Where(x => x.GradeOffering.ProgramAcademicYear.AcademicYearDefinitionId == academicYearDefinitionId);
+        if (academicTermId.HasValue) scope = scope.Where(x => x.GradeOffering.ProgramAcademicYear.Terms.Any(t => t.Id == academicTermId && t.IsActive));
+        var sections = await scope
             .OrderByDescending(x => x.GradeOffering.ProgramAcademicYear.StartDate).ThenBy(x => x.NameAr)
             .Select(x => new TeachingPlanClassOption(x.Id, x.NameAr, x.NameEn, x.GradeOfferingId,
                 x.GradeOffering.ProgramAcademicYearId, x.GradeOffering.ProgramAcademicYear.AcademicYearDefinition.NameAr, x.GradeOffering.ProgramAcademicYear.AcademicYearDefinition.NameEn,
@@ -48,23 +52,36 @@ public sealed class SchoolTeachingPlansController(
     }
 
     [Authorize(Policy = SchoolPermissionPolicies.AcademicsView), HttpGet]
-    public async Task<IActionResult> List([FromQuery] Guid? classSectionId, [FromQuery] Guid? gradeOfferingId, [FromQuery] TeachingPlanType? type, CancellationToken ct)
+    public async Task<IActionResult> List([FromQuery] Guid? classSectionId, [FromQuery] Guid? gradeOfferingId, [FromQuery] TeachingPlanType? type, CancellationToken ct, int? pageNumber = null, int pageSize = 20, bool annualOnly = false, Guid? programAcademicYearId = null, Guid? academicTermId = null, Guid? academicYearDefinitionId = null)
     {
         await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
         var accessibleIds = AccessibleSections(db, ct).Select(x => x.Id);
         var query = db.TeachingPlans.AsNoTracking().Where(x =>
             (!x.Targets.Any() && db.ClassSections.Any(s => accessibleIds.Contains(s.Id) && s.GradeOfferingId == x.GradeOfferingId)) ||
             x.Targets.Any(t => accessibleIds.Contains(t.ClassSectionId)));
-        if (classSectionId.HasValue) query = query.Where(x => x.Targets.Any(t => t.ClassSectionId == classSectionId));
+        if (classSectionId.HasValue)
+        {
+            if (!await accessibleIds.AnyAsync(id => id == classSectionId.Value, ct))
+                return NotFound(Failure(404, "plans.class_not_found", "Class section was not found."));
+            query = query.Where(x => x.Targets.Any(t => t.ClassSectionId == classSectionId) ||
+                (!x.Targets.Any() && (x.Type == TeachingPlanType.Yearly || x.Type == TeachingPlanType.Term) &&
+                 db.ClassSections.Any(s => s.Id == classSectionId && s.GradeOfferingId == x.GradeOfferingId)));
+        }
         if (gradeOfferingId.HasValue) query = query.Where(x => x.GradeOfferingId == gradeOfferingId);
         if (type.HasValue) query = query.Where(x => x.Type == type);
-        var rows = await query.OrderByDescending(x => x.FromDate).ThenBy(x => x.TitleAr)
+        if (programAcademicYearId.HasValue) query = query.Where(x => x.ProgramAcademicYearId == programAcademicYearId);
+        if (academicYearDefinitionId.HasValue) query = query.Where(x => x.ProgramAcademicYear.AcademicYearDefinitionId == academicYearDefinitionId);
+        if (academicTermId.HasValue) query = query.Where(x => x.AcademicTermId == academicTermId);
+        if (!SchoolListPaging.Valid(pageNumber,pageSize)) return BadRequest();
+        if(annualOnly)query=query.Where(x=>x.Type==TeachingPlanType.Yearly||x.Type==TeachingPlanType.Term);
+        var window=await SchoolListPaging.Window(query.OrderByDescending(x=>x.FromDate).ThenBy(x=>x.TitleAr).ThenBy(x=>x.Id),pageNumber,pageSize,ct);
+        var rows = await window.Query
             .Select(x => new TeachingPlanSummary(x.Id, x.Type, x.Status, x.TitleAr, x.TitleEn, x.FromDate, x.ToDate,
                 x.GradeSubjectOffering.CurriculumGradeSubject.Subject.NameAr,
                 x.GradeSubjectOffering.CurriculumGradeSubject.Subject.NameEn,
                 x.Targets.Select(t => new TeachingPlanTargetResponse(t.ClassSectionId, t.ClassSection.NameAr, t.ClassSection.NameEn)).ToArray(),
                 x.Documents.Count, x.Revision)).ToArrayAsync(ct);
-        return Ok(Success(rows));
+        return Ok(Success(pageNumber.HasValue ? window.Result(rows) : rows));
     }
 
     [Authorize(Policy = SchoolPermissionPolicies.AcademicsView), HttpGet("{id:guid}")]

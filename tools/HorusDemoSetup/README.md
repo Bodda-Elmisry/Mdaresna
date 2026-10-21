@@ -17,6 +17,10 @@ The isolated self-test migrates a random temporary PostgreSQL database, substitu
 
 ## Dataset
 
+### Reset existing demo staff passwords
+
+`--reset-staff-password` uses the ephemeral environment variable `MDARESNA_DEMO_STAFF_PASSWORD` (minimum eight characters). The existing local Horus guards apply. It requires exactly 105 active accounts with the `demo-` username prefix and existing credentials. It updates their password hashes and security stamps, clears sign-in lockout, revokes their refresh sessions, verifies every stored hash and synchronizes `SchoolDemo:HorusStaffPassword` in Schools API User Secrets. Owner credentials are excluded. Remove the environment variable after execution; do not place the password in reports or source files.
+
 - Two programmes: National KG1–KG2, primary 1–6, preparatory 1–3; British FS1–FS2 and Year 1–9. Academic year 2026/2027; dates are demo configuration, not an official school calendar.
 - One campus, two buildings, three stage floors per building, 22 dedicated classrooms of capacity 10, four labs and six supervision offices.
 - One class per grade; five active students in every class: 110 students, 220 guardians and 110 allocated student seats.

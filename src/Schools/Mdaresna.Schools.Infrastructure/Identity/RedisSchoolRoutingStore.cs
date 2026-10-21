@@ -19,7 +19,7 @@ internal sealed class RedisSchoolRoutingStore(ConfigurationOptions options) : IS
     private const string ReadScript = """
         if redis.call('EXISTS',KEYS[1]) == 0 then
           redis.call('DEL',KEYS[2])
-          redis.call('HSET',KEYS[1],'epoch',ARGV[1],'version','-1','blocked','0')
+          redis.call('HMSET',KEYS[1],'epoch',ARGV[1],'version','-1','blocked','0')
         end
         return {redis.call('HGET',KEYS[1],'epoch'),redis.call('HGET',KEYS[1],'version'),
           redis.call('HGET',KEYS[1],'blocked'),redis.call('GET',KEYS[2]) or ''}
@@ -32,8 +32,11 @@ internal sealed class RedisSchoolRoutingStore(ConfigurationOptions options) : IS
           if redis.call('HGET',KEYS[1],'blocked') == '1' or ARGV[6] ~= '1' or redis.call('EXISTS',KEYS[2]) == 1 then return 0 end
         end
         if ARGV[3] == '1' then redis.call('DEL',KEYS[2])
-        else redis.call('SET',KEYS[2],ARGV[4],'PXAT',ARGV[5]) end
-        redis.call('HSET',KEYS[1],'version',ARGV[2],'blocked',ARGV[3])
+        else
+          redis.call('SET',KEYS[2],ARGV[4])
+          redis.call('PEXPIREAT',KEYS[2],ARGV[5])
+        end
+        redis.call('HMSET',KEYS[1],'version',ARGV[2],'blocked',ARGV[3])
         return 1
         """;
 

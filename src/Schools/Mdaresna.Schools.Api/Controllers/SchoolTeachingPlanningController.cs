@@ -19,7 +19,7 @@ public sealed class SchoolTeachingPlanningController(ISchoolDbContextFactory dbF
 
     [Authorize(Policy = SchoolPermissionPolicies.AcademicsView)]
     [HttpGet("teacher-scopes/{teacherId:guid}")]
-    public async Task<IActionResult> TeacherScopes(Guid teacherId, CancellationToken ct)
+    public async Task<IActionResult> TeacherScopes(Guid teacherId, CancellationToken ct, int? pageNumber = null, int pageSize = 20, Guid? yearId = null, Guid? programId = null, Guid? stageId = null)
     {
         await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
         var visibleTeachers = await SchoolDepartmentScope.ApplyAsync(User, db,
@@ -28,12 +28,16 @@ public sealed class SchoolTeachingPlanningController(ISchoolDbContextFactory dbF
             return NotFound(Failure(404, "teaching.teacher_not_found", "Teacher was not found."));
         var selected = await db.TeacherGradeSubjectScopes.AsNoTracking().Where(x => x.TeacherUserId == teacherId && x.IsActive)
             .Select(x => x.GradeSubjectOfferingId).ToArrayAsync(ct);
-        var rows = await db.GradeSubjectOfferings.AsNoTracking()
+        if(!SchoolListPaging.Valid(pageNumber,pageSize))return BadRequest();
+        var source = db.GradeSubjectOfferings.AsNoTracking()
             .Where(x => x.IsActive && x.Status != GradeSubjectOfferingStatus.Closed && x.GradeOffering.IsActive && x.GradeOffering.Status != GradeOfferingStatus.Closed)
-            .OrderByDescending(x => x.GradeOffering.ProgramAcademicYear.StartDate)
-            .ThenBy(x => x.GradeOffering.GradeLevel.EducationStage.SortOrder)
-            .ThenBy(x => x.GradeOffering.GradeLevel.SortOrder)
-            .ThenBy(x => x.CurriculumGradeSubject.SortOrder)
+;
+        var filters=pageNumber.HasValue ? await source.Select(x=>new {x.GradeOffering.ProgramAcademicYearId,AcademicYearNameAr=x.GradeOffering.ProgramAcademicYear.NameAr,AcademicYearNameEn=x.GradeOffering.ProgramAcademicYear.NameEn,EducationProgramId=x.GradeOffering.ProgramAcademicYear.EducationProgramId,EducationProgramNameAr=x.GradeOffering.ProgramAcademicYear.EducationProgram.NameAr,EducationProgramNameEn=x.GradeOffering.ProgramAcademicYear.EducationProgram.NameEn,EducationStageId=x.GradeOffering.GradeLevel.EducationStageId,EducationStageNameAr=x.GradeOffering.GradeLevel.EducationStage.NameAr,EducationStageNameEn=x.GradeOffering.GradeLevel.EducationStage.NameEn}).Distinct().ToArrayAsync(ct) : null;
+        if(yearId.HasValue)source=source.Where(x=>x.GradeOffering.ProgramAcademicYearId==yearId);
+        if(programId.HasValue)source=source.Where(x=>x.GradeOffering.ProgramAcademicYear.EducationProgramId==programId);
+        if(stageId.HasValue)source=source.Where(x=>x.GradeOffering.GradeLevel.EducationStageId==stageId);
+        var window=await SchoolListPaging.Window(source.OrderByDescending(x=>x.GradeOffering.ProgramAcademicYear.StartDate).ThenBy(x=>x.Id),pageNumber,pageSize,ct);
+        var rows=await window.Query
             .Select(x => new TeacherScopeOptionResponse(x.Id,
                 x.GradeOffering.ProgramAcademicYearId, x.GradeOffering.ProgramAcademicYear.NameAr, x.GradeOffering.ProgramAcademicYear.NameEn,
                 x.GradeOffering.ProgramAcademicYear.EducationProgramId, x.GradeOffering.ProgramAcademicYear.EducationProgram.NameAr, x.GradeOffering.ProgramAcademicYear.EducationProgram.NameEn,
@@ -42,6 +46,7 @@ public sealed class SchoolTeachingPlanningController(ISchoolDbContextFactory dbF
                 x.CurriculumGradeSubject.SubjectId, x.CurriculumGradeSubject.Subject.NameAr, x.CurriculumGradeSubject.Subject.NameEn,
                 selected.Contains(x.Id)))
             .ToListAsync(ct);
+        if(pageNumber.HasValue)return Ok(ApiResponse<object>.Success(new {items=rows,selectedIds=selected,filters,totalCount=window.TotalCount,pageNumber=window.PageNumber,pageSize,totalPages=window.TotalPages},correlationId:HttpContext.TraceIdentifier));
         return Ok(ApiResponse<IReadOnlyList<TeacherScopeOptionResponse>>.Success(rows, correlationId: HttpContext.TraceIdentifier));
     }
 
@@ -92,7 +97,7 @@ public sealed class SchoolTeachingPlanningController(ISchoolDbContextFactory dbF
 
     [Authorize(Policy = SchoolPermissionPolicies.AcademicsView)]
     [HttpGet("class-sections/{classSectionId:guid}/teacher-options")]
-    public async Task<IActionResult> ClassTeacherOptions(Guid classSectionId, CancellationToken ct)
+    public async Task<IActionResult> ClassTeacherOptions(Guid classSectionId, CancellationToken ct, int? pageNumber = null, int pageSize = 20, Guid? subjectId = null, string? search = null)
     {
         await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
         var section = await db.ClassSections.AsNoTracking()
@@ -123,14 +128,22 @@ public sealed class SchoolTeachingPlanningController(ISchoolDbContextFactory dbF
             .Where(x => x.IsActive && x.WeeklyTimetableSlot.ClassSectionId == classSectionId)
             .Select(x => x.TeacherGradeSubjectScopeId).ToListAsync(ct));
         var selectedIds = selected.Concat(assigned).ToHashSet();
-        var candidates = await db.TeacherGradeSubjectScopes.AsNoTracking()
+        var selectedScopeSubjects=pageNumber.HasValue?await db.TeacherGradeSubjectScopes.AsNoTracking().Where(x=>selectedIds.Contains(x.Id)).Select(x=>new {x.Id,x.GradeSubjectOfferingId}).ToArrayAsync(ct):null;
+        if(!SchoolListPaging.Valid(pageNumber,pageSize)||search?.Length>200)return BadRequest();
+        var candidateQuery = db.TeacherGradeSubjectScopes.AsNoTracking()
             .Where(x => offeringIds.Contains(x.GradeSubjectOfferingId) && x.IsActive &&
                 x.TeacherUser.Kind == SchoolUserKind.Teacher &&
                 (x.TeacherUser.Status == LocalUserStatus.Active || x.TeacherUser.Status == LocalUserStatus.PendingActivation))
-            .OrderBy(x => x.TeacherUser.Person.DisplayName)
+;
+        if(subjectId.HasValue)candidateQuery=candidateQuery.Where(x=>x.GradeSubjectOfferingId==subjectId);
+        if(!string.IsNullOrWhiteSpace(search)){var term=search.Trim().ToUpper();candidateQuery=candidateQuery.Where(x=>x.TeacherUser.Person.DisplayName.ToUpper().Contains(term)||x.TeacherUser.UserName.ToUpper().Contains(term));}
+        var window=await SchoolListPaging.Window(candidateQuery.OrderBy(x=>x.TeacherUser.Person.DisplayName).ThenBy(x=>x.Id),pageNumber,pageSize,ct);
+        var candidates=await window.Query
+
             .Select(x => new ClassTeacherCandidateResponse(x.Id, x.TeacherUserId, x.GradeSubjectOfferingId,
                 x.TeacherUser.Person.DisplayName, x.TeacherUser.UserName, selectedIds.Contains(x.Id)))
             .ToListAsync(ct);
+        if(pageNumber.HasValue)return Ok(ApiResponse<object>.Success(new {context=new ClassTeacherOptionsResponse(section.Id,section.NameAr,section.NameEn,section.GradeNameAr,section.GradeNameEn,section.AcademicYearNameAr,section.AcademicYearNameEn,offerings.Select(x=>new ClassTeacherSubjectOptionsResponse(x.Id,x.NameAr,x.NameEn,[])).ToArray()),items=candidates,selectedScopes=selectedScopeSubjects,selectedIds=selectedIds.ToArray(),subjects=offerings.Select(x=>new {gradeSubjectOfferingId=x.Id,subjectNameAr=x.NameAr,subjectNameEn=x.NameEn}),totalCount=window.TotalCount,pageNumber=window.PageNumber,pageSize,totalPages=window.TotalPages},correlationId:HttpContext.TraceIdentifier));
         var subjects = offerings.Select(x => new ClassTeacherSubjectOptionsResponse(x.Id, x.NameAr, x.NameEn,
             candidates.Where(c => c.GradeSubjectOfferingId == x.Id).ToArray())).ToArray();
         return Ok(ApiResponse<ClassTeacherOptionsResponse>.Success(new(section.Id, section.NameAr, section.NameEn,
@@ -195,11 +208,16 @@ public sealed class SchoolTeachingPlanningController(ISchoolDbContextFactory dbF
 
     [Authorize(Policy = SchoolPermissionPolicies.AcademicsView)]
     [HttpGet("timetable/sections")]
-    public async Task<IActionResult> Sections(CancellationToken ct)
+    public async Task<IActionResult> Sections(CancellationToken ct, int? pageNumber = null, int pageSize = 20, Guid? programId = null, Guid? stageId = null)
     {
         await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
-        var rows = await db.ClassSections.AsNoTracking().Where(x => x.IsActive && x.GradeOffering.Status != GradeOfferingStatus.Closed)
-            .OrderByDescending(x => x.GradeOffering.ProgramAcademicYear.StartDate).ThenBy(x => x.GradeOffering.GradeLevel.SortOrder).ThenBy(x => x.NameAr)
+        if(!SchoolListPaging.Valid(pageNumber,pageSize))return BadRequest();
+        var source=db.ClassSections.AsNoTracking().Where(x=>x.IsActive&&x.GradeOffering.Status!=GradeOfferingStatus.Closed);
+        var filters=pageNumber.HasValue?await source.Select(x=>new {EducationProgramId=x.GradeOffering.ProgramAcademicYear.EducationProgramId,ProgramNameAr=x.GradeOffering.ProgramAcademicYear.EducationProgram.NameAr,ProgramNameEn=x.GradeOffering.ProgramAcademicYear.EducationProgram.NameEn,EducationStageId=x.GradeOffering.GradeLevel.EducationStageId,StageNameAr=x.GradeOffering.GradeLevel.EducationStage.NameAr,StageNameEn=x.GradeOffering.GradeLevel.EducationStage.NameEn,StageSortOrder=x.GradeOffering.GradeLevel.EducationStage.SortOrder}).Distinct().ToArrayAsync(ct):null;
+        if(programId.HasValue)source=source.Where(x=>x.GradeOffering.ProgramAcademicYear.EducationProgramId==programId);
+        if(stageId.HasValue)source=source.Where(x=>x.GradeOffering.GradeLevel.EducationStageId==stageId);
+        var window=await SchoolListPaging.Window(source.OrderBy(x=>x.GradeOffering.GradeLevel.SortOrder).ThenBy(x=>x.NameAr).ThenBy(x=>x.Id),pageNumber,pageSize,ct);
+        var rows = await window.Query
             .Select(x => new TimetableSectionResponse(x.Id, x.NameAr, x.NameEn,
                 x.GradeOffering.GradeLevelId, x.GradeOffering.GradeLevel.NameAr, x.GradeOffering.GradeLevel.NameEn,
                 x.GradeOffering.GradeLevel.EducationStageId, x.GradeOffering.GradeLevel.EducationStage.NameAr,
@@ -211,6 +229,7 @@ public sealed class SchoolTeachingPlanningController(ISchoolDbContextFactory dbF
                 x.GradeOffering.ProgramAcademicYear.NameEn,
                 x.GradeOffering.GradeLevel.EducationStage.DailyLessonCount,
                 x.GradeOffering.GradeLevel.EducationStage.DailyBreakCount)).ToListAsync(ct);
+        if(pageNumber.HasValue)return Ok(ApiResponse<object>.Success(new {items=rows,filters,totalCount=window.TotalCount,pageNumber=window.PageNumber,pageSize,totalPages=window.TotalPages},correlationId:HttpContext.TraceIdentifier));
         return Ok(ApiResponse<IReadOnlyList<TimetableSectionResponse>>.Success(rows, correlationId: HttpContext.TraceIdentifier));
     }
 
@@ -375,9 +394,10 @@ public sealed class SchoolTeachingPlanningController(ISchoolDbContextFactory dbF
 
     [Authorize(Policy = SchoolPermissionPolicies.AcademicsView)]
     [HttpGet("temporary-merges")]
-    public async Task<IActionResult> TemporaryMerges(CancellationToken ct)
+    public async Task<IActionResult> TemporaryMerges(CancellationToken ct, int? pageNumber = null, int pageSize = 20)
     {
         await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
+        if(!SchoolListPaging.Valid(pageNumber,pageSize))return BadRequest();
         var rooms = await db.SchoolRooms.AsNoTracking().Where(x => x.IsActive && x.IsSchedulable).OrderBy(x => x.NameAr)
             .Select(x => new TimetableRoomChoiceResponse(x.Id, x.NameAr, x.NameEn, x.Capacity, x.RoomType.NameAr, x.RoomType.NameEn)).ToArrayAsync(ct);
         var sections = await db.ClassSections.AsNoTracking().Where(x => x.IsActive && x.GradeOffering.IsActive && x.GradeOffering.Status != GradeOfferingStatus.Closed)
@@ -385,8 +405,8 @@ public sealed class SchoolTeachingPlanningController(ISchoolDbContextFactory dbF
             .Select(x => new TemporaryMergeSectionChoiceResponse(x.Id, x.NameAr, x.NameEn, x.Capacity,
                 x.GradeOffering.GradeLevel.NameAr, x.GradeOffering.GradeLevel.NameEn,
                 x.GradeOffering.ProgramAcademicYear.NameAr, x.GradeOffering.ProgramAcademicYear.NameEn)).ToArrayAsync(ct);
-        var items = await db.TemporaryClassMerges.AsNoTracking().Where(x => x.IsActive)
-            .OrderBy(x => x.MergeDate).ThenBy(x => x.StartsAt)
+        var window=await SchoolListPaging.Window(db.TemporaryClassMerges.AsNoTracking().Where(x=>x.IsActive).OrderBy(x=>x.MergeDate).ThenBy(x=>x.StartsAt).ThenBy(x=>x.Id),pageNumber,pageSize,ct);
+        var items = await window.Query
             .Select(x => new TemporaryMergeResponse(x.Id, x.RoomId, x.Room.NameAr, x.Room.NameEn, x.MergeDate,
                 x.StartsAt.ToString("HH:mm"), x.EndsAt.ToString("HH:mm"), x.ExpectedStudentCount, x.Notes,
                 x.Sections.Where(s => s.IsActive).Select(s => new TemporaryMergeSectionChoiceResponse(s.ClassSectionId,
@@ -394,6 +414,7 @@ public sealed class SchoolTeachingPlanningController(ISchoolDbContextFactory dbF
                     s.ClassSection.GradeOffering.GradeLevel.NameAr, s.ClassSection.GradeOffering.GradeLevel.NameEn,
                     s.ClassSection.GradeOffering.ProgramAcademicYear.NameAr, s.ClassSection.GradeOffering.ProgramAcademicYear.NameEn)).ToArray()))
             .ToArrayAsync(ct);
+        if(pageNumber.HasValue)return Ok(ApiResponse<object>.Success(new {items,rooms,sections,totalCount=window.TotalCount,pageNumber=window.PageNumber,pageSize,totalPages=window.TotalPages},correlationId:HttpContext.TraceIdentifier));
         return Ok(ApiResponse<TemporaryMergeDataResponse>.Success(new(rooms, sections, items), correlationId: HttpContext.TraceIdentifier));
     }
 

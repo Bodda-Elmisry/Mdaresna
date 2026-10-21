@@ -87,10 +87,13 @@ public sealed class SchoolFacilitiesController(ISchoolDbContextFactory dbFactory
                     IsActive = true, CreatedAtUtc = now, UpdatedAtUtc = now };
                 db.SchoolRoomTypes.Add(roomType); id = roomType.Id; break;
             case FacilityKind.Capability:
+                if (request.ParentId.HasValue && !await db.SchoolRooms.AnyAsync(x=>x.Id==request.ParentId.Value&&x.IsActive,cancellationToken)) return InvalidParent();
                 if (await db.RoomCapabilities.AnyAsync(x => x.Code == code, cancellationToken)) return Duplicate();
                 var capability = new RoomCapability { Id = Guid.NewGuid(), Code = code, NameAr = ar, NameEn = en,
                     IsActive = true, CreatedAtUtc = now, UpdatedAtUtc = now };
-                db.RoomCapabilities.Add(capability); id = capability.Id; break;
+                db.RoomCapabilities.Add(capability); id = capability.Id;
+                if(request.ParentId.HasValue) db.SchoolRoomCapabilities.Add(new SchoolRoomCapability{RoomId=request.ParentId.Value,CapabilityId=id});
+                break;
             case FacilityKind.Room:
                 if (!request.ParentId.HasValue || !request.RoomTypeId.HasValue || request.Capacity is < 0 or > 10000 ||
                     !await db.BuildingFloors.AnyAsync(x => x.Id == request.ParentId, cancellationToken) ||
@@ -111,6 +114,24 @@ public sealed class SchoolFacilitiesController(ISchoolDbContextFactory dbFactory
         catch (DbUpdateException) { return Duplicate(); }
         return StatusCode(201, ApiResponse<object>.Success(new { id }, statusCode: 201,
             correlationId: HttpContext.TraceIdentifier));
+    }
+
+    [Authorize(Policy = SchoolPermissionPolicies.FacilitiesManage)]
+    [HttpPut("rooms/{id:guid}/capabilities")]
+    public async Task<IActionResult> SetRoomCapabilities(Guid id,[FromBody] SaveRoomCapabilitiesRequest request,CancellationToken cancellationToken)
+    {
+        if(request.CapabilityIds is null) return InvalidCapabilities();
+        await using var db=await RequireDb(cancellationToken);if(db is null)return Unauthorized();
+        var room=await db.SchoolRooms.Include(x=>x.Capabilities).SingleOrDefaultAsync(x=>x.Id==id,cancellationToken);
+        if(room is null)return Missing();
+        var ids=request.CapabilityIds.Distinct().ToArray();
+        var existing=room.Capabilities.Select(x=>x.CapabilityId).ToHashSet();
+        if(await db.RoomCapabilities.IgnoreQueryFilters().CountAsync(x=>ids.Contains(x.Id)&&((x.IsActive&&!x.IsDeleted)||existing.Contains(x.Id)),cancellationToken)!=ids.Length)return InvalidCapabilities();
+        db.SchoolRoomCapabilities.RemoveRange(room.Capabilities.Where(x=>!ids.Contains(x.CapabilityId)));
+        foreach(var capabilityId in ids.Where(x=>!existing.Contains(x)))db.SchoolRoomCapabilities.Add(new SchoolRoomCapability{RoomId=id,CapabilityId=capabilityId});
+        room.UpdatedAtUtc=DateTimeOffset.UtcNow;
+        await db.SaveChangesAsync(cancellationToken);
+        return Ok(ApiResponse<object?>.Success(null,correlationId:HttpContext.TraceIdentifier));
     }
 
     [Authorize(Policy = SchoolPermissionPolicies.FacilitiesManage)]
@@ -313,6 +334,7 @@ public sealed record SaveFacilityItemRequest([Required] string Code, [Required] 
     public IReadOnlyList<Guid> CapabilityIds => Capabilities ?? [];
 }
 public sealed record ChangeFacilityStatusRequest(bool IsActive);
+public sealed record SaveRoomCapabilitiesRequest(IReadOnlyList<Guid>? CapabilityIds);
 public sealed record FacilityItemResponse(Guid Id, Guid? ParentId, Guid? RoomTypeId, string Code, string NameAr,
     string NameEn, bool IsActive, bool IsDeleted, DateTimeOffset? DeletedAtUtc, string? Address, int? SortOrder,
     bool? IsLaboratory, int? Capacity, IReadOnlyList<Guid> CapabilityIds, bool? IsSchedulable = null,

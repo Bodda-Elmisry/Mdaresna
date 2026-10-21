@@ -14,6 +14,18 @@ namespace Mdaresna.Schools.Api.Controllers;
 [Route("api/schools/v1/roles")]
 public sealed class SchoolRolesController(ISchoolDbContextFactory dbFactory) : ControllerBase
 {
+    [Authorize(Policy = SchoolPermissionPolicies.RolesView), HttpGet("page")]
+    public async Task<IActionResult> Page(int pageNumber = 1, int pageSize = 20, CancellationToken ct = default)
+    {
+        if (pageNumber < 1 || pageNumber > 1000000 || pageSize is < 1 or > 100) return BadRequest();
+        await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
+        var query = db.LocalRoles.AsNoTracking(); var total = await query.CountAsync(ct);
+        var pages = Math.Max(1,(int)Math.Ceiling(total/(double)pageSize)); pageNumber = Math.Min(pageNumber,pages);
+        var items = await query.OrderBy(x=>x.Code).ThenBy(x=>x.Id).Skip((pageNumber-1)*pageSize).Take(pageSize)
+            .Select(x=>new SchoolRoleResponse(x.Id,x.Code,x.DisplayNameAr,x.DisplayNameEn,x.IsSystem,x.IsActive,x.Permissions.Select(p=>p.Permission.Code).OrderBy(p=>p).ToArray())).ToArrayAsync(ct);
+        return Ok(ApiResponse<object>.Success(new {items,totalCount=total,pageNumber,pageSize,totalPages=pages},correlationId:HttpContext.TraceIdentifier));
+    }
+
     [Authorize(Policy = SchoolPermissionPolicies.RolesView)]
     [HttpGet]
     public async Task<IActionResult> List(CancellationToken cancellationToken)

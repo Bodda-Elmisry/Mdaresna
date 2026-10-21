@@ -50,6 +50,7 @@ public sealed class SchoolRoutingCacheConsumerService(IConfiguration config, IHo
 
     private async Task Handle(IChannel channel, BasicDeliverEventArgs delivery, CancellationToken ct)
     {
+        var stage = "message-validation";
         try
         {
             SchoolRoutingChangedV1 changed;
@@ -71,6 +72,7 @@ public sealed class SchoolRoutingCacheConsumerService(IConfiguration config, IHo
             }
             await using var scope = scopes.CreateAsyncScope();
             var client = scope.ServiceProvider.GetRequiredService<SchoolRoutingSnapshotClient>();
+            stage = "platform-snapshot";
             // Reconcile only on mutation events. This prevents stale redeliveries after Redis loses its guards.
             var latest = await client.ReadAsync(changed.SchoolCode, ct);
             if (latest is null) latest = changed with { Target = null }; // A physically removed school stays blocked.
@@ -85,13 +87,16 @@ public sealed class SchoolRoutingCacheConsumerService(IConfiguration config, IHo
             if (latest.SchoolCode != changed.SchoolCode || latest.RoutingVersion < changed.RoutingVersion)
                 throw new InvalidOperationException("Routing snapshot is not current.");
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct); timeout.CancelAfter(TimeSpan.FromSeconds(5));
+            stage = "redis-apply";
             await scope.ServiceProvider.GetRequiredService<SchoolRoutingCache>().ApplyEventAsync(latest, timeout.Token);
+            stage = "message-ack";
             await channel.BasicAckAsync(delivery.DeliveryTag, false, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
-        catch (Exception)
+        catch (Exception ex)
         {
-            logger.LogWarning("Routing update failed; retaining the message for retry.");
+            // Do not log exception messages: Redis/HTTP diagnostics may contain connection metadata.
+            logger.LogWarning("Routing update failed at {Stage} ({FailureType}); retaining the message for retry.", stage, ex.GetType().Name);
             await Task.Delay(TimeSpan.FromSeconds(2), ct);
             await channel.BasicNackAsync(delivery.DeliveryTag, false, true, ct);
         }

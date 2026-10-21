@@ -23,20 +23,25 @@ public sealed class SchoolClassAssignmentsController(ISchoolDbContextFactory fac
     private IActionResult Success(object value) => Ok(ApiResponse<object>.Success(value, correlationId: HttpContext.TraceIdentifier));
 
     [HttpGet]
-    public async Task<IActionResult> List([FromQuery] Guid? classSectionId, [FromQuery] Guid? userId, CancellationToken ct)
+    public async Task<IActionResult> List([FromQuery] Guid? classSectionId, [FromQuery] Guid? userId, CancellationToken ct, int? pageNumber = null, int pageSize = 20, Guid? floorId = null, Guid? assignmentId = null)
     {
         await using var db = await Db(ct); if (db is null) return Unauthorized();
         var query = db.ClassOperationalAssignments.AsNoTracking();
         if (!await CanManage(db, ct)) query = query.Where(x => x.UserId == UserId);
         if (classSectionId.HasValue) query = query.Where(x => x.Grants.Any(g => g.ClassSectionId == classSectionId));
         if (userId.HasValue) query = query.Where(x => x.UserId == userId);
-        return Success(await query.OrderByDescending(x => x.CreatedAtUtc).Select(x => new
+        if (!SchoolListPaging.Valid(pageNumber,pageSize)) return BadRequest();
+        if(floorId.HasValue)query=query.Where(x=>x.BuildingFloorId==floorId);
+        if(assignmentId.HasValue)query=query.Where(x=>x.Id==assignmentId);
+        var window=await SchoolListPaging.Window(query.OrderByDescending(x=>x.CreatedAtUtc).ThenBy(x=>x.Id),pageNumber,pageSize,ct);
+        var items=await window.Query.Select(x => new
         {
             x.Id, x.UserId, UserName = x.User.Person.DisplayName, UserKind = x.User.Kind.ToString(),
             x.BuildingFloorId, x.Responsibility, x.StartsOn, x.EndsOn, x.IsActive, x.Revision,
             Grants = x.Grants.Select(g => new { g.ClassSectionId, ClassNameAr = g.ClassSection.NameAr,
                 ClassNameEn = g.ClassSection.NameEn, g.Action, g.GradeSubjectOfferingId }).ToArray()
-        }).ToArrayAsync(ct));
+        }).ToArrayAsync(ct);
+        return Success(pageNumber.HasValue ? window.Result(items) : items);
     }
 
     [HttpGet("options")]

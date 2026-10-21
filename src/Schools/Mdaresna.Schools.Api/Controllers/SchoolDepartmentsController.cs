@@ -17,14 +17,21 @@ public sealed class SchoolDepartmentsController(ISchoolDbContextFactory dbFactor
 {
     [Authorize(Policy = SchoolPermissionPolicies.DepartmentsView)]
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] bool includeDeleted = false, CancellationToken ct = default)
+    public async Task<IActionResult> Get([FromQuery] bool includeDeleted = false, CancellationToken ct = default, int? pageNumber = null, int pageSize = 20, bool includeOptions = true, bool deletedOnly = false, Guid? configurationDepartmentId = null)
     {
         await using var db = await RequireDb(ct); if (db is null) return Unauthorized();
         var departmentQuery = includeDeleted ? db.SchoolDepartments.IgnoreQueryFilters() : db.SchoolDepartments;
+        if (pageNumber.HasValue && (pageNumber < 1 || pageNumber > 1000000 || pageSize is < 1 or > 100)) return BadRequest();
+        if (pageNumber.HasValue) departmentQuery = departmentQuery.IgnoreQueryFilters().Where(x=>x.IsDeleted == deletedOnly);
+        var total = pageNumber.HasValue ? await departmentQuery.CountAsync(ct) : 0;
+        var pages = Math.Max(1,(int)Math.Ceiling(total/(double)pageSize));
+        if (pageNumber.HasValue) { pageNumber=Math.Min(pageNumber.Value,pages); departmentQuery=departmentQuery.OrderBy(x=>x.SortOrder).ThenBy(x=>x.NameAr).ThenBy(x=>x.Id).Skip((pageNumber.Value-1)*pageSize).Take(pageSize); }
+        if(configurationDepartmentId.HasValue)departmentQuery=departmentQuery.Where(x=>x.Id==configurationDepartmentId);
         var departments = await departmentQuery.AsNoTracking().OrderBy(x => x.SortOrder).ThenBy(x => x.NameAr).Select(x => new
         {
             x.Id, x.ParentDepartmentId, x.BranchId, x.Code, x.NameAr, x.NameEn, Type = x.Type.ToString(),
             x.SortOrder, x.IsActive, x.IsDeleted, x.DeletedAtUtc,
+            ParentNameAr=x.ParentDepartment!=null?x.ParentDepartment.NameAr:null, ParentNameEn=x.ParentDepartment!=null?x.ParentDepartment.NameEn:null, BranchNameAr=x.Branch!=null?x.Branch.NameAr:null, BranchNameEn=x.Branch!=null?x.Branch.NameEn:null,
             Members = x.Memberships.Where(m => m.IsActive).OrderByDescending(m => m.IsPrimary).ThenBy(m => m.User.Person.DisplayName).Select(m => new
             { m.Id, m.UserId, m.User.Person.DisplayName, Kind = m.User.Kind.ToString(), m.TitleAr, m.TitleEn, m.IsPrimary, m.StartsOn, m.EndsOn }),
             Leaderships = x.Leaderships.Where(l => l.IsActive).Select(l => new
@@ -36,17 +43,39 @@ public sealed class SchoolDepartmentsController(ISchoolDbContextFactory dbFactor
                 { c.Id, c.CoordinatorUserId, c.CoordinatorUser.Person.DisplayName, c.EducationProgramId, c.EducationStageId, c.StartsOn, c.EndsOn })
             })
         }).ToListAsync(ct);
-        var users = await db.LocalUsers.AsNoTracking().Where(x => x.Status != LocalUserStatus.Disabled && x.Status != LocalUserStatus.Suspended)
+        var users = await db.LocalUsers.AsNoTracking().Where(x=>!configurationDepartmentId.HasValue || db.DepartmentMemberships.Any(m=>m.DepartmentId==configurationDepartmentId && m.UserId==x.Id && m.IsActive)).Where(x=> !pageNumber.HasValue || includeOptions).Where(x => x.Status != LocalUserStatus.Disabled && x.Status != LocalUserStatus.Suspended)
             .OrderBy(x => x.Person.DisplayName).Select(x => new { x.Id, x.Person.DisplayName, x.UserName, Kind = x.Kind.ToString(), Status = x.Status.ToString() }).ToListAsync(ct);
-        var branches = await db.SchoolBranches.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.NameAr)
+        var branches = await db.SchoolBranches.AsNoTracking().Where(x=> !pageNumber.HasValue || includeOptions).Where(x => x.IsActive).OrderBy(x => x.NameAr)
             .Select(x => new { x.Id, x.NameAr, x.NameEn }).ToListAsync(ct);
-        var subjects = await db.Subjects.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.NameAr)
+        var subjects = await db.Subjects.AsNoTracking().Where(x=> !pageNumber.HasValue || includeOptions).Where(x => x.IsActive).OrderBy(x => x.NameAr)
             .Select(x => new { x.Id, x.Code, x.NameAr, x.NameEn }).ToListAsync(ct);
-        var programs = await db.EducationPrograms.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.NameAr)
+        var programs = await db.EducationPrograms.AsNoTracking().Where(x=> !pageNumber.HasValue || includeOptions).Where(x => x.IsActive).OrderBy(x => x.NameAr)
             .Select(x => new { x.Id, x.NameAr, x.NameEn }).ToListAsync(ct);
-        var stages = await db.EducationStages.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.SortOrder)
+        var stages = await db.EducationStages.AsNoTracking().Where(x=> !pageNumber.HasValue || includeOptions).Where(x => x.IsActive).OrderBy(x => x.SortOrder)
             .Select(x => new { x.Id, x.EducationProgramId, x.NameAr, x.NameEn }).ToListAsync(ct);
+        if (pageNumber.HasValue) return Ok(ApiResponse<object>.Success(new {items=departments,totalCount=total,pageNumber=pageNumber.Value,pageSize,totalPages=pages},correlationId:HttpContext.TraceIdentifier));
         return Ok(ApiResponse<object>.Success(new { departments, users, branches, subjects, programs, stages }, correlationId: HttpContext.TraceIdentifier));
+    }
+
+    [Authorize(Policy=SchoolPermissionPolicies.DepartmentsView),HttpGet("candidates/{kind}")]
+    public async Task<IActionResult> Candidates(string kind,int pageNumber=1,int pageSize=20,CancellationToken ct=default)
+    {
+        if(!SchoolListPaging.Valid(pageNumber,pageSize))return BadRequest();
+        await using var db=await RequireDb(ct);if(db is null)return Unauthorized();
+        if(kind=="users")
+        {
+            var q=db.LocalUsers.AsNoTracking().Where(x=>x.Status!=LocalUserStatus.Disabled&&x.Status!=LocalUserStatus.Suspended).OrderBy(x=>x.Person.DisplayName).ThenBy(x=>x.Id);
+            var w=await SchoolListPaging.Window(q,pageNumber,pageSize,ct);
+            var items=await w.Query.Select(x=>new {x.Id,x.Person.DisplayName,x.UserName,Kind=x.Kind.ToString(),Status=x.Status.ToString()}).ToArrayAsync(ct);
+            return Ok(ApiResponse<object>.Success(w.Result(items),correlationId:HttpContext.TraceIdentifier));
+        }
+        if(kind=="subjects")
+        {
+            var w=await SchoolListPaging.Window(db.Subjects.AsNoTracking().Where(x=>x.IsActive).OrderBy(x=>x.NameAr).ThenBy(x=>x.Id),pageNumber,pageSize,ct);
+            var items=await w.Query.Select(x=>new {x.Id,x.Code,x.NameAr,x.NameEn}).ToArrayAsync(ct);
+            return Ok(ApiResponse<object>.Success(w.Result(items),correlationId:HttpContext.TraceIdentifier));
+        }
+        return NotFound();
     }
 
     [Authorize(Policy = SchoolPermissionPolicies.DepartmentsManage)]
